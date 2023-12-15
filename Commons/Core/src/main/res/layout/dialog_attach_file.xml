@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="10dp"
+    android:background="#151515">
+
+    <Button
+        android:id="@+id/from_gallery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:text="@string/attach_file_from_gallery"
+        android:textAlignment="textStart"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"/>
+
+    <Button
+        android:id="@+id/from_camera"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:text="@string/attach_file_from_camera"
+        android:textAlignment="textStart"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"/>
+
+    <Button
+        android:id="@+id/from_documents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:text="@string/attach_file_from_documents"
+        android:textAlignment="textStart"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"/>
+
+</LinearLayout>

@@ -1,0 +1,57 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+
+    compileSdkVersion 33
+
+    defaultConfig {
+
+        minSdkVersion 23
+        targetSdkVersion 33
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+
+        jvmTarget = '1.8'
+    }
+
+    buildTypes {
+
+        release {
+
+            minifyEnabled false
+        }
+
+        debug {
+
+            minifyEnabled false
+        }
+    }
+
+    packagingOptions {
+
+        resources.excludes.add("META-INF/*")
+        resources.excludes.add("LICENSE-2.0.txt")
+    }
+
+    namespace 'com.redelf.commons.test'
+}
+
+dependencies {
+
+    api "androidx.test:rules:1.5.0"
+    api "androidx.test.ext:junit:1.1.5"
+
+    api project(':Commons:Core')
+    testImplementation project(':Commons:Core')
+    androidTestImplementation project(':Commons:Core')
+}

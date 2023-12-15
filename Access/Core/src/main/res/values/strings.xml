@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="biometric_login_title">Biometric login</string>
+    <string name="biometric_login_subtitle">Log in using your biometric credentials</string>
+
+    <string name="pin_login_title">Credentials login</string>
+    <string name="pin_login_subtitle">Log in using your PIN, password or pattern</string>
+</resources>

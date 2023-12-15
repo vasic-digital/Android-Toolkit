@@ -1,0 +1,757 @@
+package com.redelf.commons.activity
+
+import android.annotation.SuppressLint
+import android.content.*
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.IBinder
+import android.text.TextUtils
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ContextThemeWrapper
+import com.redelf.commons.Broadcast
+import com.redelf.commons.R
+import com.redelf.commons.dialog.AttachFileDialog
+import com.redelf.commons.dialog.OnPickFromCameraCallback
+import com.redelf.commons.execution.TaskExecutor
+import com.redelf.commons.isServiceRunning
+import com.redelf.commons.lifecycle.LifecycleCallback
+import com.redelf.commons.obtain.OnObtain
+import com.redelf.commons.transmission.TransmissionManager
+import com.redelf.commons.transmission.TransmissionService
+import com.redelf.commons.util.UriUtil
+import timber.log.Timber
+import java.io.*
+
+
+abstract class BaseActivity : AppCompatActivity() {
+
+    protected var transmissionService: TransmissionService? = null
+    protected var attachmentObtainedUris: MutableList<Uri> = mutableListOf()
+    protected var attachmentObtainedFiles: MutableList<File> = mutableListOf()
+
+    protected val executor = TaskExecutor.instantiate(5)
+    protected val dismissDialogsRunnable = Runnable { dismissDialogs() }
+
+    protected val dismissDialogsAndTerminateRunnable = Runnable {
+
+        dismissDialogs()
+        closeActivity()
+    }
+
+    protected open val canSendOnTransmissionServiceConnected = true
+
+    private var created = false
+    private val dialogs = mutableListOf<AlertDialog>()
+    private var attachmentsDialog: AttachFileDialog? = null
+
+    private val finishReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            intent?.let {
+
+                if (Broadcast.ACTION_FINISH == intent.action) {
+
+                    handleFinishBroadcast(intent)
+                }
+            }
+        }
+    }
+
+    private val serviceConnection = object : ServiceConnection {
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+
+            transmissionService = null
+            Timber.v("Transmission service disconnected: %s", name)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+
+            binder?.let {
+
+                transmissionService =
+                    (it as TransmissionService.TransmissionServiceBinder).getService()
+
+                if (canSendOnTransmissionServiceConnected) {
+
+                    val intent = Intent(TransmissionManager.BROADCAST_ACTION_SEND)
+                    sendBroadcast(intent)
+
+                    Timber.v("BROADCAST_ACTION_SEND on transmission service connected")
+
+                } else {
+
+                    Timber.w(
+
+                        "BROADCAST_ACTION_SEND on transmission service connected, SKIPPED"
+                    )
+                }
+
+                onTransmissionServiceConnected()
+                onTransmissionManagementReady()
+            }
+        }
+    }
+
+    private val onPickFromCameraCallback = object : OnPickFromCameraCallback {
+
+        override fun onDataAccessPrepared(file: File, uri: Uri) {
+
+            Timber.v("Camera output uri: $uri")
+            Timber.v("Camera output file: ${file.absolutePath}")
+
+            val from = "onDataAccessPrepared"
+
+            clearAttachmentUris(from)
+            clearAttachmentFiles(from)
+
+            attachmentObtainedUris.add(uri)
+            attachmentObtainedFiles.add(file)
+        }
+    }
+
+    private val transmissionManagerInitCallback = object : OnObtain<Boolean> {
+
+        override fun onCompleted(data: Boolean) {
+
+            Timber.v("Transmission manager :: INIT :: onCompleted: $data")
+
+            try {
+
+                val clazz = TransmissionService::class.java
+
+                if (isServiceRunning(clazz)) {
+
+                    Timber.v("Transmission service is already running")
+
+                } else {
+
+                    Timber.v("Transmission service is going to be started")
+
+                    val serviceIntent = Intent(this@BaseActivity, clazz)
+                    startService(serviceIntent)
+                }
+
+                val intent = Intent(this@BaseActivity, clazz)
+                bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+
+            } catch (e: IllegalStateException) {
+
+                onTransmissionManagementFailed(e)
+
+            } catch (e: SecurityException) {
+
+                onTransmissionManagementFailed(e)
+            }
+        }
+
+        override fun onFailure(error: Throwable) {
+
+            onTransmissionManagementFailed(error)
+        }
+    }
+
+    protected open fun onTransmissionManagementReady() {
+
+        Timber.v("Transmission management is ready")
+    }
+
+    protected open fun onTransmissionManagementFailed(error: Throwable) {
+
+        Timber.e(error)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        super.onCreate(savedInstanceState)
+
+        val filter = IntentFilter(Broadcast.ACTION_FINISH)
+        registerReceiver(finishReceiver, filter)
+
+        Timber.v("Transmission management supported: ${isTransmissionServiceSupported()}")
+
+        if (isTransmissionServiceSupported()) {
+
+            initializeTransmissionManager(transmissionManagerInitCallback)
+        }
+
+        created = true
+    }
+
+    override fun onDestroy() {
+
+        dismissDialogs()
+        unregisterReceiver(finishReceiver)
+
+        if (isTransmissionServiceSupported()) {
+
+            transmissionService?.let {
+
+                try {
+
+                    unbindService(serviceConnection)
+
+                } catch (e: IllegalArgumentException) {
+
+                    Timber.w(e.message)
+                }
+            }
+        }
+
+        super.onDestroy()
+    }
+
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == RESULT_CANCELED) {
+
+            return
+        }
+
+        if (resultCode != RESULT_OK) {
+
+            showError(R.string.error_attaching_file)
+            return
+        }
+
+        when (requestCode) {
+
+            AttachFileDialog.REQUEST_DOCUMENT,
+            AttachFileDialog.REQUEST_GALLERY_PHOTO -> {
+
+                if (data == null) {
+
+                    showError(R.string.error_attaching_file)
+                }
+
+                data?.let {
+
+                    val from = "onActivityResult, DOC or GALLERY"
+
+                    clearAttachmentUris(from)
+                    clearAttachmentFiles(from)
+
+                    if (it.clipData != null) {
+
+                        val clipData = it.clipData
+                        val count = clipData?.itemCount ?: 0
+
+                        if (count == 0) {
+
+                            showError(R.string.error_attaching_file)
+
+                        } else {
+
+                            for (i in 0 until count) {
+
+                                val uri = clipData?.getItemAt(i)?.uri
+
+                                uri?.let { u ->
+
+                                    attachmentObtainedUris.add(u)
+                                }
+                            }
+                        }
+
+                    } else {
+
+                        it.data?.let { uri ->
+
+                            attachmentObtainedUris.add(uri)
+                        }
+
+                        if (it.data == null) {
+
+                            Timber.e("Gallery obtained uri is null")
+
+                            showError(R.string.error_attaching_file)
+                            return
+                        }
+                    }
+
+                    handleObtainedAttachmentUris()
+                }
+            }
+
+            AttachFileDialog.REQUEST_CAMERA_PHOTO -> {
+
+                if (attachmentObtainedFiles.isEmpty()) {
+
+                    showError(R.string.error_attaching_file)
+                    return
+                }
+
+                attachmentObtainedFiles.forEach {
+
+                    if (it.exists()) {
+
+                        onAttachmentReady(it)
+
+                    } else {
+
+                        Timber.e("File does not exist: %s", it.absolutePath)
+                        showError(R.string.error_attaching_file)
+                    }
+                }
+
+                val from = "onActivityResult, CAM"
+
+                clearAttachmentFiles(from)
+            }
+
+            else -> {
+
+                Timber.w("Unknown request code: $requestCode")
+            }
+        }
+    }
+
+    fun broadcastFinish() {
+
+        if (!isFinishing) {
+            finish()
+        }
+        val intent = Intent(Broadcast.ACTION_FINISH)
+        sendBroadcast(intent)
+    }
+
+    protected open fun isTransmissionServiceSupported(): Boolean {
+
+        return resources.getBoolean(R.bool.transmission_service_supported)
+    }
+
+    protected open fun onTransmissionServiceConnected() {
+
+        Timber.v("Transmission service connected: %s", transmissionService)
+    }
+
+    protected open fun onAttachmentReady(attachment: File) {
+
+        Timber.v("Attachment is ready: ${attachment.absolutePath}")
+    }
+
+    protected open fun disposeAttachment(attachment: File) {
+
+        executor.execute {
+
+            if (attachment.exists()) {
+
+                if (attachment.delete()) {
+
+                    Timber.v("Attachment has been disposed: ${attachment.absolutePath}")
+
+                } else {
+
+                    Timber.w("Attachment has NOT been disposed: ${attachment.absolutePath}")
+                }
+            }
+        }
+    }
+
+    protected open fun showError(error: Int) {
+
+        alert(
+
+            title = android.R.string.dialog_alert_title,
+            message = error,
+            action = {
+
+                dismissDialogs()
+            },
+            dismissAction = {
+
+                dismissDialogs()
+            },
+            actionLabel = android.R.string.ok,
+            dismissible = false,
+            cancellable = true
+        )
+    }
+
+    protected open fun getTransmissionManager(callback: OnObtain<TransmissionManager<*>>) {
+
+        val e = IllegalArgumentException("No transmission manager available")
+        callback.onFailure(e)
+    }
+
+    protected open fun initializeTransmissionManager(successCallback: OnObtain<Boolean>) {
+
+        Timber.v("Transmission manager :: INIT :: START")
+
+        val callback = object : OnObtain<TransmissionManager<*>> {
+
+            override fun onCompleted(data: TransmissionManager<*>) {
+
+                if (data.isInitialized()) {
+
+                    Timber.v("Sending manager :: Ready: $data")
+
+                    successCallback.onCompleted(true)
+
+                } else {
+
+                    val sendingManagerInitCallback = object : LifecycleCallback<Unit> {
+
+                        override fun onInitialization(success: Boolean, vararg args: Unit) {
+
+                            successCallback.onCompleted(success)
+                        }
+
+                        override fun onShutdown(success: Boolean, vararg args: Unit) {
+
+                            val e = IllegalStateException("Shut down unexpectedly")
+                            successCallback.onFailure(e)
+                        }
+                    }
+
+                    try {
+
+                        data.initialize(sendingManagerInitCallback)
+
+                    } catch (e: IllegalStateException) {
+
+                        successCallback.onFailure(e)
+                    }
+                }
+            }
+
+            override fun onFailure(error: Throwable) {
+
+                successCallback.onFailure(error)
+            }
+        }
+
+        getTransmissionManager(callback)
+    }
+
+    fun alert(
+
+        title: Int = android.R.string.dialog_alert_title,
+        message: Int = 0,
+        action: Runnable,
+        dismissAction: Runnable? = null,
+        icon: Int = android.R.drawable.ic_dialog_alert,
+        cancellable: Boolean = false,
+        dismissible: Boolean = true,
+        actionLabel: Int = android.R.string.ok,
+        dismissActionLabel: Int = android.R.string.cancel,
+        style: Int = 0,
+        messageString: String = getString(message)
+
+    ): AlertDialog? {
+
+        var thisDialog: AlertDialog? = null
+
+        if (!isFinishing) {
+
+            val ctx = if (style > 0) {
+
+                ContextThemeWrapper(this, style)
+
+            } else {
+
+                this
+            }
+
+            val builder = AlertDialog.Builder(ctx, style)
+                .setIcon(icon)
+                .setCancelable(cancellable)
+                .setTitle(title)
+                .setMessage(messageString)
+                .setPositiveButton(actionLabel) { dialog, _ ->
+
+                    action.run()
+                    dialog.dismiss()
+                }
+
+            if (dismissible) {
+
+                builder.setNegativeButton(dismissActionLabel) { dialog, _ ->
+
+                    dismissAction?.run()
+                    dialog.dismiss()
+                }
+            }
+
+            runOnUiThread {
+
+                if (!isFinishing) {
+
+                    thisDialog = builder.create()
+                    thisDialog?.let {
+
+                        dialogs.add(it)
+                        it.show()
+                    }
+
+                } else {
+
+                    Timber.w("Dialog will not be shown, the activity is finishing")
+                }
+            }
+
+        } else {
+
+            Timber.w("We will not present alert, activity is finishing")
+        }
+
+        return thisDialog
+    }
+
+    private fun closeActivity() {
+
+        runOnUiThread {
+            if (!isFinishing) {
+                finish()
+            }
+        }
+    }
+
+    protected fun addAttachment() {
+
+        Timber.v("Add attachment")
+
+        attachmentsDialog?.dismiss()
+        attachmentsDialog = AttachFileDialog(this, onPickFromCameraCallback, multiple = true)
+        attachmentsDialog?.show(style = getAddAttachmentDialogStyle())
+    }
+
+    protected open fun getAddAttachmentDialogStyle(): Int = 0
+
+    protected open fun dismissDialogs() {
+
+        runOnUiThread {
+
+            attachmentsDialog?.dismiss()
+            attachmentsDialog = null
+
+            dialogs.forEach {
+
+                it.dismiss()
+            }
+        }
+    }
+
+    protected open fun handleFinishBroadcast(intent: Intent? = null) {
+
+        val hash = this.hashCode()
+
+        if (isFinishing) {
+
+            Timber.v("handleFinishBroadcast(): ALREADY FINISHING, THIS_HASH=$hash")
+
+        } else {
+
+            Timber.v("handleFinishBroadcast(): FINISHING, THIS_HASH=$hash")
+            finish()
+        }
+    }
+
+    protected fun openLink(url: Int) {
+
+        openLink(getString(url))
+    }
+
+    protected fun openLink(url: String) {
+
+        val uri = Uri.parse(url)
+        openUri(uri)
+    }
+
+    protected fun openUri(uri: Uri): Boolean {
+
+        Timber.v("openUri(): $uri")
+
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        try {
+
+            startActivity(intent)
+
+            return true
+
+        } catch (e: ActivityNotFoundException) {
+
+            Timber.e("openUri(): Activity has not been found")
+        }
+
+        return false
+    }
+
+    protected open fun isCreated() = created
+
+    @SuppressLint("Range")
+    private fun handleObtainedAttachmentUris() {
+
+        attachmentObtainedUris.forEach {
+
+            val external = getExternalFilesDir(null)
+
+            if (external == null) {
+
+                Timber.e("External files dir is null")
+                showError(R.string.error_attaching_file)
+                return
+            }
+
+            val action = Runnable {
+
+                val dir = external.absolutePath +
+                        File.separator +
+                        getString(R.string.app_name).replace(" ", "_") +
+                        File.separator
+
+                val newDir = File(dir)
+
+                if (!newDir.exists() && !newDir.mkdirs()) {
+
+                    Timber.e(
+
+                        "Could not make directory: %s",
+                        newDir.absolutePath
+                    )
+
+                    showError(R.string.error_attaching_file)
+                    return@Runnable
+                }
+
+                var ins: InputStream? = null
+                var fos: FileOutputStream? = null
+                var bis: BufferedInputStream? = null
+                var bos: BufferedOutputStream? = null
+
+                fun closeAll() {
+
+                    listOf(
+
+                        bis,
+                        ins,
+                        fos,
+                        bos
+
+                    ).forEach {
+
+                        it?.let { closable ->
+
+                            try {
+
+                                closable.close()
+
+                            } catch (e: IOException) {
+
+                                // Ignore, not spam
+                            }
+                        }
+                    }
+                }
+
+                try {
+
+                    Timber.v("Attachment uri: $it")
+
+                    var extension = ""
+                    val mimeType = contentResolver.getType(it)
+
+                    if (mimeType != null && !TextUtils.isEmpty(mimeType)) {
+
+                        extension = "." + mimeType.split(
+
+                            File.separator.toRegex()
+
+                        ).toTypedArray()[1]
+                    }
+
+                    var fileName = UriUtil().getFileName(it, applicationContext)
+
+                    if (TextUtils.isEmpty(fileName)) {
+
+                        fileName = System.currentTimeMillis().toString() + extension
+                    }
+
+                    val file = dir + fileName
+                    val outputFile = File(file)
+
+                    if (outputFile.exists()) {
+
+                        if (outputFile.delete()) {
+
+                            Timber.w("File already exists, deleting it: ${outputFile.absolutePath}")
+                        }
+                    }
+
+                    if (!outputFile.createNewFile()) {
+
+                        closeAll()
+
+                        Timber.e("Could not create file: ${outputFile.absolutePath}")
+                        showError(R.string.error_attaching_file)
+                        return@Runnable
+                    }
+
+                    ins = contentResolver.openInputStream(it)
+
+                    if (ins != null) {
+
+                        val available = ins.available()
+
+                        bis = BufferedInputStream(ins)
+                        fos = FileOutputStream(file)
+                        bos = BufferedOutputStream(fos)
+
+                        var sent: Long
+                        bos.use { fileOut ->
+                            sent = bis.copyTo(fileOut)
+                        }
+
+                        Timber.v(
+
+                            "Attachment is ready, size: " +
+                                    "${outputFile.length()} :: ${sent.toInt() == available}"
+                        )
+
+                        onAttachmentReady(outputFile)
+
+                    } else {
+
+                        Timber.e("Input stream is null")
+                        showError(R.string.error_attaching_file)
+                    }
+
+                } catch (e: IOException) {
+
+                    Timber.e(e)
+                    showError(R.string.error_attaching_file)
+
+                } finally {
+
+                    closeAll()
+                }
+            }
+
+            executor.execute(action)
+        }
+    }
+
+    private fun clearAttachmentUris(from: String) {
+
+        Timber.v("Clearing attachment URIs from '$from'")
+
+        attachmentObtainedUris.clear()
+    }
+
+    private fun clearAttachmentFiles(from: String) {
+
+        Timber.v("Clearing attachment files from '$from'")
+
+        attachmentObtainedFiles.clear()
+    }
+}
