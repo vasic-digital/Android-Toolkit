@@ -1,28 +1,53 @@
-buildscript {
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
-    ext.kotlin_version = '1.9.0'
-    repositories {
+android {
 
-        google()
-        mavenCentral()
+    compileSdkVersion 33
+
+    defaultConfig {
+
+        minSdkVersion 23
+        targetSdkVersion 33
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    dependencies {
+    compileOptions {
 
-        classpath 'com.android.tools.build:gradle:7.4.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    kotlinOptions {
+
+        jvmTarget = '1.8'
+    }
+
+    buildTypes {
+
+        release {
+
+            minifyEnabled false
+        }
+
+        debug {
+
+            minifyEnabled false
+        }
+    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0', 'META-INF/*.kotlin_module']
+        }
+    }
+    namespace 'com.redelf.access'
+
 }
 
-allprojects {
+dependencies {
 
-    repositories {
+    implementation project(":Core")
 
-        google()
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    implementation "androidx.biometric:biometric:1.2.0-alpha05"
 }

@@ -51,7 +51,7 @@ dependencies {
     api "androidx.test:rules:1.5.0"
     api "androidx.test.ext:junit:1.1.5"
 
-    api project(':Commons:Core')
-    testImplementation project(':Commons:Core')
-    androidTestImplementation project(':Commons:Core')
+    api project(':Core')
+    testImplementation project(':Core')
+    androidTestImplementation project(':Core')
 }

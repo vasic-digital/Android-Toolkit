@@ -80,11 +80,11 @@ dependencies {
 
     api platform("com.google.firebase:firebase-bom:32.0.0")
 
-    testImplementation project(":Commons:Test")
+    testImplementation project(":Test")
     testImplementation "junit:junit:4.13.2"
     testImplementation "com.jakewharton.timber:timber:5.0.1"
 
-    androidTestImplementation project(":Commons:Test")
+    androidTestImplementation project(":Test")
     androidTestImplementation "androidx.test:rules:1.5.0"
     androidTestImplementation "androidx.test.ext:junit:1.1.5"
 }
