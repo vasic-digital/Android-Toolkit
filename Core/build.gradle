@@ -1,5 +1,10 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+plugins {
+
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-parcelize'
+    id 'kotlin-kapt'
+}
 
 android {
 
@@ -77,6 +82,11 @@ dependencies {
     api "com.jakewharton.timber:timber:5.0.1"
     api "com.google.code.gson:gson:2.10.1"
     api "commons-codec:commons-codec:1.16.0"
+    api "com.github.bumptech.glide:glide:4.14.2"
+    api "com.github.bumptech.glide:annotations:4.14.2"
+    api "jp.wasabeef:glide-transformations:4.3.0"
+
+    kapt "com.github.bumptech.glide:compiler:4.14.2"
 
     api platform("com.google.firebase:firebase-bom:32.0.0")
 
