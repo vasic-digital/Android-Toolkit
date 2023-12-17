@@ -48,6 +48,12 @@ android {
         resources.excludes.add("LICENSE-2.0.txt")
     }
 
+    lint {
+
+        disable "Instantiatable"
+        disable 'ContentDescription'
+    }
+
     namespace 'com.redelf.commons'
 }
 
