@@ -1,8 +1,8 @@
 package com.redelf.commons.test
 
+import com.redelf.commons.execution.Retryable
 import org.junit.Assert
 import org.junit.Test
-import com.redelf.commons.execution.Retryable
 
 class RetryableTest : BaseTest() {
 

@@ -7,7 +7,6 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.redelf.access.installation.InstallationCheckCallback
-import com.redelf.access.R
 import com.redelf.commons.capability.CapabilityCheckCallback
 import timber.log.Timber
 

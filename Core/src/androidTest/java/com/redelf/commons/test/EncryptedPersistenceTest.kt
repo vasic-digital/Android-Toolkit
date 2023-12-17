@@ -1,10 +1,10 @@
 package com.redelf.commons.test
 
+import com.redelf.commons.persistance.EncryptedPersistence
+import com.redelf.commons.randomInteger
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import com.redelf.commons.persistance.EncryptedPersistence
-import com.redelf.commons.randomInteger
 import timber.log.Timber
 import kotlin.random.Random
 

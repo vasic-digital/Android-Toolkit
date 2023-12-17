@@ -1,5 +1,7 @@
 package com.redelf.commons.retrofit
 
+import com.redelf.commons.BuildConfig
+import com.redelf.commons.obtain.ObtainParametrized
 import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -7,8 +9,6 @@ import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
-import com.redelf.commons.BuildConfig
-import com.redelf.commons.obtain.ObtainParametrized
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
