@@ -1,6 +1,6 @@
 rootProject.name = "Android Toolkit"
 
-include ':Core'
+include ':Main'
 include ':Test'
 include ':Access'
 include ':RootTools'

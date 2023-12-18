@@ -13,7 +13,7 @@ git submodule add "GIT_REPO_URL" ./Toolkit
 - Add the following to your `settings.gradle`:
 
 ```groovy
-include ':Toolkit:Core'
+include ':Toolkit:Main'
 include ':Toolkit:Test'
 include ':Toolkit:Access'
 include ':Toolkit:RootTools'
@@ -24,7 +24,7 @@ include ':Toolkit:RootShell'
 
 ```groovy
 dependencies {
-    implementation project(':Toolkit:Core')
+    implementation project(':Toolkit:Main')
     implementation project(':Toolkit:Test')
     implementation project(':Toolkit:Access')
     implementation project(':Toolkit:RootTools')
