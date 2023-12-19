@@ -6,6 +6,9 @@ import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.exec
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
+import com.redelf.commons.lifecycle.exception.InitializingException
+import com.redelf.commons.lifecycle.exception.NotInitializedException
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
@@ -14,7 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class DataManagement<T> :
 
     Management,
-    Initialization<EncryptedPersistence>
+    Initialization<EncryptedPersistence>,
+    Obtain<T?>
 
 {
 
@@ -59,6 +63,22 @@ abstract class DataManagement<T> :
     override fun isInitialized() = storage != null
 
     override fun isInitializing() = initializing.get()
+
+    @Throws(InitializingException::class, NotInitializedException::class)
+    override fun obtain(): T? {
+
+        if (isInitializing()) {
+
+            throw InitializingException()
+        }
+
+        if (!isInitialized()) {
+
+            throw NotInitializedException()
+        }
+
+        return data
+    }
 
     @Throws(IllegalStateException::class)
     fun getStorage(): EncryptedPersistence {
