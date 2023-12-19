@@ -17,10 +17,10 @@ import timber.log.Timber
 
 abstract class BaseApplication : Application() {
 
-    protected abstract fun getSalt(): String
-    protected abstract fun populateManagers(): List<Management>
-
     protected abstract fun onDoCreate()
+    protected abstract fun takeSalt(): String
+
+    protected open fun populateManagers() = listOf<Management>()
 
     private val managers = mutableListOf<Management>()
 
@@ -50,7 +50,7 @@ abstract class BaseApplication : Application() {
 
             override fun getSalt(): String {
 
-                var salt = getSalt()
+                var salt = takeSalt()
 
                 if (salt.length > 5) {
 
