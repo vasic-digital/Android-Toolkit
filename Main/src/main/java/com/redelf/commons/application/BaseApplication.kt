@@ -5,13 +5,11 @@ import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.lifecycle.LifecycleCallback
-import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.Data
-import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.GsonParser
 import com.redelf.commons.persistance.Salter
+import com.redelf.commons.recordException
 
 import timber.log.Timber
 
@@ -105,55 +103,34 @@ abstract class BaseApplication : Application() {
 //            intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
 //            registerReceiver(screenReceiver, intentFilter)
 
-            initializeManagers()
+            val managersInitializerCallback = object : ManagersInitializer.InitializationCallback {
 
-            Timber.i("Application: Initialized")
+                override fun onInitialization(success: Boolean, error: Throwable?) {
+
+                    if (success) {
+
+                        Timber.i("Application: Initialized")
+
+                    } else {
+
+                        error?.let {
+
+                            recordException(it)
+
+                            throw it
+                        }
+                    }
+                }
+            }
+
+            initializeManagers(managersInitializerCallback)
         }
 
         Executor.MAIN.execute(action)
     }
 
-    private fun initializeManagers() {
+    private fun initializeManagers(callback: ManagersInitializer.InitializationCallback) {
 
-        managers.forEach { manager ->
-
-            if (manager is DataManagement<*>) {
-
-                manager.initialize(object : LifecycleCallback<EncryptedPersistence> {
-
-                    override fun onInitialization(
-
-                        success: Boolean,
-                        vararg args: EncryptedPersistence
-
-                    ) {
-
-                        if (success) {
-
-                            Timber.v(
-
-                                "Manager: ${manager.javaClass.simpleName} " +
-                                        "initialization completed with success"
-                            )
-
-                        } else throw IllegalStateException(
-
-                            "Manager: ${manager.javaClass.simpleName} " +
-                                    "initialization completed with failure"
-                        )
-                    }
-
-                    override fun onShutdown(
-
-                        success: Boolean,
-                        vararg args: EncryptedPersistence
-
-                    ) {
-
-                        // Ignore - not used
-                    }
-                })
-            }
-        }
+        ManagersInitializer().initializeManagers(managers, callback)
     }
 }
