@@ -87,7 +87,7 @@ abstract class DataManagement<T> :
 
             return it
 
-        } ?: throw IllegalStateException("Storage is not initialized")
+        } ?: throw NotInitializedException("Storage")
     }
 
     @Throws(IllegalStateException::class)
