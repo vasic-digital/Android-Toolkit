@@ -23,15 +23,30 @@ abstract class DataManagement<T> :
 {
 
     protected var data: T? = null
-    protected var storage: EncryptedPersistence? = null
-
     protected abstract val storageKey: String
 
+    private var storage: EncryptedPersistence? = null
     private val initializing = AtomicBoolean(false)
     private val initCallbacksTag = "Data management initialization"
 
     private val initCallbacks =
         Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag)
+
+
+    fun initialize(
+
+        callback: LifecycleCallback<EncryptedPersistence>,
+        persistence: EncryptedPersistence? = null,
+
+    ) {
+
+        persistence?.let {
+
+            storage = it
+        }
+
+        initialize(callback)
+    }
 
     override fun initialize(callback: LifecycleCallback<EncryptedPersistence>) {
 
@@ -47,9 +62,9 @@ abstract class DataManagement<T> :
 
                 initializing.set(true)
 
-                storage = EncryptedPersistence()
+                val store = createStorage()
 
-                data = storage?.pull(storageKey)
+                data = store.pull(storageKey)
 
                 onInitialized()
             }
@@ -139,5 +154,17 @@ abstract class DataManagement<T> :
         }
 
         initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
+    }
+
+    private fun createStorage(): EncryptedPersistence {
+
+        storage?.let {
+
+            return it
+        }
+
+        val store = EncryptedPersistence()
+        storage = store
+        return store
     }
 }
