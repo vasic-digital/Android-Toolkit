@@ -81,7 +81,7 @@ abstract class DataManagement<T> :
     }
 
     @Throws(IllegalStateException::class)
-    fun getStorage(): EncryptedPersistence {
+    fun takeStorage(): EncryptedPersistence {
 
         storage?.let {
 
@@ -91,9 +91,9 @@ abstract class DataManagement<T> :
     }
 
     @Throws(IllegalStateException::class)
-    fun setData(data: T) {
+    open fun pushData(data: T) {
 
-        val store = getStorage()
+        val store = takeStorage()
 
         this.data = data
 

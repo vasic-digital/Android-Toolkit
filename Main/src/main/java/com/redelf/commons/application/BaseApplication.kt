@@ -117,7 +117,7 @@ abstract class BaseApplication : Application() {
 
         managers.forEach { manager ->
 
-            if (manager is DataManagement) {
+            if (manager is DataManagement<*>) {
 
                 manager.initialize(object : LifecycleCallback<EncryptedPersistence> {
 
