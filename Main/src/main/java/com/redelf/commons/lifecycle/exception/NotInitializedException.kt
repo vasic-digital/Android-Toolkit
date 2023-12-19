@@ -5,13 +5,13 @@ import android.text.TextUtils
 class NotInitializedException(
 
     private val who: String? = null,
-    whoMsgPart: String = if (TextUtils.isEmpty(who)) {
+    errorMessage: String = if (TextUtils.isEmpty(who)) {
 
-        ""
+        "Not initialized"
 
     } else {
 
-        "$who :: "
+        "$who is not initialized"
     }
 
-) : IllegalStateException("${whoMsgPart}Not initialized")
+) : IllegalStateException(errorMessage)

@@ -1,3 +1,17 @@
 package com.redelf.commons.lifecycle.exception
 
-class TerminatedException : IllegalStateException("Terminated")
+import android.text.TextUtils
+
+class TerminatedException(
+
+    private val who: String? = null,
+    errorMessage: String = if (TextUtils.isEmpty(who)) {
+
+        "Terminated"
+
+    } else {
+
+        "$who is terminated"
+    }
+
+) : IllegalStateException(errorMessage)

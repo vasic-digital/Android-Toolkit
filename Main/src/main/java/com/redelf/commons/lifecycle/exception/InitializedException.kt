@@ -1,3 +1,17 @@
 package com.redelf.commons.lifecycle.exception
 
-class InitializedException : IllegalStateException("Initialized")
+import android.text.TextUtils
+
+class InitializedException(
+
+    private val who: String? = null,
+    errorMessage: String = if (TextUtils.isEmpty(who)) {
+
+        "Initialized"
+
+    } else {
+
+        "$who is initialized"
+    }
+
+) : IllegalStateException(errorMessage)
