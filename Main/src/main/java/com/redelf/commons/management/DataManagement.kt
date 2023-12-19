@@ -70,6 +70,26 @@ abstract class DataManagement<T> :
         } ?: throw IllegalStateException("Storage is not initialized")
     }
 
+    @Throws(IllegalStateException::class)
+    fun setData(data: T) {
+
+        val store = getStorage()
+
+        this.data = data
+
+        try {
+
+            exec {
+
+                store.push(storageKey, data)
+            }
+
+        } catch (e: RejectedExecutionException) {
+
+            Timber.e(e)
+        }
+    }
+
     private fun onInitialized(e: Exception? = null) {
 
         initializing.set(false)
