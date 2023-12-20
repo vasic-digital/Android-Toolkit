@@ -45,7 +45,6 @@ abstract class ApiTest : BaseTest() {
             keySalt = keySalt,
             storageTag = storageTag
         )
-
     }
 
     private fun setupManagers() {
