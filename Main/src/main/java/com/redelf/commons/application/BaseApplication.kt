@@ -1,6 +1,13 @@
 package com.redelf.commons.application
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
@@ -15,6 +22,12 @@ import timber.log.Timber
 
 abstract class BaseApplication : Application() {
 
+    companion object {
+
+        @SuppressLint("StaticFieldLeak")
+        lateinit var CONTEXT: Context
+    }
+
     protected abstract fun onDoCreate()
     protected abstract fun takeSalt(): String
 
@@ -22,8 +35,37 @@ abstract class BaseApplication : Application() {
 
     private val managers = mutableListOf<Management>()
 
+    private val screenReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context, intent: Intent) {
+
+            if (Intent.ACTION_SCREEN_ON == intent.action) {
+
+                onScreenOn()
+                return
+            }
+
+            if (Intent.ACTION_SCREEN_OFF == intent.action) {
+
+                onScreenOff()
+            }
+        }
+    }
+
+    protected open fun onScreenOn() {
+
+        Timber.v("Screen is ON")
+    }
+
+    protected open fun onScreenOff() {
+
+        Timber.v("Screen is FF")
+    }
+
     override fun onCreate() {
         super.onCreate()
+
+        CONTEXT = applicationContext
 
         managers.addAll(populateManagers())
 
@@ -78,30 +120,29 @@ abstract class BaseApplication : Application() {
 
             Timber.i("FCM: Initializing")
 
-            // TODO: FCM
-//            FirebaseMessaging.getInstance()
-//                .token
-//                .addOnCompleteListener(
-//
-//                    OnCompleteListener { task ->
-//
-//                        if (!task.isSuccessful) {
-//
-//                            Timber.w("FCM: Fetching registration token failed", task.exception)
-//                            return@OnCompleteListener
-//                        }
-//
-//                        val token = task.result
-//
-//                        Timber.i("FCM: Initialized, token => $token")
-//                    }
-//                )
+            FirebaseMessaging.getInstance()
+                .token
+                .addOnCompleteListener(
 
-            // TODO: Screen receiver
-//            val intentFilter = IntentFilter()
-//            intentFilter.addAction(Intent.ACTION_SCREEN_ON)
-//            intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
-//            registerReceiver(screenReceiver, intentFilter)
+                    OnCompleteListener { task ->
+
+                        if (!task.isSuccessful) {
+
+                            Timber.w("FCM: Fetching registration token failed", task.exception)
+                            return@OnCompleteListener
+                        }
+
+                        val token = task.result
+
+                        Timber.i("FCM: Initialized, token => $token")
+                    }
+                )
+
+
+            val intentFilter = IntentFilter()
+            intentFilter.addAction(Intent.ACTION_SCREEN_ON)
+            intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
+            registerReceiver(screenReceiver, intentFilter)
 
             val managersInitializerCallback = object : ManagersInitializer.InitializationCallback {
 

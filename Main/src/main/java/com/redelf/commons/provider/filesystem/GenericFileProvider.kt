@@ -1,4 +1,4 @@
-package com.redelf.commons.provider
+package com.redelf.commons.provider.filesystem
 
 import androidx.core.content.FileProvider
 

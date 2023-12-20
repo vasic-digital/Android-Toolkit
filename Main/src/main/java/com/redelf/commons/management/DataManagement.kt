@@ -22,9 +22,9 @@ abstract class DataManagement<T> :
 
 {
 
-    protected var data: T? = null
     protected abstract val storageKey: String
 
+    private var data: T? = null
     private var storage: EncryptedPersistence? = null
     private val initializing = AtomicBoolean(false)
     private val initCallbacksTag = "Data management initialization"

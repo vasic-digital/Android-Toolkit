@@ -21,7 +21,7 @@
         <receiver android:name="com.redelf.commons.transmission.AlarmReceiver" />
 
         <provider
-            android:name="com.redelf.commons.provider.GenericFileProvider"
+            android:name="com.redelf.commons.provider.filesystem.GenericFileProvider"
             android:authorities="${applicationId}.generic.provider"
             android:exported="false"
             android:grantUriPermissions="true">
