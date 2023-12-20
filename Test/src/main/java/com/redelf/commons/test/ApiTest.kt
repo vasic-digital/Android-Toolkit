@@ -82,7 +82,8 @@ abstract class ApiTest : BaseTest() {
 
             managers,
             managersInitializerCallback,
-            persistence = persistence
+            persistence = persistence,
+            context = applicationContext
         )
 
         latch.await()

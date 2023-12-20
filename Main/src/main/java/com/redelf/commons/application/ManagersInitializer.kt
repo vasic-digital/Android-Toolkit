@@ -1,5 +1,7 @@
 package com.redelf.commons.application
 
+import android.content.Context
+import com.redelf.commons.context.Contextual
 import com.redelf.commons.exec
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
@@ -18,7 +20,8 @@ class ManagersInitializer {
 
         managers: List<Management>,
         callback: InitializationCallback,
-        persistence: EncryptedPersistence? = null
+        persistence: EncryptedPersistence? = null,
+        context: Context? = null
 
     ) {
 
@@ -73,6 +76,14 @@ class ManagersInitializer {
 
                                     failure.set(true)
                                 }
+                            }
+                        }
+
+                        if (manager is Contextual) {
+
+                            context?.let { ctx ->
+
+                                manager.injectContext(ctx)
                             }
                         }
 
