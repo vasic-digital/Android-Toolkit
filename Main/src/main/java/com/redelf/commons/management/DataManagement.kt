@@ -127,8 +127,6 @@ abstract class DataManagement<T> :
 
     private fun onInitialized(e: Exception? = null) {
 
-        initializing.set(false)
-
         val doOnAllAction = object :
             CallbackOperation<LifecycleCallback<EncryptedPersistence>> {
 
@@ -154,6 +152,8 @@ abstract class DataManagement<T> :
         }
 
         initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
+
+        initializing.set(false)
     }
 
     private fun createStorage(): EncryptedPersistence {
