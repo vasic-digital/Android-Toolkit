@@ -42,7 +42,7 @@ class ManagersInitializer {
 
                     if (manager is DataManagement<*>) {
 
-                        val kifecycleCallback = object : ManagerLifecycleCallback() {
+                        val lifecycleCallback = object : ManagerLifecycleCallback() {
 
                             override fun onInitialization(
 
@@ -76,7 +76,7 @@ class ManagersInitializer {
                             }
                         }
 
-                        manager.initialize(kifecycleCallback, persistence = persistence)
+                        manager.initialize(lifecycleCallback, persistence = persistence)
                     }
                 }
             }
