@@ -50,9 +50,10 @@ abstract class DataManagement<T> :
 
     override fun initialize(callback: LifecycleCallback<EncryptedPersistence>) {
 
+        initCallbacks.register(callback)
+
         if (initializing.get()) {
 
-            initCallbacks.register(callback)
             return
         }
 
