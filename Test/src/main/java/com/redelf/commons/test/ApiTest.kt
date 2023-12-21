@@ -22,7 +22,7 @@ abstract class ApiTest : BaseTest() {
      * */
     abstract val credentialsSet: List<Pair<Credentials, Boolean>>
 
-    protected fun setup() {
+    protected open fun setup() {
 
         Timber.plant(Timber.DebugTree())
         Timber.v("Timber initialized: $this")
