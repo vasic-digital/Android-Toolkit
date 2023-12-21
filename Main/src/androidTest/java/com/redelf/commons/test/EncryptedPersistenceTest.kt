@@ -23,8 +23,8 @@ class EncryptedPersistenceTest : BaseTest() {
         Timber.plant(Timber.DebugTree())
         Timber.v("Timber initialized: $this")
 
-        val keySalt = "test"
-        val storageTag = "test"
+        val keySalt = "test.${System.currentTimeMillis()}"
+        val storageTag = "test.${System.currentTimeMillis()}"
 
         persistence = EncryptedPersistence(
 
