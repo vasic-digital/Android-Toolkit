@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.Data
 import com.redelf.commons.persistance.GsonParser
@@ -28,12 +29,12 @@ abstract class BaseApplication : Application() {
         lateinit var CONTEXT: Context
     }
 
+    val managers = mutableListOf<DataManagement<*>>()
+
     protected abstract fun onDoCreate()
     protected abstract fun takeSalt(): String
 
-    protected open fun populateManagers() = listOf<Management>()
-
-    private val managers = mutableListOf<Management>()
+    protected open fun populateManagers() = listOf<DataManagement<*>>()
 
     private val screenReceiver: BroadcastReceiver = object : BroadcastReceiver() {
 
