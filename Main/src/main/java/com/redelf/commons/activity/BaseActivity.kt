@@ -166,12 +166,22 @@ abstract class BaseActivity : AppCompatActivity() {
         Timber.e(error)
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
 
+
         val filter = IntentFilter(Broadcast.ACTION_FINISH)
-        registerReceiver(finishReceiver, filter)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            registerReceiver(finishReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+
+        } else {
+
+            registerReceiver(finishReceiver, filter)
+        }
 
         Timber.v("Transmission management supported: ${isTransmissionServiceSupported()}")
 
