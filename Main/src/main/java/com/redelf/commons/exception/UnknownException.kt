@@ -18,6 +18,7 @@ class UnknownException
             return msg
         }
 
+        @Throws(UnknownException::class)
         fun throwIt(reason: String = "") : UnknownException {
 
             val exception = UnknownException(reason)
