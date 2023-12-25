@@ -16,6 +16,7 @@ import com.redelf.commons.R
 import com.redelf.commons.dialog.AttachFileDialog
 import com.redelf.commons.dialog.OnPickFromCameraCallback
 import com.redelf.commons.execution.TaskExecutor
+import com.redelf.commons.initRegistrationWithGoogle
 import com.redelf.commons.isServiceRunning
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.obtain.OnObtain
@@ -28,6 +29,7 @@ import java.io.*
 
 abstract class BaseActivity : AppCompatActivity() {
 
+    protected var googleSignInRequestCode: Int = 0
     protected var transmissionService: TransmissionService? = null
     protected var attachmentObtainedUris: MutableList<Uri> = mutableListOf()
     protected var attachmentObtainedFiles: MutableList<File> = mutableListOf()
@@ -595,6 +597,11 @@ abstract class BaseActivity : AppCompatActivity() {
         }
 
         return false
+    }
+
+    protected open fun registerWithGoogle(clientId: Int) {
+
+        googleSignInRequestCode = initRegistrationWithGoogle(defaultWebClientId = clientId)
     }
 
     protected open fun isCreated() = created

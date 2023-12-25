@@ -123,7 +123,7 @@ fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_
     startActivityForResult(intent, requestId)
 }
 
-fun Activity.registerWithGoogle(defaultWebClientId: Int = R.string.default_web_client_id): Int {
+fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int = R.string.default_web_client_id): Int {
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(getString(defaultWebClientId))
