@@ -622,3 +622,13 @@ fun String.isBase64Encoded(): Boolean {
 
     return org.apache.commons.codec.binary.Base64.isBase64(this)
 }
+
+fun isEmpty(what: String?): Boolean {
+
+    return TextUtils.isEmpty(what)
+}
+
+fun isNotEmpty(what: String?): Boolean {
+
+    return !isEmpty(what)
+}
