@@ -130,11 +130,12 @@ fun Activity.registerWithGoogle(defaultWebClientId: Int = R.string.default_web_c
         .requestEmail()
         .build()
 
-    val googleSignInClient = GoogleSignIn.getClient(this, gso)
-
+    // TODO:
+//    val googleSignInClient = GoogleSignIn.getClient(this, gso)
+//
     val requestCode = randomInteger()
-    val signInIntent = googleSignInClient.signInIntent
-    startActivityForResult(signInIntent, requestCode)
+//    val signInIntent = googleSignInClient.signInIntent
+//    startActivityForResult(signInIntent, requestCode)
 
     return requestCode
 }
