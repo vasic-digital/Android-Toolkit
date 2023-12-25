@@ -18,6 +18,7 @@ import android.util.Base64OutputStream
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.redelf.commons.execution.Executor
 import timber.log.Timber
@@ -120,6 +121,22 @@ fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_
     }
 
     startActivityForResult(intent, requestId)
+}
+
+fun Activity.registerWithGoogle(): Int {
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(getString(R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+    val requestCode = randomInteger()
+    val signInIntent = googleSignInClient.signInIntent
+    startActivityForResult(signInIntent, requestCode)
+
+    return requestCode
 }
 
 @Throws(IllegalArgumentException::class)
