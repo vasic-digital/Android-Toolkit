@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.redelf.commons.Broadcast
 import com.redelf.commons.R
 import com.redelf.commons.dialog.AttachFileDialog
@@ -232,8 +234,16 @@ abstract class BaseActivity : AppCompatActivity() {
 
                 val account = task.getResult(ApiException::class.java)
 
-                // TODO:
-                // firebaseAuthWithGoogle(account.idToken)
+                account.idToken?.let {
+
+                    firebaseAuthWithGoogle(it)
+                }
+
+                if (account.idToken == null) {
+
+                    val e = IllegalStateException("Obtained null Google token ID")
+                    onRegistrationWithGoogleFailed(e)
+                }
 
             } catch (e: ApiException) {
 
@@ -800,5 +810,35 @@ abstract class BaseActivity : AppCompatActivity() {
         Timber.v("Clearing attachment files from '$from'")
 
         attachmentObtainedFiles.clear()
+    }
+
+    private fun firebaseAuthWithGoogle(tokenId: String) {
+
+        val mAuth = FirebaseAuth.getInstance()
+        val credential = GoogleAuthProvider.getCredential(tokenId, /*accessToken=*/ null)
+
+        mAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+
+                    val user = mAuth.currentUser
+
+                    user?.let {
+
+                        onRegistrationWithGoogleCompleted(tokenId)
+                    }
+
+                    if (user == null) {
+
+                        val e = IllegalStateException("Obtained null Google user")
+                        onRegistrationWithGoogleFailed(e)
+                    }
+
+                } else {
+
+                    val e = task.exception ?: IllegalStateException("Unknown exception")
+                    onRegistrationWithGoogleFailed(e)
+                }
+            }
     }
 }
