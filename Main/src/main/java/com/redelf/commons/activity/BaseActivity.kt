@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
+import com.google.android.gms.common.api.ApiException
 import com.redelf.commons.Broadcast
 import com.redelf.commons.R
 import com.redelf.commons.dialog.AttachFileDialog
@@ -25,7 +26,6 @@ import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.util.UriUtil
 import timber.log.Timber
 import java.io.*
-
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -223,6 +223,23 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        if (requestCode == googleSignInRequestCode) {
+
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+
+            try {
+
+                val account = task.getResult(ApiException::class.java)
+                firebaseAuthWithGoogle(account.idToken)
+
+            } catch (e: ApiException) {
+
+                onRegistrationWithGoogleFailed(e)
+            }
+
+            return
+        }
+
         if (resultCode == RESULT_CANCELED) {
 
             return
@@ -333,6 +350,16 @@ abstract class BaseActivity : AppCompatActivity() {
         }
         val intent = Intent(Broadcast.ACTION_FINISH)
         sendBroadcast(intent)
+    }
+
+    protected open fun onRegistrationWithGoogleCompleted(tokenId: String) {
+
+        Timber.v("Registration with Google completed: $tokenId")
+    }
+
+    protected open fun onRegistrationWithGoogleFailed(error: Throwable) {
+
+        Timber.e(error)
     }
 
     protected open fun isTransmissionServiceSupported(): Boolean {
