@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.redelf.commons.Broadcast
 import com.redelf.commons.R
@@ -230,7 +231,9 @@ abstract class BaseActivity : AppCompatActivity() {
             try {
 
                 val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account.idToken)
+
+                // TODO:
+                // firebaseAuthWithGoogle(account.idToken)
 
             } catch (e: ApiException) {
 

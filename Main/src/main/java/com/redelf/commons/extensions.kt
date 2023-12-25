@@ -3,6 +3,7 @@ package com.redelf.commons
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
@@ -18,6 +19,7 @@ import android.util.Base64OutputStream
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.redelf.commons.execution.Executor
@@ -130,14 +132,20 @@ fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int = R.string.defau
         .requestEmail()
         .build()
 
-    // TODO:
-//    val googleSignInClient = GoogleSignIn.getClient(this, gso)
-//
     val requestCode = randomInteger()
-//    val signInIntent = googleSignInClient.signInIntent
-//    startActivityForResult(signInIntent, requestCode)
+    val client = GoogleSignIn.getClient(this, gso)
 
-    return requestCode
+    try {
+
+        startActivityForResult(client.signInIntent, requestCode)
+        return requestCode
+
+    } catch (e: ActivityNotFoundException) {
+
+        recordException(e)
+    }
+
+    return 0
 }
 
 @Throws(IllegalArgumentException::class)
