@@ -8,6 +8,7 @@ import com.redelf.commons.persistance.EncryptedPersistence
 import org.junit.Assert
 import timber.log.Timber
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 abstract class ApiTest : BaseTest() {
@@ -49,31 +50,37 @@ abstract class ApiTest : BaseTest() {
 
     private fun setupManagers() {
 
-        val failed = AtomicInteger()
         val registered = AtomicInteger()
+        val setupSuccess = AtomicBoolean()
+        val mainLatch = CountDownLatch(1)
         val latch = CountDownLatch(managers.size)
 
         val managersInitializerCallback = object : ManagersInitializer.InitializationCallback {
 
-            override fun onInitialization(success: Boolean, error: Throwable?) {
+            override fun onInitialization(
+
+                manager: Management,
+                success: Boolean,
+                error: Throwable?
+
+            ) {
+
+                Assert.assertTrue(success)
+                Assert.assertNull(error)
 
                 if (success) {
 
                     registered.incrementAndGet()
-
-                    Timber.i("Application: Initialized")
-
-                } else {
-
-                    failed.incrementAndGet()
-
-                    error?.let {
-
-                        Assert.fail(it.message)
-                    }
                 }
 
                 latch.countDown()
+            }
+
+            override fun onInitialization(success: Boolean, error: Throwable?) {
+
+                setupSuccess.set(success)
+
+                mainLatch.countDown()
             }
         }
 
@@ -86,8 +93,9 @@ abstract class ApiTest : BaseTest() {
         )
 
         latch.await()
+        mainLatch.await()
 
-        Assert.assertEquals(0, failed.get())
+        Assert.assertTrue(setupSuccess.get())
         Assert.assertEquals(managers.size, registered.get())
     }
 }

@@ -16,7 +16,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ManagersInitializer {
 
     interface InitializationCallback {
+
         fun onInitialization(success: Boolean, error: Throwable? = null)
+
+        fun onInitialization(manager: Management, success: Boolean, error: Throwable? = null)
     }
 
     fun initializeManagers(
@@ -72,6 +75,8 @@ class ManagersInitializer {
 
                                     failure.set(true)
                                 }
+
+                                callback.onInitialization(manager, success)
 
                                 latch.countDown()
                             }
