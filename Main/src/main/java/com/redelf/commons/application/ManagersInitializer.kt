@@ -65,17 +65,7 @@ class ManagersInitializer {
                                                 "initialization completed with success"
                                     )
 
-                                    callback.onInitialization(true)
-
                                 } else {
-
-                                    val error = IllegalStateException(
-
-                                        "Manager: ${manager.javaClass.simpleName} " +
-                                                "initialization completed with failure"
-                                    )
-
-                                    callback.onInitialization(false, error)
 
                                     failure.set(true)
                                 }
@@ -114,6 +104,8 @@ class ManagersInitializer {
                         manager.initialize(lifecycleCallback, persistence = persistence)
                     }
                 }
+
+                callback.onInitialization(!failure.get())
             }
 
         } catch (e: RejectedExecutionException) {

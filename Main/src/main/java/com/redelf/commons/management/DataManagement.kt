@@ -191,9 +191,9 @@ abstract class DataManagement<T> :
             }
         }
 
-        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
-
         initializing.set(false)
+
+        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
     }
 
     private fun createStorage(): EncryptedPersistence {
