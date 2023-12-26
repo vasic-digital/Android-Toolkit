@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.redelf.commons.context.ContextualManager
+import timber.log.Timber
 
 @SuppressLint("StaticFieldLeak")
 object FirebaseConfigurationManager : ContextualManager<FirebaseRemoteConfiguration>() {
@@ -20,5 +21,7 @@ object FirebaseConfigurationManager : ContextualManager<FirebaseRemoteConfigurat
             .build()
 
         remoteConfig.setConfigSettingsAsync(configSettings)
+
+        Timber.v("FirebaseConfigurationManager :: onInitialized")
     }
 }
