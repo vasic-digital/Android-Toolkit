@@ -205,6 +205,6 @@ abstract class BaseApplication : Application() {
 
     private fun initializeManagers(callback: ManagersInitializer.InitializationCallback) {
 
-        ManagersInitializer().initializeManagers(managers, callback)
+        ManagersInitializer().initializeManagers(managers, callback, context = applicationContext)
     }
 }
