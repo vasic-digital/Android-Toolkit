@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.Data
@@ -29,7 +30,10 @@ abstract class BaseApplication : Application() {
         lateinit var CONTEXT: Context
     }
 
-    val managers = mutableListOf<DataManagement<*>>()
+    val managers = mutableListOf<DataManagement<*>>(
+
+        FirebaseConfigurationManager
+    )
 
     protected abstract fun onDoCreate()
     protected abstract fun takeSalt(): String
