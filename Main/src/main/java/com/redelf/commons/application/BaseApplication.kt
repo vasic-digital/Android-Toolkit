@@ -14,7 +14,6 @@ import com.redelf.commons.R
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.management.DataManagement
-import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.Data
 import com.redelf.commons.persistance.GsonParser
 import com.redelf.commons.persistance.Salter
@@ -35,10 +34,14 @@ abstract class BaseApplication : Application() {
         FirebaseConfigurationManager
     )
 
+    val defaultManagerResources = mutableMapOf<Class<*>, Int>()
+
     protected abstract fun onDoCreate()
     protected abstract fun takeSalt(): String
 
     protected open fun populateManagers() = listOf<DataManagement<*>>()
+
+    protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
 
     private val screenReceiver: BroadcastReceiver = object : BroadcastReceiver() {
 
@@ -73,6 +76,7 @@ abstract class BaseApplication : Application() {
         CONTEXT = applicationContext
 
         managers.addAll(populateManagers())
+        defaultManagerResources.putAll(populateDefaultManagerResources())
 
         if (BuildConfig.DEBUG) {
 

@@ -2,6 +2,8 @@ package com.redelf.commons.application
 
 import android.content.Context
 import com.redelf.commons.context.Contextual
+import com.redelf.commons.defaults.Defaults
+import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.exec
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
@@ -21,7 +23,8 @@ class ManagersInitializer {
         managers: List<Management>,
         callback: InitializationCallback,
         persistence: EncryptedPersistence? = null,
-        context: Context? = null
+        context: Context? = null,
+        defaultResources: Map<Class<*>, Int>? = null
 
     ) {
 
@@ -83,7 +86,28 @@ class ManagersInitializer {
 
                             context?.let { ctx ->
 
+                                Timber.v(
+
+                                    "Manager: ${manager.javaClass.simpleName} " +
+                                            "injecting context: $ctx"
+                                )
+
                                 manager.injectContext(ctx)
+                            }
+                        }
+
+                        if (manager is ResourceDefaults) {
+
+                            val defaultResource = defaultResources?.get(manager.javaClass)
+                            defaultResource?.let {
+
+                                Timber.v(
+
+                                    "Manager: ${manager.javaClass.simpleName} " +
+                                            "setting defaults from resource: $defaultResource"
+                                )
+
+                                manager.setDefaults(it)
                             }
                         }
 
