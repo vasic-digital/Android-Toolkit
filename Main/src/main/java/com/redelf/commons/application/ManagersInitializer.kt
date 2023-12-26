@@ -9,6 +9,7 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.EncryptedPersistence
 import timber.log.Timber
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -48,6 +49,8 @@ class ManagersInitializer {
 
                     if (manager is DataManagement<*>) {
 
+                        val latch = CountDownLatch(1)
+
                         val lifecycleCallback = object : ManagerLifecycleCallback() {
 
                             override fun onInitialization(
@@ -69,6 +72,8 @@ class ManagersInitializer {
 
                                     failure.set(true)
                                 }
+
+                                latch.countDown()
                             }
                         }
 
@@ -102,6 +107,8 @@ class ManagersInitializer {
                         }
 
                         manager.initialize(lifecycleCallback, persistence = persistence)
+
+                        latch.await()
                     }
                 }
 
