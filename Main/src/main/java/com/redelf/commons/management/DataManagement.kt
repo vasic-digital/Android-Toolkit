@@ -1,6 +1,5 @@
 package com.redelf.commons.management
 
-import com.redelf.commons.Credentials
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.exec
@@ -50,7 +49,7 @@ abstract class DataManagement<T> :
         initialize(callback)
     }
 
-    override fun initialize(callback: LifecycleCallback<EncryptedPersistence>) {
+    final override fun initialize(callback: LifecycleCallback<EncryptedPersistence>) {
 
         initCallbacks.register(callback)
 
@@ -69,13 +68,19 @@ abstract class DataManagement<T> :
 
                 data = store.pull(storageKey)
 
-                onInitialized()
+                initialization()
+                onInitializationCompleted()
             }
 
         } catch (e: RejectedExecutionException) {
 
-            onInitialized(e)
+            onInitializationCompleted(e)
         }
+    }
+
+    protected open fun initialization() {
+
+        Timber.v("DataManagement :: initialization")
     }
 
     override fun isInitialized() = storage != null
@@ -148,7 +153,19 @@ abstract class DataManagement<T> :
         }
     }
 
-    protected open fun onInitialized(e: Exception? = null) {
+    protected open fun initializationCompleted(e: Exception?) {
+
+        if (e == null) {
+
+            Timber.v("DataManagement :: initialization completed with success")
+
+        } else {
+
+            Timber.e(e, "DataManagement :: initialization completed with failure")
+        }
+    }
+
+    private fun onInitializationCompleted(e: Exception? = null) {
 
         val doOnAllAction = object :
             CallbackOperation<LifecycleCallback<EncryptedPersistence>> {

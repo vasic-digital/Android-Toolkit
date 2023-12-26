@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.redelf.commons.context.ContextualManager
-import com.redelf.commons.defaults.Defaults
 import com.redelf.commons.defaults.ResourceDefaults
 import timber.log.Timber
 
@@ -18,18 +17,22 @@ object FirebaseConfigurationManager :
 
     override val storageKey = "remote_configuration"
 
-    override fun onInitialized(e: Exception?) {
-        super.onInitialized(e)
+    override fun initializationCompleted(e: Exception?) {
 
-        val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
+        if (e == null) {
 
-        val configSettings = FirebaseRemoteConfigSettings.Builder()
-            .setMinimumFetchIntervalInSeconds(6 * 60 * 60)
-            .build()
+            val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
-        remoteConfig.setConfigSettingsAsync(configSettings)
+            val configSettings = FirebaseRemoteConfigSettings.Builder()
+                .setMinimumFetchIntervalInSeconds(6 * 60 * 60)
+                .build()
 
-        Timber.v("FirebaseConfigurationManager :: onInitialized")
+            remoteConfig.setConfigSettingsAsync(configSettings)
+
+            Timber.v("FirebaseConfigurationManager :: onInitialized")
+        }
+
+        super.initializationCompleted(e)
     }
 
     @Throws(IllegalArgumentException::class)
