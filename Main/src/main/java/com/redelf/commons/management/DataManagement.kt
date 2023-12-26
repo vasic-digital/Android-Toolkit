@@ -148,7 +148,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    private fun onInitialized(e: Exception? = null) {
+    protected open fun onInitialized(e: Exception? = null) {
 
         val doOnAllAction = object :
             CallbackOperation<LifecycleCallback<EncryptedPersistence>> {
