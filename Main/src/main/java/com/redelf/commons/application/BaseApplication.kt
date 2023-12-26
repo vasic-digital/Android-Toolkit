@@ -14,6 +14,7 @@ import com.redelf.commons.R
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.management.DataManagement
+import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.Data
 import com.redelf.commons.persistance.GsonParser
 import com.redelf.commons.persistance.Salter
@@ -160,6 +161,29 @@ abstract class BaseApplication : Application() {
                     if (success) {
 
                         Timber.i("Application: Initialized")
+
+                    } else {
+
+                        error?.let {
+
+                            recordException(it)
+
+                            throw it
+                        }
+                    }
+                }
+
+                override fun onInitialization(
+
+                    manager: Management,
+                    success: Boolean,
+                    error: Throwable?
+
+                ) {
+
+                    if (success) {
+
+                        Timber.i("Manager: ${manager.javaClass.simpleName} initialized")
 
                     } else {
 
