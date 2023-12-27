@@ -68,8 +68,15 @@ abstract class DataManagement<T> :
 
                 data = store.pull(storageKey)
 
-                initialization()
-                onInitializationCompleted()
+                if (initialization()) {
+
+                    onInitializationCompleted()
+
+                } else {
+
+                    val e = NotInitializedException(who = getWho())
+                    onInitializationCompleted(e)
+                }
             }
 
         } catch (e: RejectedExecutionException) {
@@ -78,9 +85,10 @@ abstract class DataManagement<T> :
         }
     }
 
-    protected open fun initialization() {
+    protected open fun initialization(): Boolean {
 
         Timber.v("DataManagement :: initialization")
+        return true
     }
 
     override fun isInitialized() = storage != null
@@ -164,6 +172,8 @@ abstract class DataManagement<T> :
             Timber.e(e, "DataManagement :: initialization completed with failure")
         }
     }
+
+    protected open fun getWho(): String? = null
 
     private fun onInitializationCompleted(e: Exception? = null) {
 

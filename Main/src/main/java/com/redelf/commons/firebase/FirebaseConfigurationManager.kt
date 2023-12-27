@@ -6,56 +6,35 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
 import timber.log.Timber
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("StaticFieldLeak")
 object FirebaseConfigurationManager :
 
     ContextualManager<FirebaseRemoteConfiguration>(),
-    ResourceDefaults
-
-{
+    ResourceDefaults {
 
     override val storageKey = "remote_configuration"
 
     private const val logTag = "FirebaseConfigurationManager ::"
 
-    override fun initializationCompleted(e: Exception?) {
+    override fun getWho(): String? = FirebaseConfigurationManager::class.java.simpleName
 
-        if (e == null) {
-
-            val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
-
-            val configSettings = FirebaseRemoteConfigSettings.Builder()
-                .setMinimumFetchIntervalInSeconds(6 * 60 * 60)
-                .build()
-
-            remoteConfig.setConfigSettingsAsync(configSettings)
-
-            Timber.v("$logTag onInitialized")
-
-            fetchData()
-        }
-
-        super.initializationCompleted(e)
-    }
-
-    @Throws(IllegalArgumentException::class)
-    override fun setDefaults(defaults: Int) {
-
-        if (defaults <= 0) {
-
-            throw IllegalArgumentException("Defaults must be a valid resource id")
-        }
+    override fun initialization(): Boolean {
 
         val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
-        remoteConfig.setDefaultsAsync(defaults)
-    }
 
-    private fun fetchData() {
+        val configSettings = FirebaseRemoteConfigSettings.Builder()
+            .setMinimumFetchIntervalInSeconds(6 * 60 * 60)
+            .build()
+
+        remoteConfig.setConfigSettingsAsync(configSettings)
 
         Timber.v("$logTag Config params fetching")
 
-        val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
+        val latch = CountDownLatch(1)
+        val success = AtomicBoolean(false)
 
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
@@ -74,21 +53,42 @@ object FirebaseConfigurationManager :
                         Timber.v(msg)
                     }
 
-                    obtainConfigurations()
+                    val all = remoteConfig.all
+
+                    Timber.v("$logTag Config params obtained: $all")
+
+                    success.set(true)
+
+                    latch.countDown()
 
                 } else {
 
                     Timber.e("$logTag Config params update failed")
                 }
             }
+
+        latch.await()
+
+        return success.get()
     }
 
-    private fun obtainConfigurations() {
+    override fun initializationCompleted(e: Exception?) {
+
+        e?.let {
+
+            Timber.e(e)
+        }
+    }
+
+    @Throws(IllegalArgumentException::class)
+    override fun setDefaults(defaults: Int) {
+
+        if (defaults <= 0) {
+
+            throw IllegalArgumentException("Defaults must be a valid resource id")
+        }
 
         val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
-
-        val all = remoteConfig.all
-
-        Timber.v("$logTag Config params obtained: $all")
+        remoteConfig.setDefaultsAsync(defaults)
     }
 }
