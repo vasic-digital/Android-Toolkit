@@ -17,6 +17,8 @@ object FirebaseConfigurationManager :
 
     override val storageKey = "remote_configuration"
 
+    private const val logTag = "FirebaseConfigurationManager ::"
+
     override fun initializationCompleted(e: Exception?) {
 
         if (e == null) {
@@ -29,7 +31,9 @@ object FirebaseConfigurationManager :
 
             remoteConfig.setConfigSettingsAsync(configSettings)
 
-            Timber.v("FirebaseConfigurationManager :: onInitialized")
+            Timber.v("$logTag onInitialized")
+
+            fetchData()
         }
 
         super.initializationCompleted(e)
@@ -45,5 +49,25 @@ object FirebaseConfigurationManager :
 
         val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
         remoteConfig.setDefaultsAsync(defaults)
+    }
+
+    private fun fetchData() {
+
+        val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
+
+        remoteConfig.fetchAndActivate()
+            .addOnCompleteListener { task ->
+
+                if (task.isSuccessful) {
+
+                    val updated = task.result
+
+                    Timber.v("$logTag Config params updated: $updated")
+
+                } else {
+
+                    Timber.e("$logTag Config params update failed")
+                }
+            }
     }
 }
