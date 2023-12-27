@@ -6,12 +6,13 @@ import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.EncryptedPersistence
 
 import org.junit.Assert
+import org.junit.Before
 import timber.log.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
-abstract class ApiTest : BaseTest() {
+abstract class ManagersDependantTest : BaseTest() {
 
     private lateinit var persistence: EncryptedPersistence
 
@@ -20,8 +21,8 @@ abstract class ApiTest : BaseTest() {
     /**
      * Credentials set to be used for testing
      * @return List of pairs: credentials to be used for testing vs expected auth. result
-     * */
-    abstract val credentialsSet: List<Pair<Credentials, Boolean>>
+     */
+    open val credentialsSet: List<Pair<Credentials, Boolean>> = listOf()
 
     protected open fun setup() {
 
@@ -98,4 +99,7 @@ abstract class ApiTest : BaseTest() {
         Assert.assertTrue(setupSuccess.get())
         Assert.assertEquals(managers.size, registered.get())
     }
+
+    @Before
+    fun doSetup() = setup()
 }

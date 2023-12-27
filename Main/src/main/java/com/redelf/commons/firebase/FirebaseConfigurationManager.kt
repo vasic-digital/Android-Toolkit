@@ -24,6 +24,7 @@ object FirebaseConfigurationManager :
 
     override fun getWho(): String? = FirebaseConfigurationManager::class.java.simpleName
 
+    @Throws(IllegalStateException::class)
     override fun initialization(): Boolean {
 
         val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()

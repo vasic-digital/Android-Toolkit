@@ -68,11 +68,19 @@ abstract class DataManagement<T> :
 
                 data = store.pull(storageKey)
 
-                if (initialization()) {
+                try {
 
-                    onInitializationCompleted()
+                    if (initialization()) {
 
-                } else {
+                        onInitializationCompleted()
+
+                    } else {
+
+                        val e = NotInitializedException(who = getWho())
+                        onInitializationCompleted(e)
+                    }
+
+                } catch (e: IllegalStateException) {
 
                     val e = NotInitializedException(who = getWho())
                     onInitializationCompleted(e)
@@ -85,6 +93,7 @@ abstract class DataManagement<T> :
         }
     }
 
+    @Throws(IllegalStateException::class)
     protected open fun initialization(): Boolean {
 
         Timber.v("DataManagement :: initialization")
