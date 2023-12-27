@@ -53,7 +53,7 @@ object FirebaseConfigurationManager :
 
     private fun fetchData() {
 
-        Timber.v("$logTag Fetch STARTED")
+        Timber.v("$logTag Config params fetching")
 
         val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
@@ -63,9 +63,16 @@ object FirebaseConfigurationManager :
                 if (task.isSuccessful) {
 
                     val updated = task.result
+                    val msg = "$logTag Config params updated: $updated"
 
-                    Timber.v("$logTag Config params updated: $updated")
-                    Timber.v("$logTag Fetch ENDED")
+                    if (updated) {
+
+                        Timber.d(msg)
+
+                    } else {
+
+                        Timber.v(msg)
+                    }
 
                 } else {
 
