@@ -82,7 +82,6 @@ abstract class DataManagement<T> :
 
                 } catch (e: IllegalStateException) {
 
-                    val e = NotInitializedException(who = getWho())
                     onInitializationCompleted(e)
                 }
             }
