@@ -11,15 +11,15 @@ import java.io.IOException
 
 abstract class BaseTest {
 
+    private val instrumentation = InstrumentationRegistry.getInstrumentation()
+
     protected val testEnd = "TEST END"
     protected val testStart = "TEST START"
     protected val testPrepare = "TEST PREPARE"
     protected val executor = TaskExecutor.instantiate(5)
-
-    private val instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val testContext: Context = instrumentation.context
-
+    protected val testContext: Context = instrumentation.context
     protected val applicationContext: Context = instrumentation.targetContext
+
     protected fun log(what: String) = Timber.d(what)
 
     @Throws(IllegalStateException::class, IOException::class)
