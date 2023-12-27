@@ -19,6 +19,7 @@ import android.util.Base64OutputStream
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -146,6 +147,21 @@ fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int = R.string.defau
     }
 
     return 0
+}
+
+fun Activity.onUI(doWhat: () -> Unit) {
+
+    if (!isFinishing) {
+
+        runOnUiThread {
+
+            doWhat()
+        }
+
+    } else {
+
+        Timber.w("Context is finishing")
+    }
 }
 
 @Throws(IllegalArgumentException::class)
