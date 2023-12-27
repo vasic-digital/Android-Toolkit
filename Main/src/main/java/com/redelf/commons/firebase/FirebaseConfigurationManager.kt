@@ -3,8 +3,11 @@ package com.redelf.commons.firebase
 import android.annotation.SuppressLint
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
+import com.google.firebase.remoteconfig.internal.FirebaseRemoteConfigValueImpl
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
+import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -12,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 @SuppressLint("StaticFieldLeak")
 object FirebaseConfigurationManager :
 
-    ContextualManager<FirebaseRemoteConfiguration>(),
+    ContextualManager<Map<String, FirebaseRemoteConfigValue>>(),
     ResourceDefaults {
 
     override val storageKey = "remote_configuration"
@@ -57,7 +60,15 @@ object FirebaseConfigurationManager :
 
                     Timber.v("$logTag Config params obtained: $all")
 
-                    success.set(true)
+                    try {
+
+                        pushData(all)
+                        success.set(true)
+
+                    } catch (e: IllegalStateException) {
+
+                        recordException(e)
+                    }
 
                     latch.countDown()
 
