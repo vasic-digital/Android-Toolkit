@@ -74,10 +74,21 @@ object FirebaseConfigurationManager :
                         Timber.v(msg)
                     }
 
+                    obtainConfigurations()
+
                 } else {
 
                     Timber.e("$logTag Config params update failed")
                 }
             }
+    }
+
+    private fun obtainConfigurations() {
+
+        val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
+
+        val all = remoteConfig.all
+
+        Timber.v("$logTag Config params obtained: $all")
     }
 }
