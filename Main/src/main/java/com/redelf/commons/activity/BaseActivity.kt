@@ -29,6 +29,8 @@ import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.util.UriUtil
 import timber.log.Timber
 import java.io.*
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
+import net.yslibrary.android.keyboardvisibilityevent.Unregistrar
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -51,6 +53,27 @@ abstract class BaseActivity : AppCompatActivity() {
     private var created = false
     private val dialogs = mutableListOf<AlertDialog>()
     private var attachmentsDialog: AttachFileDialog? = null
+
+    private var unregistrar: Unregistrar? = null
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+
+        super.onPostCreate(savedInstanceState)
+
+        unregistrar = KeyboardVisibilityEvent.registerEventListener(
+
+            this
+        ) {
+
+            onKeyboardVisibilityEvent(it)
+        }
+    }
+
+
+    protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
+
+        Timber.v("Keyboard :: Is open: $isOpen")
+    }
 
     private val finishReceiver = object : BroadcastReceiver() {
 
@@ -202,6 +225,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
         dismissDialogs()
         unregisterReceiver(finishReceiver)
+        unregistrar?.unregister()
 
         if (isTransmissionServiceSupported()) {
 
