@@ -3,6 +3,7 @@ package com.redelf.commons.management
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.exec
+import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.InitializingException
@@ -19,11 +20,10 @@ abstract class DataManagement<T> :
     Management,
     Initialization<EncryptedPersistence>,
     Obtain<T?>,
-    Resetable
-
-{
+    Resetable {
 
     protected abstract val storageKey: String
+    protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
     private var storage: EncryptedPersistence? = null
@@ -39,7 +39,7 @@ abstract class DataManagement<T> :
         callback: LifecycleCallback<EncryptedPersistence>,
         persistence: EncryptedPersistence? = null,
 
-    ) {
+        ) {
 
         persistence?.let {
 
@@ -92,6 +92,8 @@ abstract class DataManagement<T> :
         }
     }
 
+    protected open fun createDataObject(): T? = null
+
     @Throws(IllegalStateException::class)
     protected open fun initialization(): Boolean {
 
@@ -114,6 +116,26 @@ abstract class DataManagement<T> :
         if (!isInitialized()) {
 
             throw NotInitializedException()
+        }
+
+        if (instantiateDataObject) {
+
+            var current: T? = obtain()
+
+            if (current == null) {
+
+                current = createDataObject()
+
+                current?.let {
+
+                    pushData(current)
+                }
+
+                if (current == null) {
+
+                    throw IllegalStateException("Data object creation failed")
+                }
+            }
         }
 
         return data
@@ -173,6 +195,40 @@ abstract class DataManagement<T> :
 
         if (e == null) {
 
+            if (instantiateDataObject) {
+
+                try {
+
+                    var current: T? = obtain()
+
+                    if (current == null) {
+
+                        current = createDataObject()
+
+                        current?.let {
+
+                            pushData(current)
+                        }
+
+                        if (current == null) {
+
+                            throw IllegalStateException("Data object creation failed")
+                        }
+                    }
+
+                } catch (e: IllegalStateException) {
+
+                    initializationCompleted(e)
+
+                } catch (e: IllegalArgumentException) {
+
+                    initializationCompleted(e)
+                }
+            }
+        }
+
+        if (e == null) {
+
             Timber.v("DataManagement :: initialization completed with success")
 
         } else {
@@ -213,6 +269,31 @@ abstract class DataManagement<T> :
         initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
 
         initializationCompleted(e)
+    }
+
+    @Throws(IllegalStateException::class)
+    protected fun getData(): T {
+
+        val data = obtain()
+
+        data?.let {
+
+            return it
+        }
+
+        val who = getWho()
+        val baseMsg = "data is null"
+
+        val msg = if (isNotEmpty(who)) {
+
+            "$who obtained $baseMsg"
+
+        } else {
+
+            "Obtained $baseMsg"
+        }
+
+        throw IllegalStateException(msg)
     }
 
     private fun createStorage(): EncryptedPersistence {
