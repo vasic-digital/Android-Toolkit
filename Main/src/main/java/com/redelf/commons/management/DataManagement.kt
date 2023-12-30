@@ -120,7 +120,7 @@ abstract class DataManagement<T> :
 
         if (instantiateDataObject) {
 
-            var current: T? = obtain()
+            var current: T? = data
 
             if (current == null) {
 
