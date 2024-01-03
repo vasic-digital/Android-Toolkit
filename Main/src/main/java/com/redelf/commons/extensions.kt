@@ -390,6 +390,12 @@ fun Context.isLowEndDevice(): Boolean {
     return lowMemory || processors <= 4 || memoryClass <= 192
 }
 
+fun Context.toast(msg: Int, short: Boolean = false) {
+
+    val msgString = getString(msg)
+    toast(msgString, short)
+}
+
 fun Context.toast(msg: String, short: Boolean = false) {
 
     val length = if (short) {
