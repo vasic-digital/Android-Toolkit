@@ -33,7 +33,6 @@ abstract class DataManagement<T> :
     private val initCallbacks =
         Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag)
 
-
     fun initialize(
 
         callback: LifecycleCallback<EncryptedPersistence>,
