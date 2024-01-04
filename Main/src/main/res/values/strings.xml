@@ -4,7 +4,7 @@
     <!-- Rest API -->
     <string name="retrofit_endpoint" translatable="false">https://127.0.0.1/</string>
 
-    <!-- Not translatable: -->
+    <!-- Application: -->
     <string name="app_name" translatable="false">Commons Library</string>
 
     <!-- Default: -->
@@ -17,5 +17,8 @@
 
     <!-- Google Sign-In: -->
     <string name="default_web_client_id" translatable="false">000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com</string>
+
+    <!-- FCM: -->
+    <string name="default_notification_channel_id">common_channel</string>
 
 </resources>
