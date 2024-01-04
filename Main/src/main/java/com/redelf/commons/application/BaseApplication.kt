@@ -6,13 +6,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
+import com.redelf.commons.isNotEmpty
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.Data
@@ -57,6 +60,42 @@ abstract class BaseApplication : Application() {
             if (Intent.ACTION_SCREEN_OFF == intent.action) {
 
                 onScreenOff()
+            }
+        }
+    }
+
+    private val fcmTokenReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            intent?.let {
+
+                if (FcmService.BROADCAST_ACTION_TOKEN == it.action) {
+
+                    val token = it.getStringExtra(FcmService.BROADCAST_KEY_TOKEN)
+
+                    token?.let { tkn ->
+
+                        if (isNotEmpty(tkn)) {
+
+                            onFcmToken(tkn)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private val fcmEventReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            intent?.let {
+
+                if (FcmService.BROADCAST_ACTION_EVENT == intent.action) {
+
+                    onFcmEvent(it)
+                }
             }
         }
     }
@@ -122,6 +161,7 @@ abstract class BaseApplication : Application() {
         doCreate()
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun doCreate() {
 
         val action = {
@@ -129,6 +169,20 @@ abstract class BaseApplication : Application() {
             onDoCreate()
 
             Timber.i("FCM: Initializing")
+
+            val tokenFilter = IntentFilter(FcmService.BROADCAST_ACTION_TOKEN)
+            val eventFilter = IntentFilter(FcmService.BROADCAST_ACTION_EVENT)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+                registerReceiver(fcmTokenReceiver, tokenFilter, Context.RECEIVER_NOT_EXPORTED)
+                registerReceiver(fcmEventReceiver, eventFilter, Context.RECEIVER_NOT_EXPORTED)
+
+            } else {
+
+                registerReceiver(fcmTokenReceiver, tokenFilter)
+                registerReceiver(fcmEventReceiver, eventFilter)
+            }
 
             FirebaseMessaging.getInstance()
                 .token
@@ -144,10 +198,19 @@ abstract class BaseApplication : Application() {
 
                         val token = task.result
 
-                        Timber.i("FCM: Initialized, token => $token")
+
+                        if (isNotEmpty(token)) {
+
+                            Timber.i("FCM: Initialized, token => $token")
+
+                            onFcmToken(token)
+
+                        } else {
+
+                            Timber.i("FCM: Initialized with no token")
+                        }
                     }
                 )
-
 
             val intentFilter = IntentFilter()
             intentFilter.addAction(Intent.ACTION_SCREEN_ON)
@@ -201,6 +264,16 @@ abstract class BaseApplication : Application() {
         }
 
         Executor.MAIN.execute(action)
+    }
+
+    protected open fun onFcmToken(token: String) {
+
+        Timber.v("FCM: Token => $token")
+    }
+
+    protected open fun onFcmEvent(intent: Intent) {
+
+        Timber.v("FCM: Event => $intent")
     }
 
     private fun initializeManagers(callback: ManagersInitializer.InitializationCallback) {
