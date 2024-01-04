@@ -69,7 +69,7 @@ class ManagersInitializer {
 
                                         "Manager: ${manager.javaClass.simpleName} " +
                                                 "initialization completed with success " +
-                                                "(${manager.isInitializing()})"
+                                                "(${manager.isInitialized()})"
                                     )
 
                                 } else {
