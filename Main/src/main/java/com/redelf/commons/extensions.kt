@@ -38,7 +38,7 @@ fun randomBigInteger() = Random().nextInt((10000 - 300) + 1) + 300
 
 fun yieldWhile(condition: () -> Boolean) {
 
-    while (condition()) {
+    while (condition() && !Thread.currentThread().isInterrupted) {
 
         Thread.yield()
     }
