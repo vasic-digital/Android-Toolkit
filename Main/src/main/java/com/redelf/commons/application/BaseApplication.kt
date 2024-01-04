@@ -198,7 +198,6 @@ abstract class BaseApplication : Application() {
 
                         val token = task.result
 
-
                         if (isNotEmpty(token)) {
 
                             Timber.i("FCM: Initialized, token => $token")
