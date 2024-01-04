@@ -16,6 +16,7 @@ import com.redelf.commons.execution.Executor
 import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.isNotEmpty
+import com.redelf.commons.lifecycle.InitializationCondition
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.Data
@@ -245,7 +246,21 @@ abstract class BaseApplication : Application() {
 
                     if (success) {
 
-                        Timber.i("Manager: ${manager.javaClass.simpleName} initialized")
+                        if (manager is InitializationCondition) {
+
+                            Timber.i(
+
+                                "Manager: ${manager.javaClass.simpleName} " +
+                                        "initialized (${manager.isInitialized()})"
+                            )
+
+                        } else {
+
+                            Timber.i(
+
+                                "Manager: ${manager.javaClass.simpleName} initialized"
+                            )
+                        }
 
                     } else {
 

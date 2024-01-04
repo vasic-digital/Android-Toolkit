@@ -68,7 +68,8 @@ class ManagersInitializer {
                                     Timber.v(
 
                                         "Manager: ${manager.javaClass.simpleName} " +
-                                                "initialization completed with success"
+                                                "initialization completed with success " +
+                                                "(${manager.isInitializing()})"
                                     )
 
                                 } else {
