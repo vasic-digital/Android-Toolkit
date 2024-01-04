@@ -12,6 +12,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
+import com.redelf.commons.exec
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
@@ -25,6 +26,7 @@ import com.redelf.commons.persistance.Salter
 import com.redelf.commons.recordException
 
 import timber.log.Timber
+import java.util.concurrent.RejectedExecutionException
 
 abstract class BaseApplication : Application() {
 
@@ -101,16 +103,6 @@ abstract class BaseApplication : Application() {
         }
     }
 
-    protected open fun onScreenOn() {
-
-        Timber.v("Screen is ON")
-    }
-
-    protected open fun onScreenOff() {
-
-        Timber.v("Screen is FF")
-    }
-
     override fun onCreate() {
         super.onCreate()
 
@@ -162,122 +154,95 @@ abstract class BaseApplication : Application() {
         doCreate()
     }
 
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun doCreate() {
 
-        val action = {
+        try {
 
-            onDoCreate()
+            exec {
 
-            Timber.i("FCM: Initializing")
+                onDoCreate()
 
-            val tokenFilter = IntentFilter(FcmService.BROADCAST_ACTION_TOKEN)
-            val eventFilter = IntentFilter(FcmService.BROADCAST_ACTION_EVENT)
+                val intentFilter = IntentFilter()
+                intentFilter.addAction(Intent.ACTION_SCREEN_ON)
+                intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
+                registerReceiver(screenReceiver, intentFilter)
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val managersInitializerCallback = object : ManagersInitializer.InitializationCallback {
 
-                registerReceiver(fcmTokenReceiver, tokenFilter, Context.RECEIVER_NOT_EXPORTED)
-                registerReceiver(fcmEventReceiver, eventFilter, Context.RECEIVER_NOT_EXPORTED)
+                    override fun onInitialization(success: Boolean, error: Throwable?) {
 
-            } else {
+                        if (success) {
 
-                registerReceiver(fcmTokenReceiver, tokenFilter)
-                registerReceiver(fcmEventReceiver, eventFilter)
-            }
-
-            FirebaseMessaging.getInstance()
-                .token
-                .addOnCompleteListener(
-
-                    OnCompleteListener { task ->
-
-                        if (!task.isSuccessful) {
-
-                            Timber.w("FCM: Fetching registration token failed", task.exception)
-                            return@OnCompleteListener
-                        }
-
-                        val token = task.result
-
-                        if (isNotEmpty(token)) {
-
-                            Timber.i("FCM: Initialized, token => $token")
-
-                            onFcmToken(token)
+                            initializeFcm()
 
                         } else {
 
-                            Timber.i("FCM: Initialized with no token")
+                            error?.let {
+
+                                recordException(it)
+
+                                throw it
+                            }
                         }
                     }
-                )
 
-            val intentFilter = IntentFilter()
-            intentFilter.addAction(Intent.ACTION_SCREEN_ON)
-            intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
-            registerReceiver(screenReceiver, intentFilter)
+                    override fun onInitialization(
 
-            val managersInitializerCallback = object : ManagersInitializer.InitializationCallback {
+                        manager: Management,
+                        success: Boolean,
+                        error: Throwable?
 
-                override fun onInitialization(success: Boolean, error: Throwable?) {
+                    ) {
 
-                    if (success) {
+                        if (success) {
 
-                        Timber.i("Application: Initialized")
+                            if (manager is InitializationCondition) {
 
-                    } else {
+                                Timber.i(
 
-                        error?.let {
+                                    "Manager: ${manager.javaClass.simpleName} " +
+                                            "initialized (${manager.isInitialized()})"
+                                )
 
-                            recordException(it)
+                            } else {
 
-                            throw it
+                                Timber.i(
+
+                                    "Manager: ${manager.javaClass.simpleName} initialized"
+                                )
+                            }
+
+                        } else {
+
+                            error?.let {
+
+                                recordException(it)
+
+                                throw it
+                            }
                         }
                     }
                 }
 
-                override fun onInitialization(
-
-                    manager: Management,
-                    success: Boolean,
-                    error: Throwable?
-
-                ) {
-
-                    if (success) {
-
-                        if (manager is InitializationCondition) {
-
-                            Timber.i(
-
-                                "Manager: ${manager.javaClass.simpleName} " +
-                                        "initialized (${manager.isInitialized()})"
-                            )
-
-                        } else {
-
-                            Timber.i(
-
-                                "Manager: ${manager.javaClass.simpleName} initialized"
-                            )
-                        }
-
-                    } else {
-
-                        error?.let {
-
-                            recordException(it)
-
-                            throw it
-                        }
-                    }
-                }
+                initializeManagers(managersInitializerCallback)
             }
 
-            initializeManagers(managersInitializerCallback)
+        } catch (e: RejectedExecutionException) {
+
+            recordException(e)
+
+            throw e
         }
+    }
 
-        Executor.MAIN.execute(action)
+    protected open fun onScreenOn() {
+
+        Timber.v("Screen is ON")
+    }
+
+    protected open fun onScreenOff() {
+
+        Timber.v("Screen is FF")
     }
 
     protected open fun onFcmToken(token: String) {
@@ -299,5 +264,52 @@ abstract class BaseApplication : Application() {
             context = applicationContext,
             defaultResources = defaultManagerResources
         )
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    private fun initializeFcm() {
+
+        Timber.i("FCM: Initializing")
+
+        val tokenFilter = IntentFilter(FcmService.BROADCAST_ACTION_TOKEN)
+        val eventFilter = IntentFilter(FcmService.BROADCAST_ACTION_EVENT)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            registerReceiver(fcmTokenReceiver, tokenFilter, Context.RECEIVER_NOT_EXPORTED)
+            registerReceiver(fcmEventReceiver, eventFilter, Context.RECEIVER_NOT_EXPORTED)
+
+        } else {
+
+            registerReceiver(fcmTokenReceiver, tokenFilter)
+            registerReceiver(fcmEventReceiver, eventFilter)
+        }
+
+        FirebaseMessaging.getInstance()
+            .token
+            .addOnCompleteListener(
+
+                OnCompleteListener { task ->
+
+                    if (!task.isSuccessful) {
+
+                        Timber.w("FCM: Fetching registration token failed", task.exception)
+                        return@OnCompleteListener
+                    }
+
+                    val token = task.result
+
+                    if (isNotEmpty(token)) {
+
+                        Timber.i("FCM: Initialized, token => $token")
+
+                        onFcmToken(token)
+
+                    } else {
+
+                        Timber.i("FCM: Initialized with no token")
+                    }
+                }
+            )
     }
 }
