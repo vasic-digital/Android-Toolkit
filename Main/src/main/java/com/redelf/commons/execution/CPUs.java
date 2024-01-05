@@ -10,16 +10,24 @@ import timber.log.Timber;
 
 public class CPUs {
 
+    public String tag = "Execution :: ";
+
     public int getNumberOfCores() {
+
+        int cores;
 
         if (Build.VERSION.SDK_INT >= 17) {
 
-            return Runtime.getRuntime().availableProcessors();
+            cores = Runtime.getRuntime().availableProcessors();
 
         } else {
 
-            return getNumCoresOldPhones();
+            cores = getNumCoresOldPhones();
         }
+
+        Timber.v("%s Cores: %d", tag, cores);
+
+        return cores;
     }
 
     /**
