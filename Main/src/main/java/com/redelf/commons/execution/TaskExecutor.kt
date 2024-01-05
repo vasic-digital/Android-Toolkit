@@ -10,6 +10,7 @@ class TaskExecutor private constructor(
     corePoolSize: Int,
     maximumPoolSize: Int,
     workQueue: BlockingQueue<Runnable>?
+
 ) : ThreadPoolExecutor(
 
     corePoolSize,
@@ -17,6 +18,7 @@ class TaskExecutor private constructor(
     0L,
     TimeUnit.MILLISECONDS,
     workQueue
+
 ) {
 
     companion object {
