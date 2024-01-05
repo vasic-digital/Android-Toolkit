@@ -14,7 +14,7 @@ enum class Executor : Execution {
 
     MAIN {
 
-        private val executor = TaskExecutor.instantiate(5)
+        private val executor = TaskExecutor.instantiate(10)
 
         override fun execute(action: Runnable) = Exec.execute(action, executor)
 
