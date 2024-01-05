@@ -2,6 +2,7 @@ package com.redelf.commons.execution
 
 import android.os.Handler
 import android.os.Looper
+import com.redelf.commons.exec
 import timber.log.Timber
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
@@ -14,18 +15,55 @@ enum class Executor : Execution {
 
     MAIN {
 
-        private val executor = TaskExecutor.instantiate(10)
+        private val cores = CPUs().numberOfCores
 
-        override fun execute(action: Runnable) = Exec.execute(action, executor)
+        private val capacity = if (cores * 3 <= 10) {
+
+            10
+
+        } else {
+
+            cores * 3
+        }
+
+        private val executor = TaskExecutor.instantiate(capacity)
+
+        override fun execute(action: Runnable) {
+
+            logCapacity()
+
+            Exec.execute(action, executor)
+        }
 
         override fun <T> execute(callable: Callable<T>): Future<T> {
+
+            logCapacity()
 
             return Exec.execute(callable, executor)
         }
 
         override fun execute(action: Runnable, delayInMillis: Long) {
 
+            logCapacity()
+
             Exec.execute(action, delayInMillis, executor)
+        }
+
+        private fun logCapacity() {
+
+            val corePoolSize = executor.corePoolSize
+            val available = corePoolSize - executor.activeCount
+
+            val msg = "Execution :: Available=$available, Total=$capacity"
+
+            if (available > 0) {
+
+                Timber.v(msg)
+
+            } else {
+
+                Timber.e(msg)
+            }
         }
     },
 
