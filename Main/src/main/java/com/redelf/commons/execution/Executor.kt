@@ -84,7 +84,6 @@ enum class Executor : Execution {
 
             Exec.execute(action, delayInMillis, executor)
         }
-
     };
 
     private object Exec {
