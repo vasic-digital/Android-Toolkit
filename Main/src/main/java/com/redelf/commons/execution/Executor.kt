@@ -52,10 +52,10 @@ enum class Executor : Execution {
 
         private fun logCapacity() {
 
-            val corePoolSize = executor.corePoolSize
-            val available = corePoolSize - executor.activeCount
+            val maximumPoolSize = executor.maximumPoolSize
+            val available = maximumPoolSize - executor.activeCount
 
-            val msg = "${cpus.tag} Available=$available, Total=$capacity"
+            val msg = "${cpus.tag} Available=$available, Total=$maximumPoolSize"
 
             if (available > 0) {
 
