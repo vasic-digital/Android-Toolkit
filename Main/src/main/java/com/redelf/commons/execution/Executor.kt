@@ -15,7 +15,8 @@ enum class Executor : Execution {
 
     MAIN {
 
-        private val cores = CPUs().numberOfCores
+        private val cpus = CPUs()
+        private val cores = cpus.numberOfCores
 
         private val capacity = if (cores * 3 <= 10) {
 
@@ -54,7 +55,7 @@ enum class Executor : Execution {
             val corePoolSize = executor.corePoolSize
             val available = corePoolSize - executor.activeCount
 
-            val msg = "Execution :: Available=$available, Total=$capacity"
+            val msg = "${cpus.tag} Available=$available, Total=$capacity"
 
             if (available > 0) {
 

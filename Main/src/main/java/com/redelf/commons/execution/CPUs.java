@@ -10,7 +10,7 @@ import timber.log.Timber;
 
 public class CPUs {
 
-    public String tag = "Execution :: ";
+    public String tag = "Execution ::";
 
     public int getNumberOfCores() {
 
