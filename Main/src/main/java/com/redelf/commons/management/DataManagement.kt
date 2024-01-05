@@ -20,7 +20,8 @@ abstract class DataManagement<T> :
     Management,
     Initialization<EncryptedPersistence>,
     Obtain<T?>,
-    Resetable {
+    Resetable
+{
 
     protected abstract val storageKey: String
     protected open val instantiateDataObject: Boolean = false
