@@ -3,6 +3,7 @@ package com.redelf.commons.management
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.exec
+import com.redelf.commons.execution.Executor
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
@@ -60,7 +61,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            exec {
+            Executor.SINGLE.execute {
 
                 initializing.set(true)
 
@@ -160,7 +161,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            exec {
+            Executor.SINGLE.execute {
 
                 store.push(storageKey, data)
             }
@@ -180,7 +181,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            exec {
+            Executor.SINGLE.execute {
 
                 store.delete(storageKey)
             }
