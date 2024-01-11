@@ -12,6 +12,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
+import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.exec
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.fcm.FcmService
@@ -28,12 +29,14 @@ import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
 
-abstract class BaseApplication : Application() {
+abstract class BaseApplication : Application(), ContextAvailability {
 
-    companion object {
+    companion object : ContextAvailability {
 
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: Context
+
+        override fun takeContext() = CONTEXT
     }
 
     val managers = mutableListOf<DataManagement<*>>(
@@ -102,6 +105,8 @@ abstract class BaseApplication : Application() {
             }
         }
     }
+
+    override fun takeContext() = CONTEXT
 
     override fun onCreate() {
         super.onCreate()
