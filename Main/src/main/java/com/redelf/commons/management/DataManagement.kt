@@ -102,7 +102,7 @@ abstract class DataManagement<T> :
         return true
     }
 
-    override fun isInitialized() = storage != null
+    override fun isInitialized() = storage != null && !isInitializing()
 
     override fun isInitializing() = initializing.get()
 
