@@ -7,4 +7,6 @@ interface InitializationCondition {
     fun isNotInitialized() = !isInitialized()
 
     fun isInitializing(): Boolean
+
+    fun initializationCompleted(e: Exception? = null)
 }

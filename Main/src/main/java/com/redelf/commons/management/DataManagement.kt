@@ -6,6 +6,7 @@ import com.redelf.commons.exec
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.Initialization
+import com.redelf.commons.lifecycle.InitializationPerformer
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
@@ -24,6 +25,7 @@ abstract class DataManagement<T> :
 
     Management,
     Initialization<EncryptedPersistence>,
+    InitializationPerformer,
     Obtain<T?>,
     Resetable
 {
@@ -82,25 +84,25 @@ abstract class DataManagement<T> :
                     } else {
 
                         val e = NotInitializedException(who = getWho())
-                        onInitializationCompleted(e)
+                        onInitializationFailed(e)
                     }
 
                 } catch (e: IllegalStateException) {
 
-                    onInitializationCompleted(e)
+                    onInitializationFailed(e)
                 }
             }
 
         } catch (e: RejectedExecutionException) {
 
-            onInitializationCompleted(e)
+            onInitializationFailed(e)
         }
     }
 
     protected open fun createDataObject(): T? = null
 
     @Throws(IllegalStateException::class)
-    protected open fun initialization(): Boolean {
+    override fun initialization(): Boolean {
 
         Timber.v("DataManagement :: initialization")
         return true
@@ -192,7 +194,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    protected open fun initializationCompleted(e: Exception?) {
+    override fun initializationCompleted(e: Exception?) {
 
         if (e == null) {
 
@@ -240,17 +242,14 @@ abstract class DataManagement<T> :
 
     protected open fun getWho(): String? = null
 
-    private fun onInitializationCompleted(e: Exception? = null) {
+    override fun onInitializationFailed(e: Exception) {
 
         val doOnAllAction = object :
             CallbackOperation<LifecycleCallback<EncryptedPersistence>> {
 
             override fun perform(callback: LifecycleCallback<EncryptedPersistence>) {
 
-                e?.let {
-
-                    Timber.e(e)
-                }
+                Timber.e(e)
 
                 storage?.let {
 
@@ -270,6 +269,33 @@ abstract class DataManagement<T> :
         initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
 
         initializationCompleted(e)
+    }
+
+    override fun onInitializationCompleted() {
+
+        val doOnAllAction = object :
+            CallbackOperation<LifecycleCallback<EncryptedPersistence>> {
+
+            override fun perform(callback: LifecycleCallback<EncryptedPersistence>) {
+
+                storage?.let {
+
+                    callback.onInitialization(true, it)
+                }
+
+                if (storage == null) {
+
+                    callback.onInitialization(false)
+                }
+
+                initCallbacks.unregister(callback)
+            }
+        }
+
+        initializing.set(false)
+        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
+
+        initializationCompleted()
     }
 
     @Throws(IllegalStateException::class)

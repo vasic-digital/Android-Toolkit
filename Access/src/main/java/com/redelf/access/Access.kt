@@ -239,4 +239,9 @@ class Access(builder: AccessBuilder) :
 
         return "Access(methods=$methods)"
     }
+
+    override fun initializationCompleted(e: Exception?) {
+
+        Timber.v("Initialization completed")
+    }
 }
