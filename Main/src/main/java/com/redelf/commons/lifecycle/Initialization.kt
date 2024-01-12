@@ -18,6 +18,7 @@ interface Initialization<T> : InitializationCondition {
         fun waitForInitialization(
 
             who: Initialization<*>,
+            timeoutInSeconds: Long = 30L,
             initLogTag: String = "${who::class.simpleName} initialization ::"
 
         ) {
@@ -60,7 +61,7 @@ interface Initialization<T> : InitializationCondition {
 
                 Timber.v("$tag PRE-START")
 
-                val success = future.get(30, TimeUnit.SECONDS)
+                val success = future.get(timeoutInSeconds, TimeUnit.SECONDS)
 
                 if (success) {
 
