@@ -178,7 +178,7 @@ abstract class BaseApplication : Application(), ContextAvailability {
 
                         if (success) {
 
-                            initializeFcm()
+                            onManagersInitialized()
 
                         } else {
 
@@ -260,6 +260,11 @@ abstract class BaseApplication : Application(), ContextAvailability {
         Timber.v("FCM: Event => $intent")
     }
 
+    protected open fun onManagersReady() {
+
+        Timber.i("Managers: Ready")
+    }
+
     private fun initializeManagers(callback: ManagersInitializer.InitializationCallback) {
 
         ManagersInitializer().initializeManagers(
@@ -316,5 +321,11 @@ abstract class BaseApplication : Application(), ContextAvailability {
                     }
                 }
             )
+    }
+
+    private fun onManagersInitialized() {
+
+        initializeFcm()
+        onManagersReady()
     }
 }
