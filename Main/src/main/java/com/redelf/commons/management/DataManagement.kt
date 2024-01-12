@@ -113,78 +113,11 @@ abstract class DataManagement<T> :
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(): T? {
 
-        val callable = object : Callable<Boolean> {
+        Initialization.waitForInitialization(
 
-            override fun call(): Boolean {
-
-                if (isInitializing()) {
-
-                    Timber.w("$initCallbacksTag still initializing")
-                }
-
-                if (isInitializing()) {
-
-                    Thread.yield()
-                }
-
-                if (isNotInitialized()) {
-
-                    Thread.yield()
-                }
-
-                if (isInitialized()) {
-
-                    Timber.v("$initCallbacksTag initialized")
-
-                    return true
-                }
-
-                return false
-            }
-        }
-
-        val future = Executor.MAIN.execute(callable)
-
-        try {
-
-            val tag = "Init check ::"
-
-            Timber.v("$tag PRE-START")
-
-            val success = future.get(30, TimeUnit.SECONDS)
-
-            if (success) {
-
-                Timber.v("$tag Callable: RETURNED SUCCESS")
-
-            } else {
-
-                Timber.e("$tag Callable: RETURNED FAILURE")
-            }
-
-            Timber.v("$tag Callable: POST-END")
-
-        } catch (e: RejectedExecutionException) {
-
-            Timber.e(e)
-
-        } catch (e: InterruptedException) {
-
-            Timber.e(e)
-
-        } catch (e: ExecutionException) {
-
-            Timber.e(e)
-
-        } catch (e: TimeoutException) {
-
-            future.cancel(true)
-        }
-
-        if (!isInitialized()) {
-
-            throw NotInitializedException()
-        }
+            who = this,
+            initLogTag = initCallbacksTag
+        )
 
         if (instantiateDataObject) {
 
