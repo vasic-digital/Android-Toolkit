@@ -164,6 +164,11 @@ fun Activity.onUI(doWhat: () -> Unit) {
     }
 }
 
+fun onUiTread(doWhat: () -> Unit) {
+
+    Handler(Looper.getMainLooper()).post(doWhat)
+}
+
 @Throws(IllegalArgumentException::class)
 fun getFileNameAndExtension(fileName: String): Pair<String, String> {
 
