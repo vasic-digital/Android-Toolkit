@@ -27,7 +27,11 @@ import com.redelf.commons.execution.Executor
 import timber.log.Timber
 import java.io.*
 import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 var GLOBAL_RECORD_EXCEPTIONS = true
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
@@ -42,6 +46,63 @@ fun yieldWhile(condition: () -> Boolean) {
 
         Thread.yield()
     }
+}
+
+fun exec(callable: Callable<Boolean>, logTag: String = "Bool exec ::"): Boolean {
+
+    val result = doExec(callable, logTag)
+
+    result?.let {
+
+        return it
+    }
+    return false
+}
+
+fun <T> doExec(callable: Callable<T>, logTag: String = "Do exec ::"): T? {
+
+    var success: T? = null
+    val future = Executor.MAIN.execute(callable)
+
+    try {
+
+        Timber.v("$logTag Callable: PRE-START")
+
+        success = future.get(30, TimeUnit.SECONDS)
+
+        if (success != null) {
+
+            Timber.v("$logTag Callable: RETURNED: $success")
+
+        } else {
+
+            Timber.e("$logTag Callable: RETURNED FAILURE")
+        }
+
+        Timber.v("$logTag Callable: POST-END")
+
+        return success
+
+    } catch (e: RejectedExecutionException) {
+
+        Timber.e(e)
+
+    } catch (e: InterruptedException) {
+
+        Timber.e(e)
+
+    } catch (e: ExecutionException) {
+
+        Timber.e(e)
+
+    } catch (e: TimeoutException) {
+
+        Timber.e(e)
+
+        future.cancel(true)
+    }
+
+    return success
 }
 
 fun recordException(e: Throwable) {
