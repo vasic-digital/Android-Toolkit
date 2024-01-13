@@ -48,9 +48,22 @@ fun yieldWhile(condition: () -> Boolean) {
     }
 }
 
-fun exec(callable: Callable<Boolean>, logTag: String = "Bool exec ::"): Boolean {
+fun exec(
 
-    val result = doExec(callable, logTag)
+    callable: Callable<Boolean>,
+    timeout: Long = 30L,
+    timeUnit: TimeUnit = TimeUnit.SECONDS,
+    logTag: String = "Bool exec ::"
+
+): Boolean {
+
+    val result = doExec(
+
+        callable = callable,
+        timeout = timeout,
+        timeUnit = timeUnit,
+        logTag = logTag
+    )
 
     result?.let {
 
@@ -59,7 +72,14 @@ fun exec(callable: Callable<Boolean>, logTag: String = "Bool exec ::"): Boolean 
     return false
 }
 
-fun <T> doExec(callable: Callable<T>, logTag: String = "Do exec ::"): T? {
+fun <T> doExec(
+
+    callable: Callable<T>,
+    timeout: Long = 30L,
+    timeUnit: TimeUnit = TimeUnit.SECONDS,
+    logTag: String = "Do exec ::",
+
+): T? {
 
     var success: T? = null
     val future = Executor.MAIN.execute(callable)
@@ -68,7 +88,7 @@ fun <T> doExec(callable: Callable<T>, logTag: String = "Do exec ::"): T? {
 
         Timber.v("$logTag Callable: PRE-START")
 
-        success = future.get(30, TimeUnit.SECONDS)
+        success = future.get(timeout, timeUnit)
 
         if (success != null) {
 
