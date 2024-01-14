@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.text.TextUtils
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -122,7 +123,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val ctx = getContext()
         val intentFilter = IntentFilter(BROADCAST_ACTION_SEND)
-        ctx.registerReceiver(sendRequestReceiver, intentFilter)
+        LocalBroadcastManager.getInstance(ctx).registerReceiver(sendRequestReceiver, intentFilter)
 
         Timber.v("BROADCAST_ACTION_SEND receiver registered")
 
@@ -619,7 +620,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         try {
 
-            ctx.unregisterReceiver(sendRequestReceiver)
+            LocalBroadcastManager.getInstance(ctx).unregisterReceiver(sendRequestReceiver)
 
             Timber.v("BROADCAST_ACTION_SEND receiver unregistered")
 

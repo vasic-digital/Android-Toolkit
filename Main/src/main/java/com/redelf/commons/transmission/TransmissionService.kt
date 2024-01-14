@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
 import android.os.Build
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.connectivity.Connectivity
 import timber.log.Timber
@@ -78,10 +79,10 @@ class TransmissionService : Service() {
         Timber.v("onStartCommand()")
 
         val connectivityIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        registerReceiver(connectivityListener, connectivityIntentFilter)
+        LocalBroadcastManager.getInstance(this).registerReceiver(connectivityListener, connectivityIntentFilter)
 
         val resultsIntentFilter = IntentFilter(TransmissionManager.BROADCAST_ACTION_RESULT)
-        registerReceiver(resultsReceiver, resultsIntentFilter)
+        LocalBroadcastManager.getInstance(this).registerReceiver(resultsReceiver, resultsIntentFilter)
 
         send(this, "onStartCommand")
 
@@ -101,7 +102,7 @@ class TransmissionService : Service() {
 
         try {
 
-            unregisterReceiver(connectivityListener)
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(connectivityListener)
 
         } catch (e: IllegalArgumentException) {
 
@@ -110,7 +111,7 @@ class TransmissionService : Service() {
 
         try {
 
-            unregisterReceiver(resultsReceiver)
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(resultsReceiver)
 
         } catch (e: IllegalArgumentException) {
 
