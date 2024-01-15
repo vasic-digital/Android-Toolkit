@@ -26,6 +26,7 @@ import com.redelf.commons.initRegistrationWithGoogle
 import com.redelf.commons.isServiceRunning
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.obtain.OnObtain
+import com.redelf.commons.onUI
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.util.UriUtil
@@ -233,6 +234,11 @@ abstract class BaseActivity : AppCompatActivity() {
     protected open fun onBack() {
 
         Timber.v("onBack()")
+
+        onUI {
+
+            finish()
+        }
     }
 
     override fun onDestroy() {
