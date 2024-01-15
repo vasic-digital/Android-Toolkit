@@ -123,7 +123,6 @@ abstract class BaseApplication : Application(), ContextAvailability {
             Timber.i("Application: Initializing")
         }
 
-
         Timber.i("Data: Initializing")
 
         val parser = GsonParser(
