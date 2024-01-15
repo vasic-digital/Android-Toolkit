@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.redelf.commons.isEmpty
 import com.redelf.commons.scheduling.Schedule
 import timber.log.Timber
 
@@ -39,6 +40,8 @@ class AlarmScheduler(
 
     ): Boolean {
 
+        unSchedule(what, "schedule")
+
         val tag = "$logTag ON ::"
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -48,8 +51,6 @@ class AlarmScheduler(
             alarmIntent,
             flags
         )
-
-        unSchedule(what)
 
         Timber.v("$tag Scheduling new alarm: What=$what, toWhen=$toWhen")
 
@@ -65,9 +66,16 @@ class AlarmScheduler(
         return true
     }
 
-    override fun unSchedule(what: Int): Boolean {
+    fun unSchedule(what: Int, from: String = ""): Boolean {
 
-        val tag = "$logTag OFF ::"
+        val tag = if (isEmpty(from)) {
+
+            "$logTag OFF ::"
+
+        } else {
+
+            "$from :: $logTag OFF ::"
+        }
 
         val pendingIntent = PendingIntent.getBroadcast(
 
@@ -84,5 +92,10 @@ class AlarmScheduler(
         Timber.v("$tag COMPLETED")
 
         return true
+    }
+
+    override fun unSchedule(what: Int): Boolean {
+
+        return unSchedule(what, "unSchedule")
     }
 }
