@@ -7,10 +7,13 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
+import android.window.OnBackInvokedDispatcher
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.os.BuildCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
@@ -51,10 +54,9 @@ abstract class BaseActivity : AppCompatActivity() {
     protected open val canSendOnTransmissionServiceConnected = true
 
     private var created = false
+    private var unregistrar: Unregistrar? = null
     private val dialogs = mutableListOf<AlertDialog>()
     private var attachmentsDialog: AttachFileDialog? = null
-
-    private var unregistrar: Unregistrar? = null
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
 
@@ -194,6 +196,11 @@ abstract class BaseActivity : AppCompatActivity() {
         Timber.e(error)
     }
 
+    protected open fun onBack() {
+
+        Timber.v("onBack()")
+    }
+
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -216,6 +223,29 @@ abstract class BaseActivity : AppCompatActivity() {
         if (isTransmissionServiceSupported()) {
 
             initializeTransmissionManager(transmissionManagerInitCallback)
+        }
+
+        if (Build.VERSION.SDK_INT >= 33) {
+
+            val priority = OnBackInvokedDispatcher.PRIORITY_DEFAULT
+
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(priority) {
+
+                onBack()
+            }
+
+        } else {
+
+            onBackPressedDispatcher.addCallback(
+
+                object : OnBackPressedCallback(true) {
+
+                    override fun handleOnBackPressed() {
+
+                        onBack()
+                    }
+                }
+            )
         }
 
         created = true
@@ -839,7 +869,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun firebaseAuthWithGoogle(tokenId: String) {
 
         val mAuth = FirebaseAuth.getInstance()
-        val credential = GoogleAuthProvider.getCredential(tokenId, /*accessToken=*/ null)
+        val credential = GoogleAuthProvider.getCredential(tokenId, null)
 
         mAuth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
