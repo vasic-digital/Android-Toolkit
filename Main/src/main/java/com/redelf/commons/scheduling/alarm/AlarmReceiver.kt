@@ -11,7 +11,7 @@ class AlarmReceiver(private val callback: AlarmCallback) : BroadcastReceiver() {
 
         Timber.v("Alarm received: $intent")
 
-        // TODO: GEt extra from intent and pass to callback
+        // TODO: Get extra from intent and pass to callback
         callback.onAlarm(-1)
     }
 }

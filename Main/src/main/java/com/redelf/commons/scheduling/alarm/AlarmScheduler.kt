@@ -10,7 +10,7 @@ import timber.log.Timber
 class AlarmScheduler(
 
     ctx: Context,
-    private val logTag: String = "Alarm scheduling ::"
+    private val logTag: String = "Alarm :: Scheduling ::"
 
 ) : Schedule<Int> {
 
@@ -51,7 +51,7 @@ class AlarmScheduler(
 
         unSchedule(what)
 
-        Timber.w("$tag Scheduling new alarm")
+        Timber.v("$tag Scheduling new alarm: What=$what, toWhen=$toWhen")
 
         alarmManager.setExactAndAllowWhileIdle(
 
@@ -59,6 +59,8 @@ class AlarmScheduler(
             toWhen,
             pendingIntent
         )
+
+        Timber.v("$tag COMPLETED")
 
         return true
     }
