@@ -13,7 +13,6 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.core.os.BuildCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
@@ -57,6 +56,41 @@ abstract class BaseActivity : AppCompatActivity() {
     private var unregistrar: Unregistrar? = null
     private val dialogs = mutableListOf<AlertDialog>()
     private var attachmentsDialog: AttachFileDialog? = null
+    private lateinit var backPressedCallback: OnBackPressedCallback
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val filter = IntentFilter(Broadcast.ACTION_FINISH)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            registerReceiver(finishReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+
+        } else {
+
+            registerReceiver(finishReceiver, filter)
+        }
+
+        Timber.v("Transmission management supported: ${isTransmissionServiceSupported()}")
+
+        if (isTransmissionServiceSupported()) {
+
+            initializeTransmissionManager(transmissionManagerInitCallback)
+        }
+
+        backPressedCallback = object : OnBackPressedCallback(true) {
+
+            override fun handleOnBackPressed() {
+
+                onBack()
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this, backPressedCallback)
+        created = true
+    }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
 
@@ -199,56 +233,6 @@ abstract class BaseActivity : AppCompatActivity() {
     protected open fun onBack() {
 
         Timber.v("onBack()")
-    }
-
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        super.onCreate(savedInstanceState)
-
-
-        val filter = IntentFilter(Broadcast.ACTION_FINISH)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-            registerReceiver(finishReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-
-        } else {
-
-            registerReceiver(finishReceiver, filter)
-        }
-
-        Timber.v("Transmission management supported: ${isTransmissionServiceSupported()}")
-
-        if (isTransmissionServiceSupported()) {
-
-            initializeTransmissionManager(transmissionManagerInitCallback)
-        }
-
-        if (Build.VERSION.SDK_INT >= 33) {
-
-            val priority = OnBackInvokedDispatcher.PRIORITY_DEFAULT
-
-            onBackInvokedDispatcher.registerOnBackInvokedCallback(priority) {
-
-                onBack()
-            }
-
-        } else {
-
-            onBackPressedDispatcher.addCallback(
-
-                object : OnBackPressedCallback(true) {
-
-                    override fun handleOnBackPressed() {
-
-                        onBack()
-                    }
-                }
-            )
-        }
-
-        created = true
     }
 
     override fun onDestroy() {
