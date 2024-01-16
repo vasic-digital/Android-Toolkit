@@ -1,6 +1,7 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.Credentials
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.application.ManagersInitializer
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.EncryptedPersistence
@@ -28,6 +29,8 @@ abstract class ManagersDependantTest : BaseTest() {
 
         Timber.plant(Timber.DebugTree())
         Timber.v("Timber initialized: $this")
+
+        BaseApplication.CONTEXT = applicationContext
 
         setupStorage()
         setupManagers()
