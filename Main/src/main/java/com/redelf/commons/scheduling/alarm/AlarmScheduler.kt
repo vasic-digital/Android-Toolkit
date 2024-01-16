@@ -17,6 +17,7 @@ class AlarmScheduler(
 
     companion object {
 
+        const val ALARM_VALUE = "AlarmScheduler.VALUE"
         const val ALARM_ACTION = "AlarmScheduler.ON_ALARM"
     }
 
@@ -43,6 +44,8 @@ class AlarmScheduler(
         unSchedule(what, "schedule")
 
         val tag = "$logTag ON ::"
+
+        alarmIntent.putExtra(ALARM_VALUE, what)
 
         val pendingIntent = PendingIntent.getBroadcast(
 

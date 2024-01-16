@@ -50,7 +50,16 @@ class AlarmReceiver : BroadcastReceiver() {
 
         Timber.v("Alarm received: $intent")
 
-        // TODO: Get extra from intent and pass to callback
-        onAlarmReceived(-1)
+        intent?.let {
+
+            when (intent.action) {
+
+                AlarmScheduler.ALARM_ACTION -> {
+
+                    val alarmValue = intent.getIntExtra(AlarmScheduler.ALARM_VALUE, -1)
+                    onAlarmReceived(alarmValue)
+                }
+            }
+        }
     }
 }
