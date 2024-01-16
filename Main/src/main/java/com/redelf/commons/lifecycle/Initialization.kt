@@ -33,7 +33,7 @@ interface Initialization<T> : InitializationCondition {
                         Timber.w("$initLogTag still initializing")
                     }
 
-                    if (who.isInitializing()) {
+                    while (who.isInitializing()) {
 
                         Thread.yield()
                     }
