@@ -24,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.persistance.PropertiesHash
 import timber.log.Timber
 import java.io.*
 import java.util.*
@@ -679,7 +680,6 @@ fun encodeBytes(bytes: ByteArray): String {
 
         Timber.v("$tag DO ENCODE :: START")
 
-        val failed: Boolean
         var inputStream: InputStream? = null
         var outputStream: OutputStream? = null
         var bufferedInputStream: InputStream? = null
@@ -702,8 +702,6 @@ fun encodeBytes(bytes: ByteArray): String {
 
         } catch (e: IOException) {
 
-            failed = true
-
             Timber.e(e)
 
         } finally {
@@ -714,12 +712,7 @@ fun encodeBytes(bytes: ByteArray): String {
             inputStream?.close()
         }
 
-        if (failed) {
-
-            throw IOException("Encoding failure")
-        }
-
-        return null
+        throw IOException("Encoding failure")
     }
 
     try {
@@ -750,4 +743,54 @@ fun isEmpty(what: String?): Boolean {
 fun isNotEmpty(what: String?): Boolean {
 
     return !isEmpty(what)
+}
+
+fun List<*>.contentEquals(other: List<*>): Boolean {
+
+    if (size == other.size) {
+
+        forEachIndexed { index, item ->
+
+            val otherItem = other[index]
+
+            if (item == otherItem) {
+
+                if (item is PropertiesHash && otherItem is PropertiesHash) {
+
+                    if (item.propertiesHash() != otherItem.propertiesHash()) {
+
+                        Timber.v(
+
+                            "contentEquals :: FALSE (prop. hash eq.) :: " +
+                                    "${item.propertiesHash()} != ${otherItem.propertiesHash()}"
+                        )
+
+                        return false
+                    }
+                }
+
+            } else {
+
+                Timber.v(
+
+                    "contentEquals :: FALSE (equality) :: " +
+                            "${item.hashCode()} != ${other[index].hashCode()}"
+                )
+
+                return false
+            }
+        }
+
+    } else {
+
+        Timber.v(
+
+            "contentEquals :: FALSE (sizes comparison) :: " +
+                    "$size != ${other.size}"
+        )
+
+        return false
+    }
+
+    return true
 }
