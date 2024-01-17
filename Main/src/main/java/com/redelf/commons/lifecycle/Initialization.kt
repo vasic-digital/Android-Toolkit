@@ -28,9 +28,14 @@ interface Initialization<T> : InitializationCondition {
 
                 override fun call(): Boolean {
 
+                    if (who.isNotInitialized()) {
+
+                        Timber.v("$initLogTag not initialized yet")
+                    }
+
                     if (who.isInitializing()) {
 
-                        Timber.w("$initLogTag still initializing")
+                        Timber.v("$initLogTag still initializing")
                     }
 
                     while (who.isInitializing()) {
