@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
@@ -64,15 +65,7 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val filter = IntentFilter(Broadcast.ACTION_FINISH)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-            registerReceiver(finishReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-
-        } else {
-
-            registerReceiver(finishReceiver, filter)
-        }
+        LocalBroadcastManager.getInstance(this).registerReceiver(finishReceiver, filter)
 
         Timber.v("Transmission management supported: ${isTransmissionServiceSupported()}")
 
@@ -244,7 +237,7 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onDestroy() {
 
         dismissDialogs()
-        unregisterReceiver(finishReceiver)
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(finishReceiver)
         unregistrar?.unregister()
 
         if (isTransmissionServiceSupported()) {

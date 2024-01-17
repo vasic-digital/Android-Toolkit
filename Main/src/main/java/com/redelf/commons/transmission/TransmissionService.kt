@@ -27,7 +27,8 @@ class TransmissionService : Service() {
     private val binder = TransmissionServiceBinder()
     private val connectivityListenerReady = AtomicBoolean()
     private val connectivityListenerState = AtomicBoolean(true)
-    private val alarmCallback = TransmissionAlarmCallback(applicationContext)
+
+    private lateinit var alarmCallback: TransmissionAlarmCallback
 
     private val connectivityListener = object : BroadcastReceiver() {
 
@@ -85,7 +86,7 @@ class TransmissionService : Service() {
         Timber.v("onStartCommand()")
 
         val connectivityIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        LocalBroadcastManager.getInstance(this).registerReceiver(connectivityListener, connectivityIntentFilter)
+        registerReceiver(connectivityListener, connectivityIntentFilter)
 
         val resultsIntentFilter = IntentFilter(TransmissionManager.BROADCAST_ACTION_RESULT)
         LocalBroadcastManager.getInstance(this).registerReceiver(resultsReceiver, resultsIntentFilter)
@@ -98,6 +99,8 @@ class TransmissionService : Service() {
     override fun onCreate() {
         super.onCreate()
 
+        alarmCallback = TransmissionAlarmCallback(applicationContext)
+
         Timber.v("onCreate()")
     }
 
@@ -108,7 +111,7 @@ class TransmissionService : Service() {
 
         try {
 
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(connectivityListener)
+            unregisterReceiver(connectivityListener)
 
         } catch (e: IllegalArgumentException) {
 

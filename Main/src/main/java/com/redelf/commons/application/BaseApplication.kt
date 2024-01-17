@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.GsonBuilder
@@ -283,16 +284,8 @@ abstract class BaseApplication : Application(), ContextAvailability {
         val tokenFilter = IntentFilter(FcmService.BROADCAST_ACTION_TOKEN)
         val eventFilter = IntentFilter(FcmService.BROADCAST_ACTION_EVENT)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-            registerReceiver(fcmTokenReceiver, tokenFilter, Context.RECEIVER_NOT_EXPORTED)
-            registerReceiver(fcmEventReceiver, eventFilter, Context.RECEIVER_NOT_EXPORTED)
-
-        } else {
-
-            registerReceiver(fcmTokenReceiver, tokenFilter)
-            registerReceiver(fcmEventReceiver, eventFilter)
-        }
+        LocalBroadcastManager.getInstance(this).registerReceiver(fcmTokenReceiver, tokenFilter)
+        LocalBroadcastManager.getInstance(this).registerReceiver(fcmEventReceiver, eventFilter)
 
         FirebaseMessaging.getInstance()
             .token
