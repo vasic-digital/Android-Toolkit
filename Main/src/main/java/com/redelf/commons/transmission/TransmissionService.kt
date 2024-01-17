@@ -1,7 +1,6 @@
 package com.redelf.commons.transmission
 
 import android.app.AlarmManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,19 +8,26 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
-import android.os.Build
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.connectivity.Connectivity
+import com.redelf.commons.scheduling.alarm.AlarmReceiver
+import com.redelf.commons.scheduling.alarm.AlarmScheduler
+import com.redelf.commons.transmission.alarm.TransmissionAlarmCallback
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 class TransmissionService : Service() {
 
-    private val alarmRequestCode = 1
+    companion object {
+
+        const val BROADCAST_EXTRA_CODE = 1
+    }
+
     private val binder = TransmissionServiceBinder()
     private val connectivityListenerReady = AtomicBoolean()
     private val connectivityListenerState = AtomicBoolean(true)
+    private val alarmCallback = TransmissionAlarmCallback(applicationContext)
 
     private val connectivityListener = object : BroadcastReceiver() {
 
@@ -144,44 +150,33 @@ class TransmissionService : Service() {
 
     private fun scheduleAlarm(success: Boolean) {
 
-        val tag = "scheduleAlarm() :: success=$success ::"
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(applicationContext, AlarmReceiver::class.java)
+        val tag = "Alarm :: Scheduling :: $success ::"
 
-        val pendingIntent = PendingIntent.getBroadcast(
+        Timber.v("$tag Start")
 
-            applicationContext,
-            alarmRequestCode,
-            alarmIntent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
-        )
+        if (success) {
 
-        Timber.v("$tag Cancelling scheduled alarm (if any)")
+            unregisterAlarmCallback()
 
-        alarmManager.cancel(pendingIntent)
+            AlarmScheduler(applicationContext).unSchedule(BROADCAST_EXTRA_CODE)
 
-        if (!success) {
+        } else {
 
-            Timber.w("$tag Scheduling new alarm")
+            registerAlarmCallback()
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    getAlarmInterval(),
-                    pendingIntent
-                )
-
-            } else {
-
-                alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    getAlarmInterval(),
-                    pendingIntent
-                )
-            }
+            val time = getAlarmInterval()
+            AlarmScheduler(applicationContext).schedule(BROADCAST_EXTRA_CODE, time)
         }
+
+        Timber.v("$tag End")
     }
+
+    private fun registerAlarmCallback() {
+
+        AlarmReceiver.register(alarmCallback)
+    }
+
+    private fun unregisterAlarmCallback() = AlarmReceiver.register(alarmCallback)
 
     inner class TransmissionServiceBinder : Binder() {
 

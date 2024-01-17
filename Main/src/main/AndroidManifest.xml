@@ -41,7 +41,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <receiver android:name="com.redelf.commons.transmission.AlarmReceiver" />
         <receiver android:name="com.redelf.commons.scheduling.alarm.AlarmReceiver" />
 
         <provider
