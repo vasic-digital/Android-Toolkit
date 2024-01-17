@@ -227,11 +227,15 @@ abstract class BaseActivity : AppCompatActivity() {
 
         Timber.v("onBack()")
 
-        onUI {
+        if (isFinishing) {
 
-            finish()
+            return
         }
+
+        finish()
     }
+
+    fun isNotFinishing() = !isFinishing
 
     override fun onDestroy() {
 
