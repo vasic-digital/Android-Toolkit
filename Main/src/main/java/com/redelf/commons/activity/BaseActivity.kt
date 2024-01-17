@@ -223,7 +223,7 @@ abstract class BaseActivity : AppCompatActivity() {
         Timber.e(error)
     }
 
-    protected open fun onBack() {
+    open fun onBack() {
 
         Timber.v("onBack()")
 
