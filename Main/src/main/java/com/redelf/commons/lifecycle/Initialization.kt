@@ -1,15 +1,10 @@
 package com.redelf.commons.lifecycle
 
 import com.redelf.commons.exec
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.lifecycle.exception.NotInitializedException
 import timber.log.Timber
 import java.util.concurrent.Callable
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import kotlin.jvm.Throws
 
 interface Initialization<T> : InitializationCondition {
 

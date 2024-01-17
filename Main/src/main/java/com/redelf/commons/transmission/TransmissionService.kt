@@ -1,6 +1,5 @@
 package com.redelf.commons.transmission
 
-import android.app.AlarmManager
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context

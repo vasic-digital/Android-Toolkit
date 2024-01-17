@@ -2,7 +2,6 @@ package com.redelf.commons.application
 
 import android.content.Context
 import com.redelf.commons.context.Contextual
-import com.redelf.commons.defaults.Defaults
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.exec
 import com.redelf.commons.management.DataManagement

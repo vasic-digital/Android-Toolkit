@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
-import com.google.firebase.remoteconfig.internal.FirebaseRemoteConfigValueImpl
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.recordException

@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
@@ -15,7 +14,6 @@ import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.exec
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.isNotEmpty
@@ -26,7 +24,6 @@ import com.redelf.commons.persistance.Data
 import com.redelf.commons.persistance.GsonParser
 import com.redelf.commons.persistance.Salter
 import com.redelf.commons.recordException
-
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
 
