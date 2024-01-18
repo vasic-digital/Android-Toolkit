@@ -209,15 +209,18 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         sequentialExecutor.execute(action)
     }
 
+    /*
+        Note: Returns True if there was something to update
+     */
     @Throws(IllegalStateException::class)
     fun update(data: T): Boolean {
 
         unSchedule(data)?.let {
 
-            send(data)
-
             return true
         }
+
+        send(data)
 
         return false
     }
