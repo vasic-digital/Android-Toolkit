@@ -17,6 +17,7 @@ import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.LifecycleCheck
 import com.redelf.commons.lifecycle.Termination
+import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.Data
 import com.redelf.commons.recordException
@@ -32,7 +33,11 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: String) :
-    Initialization<Unit>, Termination<Unit> {
+
+    Management,
+    Initialization<Unit>, Termination<Unit>
+
+{
 
     companion object {
 
