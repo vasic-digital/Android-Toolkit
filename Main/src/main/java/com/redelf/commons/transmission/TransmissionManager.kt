@@ -212,7 +212,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     @Throws(IllegalStateException::class)
     fun update(data: T): Boolean {
 
-        unschedule(data)?.let {
+        unSchedule(data)?.let {
 
             send(data)
 
@@ -294,7 +294,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     abstract fun getScheduled(): Collection<T>
 
-    abstract fun unschedule(scheduled: T): T?
+    abstract fun unSchedule(scheduled: T): T?
 
     fun isSending() = sending.get()
 
