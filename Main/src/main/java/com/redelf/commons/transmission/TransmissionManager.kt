@@ -372,14 +372,18 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val now = System.currentTimeMillis()
 
+        val timeDiff = now - lastSendingTime
+
         val timeCondition = minSendIntervalInSeconds > 0 &&
-                now - lastSendingTime < minSendIntervalInSeconds * 1000
+                timeDiff < minSendIntervalInSeconds * 1000
 
         if (timeCondition) {
 
-            Timber.w("Too soon to send data: %s", now - lastSendingTime)
+            Timber.w("Too soon to send data. Last sending executed before: %s", timeDiff)
             return
         }
+
+        Timber.v("Last sending executed before: %s", timeDiff)
 
         if (currentSendingStrategy.isNotReady()) {
 
@@ -426,6 +430,8 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
                     val success = executeSending(data)
 
                     if (success) {
+
+                        lastSendingTime = System.currentTimeMillis()
 
                         iterator.remove()
 
