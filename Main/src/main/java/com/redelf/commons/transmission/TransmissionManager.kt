@@ -196,7 +196,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     }
 
     @Throws(IllegalStateException::class)
-    fun send(data: T) {
+    fun send(data: T, async: Boolean = true) {
 
         check.readyCheck()
 
@@ -206,7 +206,14 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
             persist(data)
         }
 
-        sequentialExecutor.execute(action)
+        if (async) {
+
+            sequentialExecutor.execute(action)
+
+        } else {
+
+            action.run()
+        }
     }
 
     /*
@@ -215,12 +222,28 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     @Throws(IllegalStateException::class)
     fun update(data: T): Boolean {
 
-        unSchedule(data)?.let {
+        return reSchedule(data) != null
+    }
+
+    private fun unSchedule(scheduled: T): T? {
+
+        doUnSchedule(scheduled)?.let {
+
+            persist()
+
+            return it
+        }
+        return null
+    }
+
+    private fun reSchedule(scheduled: T): Boolean {
+
+        if (doReSchedule(scheduled)) {
+
+            persist()
 
             return true
         }
-
-        send(data)
 
         return false
     }
@@ -297,7 +320,9 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     abstract fun getScheduled(): Collection<T>
 
-    abstract fun unSchedule(scheduled: T): T?
+    abstract fun doUnSchedule(scheduled: T): T?
+
+    abstract fun doReSchedule(scheduled: T): Boolean
 
     fun isSending() = sending.get()
 
