@@ -210,6 +210,19 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     }
 
     @Throws(IllegalStateException::class)
+    fun update(data: T): Boolean {
+
+        if (unschedule(data)) {
+
+            send(data)
+
+            return true
+        }
+
+        return false
+    }
+
+    @Throws(IllegalStateException::class)
     fun send(executedFrom: String = "") {
 
         check.readyCheck()
