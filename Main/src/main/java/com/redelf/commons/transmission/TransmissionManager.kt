@@ -50,6 +50,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     private val capacity = 100
     private val maxRetries = 10
     private val sending = AtomicBoolean()
+    private var lastSendingTime: Long = 0
     private val sequentialExecutor = TaskExecutor.instantiate(1)
 
     private val initializationCallbacks =
@@ -63,6 +64,8 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     protected val check = LifecycleCheck()
     protected val data = LinkedBlockingQueue<String>(capacity)
+
+    protected open val minSendIntervalInSeconds = 0
 
     protected abstract val encryptionKeySuffix: String
     protected abstract var currentEncryptionProvider: EncryptionProvider
@@ -366,6 +369,17 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     protected abstract fun decrypt(encrypted: String, encryption: Encryption<String, String>): T
 
     private fun executeSending(executedFrom: String = "") {
+
+        val now = System.currentTimeMillis()
+
+        val timeCondition = minSendIntervalInSeconds > 0 &&
+                now - lastSendingTime < minSendIntervalInSeconds * 1000
+
+        if (timeCondition) {
+
+            Timber.w("Too soon to send data: %s", now - lastSendingTime)
+            return
+        }
 
         if (currentSendingStrategy.isNotReady()) {
 
