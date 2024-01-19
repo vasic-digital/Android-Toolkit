@@ -244,7 +244,7 @@ abstract class BaseApplication : Application(), ContextAvailability {
 
     protected open fun onScreenOff() {
 
-        Timber.v("Screen is FF")
+        Timber.v("Screen is OFF")
     }
 
     protected open fun onFcmToken(token: String) {

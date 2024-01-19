@@ -168,7 +168,7 @@ fun Activity.onUI(doWhat: () -> Unit) {
     }
 }
 
-fun onUiTread(doWhat: () -> Unit) {
+fun onUiThread(doWhat: () -> Unit) {
 
     Handler(Looper.getMainLooper()).post(doWhat)
 }
