@@ -652,7 +652,7 @@ fun <T> doExec(
 
         } else {
 
-            Timber.e("$logTag Callable: RETURNED FAILURE")
+            Timber.v("$logTag Callable: RETURNED NOTHING")
         }
 
         Timber.v("$logTag Callable: POST-END")
