@@ -62,7 +62,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            Executor.SINGLE.execute {
+            Executor.MAIN.execute {
 
                 initializing.set(true)
 
@@ -158,7 +158,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            Executor.SINGLE.execute {
+            Executor.MAIN.execute {
 
                 store.push(storageKey, data)
             }
@@ -178,7 +178,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            Executor.SINGLE.execute {
+            Executor.MAIN.execute {
 
                 store.delete(storageKey)
             }

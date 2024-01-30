@@ -98,31 +98,6 @@ enum class Executor : Execution {
                 throw IllegalStateException("Could not accept action")
             }
         }
-    },
-
-    SINGLE {
-
-        private val size = 1
-        private val maxSize = 1
-        private val aliveTime = 0L
-        private val unit = TimeUnit.MILLISECONDS
-        private val queue = LinkedBlockingQueue<Runnable>()
-        private val executor = ThreadPoolExecutor(size, maxSize, aliveTime, unit, queue)
-
-        override fun execute(what: Runnable) {
-
-            Exec.execute(what, executor)
-        }
-
-        override fun <T> execute(callable: Callable<T>): Future<T> {
-
-            return Exec.execute(callable, executor)
-        }
-
-        override fun execute(action: Runnable, delayInMillis: Long) {
-
-            Exec.execute(action, delayInMillis, executor)
-        }
     };
 
     private object Exec {
