@@ -2,9 +2,11 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import com.google.gson.ExclusionStrategy
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.redelf.commons.Erasing
 import com.redelf.commons.R
+import com.redelf.commons.obtain.Obtain
 import timber.log.Timber
 
 class EncryptedPersistence
@@ -54,39 +56,52 @@ constructor(
 
         ctx?.let {
 
-            val gsonBuilder = GsonBuilder()
-                .enableComplexMapKeySerialization()
+            val getParser = object : Obtain<Parser?> {
 
-            if (serializationExclusionStrategy == deserializationExclusionStrategy) {
+                override fun obtain(): Parser {
 
-                serializationExclusionStrategy?.let {
+                    val gsonBuilder = GsonBuilder()
+                        .enableComplexMapKeySerialization()
 
-                    Timber.v("$tag Exclusion Strategies: $serializationExclusionStrategy")
+                    if (serializationExclusionStrategy == deserializationExclusionStrategy) {
 
-                    gsonBuilder.setExclusionStrategies(serializationExclusionStrategy)
-                }
+                        serializationExclusionStrategy?.let {
 
-            } else {
+                            Timber.v("$tag Exclusion Strategies: $serializationExclusionStrategy")
 
-                serializationExclusionStrategy?.let {
+                            gsonBuilder.setExclusionStrategies(serializationExclusionStrategy)
+                        }
 
-                    Timber.v("$tag Ser. Excl. Strategy: $serializationExclusionStrategy")
+                    } else {
 
-                    gsonBuilder.addSerializationExclusionStrategy(serializationExclusionStrategy)
-                }
+                        serializationExclusionStrategy?.let {
 
-                deserializationExclusionStrategy?.let {
+                            Timber.v("$tag Ser. Excl. Strategy: $serializationExclusionStrategy")
 
-                    Timber.v("$tag De-Ser. Excl. Strategy: $serializationExclusionStrategy")
+                            gsonBuilder.addSerializationExclusionStrategy(serializationExclusionStrategy)
+                        }
 
-                    gsonBuilder.addSerializationExclusionStrategy(deserializationExclusionStrategy)
+                        deserializationExclusionStrategy?.let {
+
+                            Timber.v("$tag De-Ser. Excl. Strategy: $serializationExclusionStrategy")
+
+                            gsonBuilder.addSerializationExclusionStrategy(deserializationExclusionStrategy)
+                        }
+                    }
+
+
+                    return GsonParser(
+
+                        object : Obtain<Gson> {
+
+                            override fun obtain(): Gson {
+
+                                return gsonBuilder.create()
+                            }
+                        }
+                    )
                 }
             }
-
-            val gson = gsonBuilder
-                .create()
-
-            val parser = GsonParser(gson)
 
             val logger =
                 LogInterceptor { message ->
@@ -103,7 +118,7 @@ constructor(
             }
 
             Data.init(it, salter = salter, storageTag = storageTag)
-                .setParser(parser)
+                .setParser(getParser)
                 .setLogInterceptor(logger)
                 .build()
         }

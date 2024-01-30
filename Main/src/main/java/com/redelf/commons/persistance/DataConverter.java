@@ -1,6 +1,7 @@
 package com.redelf.commons.persistance;
 
 import com.google.gson.reflect.TypeToken;
+import com.redelf.commons.obtain.Obtain;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,9 +18,9 @@ import java.util.Set;
  */
 final class DataConverter implements Converter {
 
-  private final Parser parser;
+  private final Obtain<Parser> parser;
 
-  public DataConverter(Parser parser) {
+  public DataConverter(Obtain<Parser> parser) {
     if (parser == null) {
       throw new NullPointerException("Parser should not be null");
     }
@@ -30,7 +31,8 @@ final class DataConverter implements Converter {
     if (value == null) {
       return null;
     }
-    return parser.toJson(value);
+    final Parser p = parser.obtain();
+    return p.toJson(value);
   }
 
   @Override public <T> T fromString(String value, DataInfo info) throws Exception {
@@ -57,7 +59,8 @@ final class DataConverter implements Converter {
   }
 
   private <T> T toObject(String json, Class<?> type) throws Exception {
-    return parser.fromJson(json, type);
+    final Parser p = parser.obtain();
+    return p.fromJson(json, type);
   }
 
   @SuppressWarnings("unchecked")
@@ -65,7 +68,8 @@ final class DataConverter implements Converter {
     if (type == null) {
       return (T) new ArrayList<>();
     }
-    List<T> list = parser.fromJson(
+    final Parser p = parser.obtain();
+    List<T> list = p.fromJson(
         json,
         new TypeToken<List<T>>() {
         }.getType()
@@ -73,7 +77,7 @@ final class DataConverter implements Converter {
 
     int size = list.size();
     for (int i = 0; i < size; i++) {
-      list.set(i, (T) parser.fromJson(parser.toJson(list.get(i)), type));
+      list.set(i, (T) p.fromJson(p.toJson(list.get(i)), type));
     }
     return (T) list;
   }
@@ -84,12 +88,13 @@ final class DataConverter implements Converter {
     if (type == null) {
       return (T) resultSet;
     }
-    Set<T> set = parser.fromJson(json, new TypeToken<Set<T>>() {
+    final Parser p = parser.obtain();
+    Set<T> set = p.fromJson(json, new TypeToken<Set<T>>() {
     }.getType());
 
     for (T t : set) {
-      String valueJson = parser.toJson(t);
-      T value = parser.fromJson(valueJson, type);
+      String valueJson = p.toJson(t);
+      T value = p.fromJson(valueJson, type);
       resultSet.add(value);
     }
     return (T) resultSet;
@@ -101,18 +106,18 @@ final class DataConverter implements Converter {
     if (keyType == null || valueType == null) {
       return (T) resultMap;
     }
-    Map<K, V> map = parser.fromJson(json, new TypeToken<Map<K, V>>() {
+    final Parser p = parser.obtain();
+    Map<K, V> map = p.fromJson(json, new TypeToken<Map<K, V>>() {
     }.getType());
 
     for (Map.Entry<K, V> entry : map.entrySet()) {
-      String keyJson = parser.toJson(entry.getKey());
-      K k = parser.fromJson(keyJson, keyType);
+      String keyJson = p.toJson(entry.getKey());
+      K k = p.fromJson(keyJson, keyType);
 
-      String valueJson = parser.toJson(entry.getValue());
-      V v = parser.fromJson(valueJson, valueType);
+      String valueJson = p.toJson(entry.getValue());
+      V v = p.fromJson(valueJson, valueType);
       resultMap.put(k, v);
     }
     return (T) resultMap;
   }
-
 }

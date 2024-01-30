@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
@@ -20,8 +21,10 @@ import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.InitializationCondition
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.Data
 import com.redelf.commons.persistance.GsonParser
+import com.redelf.commons.persistance.Parser
 import com.redelf.commons.persistance.Salter
 import com.redelf.commons.recordException
 import timber.log.Timber
@@ -123,13 +126,6 @@ abstract class BaseApplication : Application(), ContextAvailability {
 
         Timber.i("Data: Initializing")
 
-        val parser = GsonParser(
-
-            GsonBuilder()
-                .enableComplexMapKeySerialization()
-                .create()
-        )
-
         val salter = object : Salter {
 
             override fun getSalt(): String {
@@ -147,8 +143,27 @@ abstract class BaseApplication : Application(), ContextAvailability {
             }
         }
 
+        val getParser = object : Obtain<Parser?> {
+
+            override fun obtain(): Parser {
+
+                return GsonParser(
+
+                    object : Obtain<Gson> {
+
+                        override fun obtain(): Gson {
+
+                            return GsonBuilder()
+                                .enableComplexMapKeySerialization()
+                                .create()
+                        }
+                    }
+                )
+            }
+        }
+
         Data.init(applicationContext, getString(R.string.app_name), salter)
-            .setParser(parser)
+            .setParser(getParser)
             .build()
 
         Timber.i("Data: Initialized")
