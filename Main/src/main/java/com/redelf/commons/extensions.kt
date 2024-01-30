@@ -29,6 +29,7 @@ import java.io.*
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -594,7 +595,8 @@ fun exec(
     callable: Callable<Boolean>,
     timeout: Long = 30L,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
-    logTag: String = "Bool exec ::"
+    logTag: String = "Bool exec ::",
+    executor: Executor? = null
 
 ): Boolean {
 
@@ -603,7 +605,8 @@ fun exec(
         callable = callable,
         timeout = timeout,
         timeUnit = timeUnit,
-        logTag = logTag
+        logTag = logTag,
+        executor = executor
     )
 
     result?.let {
@@ -620,17 +623,28 @@ fun <T> doExec(
     timeout: Long = 30L,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Do exec ::",
+    executor: Executor? = null
 
     ): T? {
 
     var success: T? = null
-    val future = Executor.MAIN.execute(callable)
+    var future: Future<T>? = null
+
+    executor?.let {
+
+        future = it.execute(callable)
+    }
+
+    if (executor == null) {
+
+        future = Executor.MAIN.execute(callable)
+    }
 
     try {
 
         Timber.v("$logTag Callable: PRE-START")
 
-        success = future.get(timeout, timeUnit)
+        success = future?.get(timeout, timeUnit)
 
         if (success != null) {
 
@@ -661,7 +675,7 @@ fun <T> doExec(
 
         Timber.e(e)
 
-        future.cancel(true)
+        future?.cancel(true)
     }
 
     return success
