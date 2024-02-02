@@ -6,13 +6,13 @@ import timber.log.Timber
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
 
 enum class Executor : Execution {
 
     MAIN {
+
+        var DEBUG = false
 
         private val cpus = CPUs()
         private val cores = cpus.numberOfCores
@@ -28,11 +28,11 @@ enum class Executor : Execution {
 
         private val executor = TaskExecutor.instantiate(capacity)
 
-        override fun execute(action: Runnable) {
+        override fun execute(what: Runnable) {
 
             logCapacity()
 
-            Exec.execute(action, executor)
+            Exec.execute(what, executor)
         }
 
         override fun <T> execute(callable: Callable<T>): Future<T> {
@@ -50,6 +50,11 @@ enum class Executor : Execution {
         }
 
         private fun logCapacity() {
+
+            if (!DEBUG) {
+
+                return
+            }
 
             val maximumPoolSize = executor.maximumPoolSize
             val available = maximumPoolSize - executor.activeCount
@@ -72,9 +77,9 @@ enum class Executor : Execution {
         private val executor = Handler(Looper.getMainLooper())
 
         @Throws(IllegalStateException::class)
-        override fun execute(action: Runnable) {
+        override fun execute(what: Runnable) {
 
-            if (!executor.post(action)) {
+            if (!executor.post(what)) {
 
                 throw IllegalStateException("Could not accept action")
             }
