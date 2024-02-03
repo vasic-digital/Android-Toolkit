@@ -330,5 +330,5 @@ abstract class DataManagement<T> :
         return store
     }
 
-    private fun initCallbacksTag() = "$initTag :: Data management initialization"
+    private fun initCallbacksTag() = "$initTag Data management initialization"
 }
