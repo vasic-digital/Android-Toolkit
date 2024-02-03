@@ -25,16 +25,16 @@ abstract class DataManagement<T> :
     Resetable
 {
 
+    protected abstract val initTag: String
     protected abstract val storageKey: String
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
     private var storage: EncryptedPersistence? = null
     private val initializing = AtomicBoolean(false)
-    private val initCallbacksTag = "Data management initialization"
 
     private val initCallbacks =
-        Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag)
+        Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag())
 
     fun initialize(
 
@@ -113,7 +113,7 @@ abstract class DataManagement<T> :
         Initialization.waitForInitialization(
 
             who = this,
-            initLogTag = initCallbacksTag
+            initLogTag = initCallbacksTag()
         )
 
         if (instantiateDataObject) {
@@ -261,7 +261,7 @@ abstract class DataManagement<T> :
         }
 
         initializing.set(false)
-        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
+        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag())
 
         initializationCompleted(e)
     }
@@ -288,7 +288,7 @@ abstract class DataManagement<T> :
         }
 
         initializing.set(false)
-        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag)
+        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag())
 
         initializationCompleted()
     }
@@ -329,4 +329,6 @@ abstract class DataManagement<T> :
         storage = store
         return store
     }
+
+    private fun initCallbacksTag() = "$initTag :: Data management initialization"
 }

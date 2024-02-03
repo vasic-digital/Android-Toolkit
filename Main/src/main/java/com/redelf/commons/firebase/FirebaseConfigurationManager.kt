@@ -18,6 +18,7 @@ object FirebaseConfigurationManager :
     ResourceDefaults {
 
     override val storageKey = "remote_configuration"
+    override val initTag = "FirebaseConfigurationManager ::"
 
     private const val logTag = "FirebaseConfigurationManager ::"
 
