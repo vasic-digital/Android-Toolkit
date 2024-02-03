@@ -10,6 +10,7 @@ import android.database.Cursor
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Debug
 import android.os.Handler
 import android.os.Looper
 import android.provider.OpenableColumns
@@ -596,7 +597,8 @@ fun exec(
     timeout: Long = 30L,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Bool exec ::",
-    executor: Executor? = null
+    executor: Executor? = null,
+    debug: Boolean = false
 
 ): Boolean {
 
@@ -606,7 +608,8 @@ fun exec(
         timeout = timeout,
         timeUnit = timeUnit,
         logTag = logTag,
-        executor = executor
+        executor = executor,
+        debug = debug
     )
 
     result?.let {
@@ -623,9 +626,10 @@ fun <T> doExec(
     timeout: Long = 30L,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Do exec ::",
-    executor: Executor? = null
+    executor: Executor? = null,
+    debug: Boolean = false
 
-    ): T? {
+): T? {
 
     var success: T? = null
     var future: Future<T>? = null
@@ -642,20 +646,26 @@ fun <T> doExec(
 
     try {
 
-        Timber.v("$logTag Callable: PRE-START")
+        if (debug) {
+
+            Timber.v("$logTag Callable: PRE-START")
+        }
 
         success = future?.get(timeout, timeUnit)
 
-        if (success != null) {
+        if (debug) {
 
-            Timber.v("$logTag Callable: RETURNED: $success")
+            if (success != null) {
 
-        } else {
+                Timber.v("$logTag Callable: RETURNED: $success")
 
-            Timber.v("$logTag Callable: RETURNED NOTHING")
+            } else {
+
+                Timber.v("$logTag Callable: RETURNED NOTHING")
+            }
+
+            Timber.v("$logTag Callable: POST-END")
         }
-
-        Timber.v("$logTag Callable: POST-END")
 
         return success
 

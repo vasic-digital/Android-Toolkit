@@ -110,11 +110,14 @@ abstract class DataManagement<T> :
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(): T? {
 
-        Initialization.waitForInitialization(
+        if (isInitializing() || isNotInitialized()) {
 
-            who = this,
-            initLogTag = initCallbacksTag()
-        )
+            Initialization.waitForInitialization(
+
+                who = this,
+                initLogTag = initCallbacksTag()
+            )
+        }
 
         if (instantiateDataObject) {
 
