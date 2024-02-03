@@ -22,10 +22,6 @@ class DataSerializer implements Serializer {
     @Override
     public <T> String serialize(byte[] cipherText, T originalGivenValue) {
 
-        final String tag = "Serialize ::";
-
-        Timber.v("%s START", tag);
-
         PersistenceUtils.checkNullOrEmpty("Cipher text", cipherText);
         PersistenceUtils.checkNull("Value", originalGivenValue);
 
@@ -88,10 +84,6 @@ class DataSerializer implements Serializer {
     @Override
     public DataInfo deserialize(String serializedText) {
 
-        final String tag = "Deserialize ::";
-
-        Timber.v("%s START", tag);
-
         try {
 
             final DataInfo dataInfo = gsn.fromJson(serializedText, DataInfo.class);
@@ -111,8 +103,6 @@ class DataSerializer implements Serializer {
                     Timber.e(e);
                 }
             }
-
-            Timber.v("%s END: %s", tag, dataInfo);
 
             return dataInfo;
 

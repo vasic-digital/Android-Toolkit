@@ -36,7 +36,10 @@ class ConcealEncryption constructor(
         val entity = Entity.create(key + salt)
         val encrypted = crypto.encrypt(value?.toByteArray(), entity)
 
-        Timber.v("Encrypted: ${encrypted.isNotEmpty()}")
+        if (encrypted.isEmpty()) {
+
+            Timber.w("Encrypted value is empty")
+        }
 
         return encrypted
     }
