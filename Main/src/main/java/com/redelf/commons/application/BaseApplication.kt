@@ -1,11 +1,16 @@
 package com.redelf.commons.application
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
+import android.app.Application.ActivityLifecycleCallbacks
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Bundle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
@@ -30,7 +35,14 @@ import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
 
-abstract class BaseApplication : Application(), ContextAvailability {
+abstract class BaseApplication :
+
+    Application(),
+    ContextAvailability,
+    ActivityLifecycleCallbacks,
+    LifecycleObserver
+
+{
 
     companion object : ContextAvailability {
 
@@ -113,6 +125,9 @@ abstract class BaseApplication : Application(), ContextAvailability {
         super.onCreate()
 
         CONTEXT = applicationContext
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+        registerActivityLifecycleCallbacks(this)
 
         managers.addAll(populateManagers())
         defaultManagerResources.putAll(populateDefaultManagerResources())
@@ -326,6 +341,138 @@ abstract class BaseApplication : Application(), ContextAvailability {
                 }
             )
     }
+
+    override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        super.onActivityPreCreated(activity, savedInstanceState)
+    }
+
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+
+        // Ignore
+    }
+
+    override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
+
+        // Ignore
+
+        super.onActivityPostCreated(activity, savedInstanceState)
+    }
+
+    override fun onActivityPreStarted(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPreStarted(activity)
+    }
+
+    override fun onActivityStarted(activity: Activity) {
+
+        // Ignore
+    }
+
+    override fun onActivityPostStarted(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPostStarted(activity)
+    }
+
+    override fun onActivityPreResumed(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPreResumed(activity)
+    }
+
+    override fun onActivityResumed(activity: Activity) {
+
+        // Ignore
+    }
+
+    override fun onActivityPostResumed(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPostResumed(activity)
+    }
+
+    override fun onActivityPrePaused(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPrePaused(activity)
+    }
+
+    override fun onActivityPaused(activity: Activity) {
+
+        // Ignore
+    }
+
+    override fun onActivityPostPaused(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPostPaused(activity)
+    }
+
+    override fun onActivityPreStopped(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPreStopped(activity)
+    }
+
+    override fun onActivityStopped(activity: Activity) {
+
+        // Ignore
+    }
+
+    override fun onActivityPostStopped(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPostStopped(activity)
+    }
+
+    override fun onActivityPreSaveInstanceState(activity: Activity, outState: Bundle) {
+
+        // Ignore
+
+        super.onActivityPreSaveInstanceState(activity, outState)
+    }
+
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+
+        // Ignore
+    }
+
+    override fun onActivityPostSaveInstanceState(activity: Activity, outState: Bundle) {
+
+        // Ignore
+
+        super.onActivityPostSaveInstanceState(activity, outState)
+    }
+
+    override fun onActivityPreDestroyed(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPreDestroyed(activity)
+    }
+
+    override fun onActivityDestroyed(activity: Activity) {
+
+        // Ignore
+    }
+
+    override fun onActivityPostDestroyed(activity: Activity) {
+
+        // Ignore
+
+        super.onActivityPostDestroyed(activity)
+    }
+
+
 
     private fun onManagersInitialized() {
 
