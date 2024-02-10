@@ -1,5 +1,6 @@
 package com.redelf.commons.ui
 
+import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.graphics.Rect
@@ -105,45 +106,53 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
         return false
     }
 
-    private fun animateSwipeView() {
+    private fun animateSwipeView() { // TODO: Add animation for/if UP direction
 
         val parentHeight = swipeView.height
         val tag = "$tag Animate swipe view ::"
 
         Timber.v("$tag Parent height: $parentHeight")
 
-        val halfHeight = parentHeight / 2
         val currentPosition = swipeView.translationY
-        var animateTo = 0.0f
+        val animateTo = -parentHeight.toFloat()
 
-        if (currentPosition < -halfHeight) {
+        Timber.v("$tag Animate to: $animateTo")
 
-            animateTo = (-parentHeight).toFloat()
-
-        } else if (currentPosition > halfHeight) {
-
-            animateTo = parentHeight.toFloat()
-        }
-
-        if (animateTo == 0.0f) {
-
-            swipeListener?.onDragStop()
-            isDragStarted = false
-
-        } else {
-
-            swipeListener?.onDismissed()
-        }
-
-        Timber.v("$tag Animate to: $parentHeight")
-
-        ObjectAnimator.ofFloat(
+        val animator = ObjectAnimator.ofFloat(
 
             swipeView,
             "translationY",
             currentPosition,
-            animateTo
+            -animateTo
 
-        ).setDuration(200).start()
+        ).setDuration(500)
+
+        animator.addListener(
+
+                object : Animator.AnimatorListener {
+
+                    override fun onAnimationStart(animation: Animator) {
+
+                        // Ignore
+                    }
+
+                    override fun onAnimationEnd(animation: Animator) {
+
+                        swipeListener?.onDismissed()
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) {
+
+                        swipeListener?.onDismissed()
+                    }
+
+                    override fun onAnimationRepeat(animation: Animator) {
+
+                        // Ignore
+                    }
+                }
+            )
+
+        animator.start()
     }
 }
