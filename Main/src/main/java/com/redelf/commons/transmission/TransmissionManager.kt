@@ -222,7 +222,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     @Throws(IllegalStateException::class)
     fun update(data: T): Boolean {
 
-        return reSchedule(data) != null
+        return reSchedule(data)
     }
 
     private fun unSchedule(scheduled: T): T? {
