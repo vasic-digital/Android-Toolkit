@@ -42,8 +42,6 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
 
-        Timber.v("On touch: $event")
-
         event?.let {
 
             when (it.action) {
@@ -107,20 +105,25 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
         return false
     }
 
-    private fun animateSwipeView() { //parentHeight: Int
+    private fun animateSwipeView() {
 
-//        val halfHeight = parentHeight / 2
+        val parentHeight = swipeView.height
+        val tag = "$tag Animate swipe view ::"
+
+        Timber.v("$tag Parent height: $parentHeight")
+
+        val halfHeight = parentHeight / 2
         val currentPosition = swipeView.translationY
         var animateTo = 0.0f
 
-//        if (currentPosition < -halfHeight) {
-//
-//            animateTo = (-parentHeight).toFloat()
-//
-//        } else if (currentPosition > halfHeight) {
-//
-//            animateTo = parentHeight.toFloat()
-//        }
+        if (currentPosition < -halfHeight) {
+
+            animateTo = (-parentHeight).toFloat()
+
+        } else if (currentPosition > halfHeight) {
+
+            animateTo = parentHeight.toFloat()
+        }
 
         if (animateTo == 0.0f) {
 
@@ -132,8 +135,15 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
             swipeListener?.onDismissed()
         }
 
-        ObjectAnimator.ofFloat(swipeView, "translationY", currentPosition, animateTo)
-            .setDuration(200)
-            .start()
+        Timber.v("$tag Animate to: $parentHeight")
+
+        ObjectAnimator.ofFloat(
+
+            swipeView,
+            "translationY",
+            currentPosition,
+            animateTo
+
+        ).setDuration(200).start()
     }
 }
