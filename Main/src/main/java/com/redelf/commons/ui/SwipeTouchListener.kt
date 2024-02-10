@@ -9,6 +9,8 @@ import timber.log.Timber
 
 class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
 
+    private val tag = "SWIPE TOUCH LISTENER ::"
+
     interface SwipeListener {
 
         fun onDragStart()
@@ -74,12 +76,21 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
 
                     if (tracking) {
 
-                        swipeView.translationY = it.y - startY
+                        val diff = it.y - startY
 
-                        if (!isDragStarted) {
+                        if (diff > 0) {
 
-                            isDragStarted = true
-                            swipeListener?.onDragStart()
+                            swipeView.translationY = diff
+
+                            if (!isDragStarted) {
+
+                                isDragStarted = true
+                                swipeListener?.onDragStart()
+                            }
+
+                        } else {
+
+                            // Ignore the UP direction for now
                         }
                     }
 
