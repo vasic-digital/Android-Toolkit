@@ -11,7 +11,8 @@ import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.EncryptedPersistence
-import com.redelf.commons.reset.Resetable
+import com.redelf.commons.recordException
+import com.redelf.commons.reset.Resettable
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -22,7 +23,7 @@ abstract class DataManagement<T> :
     Initialization<EncryptedPersistence>,
     InitializationPerformer,
     Obtain<T?>,
-    Resetable
+    Resettable
 {
 
     protected abstract val initTag: String
@@ -172,24 +173,26 @@ abstract class DataManagement<T> :
         }
     }
 
-    @Throws(IllegalStateException::class)
-    override fun reset() {
-
-        val store = takeStorage()
-
-        this.data = null
+    override fun reset(): Boolean {
 
         try {
 
-            Executor.MAIN.execute {
+            val store = takeStorage()
 
-                store.delete(storageKey)
-            }
+            this.data = null
+
+            return store.delete(storageKey)
 
         } catch (e: RejectedExecutionException) {
 
-            Timber.e(e)
+            recordException(e)
+
+        } catch (e: IllegalStateException) {
+
+            recordException(e)
         }
+
+        return false
     }
 
     override fun initializationCompleted(e: Exception?) {
