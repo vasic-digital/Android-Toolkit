@@ -137,7 +137,8 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val action = Runnable {
 
-            val json = Data.get(storageIdentifier, "")
+            val json = Data[storageIdentifier, ""]
+
             if (TextUtils.isEmpty(json)) {
 
                 Timber.w("No encrypted data persisted")
