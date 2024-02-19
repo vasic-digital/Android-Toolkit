@@ -50,6 +50,16 @@ abstract class BaseApplication :
         lateinit var CONTEXT: Context
 
         override fun takeContext() = CONTEXT
+
+        fun restart(context: Context) {
+
+            val packageManager = context.packageManager
+            val intent = packageManager.getLaunchIntentForPackage(context.packageName)
+            val componentName = intent?.component
+            val mainIntent = Intent.makeRestartActivityTask(componentName)
+            context.startActivity(mainIntent)
+            Runtime.getRuntime().exit(0)
+        }
     }
 
     val managers = mutableListOf<DataManagement<*>>(
