@@ -33,9 +33,7 @@ class TaskExecutor private constructor(
             )
         }
 
-        fun instantiateSingle(): ThreadPoolExecutor {
-
-            val queueCapacity = 100
+        fun instantiateSingle(queueCapacity: Int = 1000): ThreadPoolExecutor {
 
             return ThreadPoolExecutor(
 

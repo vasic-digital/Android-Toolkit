@@ -3,6 +3,7 @@ package com.redelf.commons.management
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.InitializationPerformer
@@ -28,6 +29,7 @@ abstract class DataManagement<T> :
 
     protected abstract val initTag: String
     protected abstract val storageKey: String
+    protected open val storageExecutor = Executor.SINGLE
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
@@ -63,7 +65,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            Executor.MAIN.execute {
+            storageExecutor.execute {
 
                 initializing.set(true)
 
@@ -162,7 +164,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            Executor.MAIN.execute {
+            storageExecutor.execute {
 
                 store.push(storageKey, data)
             }

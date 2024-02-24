@@ -72,6 +72,26 @@ enum class Executor : Execution {
         }
     },
 
+    SINGLE {
+
+        private val executor = TaskExecutor.instantiateSingle()
+
+        override fun execute(what: Runnable) {
+
+            Exec.execute(what, executor)
+        }
+
+        override fun <T> execute(callable: Callable<T>): Future<T> {
+
+            return Exec.execute(callable, executor)
+        }
+
+        override fun execute(action: Runnable, delayInMillis: Long) {
+
+            Exec.execute(action, delayInMillis, executor)
+        }
+    },
+
     UI {
 
         private val executor = Handler(Looper.getMainLooper())

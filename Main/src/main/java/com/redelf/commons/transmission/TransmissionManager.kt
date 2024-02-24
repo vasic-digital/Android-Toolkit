@@ -51,7 +51,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     private val maxRetries = 10
     private val sending = AtomicBoolean()
     private var lastSendingTime: Long = 0
-    private val sequentialExecutor = TaskExecutor.instantiateSingle()
+    private val sequentialExecutor = Executor.SINGLE
 
     private val initializationCallbacks =
         Callbacks<LifecycleCallback<Unit>>(identifier = "Transmission initialization")

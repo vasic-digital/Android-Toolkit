@@ -58,9 +58,7 @@ object Data {
      */
     fun <T> put(key: String?, value: T): Boolean {
 
-        val callable = Callable { facade?.put(key, value) ?: false }
-
-        return exec(callable, executor = getExecutor())
+        return facade?.put(key, value) ?: false
     }
 
     /**
@@ -73,9 +71,7 @@ object Data {
      */
     operator fun <T> get(key: String?): T? {
 
-        val callable = Callable<T?> { facade?.get(key) }
-
-        return doExec(callable, executor = getExecutor(), logTag = "Do exec :: Get :: $key")
+        return facade?.get(key)
     }
 
     /**
@@ -87,9 +83,7 @@ object Data {
      */
     operator fun <T> get(key: String?, defaultValue: T): T {
 
-        val callable = Callable<T?> { facade?.get(key, defaultValue) }
-
-        return doExec(callable, executor = getExecutor()) ?: defaultValue
+        return facade?.get(key, defaultValue) ?: defaultValue
     }
 
     /**
@@ -99,9 +93,7 @@ object Data {
      */
     fun count(): Long {
 
-        val callable = Callable<Long> { facade?.count() }
-
-        return doExec(callable, executor = getExecutor()) ?: -1
+        return facade?.count() ?: 0
     }
 
     /**
@@ -112,16 +104,12 @@ object Data {
      */
     fun deleteAll(): Boolean {
 
-        val callable = Callable { facade?.deleteAll() ?: false }
-
-        return exec(callable, executor = getExecutor())
+        return facade?.deleteAll() ?: false
     }
 
     fun deleteKeysWithPrefix(value: String): Boolean {
 
-        val callable = Callable { facade?.deleteKeysWithPrefix(value) ?: true }
-
-        return exec(callable, executor = getExecutor())
+        return facade?.deleteKeysWithPrefix(value) ?: true
     }
 
     /**
@@ -132,9 +120,7 @@ object Data {
      */
     fun delete(key: String?): Boolean {
 
-        val callable = Callable { facade?.delete(key) ?: false }
-
-        return exec(callable, executor = getExecutor())
+        return facade?.delete(key) ?: false
     }
 
     /**
@@ -145,9 +131,7 @@ object Data {
      */
     operator fun contains(key: String?): Boolean {
 
-        val callable = Callable { facade?.contains(key) ?: false }
-
-        return exec(callable, executor = getExecutor())
+        return facade?.contains(key) ?: false
     }
 
     val isBuilt: Boolean
@@ -158,18 +142,11 @@ object Data {
          */
         get(): Boolean {
 
-            val callable = Callable { facade?.isBuilt ?: false }
-
-            return exec(callable, executor = getExecutor())
+            return facade?.isBuilt ?: false
         }
 
     fun destroy() {
 
-        exec {
-
-            facade?.destroy()
-        }
+        facade?.destroy()
     }
-
-    private fun getExecutor() = Executor.MAIN
 }
