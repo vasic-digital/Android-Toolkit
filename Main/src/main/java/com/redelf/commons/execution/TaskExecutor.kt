@@ -24,10 +24,26 @@ class TaskExecutor private constructor(
     companion object {
 
         fun instantiate(capacity: Int): TaskExecutor {
+
             return TaskExecutor(
+
                 capacity,
-                capacity * 2,
-                LinkedBlockingQueue<Runnable>()
+                capacity * 30,
+                LinkedBlockingQueue()
+            )
+        }
+
+        fun instantiateSingle(): ThreadPoolExecutor {
+
+            val queueCapacity = 100
+
+            return ThreadPoolExecutor(
+
+                1, // corePoolSize
+                1, // maximumPoolSize
+                0L, // keepAliveTime
+                TimeUnit.MILLISECONDS, // unit for keepAliveTime
+                LinkedBlockingQueue(queueCapacity)
             )
         }
     }
