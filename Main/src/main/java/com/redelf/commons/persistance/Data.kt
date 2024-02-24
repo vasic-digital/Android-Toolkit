@@ -4,9 +4,15 @@ import android.content.Context
 import android.text.TextUtils
 import com.redelf.commons.doExec
 import com.redelf.commons.exec
+import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.persistance.Facade.EmptyFacade
+import com.redelf.commons.recordException
+import timber.log.Timber
 import java.util.concurrent.Callable
+import java.util.concurrent.Future
+import java.util.concurrent.RejectedExecutionException
 
 /**
  * Secure, simple key-value storage for Android.
@@ -14,6 +20,7 @@ import java.util.concurrent.Callable
 object Data {
 
     private var facade: Facade? = EmptyFacade()
+    private val executor = TaskExecutor.instantiateSingle()
 
     fun init(
 
@@ -58,7 +65,9 @@ object Data {
      */
     fun <T> put(key: String?, value: T): Boolean {
 
-        return facade?.put(key, value) ?: false
+        val callable = Callable { facade?.put(key, value) ?: false }
+
+        return exec(callable, executor = getExecutor())
     }
 
     /**
@@ -71,7 +80,9 @@ object Data {
      */
     operator fun <T> get(key: String?): T? {
 
-        return facade?.get(key)
+        val callable = Callable<T?> { facade?.get(key) }
+
+        return doExec(callable, executor = getExecutor(), logTag = "Do exec :: Get :: $key")
     }
 
     /**
@@ -83,7 +94,9 @@ object Data {
      */
     operator fun <T> get(key: String?, defaultValue: T): T {
 
-        return facade?.get(key, defaultValue) ?: defaultValue
+        val callable = Callable<T?> { facade?.get(key, defaultValue) }
+
+        return doExec(callable, executor = getExecutor()) ?: defaultValue
     }
 
     /**
@@ -93,7 +106,9 @@ object Data {
      */
     fun count(): Long {
 
-        return facade?.count() ?: 0
+        val callable = Callable<Long> { facade?.count() }
+
+        return doExec(callable, executor = getExecutor()) ?: -1
     }
 
     /**
@@ -104,12 +119,16 @@ object Data {
      */
     fun deleteAll(): Boolean {
 
-        return facade?.deleteAll() ?: false
+        val callable = Callable { facade?.deleteAll() ?: false }
+
+        return exec(callable, executor = getExecutor())
     }
 
     fun deleteKeysWithPrefix(value: String): Boolean {
 
-        return facade?.deleteKeysWithPrefix(value) ?: true
+        val callable = Callable { facade?.deleteKeysWithPrefix(value) ?: true }
+
+        return exec(callable, executor = getExecutor())
     }
 
     /**
@@ -120,7 +139,9 @@ object Data {
      */
     fun delete(key: String?): Boolean {
 
-        return facade?.delete(key) ?: false
+        val callable = Callable { facade?.delete(key) ?: false }
+
+        return exec(callable, executor = getExecutor())
     }
 
     /**
@@ -131,7 +152,9 @@ object Data {
      */
     operator fun contains(key: String?): Boolean {
 
-        return facade?.contains(key) ?: false
+        val callable = Callable { facade?.contains(key) ?: false }
+
+        return exec(callable, executor = getExecutor())
     }
 
     val isBuilt: Boolean
@@ -142,11 +165,55 @@ object Data {
          */
         get(): Boolean {
 
-            return facade?.isBuilt ?: false
+            val callable = Callable { facade?.isBuilt ?: false }
+
+            return exec(callable, executor = getExecutor())
         }
 
     fun destroy() {
 
-        facade?.destroy()
+        getExecutor().execute {
+
+            facade?.destroy()
+        }
+    }
+
+    private fun getExecutor() = object : Execution {
+
+        @Throws(RejectedExecutionException::class)
+        override fun <T> execute(callable: Callable<T>): Future<T> {
+
+            return executor.submit(callable)
+        }
+
+        override fun execute(action: Runnable, delayInMillis: Long) {
+
+            executor.execute {
+
+                try {
+
+                    Thread.sleep(delayInMillis)
+
+                    action.run()
+
+                } catch (e: InterruptedException) {
+
+                    Timber.e(e)
+                }
+            }
+        }
+
+        override fun execute(what: Runnable) {
+
+            try {
+
+                executor.execute(what)
+
+            } catch (e: RejectedExecutionException) {
+
+                recordException(e)
+            }
+        }
+
     }
 }

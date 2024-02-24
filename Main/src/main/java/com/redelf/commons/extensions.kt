@@ -23,6 +23,7 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.persistance.PropertiesHash
 import timber.log.Timber
@@ -597,7 +598,7 @@ fun exec(
     timeout: Long = 30L,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Bool exec ::",
-    executor: Executor? = null,
+    executor: Execution? = null,
     debug: Boolean = false
 
 ): Boolean {
@@ -626,7 +627,7 @@ fun <T> doExec(
     timeout: Long = 30L,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Do exec ::",
-    executor: Executor? = null,
+    executor: Execution? = null,
     debug: Boolean = false
 
 ): T? {
@@ -634,17 +635,17 @@ fun <T> doExec(
     var success: T? = null
     var future: Future<T>? = null
 
-    executor?.let {
-
-        future = it.execute(callable)
-    }
-
-    if (executor == null) {
-
-        future = Executor.MAIN.execute(callable)
-    }
-
     try {
+
+        executor?.let {
+
+            future = it.execute(callable)
+        }
+
+        if (executor == null) {
+
+            future = Executor.MAIN.execute(callable)
+        }
 
         if (debug) {
 
