@@ -66,7 +66,12 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
 
                     tracking = false
 
-                    animateSwipeView()
+                    Timber.v("$tag translationY: ${swipeView.translationY}")
+
+                    if (swipeView.translationY > 30) {
+
+                        animateSwipeView()
+                    }
 
                     return true
                 }
