@@ -203,7 +203,8 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val action = Runnable {
 
-            Timber.v("We are about to send data: %s", data)
+            Timber.v("We are about to send data: %s", data::class.simpleName)
+
             persist(data)
         }
 
