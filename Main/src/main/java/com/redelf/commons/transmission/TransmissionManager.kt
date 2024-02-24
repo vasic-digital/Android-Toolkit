@@ -482,11 +482,11 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
                             persistingRequired = true
                         }
 
-                        Timber.i("Data has been sent: %s", data)
+                        Timber.i("Data has been sent")
 
                     } else {
 
-                        Timber.e("Data has not been sent: %s", data)
+                        Timber.e("Data has not been sent")
                     }
 
                     onSent(data, success)
