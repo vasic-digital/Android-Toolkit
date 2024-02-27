@@ -1,5 +1,8 @@
 package com.redelf.commons.management
 
+import android.os.Build
+import com.redelf.commons.BuildConfig
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.Executor
@@ -333,7 +336,16 @@ abstract class DataManagement<T> :
             return it
         }
 
-        val store = EncryptedPersistence()
+        val sKey = if (BuildConfig.DEBUG) {
+
+            "${storageKey}.DEBUG.${BaseApplication.getVersionCode()}"
+
+        } else {
+
+            storageKey
+        }
+
+        val store = EncryptedPersistence(storageTag = sKey)
         storage = store
         return store
     }

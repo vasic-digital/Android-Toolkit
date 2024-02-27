@@ -30,6 +30,8 @@ constructor(
 
     init {
 
+        Timber.v("EncryptedPersistence :: Initialization: Storage tag: '$storageTag'")
+
         val tag = "Exclusion strategies ::"
 
         val err = IllegalArgumentException(

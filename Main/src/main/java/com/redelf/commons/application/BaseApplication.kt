@@ -79,6 +79,31 @@ abstract class BaseApplication :
 
             return ""
         }
+
+        @SuppressLint("ObsoleteSdkInt")
+        override fun getVersionCode(): String {
+
+            try {
+
+                val context = takeContext()
+                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+
+                return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+
+                    packageInfo.longVersionCode.toString()
+
+                } else {
+
+                    packageInfo.versionCode.toString()
+                }
+
+            } catch (e: NameNotFoundException) {
+
+                recordException(e)
+            }
+
+            return ""
+        }
     }
 
     val managers = mutableListOf<DataManagement<*>>(
