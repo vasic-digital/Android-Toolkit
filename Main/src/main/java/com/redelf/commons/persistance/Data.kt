@@ -53,7 +53,9 @@ object Data {
 
     fun build(persistenceBuilder: PersistenceBuilder) {
 
-        facade = DefaultFacade(persistenceBuilder)
+        DefaultFacade.initialize(persistenceBuilder)
+
+        facade = DefaultFacade
     }
 
     /**
@@ -214,6 +216,5 @@ object Data {
                 recordException(e)
             }
         }
-
     }
 }

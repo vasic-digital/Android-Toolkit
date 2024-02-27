@@ -422,7 +422,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         if (timeCondition) {
 
-            Timber.w("Too soon to send data. Last sending executed before: %s", timeDiff)
+            // Timber.w("Too soon to send data. Last sending executed before: %s", timeDiff)
             return
         }
 

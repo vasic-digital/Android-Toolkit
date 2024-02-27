@@ -1,15 +1,25 @@
 package com.redelf.commons.persistance
 
-class DefaultFacade(builder: PersistenceBuilder) :
-    Facade {
+import com.redelf.commons.exec
+import com.redelf.commons.execution.Execution
+import com.redelf.commons.execution.TaskExecutor
+import com.redelf.commons.recordException
+import timber.log.Timber
+import java.util.concurrent.Callable
+import java.util.concurrent.Future
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ThreadPoolExecutor
 
-    private val storage: Storage?
-    private val converter: Converter?
-    private val encryption: Encryption?
-    private val serializer: Serializer?
-    private val logInterceptor: LogInterceptor?
+object DefaultFacade : Facade {
 
-    init {
+    private var storage: Storage? = null
+    private var converter: Converter? = null
+    private var encryption: Encryption? = null
+    private var serializer: Serializer? = null
+    private var logInterceptor: LogInterceptor? = null
+    private var executor = TaskExecutor.instantiateSingle()
+
+    fun initialize(builder: PersistenceBuilder, executorToSet: ThreadPoolExecutor? = null) {
 
         storage = builder.storage
         converter = builder.converter
@@ -17,79 +27,98 @@ class DefaultFacade(builder: PersistenceBuilder) :
         serializer = builder.serializer
         logInterceptor = builder.logInterceptor
 
-        logInterceptor?.onLog("Data.init -> Encryption : " + encryption?.javaClass?.simpleName)
+        executorToSet?.let {
+
+            executor = executorToSet
+        }
+
+        logInterceptor?.onLog("init -> Encryption : " + encryption?.javaClass?.simpleName)
     }
 
+
+
     override fun <T> put(key: String, value: T): Boolean {
-        // Validate
-        PersistenceUtils.checkNull("Key", key)
-        log("Data.put -> key: " + key + ", value: " + (value != null))
 
-        // If the value is null, delete it
-        if (value == null) {
-            log("Data.put -> Value is null. Any existing value will be deleted with the given key")
-            return delete(key)
+        val callable = object : Callable<Boolean> {
+
+            override fun call(): Boolean {
+
+                // Validate
+                PersistenceUtils.checkNull("Key", key)
+                log("put -> key: " + key + ", value: " + (value != null))
+
+                // If the value is null, delete it
+                if (value == null) {
+                    log("put -> Value is null. Any existing value will be deleted with the given key")
+                    return delete(key)
+                }
+
+                // 1. Convert to text
+                val plainText = converter?.toString(value)
+                log("put -> Converted: " + (plainText != null))
+                if (plainText == null) {
+                    log("put -> Converter failed")
+                    return false
+                }
+
+                // 2. Encrypt the text
+                var cipherText: ByteArray? = null
+                try {
+                    cipherText = encryption?.encrypt(key, plainText)
+                    log("put -> Encrypted: " + (cipherText != null))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                if (cipherText == null) {
+                    log("put -> Encryption failed")
+                    return false
+                }
+
+                // 3. Serialize the given object along with the cipher text
+                val serializedText = serializer?.serialize(cipherText, value)
+                log("put -> Serialized: " + (serializedText != null))
+                if (serializedText == null) {
+                    log("put -> Serialization failed")
+                    return false
+                }
+
+                // 4. Save to the storage
+                return if (storage?.put(key, serializedText) == true) {
+
+                    log("put -> Stored successfully")
+                    true
+
+                } else {
+
+                    log("put -> Store operation failed")
+                    false
+                }
+            }
         }
 
-        // 1. Convert to text
-        val plainText = converter?.toString(value)
-        log("Data.put -> Converted: " + (plainText != null))
-        if (plainText == null) {
-            log("Data.put -> Converter failed")
-            return false
-        }
-
-        // 2. Encrypt the text
-        var cipherText: ByteArray? = null
-        try {
-            cipherText = encryption?.encrypt(key, plainText)
-            log("Data.put -> Encrypted: " + (cipherText != null))
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        if (cipherText == null) {
-            log("Data.put -> Encryption failed")
-            return false
-        }
-
-        // 3. Serialize the given object along with the cipher text
-        val serializedText = serializer?.serialize(cipherText, value)
-        log("Data.put -> Serialized: " + (serializedText != null))
-        if (serializedText == null) {
-            log("Data.put -> Serialization failed")
-            return false
-        }
-
-        // 4. Save to the storage
-        return if (storage?.put(key, serializedText) == true) {
-            log("Data.put -> Stored successfully")
-            true
-        } else {
-            log("Data.put -> Store operation failed")
-            false
-        }
+        return exec(callable, executor = getExecutor())
     }
 
     override fun <T> get(key: String): T? {
 
-        log("Data.get -> key: $key")
+        log("get -> key: $key")
 
         // 1. Get serialized text from the storage
         val serializedText = storage?.get<String?>(key)
-        log("Data.get -> Fetched from storage: " + (serializedText != null))
+        log("get -> Fetched from storage: " + (serializedText != null))
 
         if (serializedText == null) {
 
-            log("Data.get -> Fetching from storage failed")
+            log("get -> Fetching from storage failed")
             return null
         }
 
         // 2. Deserialize
         val dataInfo = serializer?.deserialize(serializedText)
-        log("Data.get -> Deserialized")
+        log("get -> Deserialized")
         if (dataInfo == null) {
 
-            log("Data.get -> Deserialization failed")
+            log("get -> Deserialization failed")
             return null
         }
 
@@ -99,14 +128,14 @@ class DefaultFacade(builder: PersistenceBuilder) :
         try {
 
             plainText = encryption?.decrypt(key, dataInfo.cipherText)
-            log("Data.get -> Decrypted: " + (plainText != null))
+            log("get -> Decrypted: " + (plainText != null))
 
         } catch (e: Exception) {
 
-            log("Data.get -> Decrypt failed: " + e.message)
+            log("get -> Decrypt failed: " + e.message)
         }
         if (plainText == null) {
-            log("Data.get -> Decrypt failed")
+            log("get -> Decrypt failed")
             return null
         }
 
@@ -114,10 +143,10 @@ class DefaultFacade(builder: PersistenceBuilder) :
         var result: T? = null
         try {
             result = converter?.fromString(plainText, dataInfo)
-            log("Data.get -> Converted: " + (result != null))
+            log("get -> Converted: " + (result != null))
         } catch (e: Exception) {
             val message = e.message
-            log("Data.get -> Converter failed, error='$message'")
+            log("get -> Converter failed, error='$message'")
         }
         return result
     }
@@ -160,5 +189,43 @@ class DefaultFacade(builder: PersistenceBuilder) :
     private fun log(message: String) {
 
         logInterceptor?.onLog(message)
+    }
+
+    private fun getExecutor() = object : Execution {
+
+        @Throws(RejectedExecutionException::class)
+        override fun <T> execute(callable: Callable<T>): Future<T> {
+
+            return executor.submit(callable)
+        }
+
+        override fun execute(action: Runnable, delayInMillis: Long) {
+
+            executor.execute {
+
+                try {
+
+                    Thread.sleep(delayInMillis)
+
+                    action.run()
+
+                } catch (e: InterruptedException) {
+
+                    Timber.e(e)
+                }
+            }
+        }
+
+        override fun execute(what: Runnable) {
+
+            try {
+
+                executor.execute(what)
+
+            } catch (e: RejectedExecutionException) {
+
+                recordException(e)
+            }
+        }
     }
 }
