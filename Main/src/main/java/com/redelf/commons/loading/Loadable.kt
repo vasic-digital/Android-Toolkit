@@ -1,4 +1,4 @@
-package com.redelf.commons.load
+package com.redelf.commons.loading
 
 interface Loadable {
 
