@@ -8,6 +8,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager.NameNotFoundException
+import android.os.Build
 import android.os.Bundle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -44,7 +46,7 @@ abstract class BaseApplication :
 
 {
 
-    companion object : ContextAvailability {
+    companion object : ContextAvailability, ApplicationVersion {
 
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: Context
@@ -59,6 +61,23 @@ abstract class BaseApplication :
             val mainIntent = Intent.makeRestartActivityTask(componentName)
             context.startActivity(mainIntent)
             Runtime.getRuntime().exit(0)
+        }
+
+        override fun getVersion(): String {
+
+            try {
+
+                val context = takeContext()
+                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+
+                return packageInfo.versionName
+
+            } catch (e: NameNotFoundException) {
+
+                recordException(e)
+            }
+
+            return ""
         }
     }
 
