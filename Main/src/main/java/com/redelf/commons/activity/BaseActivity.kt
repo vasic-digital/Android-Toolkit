@@ -268,9 +268,9 @@ abstract class BaseActivity : AppCompatActivity() {
 
         if (requestCode == googleSignInRequestCode) {
 
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-
             try {
+
+                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
 
                 val account = task.getResult(ApiException::class.java)
 
@@ -285,7 +285,7 @@ abstract class BaseActivity : AppCompatActivity() {
                     onRegistrationWithGoogleFailed(e)
                 }
 
-            } catch (e: ApiException) {
+            } catch (e: Exception) {
 
                 onRegistrationWithGoogleFailed(e)
             }
@@ -411,6 +411,8 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     protected open fun onRegistrationWithGoogleFailed(error: Throwable) {
+
+        Timber.e("Registration with Google failed")
 
         Timber.e(error)
     }
