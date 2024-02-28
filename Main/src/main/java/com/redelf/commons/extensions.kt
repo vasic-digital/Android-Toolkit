@@ -133,7 +133,15 @@ fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_
     startActivityForResult(intent, requestId)
 }
 
-fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int = R.string.default_web_client_id): Int {
+fun Activity.initRegistrationWithGoogle(
+
+    defaultWebClientId: Int = R.string.default_web_client_id
+
+): Int {
+
+    val tag = "Google registration ::"
+
+    Timber.v("$tag START: $defaultWebClientId")
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(getString(defaultWebClientId))
@@ -143,17 +151,27 @@ fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int = R.string.defau
     val requestCode = randomInteger()
     val client = GoogleSignIn.getClient(this, gso)
 
-    try {
+    val account = GoogleSignIn.getLastSignedInAccount(this)
 
-        startActivityForResult(client.signInIntent, requestCode)
-        return requestCode
+    if (account == null) {
 
-    } catch (e: ActivityNotFoundException) {
+        try {
 
-        recordException(e)
+            startActivityForResult(client.signInIntent, requestCode)
+
+        } catch (e: ActivityNotFoundException) {
+
+            recordException(e)
+        }
+
+    } else {
+
+        Timber.v("$tag Account already available: ${account.email}")
     }
 
-    return 0
+    Timber.v("$tag END :: Req. code: $requestCode")
+
+    return requestCode
 }
 
 fun Activity.onUI(doWhat: () -> Unit) {

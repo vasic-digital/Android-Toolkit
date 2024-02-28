@@ -26,7 +26,6 @@ import com.redelf.commons.initRegistrationWithGoogle
 import com.redelf.commons.isServiceRunning
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.onUI
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.util.UriUtil
@@ -266,20 +265,29 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        val tag = "Google registration :: On act. result ::"
+
+        Timber.v("$tag requestCode: $requestCode, resultCode: $resultCode")
+
         if (requestCode == googleSignInRequestCode) {
+
+            Timber.v("$tag Req. code ok")
 
             try {
 
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-
                 val account = task.getResult(ApiException::class.java)
 
                 account.idToken?.let {
+
+                    Timber.v("$tag We have token: $it")
 
                     firebaseAuthWithGoogle(it)
                 }
 
                 if (account.idToken == null) {
+
+                    Timber.e("$tag We have no token")
 
                     val e = IllegalStateException("Obtained null Google token ID")
                     onRegistrationWithGoogleFailed(e)
