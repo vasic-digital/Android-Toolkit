@@ -297,7 +297,11 @@ abstract class BaseActivity : AppCompatActivity() {
 
             } catch (e: ApiException) {
 
-                Timber.e("$tag Status code: ${e.statusCode}, ${e.message ?: "no message"}")
+                Timber.e(
+
+                    "$tag Status code: ${e.statusCode}, " +
+                            "Message: ${e.message ?: "no message"}"
+                )
 
                 onRegistrationWithGoogleFailed(e)
             }
