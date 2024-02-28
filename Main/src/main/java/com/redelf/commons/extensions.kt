@@ -141,19 +141,22 @@ fun Activity.initRegistrationWithGoogle(
 
     val tag = "Google registration ::"
 
-    Timber.v("$tag START: $defaultWebClientId")
+    val requestCode = randomInteger()
+    val clientId = getString(defaultWebClientId)
+
+    Timber.v("$tag START: $clientId")
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(getString(defaultWebClientId))
+        .requestIdToken(clientId)
         .requestEmail()
         .build()
 
-    val requestCode = randomInteger()
     val client = GoogleSignIn.getClient(this, gso)
-
     val account = GoogleSignIn.getLastSignedInAccount(this)
 
     if (account == null) {
+
+        Timber.v("$tag No account available")
 
         try {
 

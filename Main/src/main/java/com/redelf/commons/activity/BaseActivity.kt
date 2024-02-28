@@ -1,6 +1,7 @@
 package com.redelf.commons.activity
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.*
 import android.net.Uri
 import android.os.Build
@@ -267,15 +268,16 @@ abstract class BaseActivity : AppCompatActivity() {
 
         val tag = "Google registration :: On act. result ::"
 
-        Timber.v("$tag requestCode: $requestCode, resultCode: $resultCode")
+        Timber.v("$tag requestCode: $requestCode")
 
         if (requestCode == googleSignInRequestCode) {
 
             Timber.v("$tag Req. code ok")
 
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+
             try {
 
-                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 val account = task.getResult(ApiException::class.java)
 
                 account.idToken?.let {
@@ -293,7 +295,9 @@ abstract class BaseActivity : AppCompatActivity() {
                     onRegistrationWithGoogleFailed(e)
                 }
 
-            } catch (e: Exception) {
+            } catch (e: ApiException) {
+
+                Timber.e("$tag Status code: ${e.statusCode}, ${e.message ?: "no message"}")
 
                 onRegistrationWithGoogleFailed(e)
             }
