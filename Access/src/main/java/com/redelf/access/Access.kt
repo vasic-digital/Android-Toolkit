@@ -76,7 +76,7 @@ class Access(builder: AccessBuilder) :
                     callback.onInitialization(success)
                     callbacks.unregister(callback)
                 }
-            }, name = "Initialisation operation")
+            }, operationName = "Initialisation operation")
         }
 
         override fun onShutdown(success: Boolean, vararg args: Unit) {

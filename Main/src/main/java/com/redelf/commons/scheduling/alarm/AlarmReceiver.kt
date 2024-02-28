@@ -41,7 +41,7 @@ class AlarmReceiver : BroadcastReceiver() {
                     }
                 },
 
-                name = "onAlarmReceived: $value"
+                operationName = "onAlarmReceived: $value"
             )
         }
     }

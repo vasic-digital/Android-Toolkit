@@ -27,7 +27,7 @@ abstract class PinAccessActivity : AccessActivity(), Registration<CommonExecutio
                     callback.onExecution(success, "executionCallback :: $calledFrom")
                     executionCallbacks.unregister(callback)
                 }
-            }, name = "Execution operation")
+            }, operationName = "Execution operation")
         }
     }
 

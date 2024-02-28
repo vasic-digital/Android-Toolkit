@@ -8,13 +8,14 @@ import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.recordException
 import timber.log.Timber
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("StaticFieldLeak")
 object FirebaseConfigurationManager :
 
-    ContextualManager<Map<String, FirebaseRemoteConfigValue>>(),
+    ContextualManager<ConcurrentHashMap<String, FirebaseRemoteConfigValue>>(),
     ResourceDefaults {
 
     override val storageKey = "remote_configuration"
@@ -63,7 +64,10 @@ object FirebaseConfigurationManager :
 
                     try {
 
-                        pushData(all)
+                        val newMap = ConcurrentHashMap<String, FirebaseRemoteConfigValue>()
+                        newMap.putAll(all)
+                        pushData(newMap)
+
                         success.set(true)
 
                     } catch (e: IllegalStateException) {

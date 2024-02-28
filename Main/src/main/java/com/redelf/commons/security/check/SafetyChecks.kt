@@ -16,13 +16,15 @@ class SafetyChecks {
 
         val isRooted = CommonUtils.isRooted()
         callbacks.doOnAll(
+
             object : CallbackOperation<SafetyCheckCallback> {
                 override fun perform(callback: SafetyCheckCallback) {
 
                     callback.onRootingCheck(isRooted)
                     callbacks.unregister(callback)
                 }
-            }
+            },
+            "Safety check"
         )
         checking.set(false)
     }

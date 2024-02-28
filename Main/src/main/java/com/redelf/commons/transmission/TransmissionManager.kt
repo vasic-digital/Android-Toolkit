@@ -636,7 +636,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
             }
         }
 
-        sendingCallbacks.doOnAll(operation)
+        sendingCallbacks.doOnAll(operation, "onSent")
     }
 
     private fun onSendingStarted(data: T) {
@@ -649,7 +649,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
             }
         }
 
-        sendingCallbacks.doOnAll(operation)
+        sendingCallbacks.doOnAll(operation, "onSendingStarted")
     }
 
     private fun onPersisted(success: Boolean) {
@@ -664,7 +664,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
             }
         }
 
-        persistCallbacks.doOnAll(operation)
+        persistCallbacks.doOnAll(operation, "On persisted")
 
         if (data.isNotEmpty()) {
 

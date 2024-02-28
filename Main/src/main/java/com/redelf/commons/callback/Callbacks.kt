@@ -104,7 +104,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
     fun isRegistered() = callbacks.isNotEmpty()
 
-    fun doOnAll(operation: CallbackOperation<T>, name: String = "Operation") {
+    fun doOnAll(operation: CallbackOperation<T>, operationName: String) {
 
         var count = 0
         val iterator = callbacks.iterator()
@@ -115,12 +115,12 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
             if (item == null) {
 
-                Timber.w("$name releasing null pointing reference")
+                Timber.w("$operationName releasing null pointing reference")
                 iterator.remove()
 
             } else {
 
-                Timber.d("$name performing operation for subscriber: ${item.hashCode()}")
+                Timber.d("$operationName performing operation for subscriber: ${item.hashCode()}")
                 operation.perform(item)
                 count++
             }
@@ -128,11 +128,11 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         if (count > 0) {
 
-            Timber.d("$name performed for $count subscribers")
+            Timber.d("$operationName performed for $count subscribers")
 
         } else {
 
-            Timber.w("$name performed for no subscribers")
+            Timber.w("$operationName performed for no subscribers")
         }
     }
 

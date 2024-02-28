@@ -39,19 +39,23 @@ class TransmissionManagerEncryptionProvider(
 
                         callback.onNewEncryptionKeyGenerated(key, success)
                     }
-                }
+                },
+                "On new encryption key generated"
             )
         }
 
         override fun onExistingEncryptionKeyObtained(key: String, success: Boolean) {
 
             callbacks.doOnAll(
+
                 object : CallbackOperation<TransmissionManagerEncryptionProviderCallback> {
                     override fun perform(callback: TransmissionManagerEncryptionProviderCallback) {
 
                         callback.onExistingEncryptionKeyObtained(key, success)
                     }
-                }
+                },
+
+                "On existing encryption key obtained"
             )
         }
     }

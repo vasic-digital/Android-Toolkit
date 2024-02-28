@@ -70,7 +70,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
                     callback.onExecution(success, "executionCallback :: $calledFrom")
                     executionCallbacks.unregister(callback)
                 }
-            }, name = "Execution operation")
+            }, operationName = "Execution operation")
         }
     }
 
@@ -85,7 +85,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
                     callback.onInstallationChecked(installed)
                     installationCallbacks.unregister(callback)
                 }
-            }, name = "Installation operation")
+            }, operationName = "Installation operation")
         }
     }
 
@@ -100,7 +100,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
                     callback.onCapabilityChecked(capable)
                     capabilityCheckCallbacks.unregister(callback)
                 }
-            }, name = "Capability check operation")
+            }, operationName = "Capability check operation")
         }
     }
 

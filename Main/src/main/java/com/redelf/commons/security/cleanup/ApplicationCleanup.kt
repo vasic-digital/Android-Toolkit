@@ -23,13 +23,15 @@ class ApplicationCleanup {
             Timber.w("Could not clean up the application")
         }
         callbacks.doOnAll(
+
             object : CallbackOperation<ApplicationCleanupCallback> {
                 override fun perform(callback: ApplicationCleanupCallback) {
 
                     callback.onCleanup(success)
                     callbacks.unregister(callback)
                 }
-            }
+            },
+            "Cleanup action"
         )
         cleaningUp.set(false)
     }
