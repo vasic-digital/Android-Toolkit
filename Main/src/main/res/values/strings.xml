@@ -16,7 +16,7 @@
     <string name="error_attaching_file">There was error attaching the file</string>
 
     <!-- Google Sign-In: -->
-    <string name="default_web_client_id" translatable="false">000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com</string>
+    <string name="default_web_client_id" translatable="false">Tbd</string>
 
     <!-- FCM: -->
     <string name="default_notification_channel_id">common_channel</string>
