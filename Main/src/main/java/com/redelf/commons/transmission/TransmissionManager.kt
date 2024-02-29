@@ -479,6 +479,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
                         iterator.remove()
 
                         if (!persistingRequired) {
+
                             persistingRequired = true
                         }
 
