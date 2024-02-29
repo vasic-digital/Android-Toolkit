@@ -30,7 +30,6 @@ abstract class DataManagement<T> :
     Resettable
 {
 
-    protected abstract val initTag: String
     protected abstract val storageKey: String
     protected open val storageExecutor = Executor.SINGLE
     protected open val instantiateDataObject: Boolean = false
@@ -41,6 +40,8 @@ abstract class DataManagement<T> :
 
     private val initCallbacks =
         Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag())
+
+    protected abstract fun getInitTag(): String
 
     fun initialize(
 
@@ -350,5 +351,5 @@ abstract class DataManagement<T> :
         return store
     }
 
-    private fun initCallbacksTag() = "$initTag Data management initialization"
+    private fun initCallbacksTag() = "${getInitTag()} Data management initialization"
 }
