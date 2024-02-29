@@ -16,6 +16,8 @@ import android.os.StrictMode
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.profileinstaller.ProfileInstaller
+import androidx.startup.AppInitializer
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
@@ -321,6 +323,10 @@ abstract class BaseApplication :
                 }
 
                 initializeManagers(managersInitializerCallback)
+
+                Timber.v("Installing profile: START")
+                ProfileInstaller.writeProfile(applicationContext)
+                Timber.v("Installing profile: END")
             }
 
         } catch (e: RejectedExecutionException) {
