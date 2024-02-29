@@ -193,10 +193,7 @@ abstract class BaseApplication :
 
             Timber.i("Application: Initializing")
 
-            if (!STRICT_MODE_DISABLED) {
-
-                enableStrictMode()
-            }
+            enableStrictMode()
         }
 
 
@@ -549,7 +546,12 @@ abstract class BaseApplication :
 
     private fun enableStrictMode() {
 
-        Timber.v("Enable Strict Mode")
+        Timber.v("Enable Strict Mode, disabled=$STRICT_MODE_DISABLED")
+
+        if (STRICT_MODE_DISABLED) {
+
+            return
+        }
 
         StrictMode.setThreadPolicy(
 

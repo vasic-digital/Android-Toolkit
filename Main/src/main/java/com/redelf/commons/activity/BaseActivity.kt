@@ -34,10 +34,11 @@ import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.Unregistrar
 import timber.log.Timber
 import java.io.*
+import java.util.concurrent.atomic.AtomicInteger
 
 abstract class BaseActivity : AppCompatActivity() {
 
-    protected var googleSignInRequestCode: Int = 0
+    protected var googleSignInRequestCode = AtomicInteger()
     protected var transmissionService: TransmissionService? = null
     protected var attachmentObtainedUris: MutableList<Uri> = mutableListOf()
     protected var attachmentObtainedFiles: MutableList<File> = mutableListOf()
@@ -270,7 +271,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
         Timber.v("$tag requestCode: $requestCode")
 
-        if (requestCode == googleSignInRequestCode) {
+        if (requestCode == googleSignInRequestCode.get()) {
 
             Timber.v("$tag Req. code ok")
 
@@ -699,7 +700,8 @@ abstract class BaseActivity : AppCompatActivity() {
 
     protected open fun registerWithGoogle(clientId: Int) {
 
-        googleSignInRequestCode = initRegistrationWithGoogle(defaultWebClientId = clientId)
+        val code = initRegistrationWithGoogle(defaultWebClientId = clientId)
+        googleSignInRequestCode.set(code)
     }
 
     protected open fun isCreated() = created
