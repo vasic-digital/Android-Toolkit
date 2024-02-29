@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager.NameNotFoundException
+import android.net.TrafficStats
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
@@ -34,6 +35,7 @@ import com.redelf.commons.persistance.Data
 import com.redelf.commons.persistance.GsonParser
 import com.redelf.commons.persistance.Parser
 import com.redelf.commons.persistance.Salter
+import com.redelf.commons.randomInteger
 import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
@@ -547,6 +549,8 @@ abstract class BaseApplication :
     private fun enableStrictMode() {
 
         Timber.v("Enable Strict Mode")
+
+        TrafficStats.setThreadStatsTag(randomInteger())
 
         StrictMode.setThreadPolicy(
 
