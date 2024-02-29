@@ -31,8 +31,8 @@ abstract class DataManagement<T> :
 {
 
     protected abstract val storageKey: String
-    protected open val storageExecutor = Executor.SINGLE
     protected open val instantiateDataObject: Boolean = false
+    protected open val storageExecutor = TaskExecutor.instantiateSingle()
 
     private var data: T? = null
     private var storage: EncryptedPersistence? = null
