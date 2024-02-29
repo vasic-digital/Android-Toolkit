@@ -159,22 +159,20 @@ fun Activity.initRegistrationWithGoogle(
     val client = GoogleSignIn.getClient(this, gso)
     val account = GoogleSignIn.getLastSignedInAccount(this)
 
-    if (account == null) {
-
-        Timber.v("$tag No account available")
-
-        try {
-
-            startActivityForResult(client.signInIntent, requestCode)
-
-        } catch (e: ActivityNotFoundException) {
-
-            recordException(e)
-        }
-
-    } else {
+    if (account != null) {
 
         Timber.v("$tag Account already available: ${account.email}")
+    }
+
+    Timber.v("$tag No account available")
+
+    try {
+
+        startActivityForResult(client.signInIntent, requestCode)
+
+    } catch (e: ActivityNotFoundException) {
+
+        recordException(e)
     }
 
     Timber.v("$tag END :: Req. code: $requestCode")
