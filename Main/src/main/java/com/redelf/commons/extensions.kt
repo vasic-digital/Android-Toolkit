@@ -10,9 +10,12 @@ import android.database.Cursor
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Build
 import android.os.Debug
 import android.os.Handler
 import android.os.Looper
+import android.os.StrictMode
+import android.os.strictmode.Violation
 import android.provider.OpenableColumns
 import android.text.TextUtils
 import android.util.Base64
@@ -20,6 +23,7 @@ import android.util.Base64OutputStream
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -31,6 +35,7 @@ import java.io.*
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
@@ -838,4 +843,39 @@ fun List<*>.contentEquals(other: List<*>): Boolean {
     }
 
     return true
+}
+
+
+fun StrictMode.VmPolicy.Builder.detectAllExpect(
+
+    ignoredViolationPackageName: String,
+    justVerbose: Boolean = true
+
+): StrictMode.VmPolicy.Builder {
+
+    return detectAll().penaltyListener(
+
+        Executors.newSingleThreadExecutor(), StrictMode.OnVmViolationListener
+
+        {
+
+            it.filter(ignoredViolationPackageName, justVerbose)
+        }
+    )
+}
+
+
+private fun Violation.filter(
+
+    ignoredViolationPackageName: String,
+    justVerbose: Boolean
+
+) {
+
+    val violationPackageName = stackTrace[0].className
+
+    if (violationPackageName != ignoredViolationPackageName && justVerbose) {
+
+        Timber.v(this)
+    }
 }

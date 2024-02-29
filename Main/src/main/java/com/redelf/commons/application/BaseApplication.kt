@@ -23,6 +23,7 @@ import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.detectAllExpect
 import com.redelf.commons.exec
 import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
@@ -550,8 +551,6 @@ abstract class BaseApplication :
 
         Timber.v("Enable Strict Mode")
 
-        TrafficStats.setThreadStatsTag(randomInteger())
-
         StrictMode.setThreadPolicy(
 
             StrictMode.ThreadPolicy.Builder()
@@ -563,8 +562,7 @@ abstract class BaseApplication :
         StrictMode.setVmPolicy(
 
             StrictMode.VmPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
+                .detectAllExpect("android.os.StrictMode.onUntaggedSocket")
                 .build()
         )
     }
