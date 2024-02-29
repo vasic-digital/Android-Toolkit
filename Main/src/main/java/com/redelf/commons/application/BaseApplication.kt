@@ -11,6 +11,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager.NameNotFoundException
 import android.os.Build
 import android.os.Bundle
+import android.os.StrictMode
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -51,6 +52,8 @@ abstract class BaseApplication :
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: Context
 
+        var STRICT_MODE_DISABLED = false
+
         override fun takeContext() = CONTEXT
 
         fun restart(context: Context) {
@@ -80,6 +83,7 @@ abstract class BaseApplication :
             return ""
         }
 
+        @Suppress("DEPRECATION")
         @SuppressLint("ObsoleteSdkInt")
         override fun getVersionCode(): String {
 
@@ -180,18 +184,24 @@ abstract class BaseApplication :
 
         CONTEXT = applicationContext
 
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-        registerActivityLifecycleCallbacks(this)
-
-        managers.addAll(populateManagers())
-        defaultManagerResources.putAll(populateDefaultManagerResources())
-
         if (BuildConfig.DEBUG) {
 
             Timber.plant(Timber.DebugTree())
 
             Timber.i("Application: Initializing")
+
+            if (!STRICT_MODE_DISABLED) {
+
+                enableStrictMode()
+            }
         }
+
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+        registerActivityLifecycleCallbacks(this)
+
+        managers.addAll(populateManagers())
+        defaultManagerResources.putAll(populateDefaultManagerResources())
 
         Timber.i("Data: Initializing")
 
@@ -532,5 +542,26 @@ abstract class BaseApplication :
 
         initializeFcm()
         onManagersReady()
+    }
+
+    private fun enableStrictMode() {
+
+        Timber.v("Enable Strict Mode")
+
+        StrictMode.setThreadPolicy(
+
+            StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .penaltyLog()
+                .build()
+        )
+
+        StrictMode.setVmPolicy(
+
+            StrictMode.VmPolicy.Builder()
+                .detectAll()
+                .penaltyLog()
+                .build()
+        )
     }
 }
