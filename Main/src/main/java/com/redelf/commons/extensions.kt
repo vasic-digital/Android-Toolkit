@@ -456,6 +456,8 @@ fun Activity.toast(error: Throwable) {
 
 fun Activity.toast(error: Throwable, short: Boolean = false, localised: Boolean = false) {
 
+    Timber.e(error)
+
     val msg = if (localised) {
 
         error.message
