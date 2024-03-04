@@ -121,9 +121,7 @@ object Data {
      */
     fun deleteAll(): Boolean {
 
-        val callable = Callable { facade?.deleteAll() ?: false }
-
-        return exec(callable, executor = getExecutor())
+        return facade?.deleteAll() ?: false
     }
 
     fun deleteKeysWithPrefix(value: String): Boolean {
