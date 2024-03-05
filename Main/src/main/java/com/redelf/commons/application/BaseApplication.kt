@@ -31,6 +31,7 @@ import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.InitializationCondition
+import com.redelf.commons.logging.LogsGathering
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.Obtain
@@ -198,6 +199,12 @@ abstract class BaseApplication :
             enableStrictMode()
         }
 
+        LogsGathering.ENABLED = isLogsGatheringEnabled()
+
+        if (LogsGathering.ENABLED) {
+
+            Timber.i("Logs gathering is enabled")
+        }
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerActivityLifecycleCallbacks(this)
@@ -335,6 +342,11 @@ abstract class BaseApplication :
 
             throw e
         }
+    }
+
+    protected open fun isLogsGatheringEnabled(): Boolean {
+
+        return applicationContext.resources.getBoolean(R.bool.logs_gathering_enabled)
     }
 
     protected open fun onScreenOn() {
