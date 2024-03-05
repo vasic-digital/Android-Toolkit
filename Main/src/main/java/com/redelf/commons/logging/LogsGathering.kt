@@ -7,6 +7,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 object LogsGathering {
 
+    var ENABLED = false
+
     private val LOGS = ConcurrentHashMap<String, CopyOnWriteArrayList<String>>()
 
     fun addLog(key: String, value: String) {
@@ -24,20 +26,26 @@ object LogsGathering {
 
     fun send() {
 
-        LOGS.forEach{ (key, value) ->
+        LOGS.forEach { (key, _) ->
 
-            val builder = StringBuilder("$key --- START")
-
-            value.forEach { row ->
-
-                builder.append("\n").append(row)
-            }
-
-            builder.append("\n$key --- END")
-
-            val gatheredLogs = GatheredLogs(builder.toString())
-            recordException(gatheredLogs)
+            send(key)
         }
     }
 
+    fun send(key: String) {
+
+        val builder = StringBuilder("$key --- START")
+
+        LOGS[key]?.forEach { row ->
+
+            builder.append("\n").append(row)
+        }
+
+        builder.append("\n$key --- END")
+
+        val gatheredLogs = GatheredLogs(builder.toString())
+        recordException(gatheredLogs)
+
+        LOGS[key] = CopyOnWriteArrayList()
+    }
 }
