@@ -1,5 +1,9 @@
 package com.redelf.commons.logging
 
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.os.Environment
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.exec
@@ -16,6 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 object LogsGathering {
 
     var TOAST = true
+    var EMAIL = true
     var FS_LOG = true
     var ENABLED = false
 
@@ -45,7 +50,7 @@ object LogsGathering {
         LOGS[key]?.add(value)
     }
 
-    fun send() {
+    fun send(activity: Activity? = null) {
 
         if (!ENABLED) {
 
@@ -55,11 +60,11 @@ object LogsGathering {
 
         LOGS.forEach { (key, _) ->
 
-            send(key)
+            send(key, activity)
         }
     }
 
-    fun send(key: String) {
+    fun send(key: String, activity: Activity? = null) {
 
         if (!ENABLED) {
 
@@ -83,15 +88,45 @@ object LogsGathering {
 
         Timber.v("GATHERED :: \n$logs")
 
-        val gatheredLogs = GatheredLogs(logs)
-        recordException(gatheredLogs)
+        if (EMAIL) {
+
+            activity?.let {
+
+                sendEmail(it, key, logs)
+            }
+        }
 
         if (FS_LOG) {
 
             writeLog(key, logs)
         }
 
+        val gatheredLogs = GatheredLogs(logs)
+        recordException(gatheredLogs)
+
         LOGS[key] = CopyOnWriteArrayList()
+    }
+
+    private fun sendEmail(activity: Activity, key: String, logs: String) {
+
+        Timber.v("Send email")
+
+        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+
+            data = Uri.parse("mailto:")
+
+            putExtra(Intent.EXTRA_SUBJECT, "$key logs ${System.currentTimeMillis()}")
+            putExtra(Intent.EXTRA_TEXT, logs)
+        }
+
+        try {
+
+            activity.startActivity(emailIntent)
+
+        } catch (ex: ActivityNotFoundException) {
+
+            activity.toast("There are no email clients installed")
+        }
     }
 
     private fun writeLog(key: String, logs: String) {
@@ -110,6 +145,8 @@ object LogsGathering {
 
                     writer.append(logs)
                 }
+
+                Timber.v("File written into: ${file.absolutePath}")
 
             } catch (e: IOException) {
 
