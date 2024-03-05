@@ -1,7 +1,9 @@
 package com.redelf.commons.logging
 
+import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.recordException
+import com.redelf.commons.toast
 import timber.log.Timber
 import java.lang.StringBuilder
 import java.util.concurrent.ConcurrentHashMap
@@ -28,6 +30,8 @@ object LogsGathering {
             list = CopyOnWriteArrayList()
             LOGS[key] = list
         }
+
+        BaseApplication.CONTEXT.toast(value)
 
         LOGS[key]?.add(value)
     }
