@@ -62,7 +62,11 @@ object LogsGathering {
 
         builder.append("\n$key --- END")
 
-        val gatheredLogs = GatheredLogs(builder.toString())
+        val logs = builder.toString()
+
+        Timber.v("GATHERED :: \n$logs")
+
+        val gatheredLogs = GatheredLogs(logs)
         recordException(gatheredLogs)
 
         LOGS[key] = CopyOnWriteArrayList()

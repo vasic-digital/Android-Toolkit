@@ -21,4 +21,7 @@
     <!-- FCM: -->
     <string name="default_notification_channel_id">common_channel</string>
 
+    <!-- Logs gathering -->
+    <bool name="logs_gathering_enabled">false</bool>
+
 </resources>
