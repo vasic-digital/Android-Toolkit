@@ -1,6 +1,7 @@
 package com.redelf.commons.logging
 
 import com.redelf.commons.recordException
+import timber.log.Timber
 import java.lang.StringBuilder
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -12,6 +13,12 @@ object LogsGathering {
     private val LOGS = ConcurrentHashMap<String, CopyOnWriteArrayList<String>>()
 
     fun addLog(key: String, value: String) {
+
+        if (!ENABLED) {
+
+            Timber.w("Logs gathering is disabled")
+            return
+        }
 
         var list = LOGS[key]
 
@@ -26,6 +33,12 @@ object LogsGathering {
 
     fun send() {
 
+        if (!ENABLED) {
+
+            Timber.w("Logs gathering is disabled")
+            return
+        }
+
         LOGS.forEach { (key, _) ->
 
             send(key)
@@ -33,6 +46,12 @@ object LogsGathering {
     }
 
     fun send(key: String) {
+
+        if (!ENABLED) {
+
+            Timber.w("Logs gathering is disabled")
+            return
+        }
 
         val builder = StringBuilder("$key --- START")
 
