@@ -1,5 +1,6 @@
 package com.redelf.commons.logging
 
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.recordException
 import timber.log.Timber
 import java.lang.StringBuilder
@@ -53,14 +54,17 @@ object LogsGathering {
             return
         }
 
-        val builder = StringBuilder("$key --- START")
+        val builder = StringBuilder(
+
+            "\n$key :: START :: Version code: ${BaseApplication.getVersionCode()}"
+        )
 
         LOGS[key]?.forEach { row ->
 
             builder.append("\n").append(row)
         }
 
-        builder.append("\n$key --- END")
+        builder.append("\n$key :: END")
 
         val logs = builder.toString()
 
