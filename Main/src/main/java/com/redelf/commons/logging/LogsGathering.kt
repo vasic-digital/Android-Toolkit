@@ -1,16 +1,22 @@
 package com.redelf.commons.logging
 
-import android.content.Context
+import android.os.Environment
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.exec
 import com.redelf.commons.recordException
 import com.redelf.commons.toast
 import timber.log.Timber
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 import java.lang.StringBuilder
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
 object LogsGathering {
 
+    var TOAST = true
+    var FS_LOG = true
     var ENABLED = false
 
     private val LOGS = ConcurrentHashMap<String, CopyOnWriteArrayList<String>>()
@@ -31,7 +37,10 @@ object LogsGathering {
             LOGS[key] = list
         }
 
-        BaseApplication.CONTEXT.toast(value)
+        if (TOAST) {
+
+            BaseApplication.CONTEXT.toast(value)
+        }
 
         LOGS[key]?.add(value)
     }
@@ -77,6 +86,35 @@ object LogsGathering {
         val gatheredLogs = GatheredLogs(logs)
         recordException(gatheredLogs)
 
+        if (FS_LOG) {
+
+            writeLog(key, logs)
+        }
+
         LOGS[key] = CopyOnWriteArrayList()
+    }
+
+    private fun writeLog(key: String, logs: String) {
+
+        exec {
+
+            val fileName = "$key.${System.currentTimeMillis()}.txt"
+
+            val dir = Environment.DIRECTORY_DOWNLOADS
+            val downloadsFolder = Environment.getExternalStoragePublicDirectory(dir)
+            val file = File(downloadsFolder, fileName)
+
+            try {
+
+                FileWriter(file).use { writer ->
+
+                    writer.append(logs)
+                }
+
+            } catch (e: IOException) {
+
+                Timber.e(e)
+            }
+        }
     }
 }
