@@ -1,7 +1,6 @@
 package com.redelf.commons.activity
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.*
 import android.net.Uri
 import android.os.Build
@@ -65,7 +64,8 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val filter = IntentFilter(Broadcast.ACTION_FINISH)
-        LocalBroadcastManager.getInstance(applicationContext).registerReceiver(finishReceiver, filter)
+        LocalBroadcastManager.getInstance(applicationContext)
+            .registerReceiver(finishReceiver, filter)
 
         Timber.v("Transmission management supported: ${isTransmissionServiceSupported()}")
 
@@ -267,7 +267,11 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun finish() {
         super.finish()
 
-        overridePendingTransition(0, 0)
+        overridePendingTransition(
+
+            R.anim.f_in,
+            R.anim.f_out
+        )
     }
 
     @Deprecated("Deprecated in Java")
