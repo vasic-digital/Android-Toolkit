@@ -28,12 +28,12 @@ class TaskExecutor private constructor(
             return TaskExecutor(
 
                 capacity,
-                capacity * 30,
-                LinkedBlockingQueue()
+                capacity * 100,
+                LinkedBlockingQueue(capacity * 1000)
             )
         }
 
-        fun instantiateSingle(queueCapacity: Int = 1000): ThreadPoolExecutor {
+        fun instantiateSingle(queueCapacity: Int = 10 * 1000): ThreadPoolExecutor {
 
             return ThreadPoolExecutor(
 
