@@ -269,8 +269,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
         overridePendingTransition(
 
-            R.anim.f_in,
-            R.anim.f_out
+            0, 0
         )
     }
 
