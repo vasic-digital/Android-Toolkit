@@ -262,6 +262,13 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    @Suppress("DEPRECATION")
+    override fun finish() {
+        super.finish()
+
+        overridePendingTransition(0, 0)
+    }
+
     @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
