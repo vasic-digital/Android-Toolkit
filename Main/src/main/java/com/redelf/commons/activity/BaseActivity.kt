@@ -65,7 +65,7 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val filter = IntentFilter(Broadcast.ACTION_FINISH)
-        LocalBroadcastManager.getInstance(this).registerReceiver(finishReceiver, filter)
+        LocalBroadcastManager.getInstance(applicationContext).registerReceiver(finishReceiver, filter)
 
         Timber.v("Transmission management supported: ${isTransmissionServiceSupported()}")
 
@@ -241,7 +241,8 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onDestroy() {
 
         dismissDialogs()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(finishReceiver)
+        LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(finishReceiver)
+
         unregistrar?.unregister()
 
         if (isTransmissionServiceSupported()) {
@@ -423,10 +424,12 @@ abstract class BaseActivity : AppCompatActivity() {
     fun broadcastFinish() {
 
         if (!isFinishing) {
+
             finish()
         }
+
         val intent = Intent(Broadcast.ACTION_FINISH)
-        sendBroadcast(intent)
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
     protected open fun onRegistrationWithGoogleCompleted(tokenId: String) {
@@ -660,15 +663,20 @@ abstract class BaseActivity : AppCompatActivity() {
 
     protected open fun handleFinishBroadcast(intent: Intent? = null) {
 
+        val tag = "handleFinishBroadcast ::"
+
+        Timber.v("$tag START")
+
         val hash = this.hashCode()
 
         if (isFinishing) {
 
-            Timber.v("handleFinishBroadcast(): ALREADY FINISHING, THIS_HASH=$hash")
+            Timber.v("$tag ALREADY FINISHING, THIS_HASH=$hash")
 
         } else {
 
-            Timber.v("handleFinishBroadcast(): FINISHING, THIS_HASH=$hash")
+            Timber.v("$tag FINISHING, THIS_HASH=$hash")
+
             finish()
         }
     }
