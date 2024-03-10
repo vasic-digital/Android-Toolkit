@@ -179,6 +179,16 @@ abstract class DataManagement<T> :
         }
     }
 
+    @Throws(IllegalStateException::class)
+    fun pushDataSynchronized(data: T): Boolean {
+
+        val store = takeStorage()
+
+        this.data = data
+
+        return store.push(storageKey, data)
+    }
+
     override fun reset(): Boolean {
 
         try {
