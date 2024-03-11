@@ -9,15 +9,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager.NameNotFoundException
-import android.net.TrafficStats
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
+import android.provider.Settings
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
-import androidx.startup.AppInitializer
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
@@ -554,8 +553,6 @@ abstract class BaseApplication :
         super.onActivityPostDestroyed(activity)
     }
 
-
-
     private fun onManagersInitialized() {
 
         initializeFcm()
@@ -585,5 +582,37 @@ abstract class BaseApplication :
                 .detectAllExpect("android.os.StrictMode.onUntaggedSocket")
                 .build()
         )
+    }
+
+    @Suppress("DEPRECATION")
+    protected fun disableActivityAnimations(context: Context) {
+
+        try {
+
+            val scale = 0
+            val contentResolver = context.contentResolver
+
+            Settings.System.putFloat(
+                contentResolver,
+                Settings.System.WINDOW_ANIMATION_SCALE,
+                scale.toFloat()
+            )
+
+            Settings.System.putFloat(
+                contentResolver,
+                Settings.System.TRANSITION_ANIMATION_SCALE,
+                scale.toFloat()
+            )
+
+            Settings.System.putFloat(
+                contentResolver,
+                Settings.System.ANIMATOR_DURATION_SCALE,
+                scale.toFloat()
+            )
+
+        } catch (e: Throwable) {
+
+            Timber.e(e)
+        }
     }
 }
