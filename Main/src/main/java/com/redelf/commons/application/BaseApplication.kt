@@ -187,6 +187,8 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
+        disableActivityAnimations(applicationContext)
+
         CONTEXT = applicationContext
 
         if (BuildConfig.DEBUG) {
