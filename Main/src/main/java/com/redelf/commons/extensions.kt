@@ -162,6 +162,8 @@ fun Activity.initRegistrationWithGoogle(
     if (account != null) {
 
         Timber.v("$tag Account already available: ${account.email}")
+
+        client.signOut()
     }
 
     Timber.v("$tag No account available")
