@@ -11,6 +11,7 @@ import timber.log.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.Lock
 
 class ManagersCleaner {
 
@@ -35,6 +36,19 @@ class ManagersCleaner {
             Timber.v("$tag START")
 
             exec {
+
+                managers.forEach { manager ->
+
+                    if (manager is DataManagement<*>) {
+
+                        manager.lock()
+
+                        Timber.v(
+
+                            "$tag Manager :: ${manager.javaClass.simpleName} :: LOCKED"
+                        )
+                    }
+                }
 
                 val failure = AtomicBoolean()
 
@@ -69,6 +83,19 @@ class ManagersCleaner {
 
                             "$tag Manager :: ${manager.javaClass.simpleName} :: " +
                                     "SKIPPED: Not data manager"
+                        )
+                    }
+                }
+
+                managers.forEach { manager ->
+
+                    if (manager is DataManagement<*>) {
+
+                        manager.unlock()
+
+                        Timber.v(
+
+                            "$tag Manager :: ${manager.javaClass.simpleName} :: UNLOCKED"
                         )
                     }
                 }

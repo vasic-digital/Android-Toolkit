@@ -13,6 +13,7 @@ import com.redelf.commons.lifecycle.InitializationPerformer
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
+import com.redelf.commons.locking.Lock
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.recordException
@@ -27,7 +28,9 @@ abstract class DataManagement<T> :
     Initialization<EncryptedPersistence>,
     InitializationPerformer,
     Obtain<T?>,
-    Resettable
+    Resettable,
+    Lock
+
 {
 
     protected abstract val storageKey: String
@@ -35,6 +38,7 @@ abstract class DataManagement<T> :
     protected open val storageExecutor = TaskExecutor.instantiateSingle()
 
     private var data: T? = null
+    private val locked = AtomicBoolean()
     private var storage: EncryptedPersistence? = null
     private val initializing = AtomicBoolean(false)
 
@@ -103,6 +107,27 @@ abstract class DataManagement<T> :
 
     protected open fun createDataObject(): T? = null
 
+    override fun lock() {
+
+        Timber.v("DataManagement :: Lock")
+
+        locked.set(true)
+    }
+
+    override fun unlock() {
+
+        Timber.v("DataManagement :: Unlock")
+
+        locked.set(false)
+    }
+
+    override fun isLocked(): Boolean {
+
+        Timber.v("DataManagement :: Locked: ${locked.get()}")
+
+        return locked.get()
+    }
+
     @Throws(IllegalStateException::class)
     override fun initialization(): Boolean {
 
@@ -162,6 +187,13 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     open fun pushData(data: T) {
 
+        if (isLocked()) {
+
+            Timber.w("DataManagement :: pushData :: Locked: SKIPPING")
+
+            return
+        }
+
         val store = takeStorage()
 
         this.data = data
@@ -181,6 +213,13 @@ abstract class DataManagement<T> :
 
     @Throws(IllegalStateException::class)
     fun pushDataSynchronized(data: T): Boolean {
+
+        if (isLocked()) {
+
+            Timber.w("DataManagement :: pushData :: Locked: SKIPPING")
+
+            return false
+        }
 
         val store = takeStorage()
 
