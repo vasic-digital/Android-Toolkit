@@ -39,7 +39,7 @@ abstract class DataManagement<T> :
 
     private var data: T? = null
     private val locked = AtomicBoolean()
-    private var storage: EncryptedPersistence? = null
+    private var encStorage: EncryptedPersistence? = null
     private val initializing = AtomicBoolean(false)
 
     private val initCallbacks =
@@ -52,11 +52,17 @@ abstract class DataManagement<T> :
         callback: LifecycleCallback<EncryptedPersistence>,
         persistence: EncryptedPersistence? = null,
 
-        ) {
+    ) {
+
+        if (isLocked()) {
+
+            callback.onInitialization(true)
+            return
+        }
 
         persistence?.let {
 
-            storage = it
+            encStorage = it
         }
 
         initialize(callback)
@@ -79,23 +85,31 @@ abstract class DataManagement<T> :
 
                 val store = createStorage()
 
-                data = store.pull(storageKey)
+                if (store == null) {
 
-                try {
+                    val e = NotInitializedException(who = getWho())
+                    onInitializationFailed(e)
 
-                    if (initialization()) {
+                } else {
 
-                        onInitializationCompleted()
+                    data = store.pull(storageKey)
 
-                    } else {
+                    try {
 
-                        val e = NotInitializedException(who = getWho())
+                        if (initialization()) {
+
+                            onInitializationCompleted()
+
+                        } else {
+
+                            val e = NotInitializedException(who = getWho())
+                            onInitializationFailed(e)
+                        }
+
+                    } catch (e: IllegalStateException) {
+
                         onInitializationFailed(e)
                     }
-
-                } catch (e: IllegalStateException) {
-
-                    onInitializationFailed(e)
                 }
             }
 
@@ -133,7 +147,7 @@ abstract class DataManagement<T> :
         return true
     }
 
-    override fun isInitialized() = storage != null && !isInitializing()
+    override fun isInitialized() = isLocked() || (encStorage != null && !isInitializing())
 
     override fun isInitializing() = initializing.get()
 
@@ -179,9 +193,14 @@ abstract class DataManagement<T> :
     }
 
     @Throws(IllegalStateException::class)
-    fun takeStorage(): EncryptedPersistence {
+    fun takeStorage(): EncryptedPersistence? {
 
-        storage?.let {
+        if (isLocked()) {
+
+            return null
+        }
+
+        encStorage?.let {
 
             return it
 
@@ -206,7 +225,7 @@ abstract class DataManagement<T> :
 
             storageExecutor.execute {
 
-                store.push(storageKey, data)
+                store?.push(storageKey, data)
             }
 
         } catch (e: RejectedExecutionException) {
@@ -229,17 +248,17 @@ abstract class DataManagement<T> :
 
         this.data = data
 
-        return store.push(storageKey, data)
+        return store?.push(storageKey, data) ?: false
     }
 
     override fun reset(): Boolean {
 
         try {
 
-            val result = this.storage?.delete(storageKey) ?: false
+            val result = this.encStorage?.delete(storageKey) ?: false
 
             this.data = null
-            this.storage = null
+            this.encStorage = null
 
             return result
 
@@ -312,15 +331,24 @@ abstract class DataManagement<T> :
 
                 Timber.e(e)
 
-                storage?.let {
-
-                    callback.onInitialization(true, it)
-                }
-
-                if (storage == null) {
+                if (isLocked()) {
 
                     callback.onInitialization(false)
+
+                } else {
+
+                    encStorage?.let {
+
+                        callback.onInitialization(true, it)
+                    }
+
+                    if (encStorage == null) {
+
+                        callback.onInitialization(false)
+                    }
                 }
+
+
 
                 initCallbacks.unregister(callback)
             }
@@ -339,14 +367,21 @@ abstract class DataManagement<T> :
 
             override fun perform(callback: LifecycleCallback<EncryptedPersistence>) {
 
-                storage?.let {
-
-                    callback.onInitialization(true, it)
-                }
-
-                if (storage == null) {
+                if (isLocked()) {
 
                     callback.onInitialization(false)
+
+                } else {
+
+                    encStorage?.let {
+
+                        callback.onInitialization(true, it)
+                    }
+
+                    if (encStorage == null) {
+
+                        callback.onInitialization(false)
+                    }
                 }
 
                 initCallbacks.unregister(callback)
@@ -384,9 +419,14 @@ abstract class DataManagement<T> :
         throw IllegalStateException(msg)
     }
 
-    private fun createStorage(): EncryptedPersistence {
+    private fun createStorage(): EncryptedPersistence? {
 
-        storage?.let {
+        if (isLocked()) {
+
+            return null
+        }
+
+        encStorage?.let {
 
             return it
         }
@@ -401,7 +441,7 @@ abstract class DataManagement<T> :
         }
 
         val store = EncryptedPersistence(storageTag = sKey)
-        storage = store
+        encStorage = store
         return store
     }
 
