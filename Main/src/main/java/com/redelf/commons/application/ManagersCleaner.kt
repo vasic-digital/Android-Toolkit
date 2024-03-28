@@ -36,16 +36,6 @@ class ManagersCleaner {
 
                 managers.forEach { manager ->
 
-                    if (failure.get()) {
-
-                        Timber.e(
-
-                            "Manager: ${manager.javaClass.simpleName} initialization skipped"
-                        )
-
-                        return@exec
-                    }
-
                     if (manager is DataManagement<*>) {
 
                         val latch = CountDownLatch(1)
