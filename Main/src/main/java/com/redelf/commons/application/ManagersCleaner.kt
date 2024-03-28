@@ -28,7 +28,11 @@ class ManagersCleaner {
 
     ) {
 
+        val tag = "Managers :: Cleanup ::"
+
         try {
+
+            Timber.v("$tag START")
 
             exec {
 
@@ -36,16 +40,36 @@ class ManagersCleaner {
 
                 managers.forEach { manager ->
 
+                    Timber.v("$tag Manager :: ${manager.javaClass.simpleName} ::")
+
                     if (manager is DataManagement<*>) {
 
-                        val latch = CountDownLatch(1)
+                        if (manager.reset()) {
 
-                        if (!manager.reset()) {
+                            Timber.v(
+
+                                "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                                        "Cleaned"
+                            )
+
+                        } else {
+
+                            Timber.w(
+
+                                "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                                        "Not cleaned"
+                            )
 
                             failure.set(true)
                         }
 
-                        latch.await()
+                    } else {
+
+                        Timber.w(
+
+                            "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                                    "SKIPPED: Not data manager"
+                        )
                     }
                 }
 
