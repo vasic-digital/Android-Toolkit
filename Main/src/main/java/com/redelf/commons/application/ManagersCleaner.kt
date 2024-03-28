@@ -40,7 +40,7 @@ class ManagersCleaner {
 
                 managers.forEach { manager ->
 
-                    Timber.v("$tag Manager :: ${manager.javaClass.simpleName} ::")
+                    Timber.v("$tag Manager :: ${manager.javaClass.simpleName}")
 
                     if (manager is DataManagement<*>) {
 
