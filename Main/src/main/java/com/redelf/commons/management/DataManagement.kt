@@ -123,8 +123,6 @@ abstract class DataManagement<T> :
 
     override fun isLocked(): Boolean {
 
-        Timber.v("DataManagement :: Locked: ${locked.get()}")
-
         return locked.get()
     }
 
