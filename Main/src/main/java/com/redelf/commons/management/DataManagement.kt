@@ -236,11 +236,12 @@ abstract class DataManagement<T> :
 
         try {
 
-            val store = takeStorage()
+            val result = this.storage?.delete(storageKey) ?: false
 
             this.data = null
+            this.storage = null
 
-            return store.delete(storageKey)
+            return result
 
         } catch (e: RejectedExecutionException) {
 
