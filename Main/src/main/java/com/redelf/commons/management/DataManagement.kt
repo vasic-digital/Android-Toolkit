@@ -142,6 +142,12 @@ abstract class DataManagement<T> :
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(): T? {
 
+        if (isLocked()) {
+
+            Timber.w("DataManagement :: Obtain :: Locked")
+            return null
+        }
+
         if (isInitializing() || isNotInitialized()) {
 
             Initialization.waitForInitialization(
