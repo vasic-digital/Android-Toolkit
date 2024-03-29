@@ -5,6 +5,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.TaskExecutor
+import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.InitializationPerformer
@@ -31,6 +32,7 @@ abstract class DataManagement<T> :
 
     protected abstract val storageKey: String
     protected open val instantiateDataObject: Boolean = false
+    protected open val storageClassificationIdentifierRequired = false
     protected open val storageExecutor = TaskExecutor.instantiateSingle()
 
     private var data: T? = null
@@ -42,6 +44,8 @@ abstract class DataManagement<T> :
         Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag())
 
     protected abstract fun getInitTag(): String
+
+    protected open fun getStorageClassificationIdentifier(): String? = null
 
     fun initialize(
 
@@ -440,12 +444,28 @@ abstract class DataManagement<T> :
 
     private fun getFullStorageKey(): String? {
 
-        if (BuildConfig.DEBUG) {
+        val classificationIdentifier: String?
 
-            return "${storageKey}.DEBUG.${BaseApplication.getVersionCode()}"
+        if (storageClassificationIdentifierRequired) {
+
+            classificationIdentifier = getStorageClassificationIdentifier()
+
+            if (isEmpty(classificationIdentifier)) {
+
+                return null
+            }
+
+        } else {
+
+            classificationIdentifier = "_"
         }
 
-        return storageKey
+        if (BuildConfig.DEBUG) {
+
+            return "${storageKey}.$classificationIdentifier.DEBUG.${BaseApplication.getVersionCode()}"
+        }
+
+        return "${storageKey}.$classificationIdentifier"
     }
 
     private fun createStorage(): EncryptedPersistence? {
