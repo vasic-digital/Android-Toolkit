@@ -37,6 +37,7 @@ abstract class DataManagement<T> :
 
     private var data: T? = null
     private val locked = AtomicBoolean()
+    private var classificationIdentifier: String? = null
     private var encStorage: EncryptedPersistence? = null
     private val initializing = AtomicBoolean(false)
 
@@ -444,11 +445,12 @@ abstract class DataManagement<T> :
 
     private fun getFullStorageKey(): String? {
 
-        val classificationIdentifier: String?
-
         if (storageClassificationIdentifierRequired) {
 
-            classificationIdentifier = getStorageClassificationIdentifier()
+            if (isEmpty(classificationIdentifier)) {
+
+                classificationIdentifier = getStorageClassificationIdentifier()
+            }
 
             if (isEmpty(classificationIdentifier)) {
 
@@ -457,15 +459,16 @@ abstract class DataManagement<T> :
 
         } else {
 
-            classificationIdentifier = "_"
+            classificationIdentifier = "0"
         }
 
         if (BuildConfig.DEBUG) {
 
-            return "${storageKey}.$classificationIdentifier.DEBUG.${BaseApplication.getVersionCode()}"
+            return "${storageKey}.${classificationIdentifier}.DEBUG" +
+                    ".${BaseApplication.getVersionCode()}"
         }
 
-        return "${storageKey}.$classificationIdentifier"
+        return "${storageKey}.${classificationIdentifier}"
     }
 
     private fun createStorage(): EncryptedPersistence? {
