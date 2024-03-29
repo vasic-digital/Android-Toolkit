@@ -1,18 +1,12 @@
 package com.redelf.commons.application
 
-import android.content.Context
-import com.redelf.commons.context.Contextual
-import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.exec
 import com.redelf.commons.instantiation.SingleInstance
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
-import com.redelf.commons.persistance.EncryptedPersistence
 import timber.log.Timber
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.Lock
 
 class ManagersCleaner {
 
@@ -110,7 +104,7 @@ class ManagersCleaner {
         }
     }
 
-    fun cleanupManagers(
+    fun cleanupManagerSingletons(
 
         managers: List<SingleInstance<*>>,
         callback: CleanupCallback,
