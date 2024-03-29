@@ -27,9 +27,7 @@ abstract class DataManagement<T> :
     InitializationPerformer,
     Obtain<T?>,
     Resettable,
-    Lockable
-
-{
+    Lockable {
 
     protected abstract val storageKey: String
     protected open val instantiateDataObject: Boolean = false
@@ -50,7 +48,7 @@ abstract class DataManagement<T> :
         callback: LifecycleCallback<EncryptedPersistence>,
         persistence: EncryptedPersistence? = null,
 
-    ) {
+        ) {
 
         if (isLocked()) {
 
@@ -67,6 +65,16 @@ abstract class DataManagement<T> :
     }
 
     final override fun initialize(callback: LifecycleCallback<EncryptedPersistence>) {
+
+        val sKey = getFullStorageKey()
+
+        if (sKey == null) {
+
+            Timber.w("No storage key available for ${getWho()}")
+
+            callback.onInitialization(false)
+            return
+        }
 
         initCallbacks.register(callback)
 
@@ -90,7 +98,7 @@ abstract class DataManagement<T> :
 
                 } else {
 
-                    data = store.pull(storageKey)
+                    data = store.pull(sKey)
 
                     try {
 
@@ -215,6 +223,9 @@ abstract class DataManagement<T> :
             return
         }
 
+        val sKey = getFullStorageKey()
+            ?: throw IllegalStateException("No storage key available for ${getWho()}")
+
         val store = takeStorage()
 
         this.data = data
@@ -223,7 +234,7 @@ abstract class DataManagement<T> :
 
             storageExecutor.execute {
 
-                store?.push(storageKey, data)
+                store?.push(sKey, data)
             }
 
         } catch (e: RejectedExecutionException) {
@@ -242,18 +253,28 @@ abstract class DataManagement<T> :
             return false
         }
 
+        val sKey = getFullStorageKey()
+            ?: throw IllegalStateException("No storage key available for ${getWho()}")
+
         val store = takeStorage()
 
         this.data = data
 
-        return store?.push(storageKey, data) ?: false
+        return store?.push(sKey, data) ?: false
     }
 
     override fun reset(): Boolean {
 
         try {
 
-            val result = this.encStorage?.delete(storageKey) ?: false
+            var result = true
+            val sKey = getFullStorageKey()
+
+            sKey?.let {
+
+                result = this.encStorage?.delete(sKey) ?: false
+            }
+
 
             this.data = null
             this.encStorage = null
@@ -417,6 +438,16 @@ abstract class DataManagement<T> :
         throw IllegalStateException(msg)
     }
 
+    private fun getFullStorageKey(): String? {
+
+        if (BuildConfig.DEBUG) {
+
+            return "${storageKey}.DEBUG.${BaseApplication.getVersionCode()}"
+        }
+
+        return storageKey
+    }
+
     private fun createStorage(): EncryptedPersistence? {
 
         if (isLocked()) {
@@ -429,18 +460,18 @@ abstract class DataManagement<T> :
             return it
         }
 
-        val sKey = if (BuildConfig.DEBUG) {
+        val key = getFullStorageKey()
 
-            "${storageKey}.DEBUG.${BaseApplication.getVersionCode()}"
+        key?.let {
 
-        } else {
+            val store = EncryptedPersistence(storageTag = it)
 
-            storageKey
+            encStorage = store
+
+            return store
         }
 
-        val store = EncryptedPersistence(storageTag = sKey)
-        encStorage = store
-        return store
+        return null
     }
 
     private fun initCallbacksTag() = "${getInitTag()} Data management initialization"
