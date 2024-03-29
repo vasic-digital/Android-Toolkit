@@ -1,6 +1,6 @@
 package com.redelf.commons.locking
 
-interface Lock {
+interface Lockable {
 
     fun lock()
 

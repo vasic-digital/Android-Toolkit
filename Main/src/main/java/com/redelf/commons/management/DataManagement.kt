@@ -11,7 +11,7 @@ import com.redelf.commons.lifecycle.InitializationPerformer
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
-import com.redelf.commons.locking.Lock
+import com.redelf.commons.locking.Lockable
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.recordException
@@ -27,7 +27,7 @@ abstract class DataManagement<T> :
     InitializationPerformer,
     Obtain<T?>,
     Resettable,
-    Lock
+    Lockable
 
 {
 
