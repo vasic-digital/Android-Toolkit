@@ -9,6 +9,7 @@ import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.InitializationPerformer
+import com.redelf.commons.lifecycle.InitializationReady
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
@@ -26,6 +27,7 @@ abstract class DataManagement<T> :
     Management,
     Initialization<EncryptedPersistence>,
     InitializationPerformer,
+    InitializationReady,
     Obtain<T?>,
     Resettable,
     Lockable {
@@ -47,6 +49,19 @@ abstract class DataManagement<T> :
     protected abstract fun getInitTag(): String
 
     protected open fun getStorageClassificationIdentifier(): String? = null
+
+    override fun canInitialize() = isUnlocked()
+
+    override fun initializationReady(): Boolean {
+
+        if (storageClassificationIdentifierRequired) {
+
+            val identifier = getStorageClassificationIdentifier()
+            return isNotEmpty(identifier)
+        }
+
+        return true
+    }
 
     fun initialize(
 
@@ -150,6 +165,8 @@ abstract class DataManagement<T> :
 
         return locked.get()
     }
+
+    override fun isUnlocked() = !isLocked()
 
     @Throws(IllegalStateException::class)
     override fun initialization(): Boolean {

@@ -23,7 +23,6 @@ object FirebaseConfigurationManager :
     private const val logTag = "FirebaseConfigurationManager ::"
     override fun getInitTag() = "FirebaseConfigurationManager ::"
 
-
     override fun getWho(): String? = FirebaseConfigurationManager::class.java.simpleName
 
     @Throws(IllegalStateException::class)

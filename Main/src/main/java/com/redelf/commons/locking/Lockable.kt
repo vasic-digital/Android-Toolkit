@@ -7,4 +7,6 @@ interface Lockable {
     fun unlock()
 
     fun isLocked(): Boolean
+
+    fun isUnlocked(): Boolean
 }

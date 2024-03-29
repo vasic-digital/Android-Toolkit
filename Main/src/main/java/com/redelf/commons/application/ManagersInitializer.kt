@@ -43,7 +43,7 @@ class ManagersInitializer {
 
                         Timber.e(
 
-                            "Manager: ${manager.javaClass.simpleName} initialization skipped"
+                            "Manager: ${manager.getWho()} initialization skipped"
                         )
 
                         return@exec
@@ -111,7 +111,18 @@ class ManagersInitializer {
                             }
                         }
 
-                        manager.initialize(lifecycleCallback, persistence = persistence)
+                        if (manager.initializationReady()) {
+
+                            manager.initialize(lifecycleCallback, persistence = persistence)
+
+                        } else {
+
+                            Timber.w(
+
+                                "Manager: " +
+                                        "${manager.getWho()} not initialization ready"
+                            )
+                        }
 
                         latch.await()
                     }
