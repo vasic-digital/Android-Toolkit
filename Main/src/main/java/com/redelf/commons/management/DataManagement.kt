@@ -361,7 +361,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    override fun getWho(): String? = null
+    override fun getWho(): String? = this::class.simpleName
 
     override fun onInitializationFailed(e: Exception) {
 
