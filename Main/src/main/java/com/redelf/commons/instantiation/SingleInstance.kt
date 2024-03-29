@@ -5,6 +5,7 @@ import com.redelf.commons.reset.Resettable
 
 abstract class SingleInstance<T> : Instantiable<T>, Obtain<T>, Resettable {
 
+    @Transient
     private var instance: T? = null
 
     @Throws(InstantiationException::class)
