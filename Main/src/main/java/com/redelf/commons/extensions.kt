@@ -10,8 +10,6 @@ import android.database.Cursor
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.Build
-import android.os.Debug
 import android.os.Handler
 import android.os.Looper
 import android.os.StrictMode
@@ -23,7 +21,6 @@ import android.util.Base64OutputStream
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics

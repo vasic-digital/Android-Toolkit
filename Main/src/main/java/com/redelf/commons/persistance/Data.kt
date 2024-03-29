@@ -5,7 +5,6 @@ import android.text.TextUtils
 import com.redelf.commons.doExec
 import com.redelf.commons.exec
 import com.redelf.commons.execution.Execution
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.persistance.Facade.EmptyFacade
 import com.redelf.commons.recordException

@@ -1,11 +1,9 @@
 package com.redelf.commons.management
 
-import android.os.Build
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.Initialization
