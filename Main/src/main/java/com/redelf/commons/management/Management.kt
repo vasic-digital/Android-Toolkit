@@ -1,3 +1,5 @@
 package com.redelf.commons.management
 
-interface Management
+import com.redelf.commons.desription.Subject
+
+interface Management : Subject

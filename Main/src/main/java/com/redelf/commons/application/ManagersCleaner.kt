@@ -123,13 +123,13 @@ class ManagersCleaner {
 
                 managers.forEach { manager ->
 
-                    Timber.v("$tag Manager :: ${manager.javaClass.simpleName}")
+                    Timber.v("$tag Manager :: ${manager.getWho()}")
 
                     if (manager.reset()) {
 
                         Timber.v(
 
-                            "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                            "$tag Manager :: ${manager.getWho()} :: " +
                                     "Cleaned"
                         )
 
@@ -137,7 +137,7 @@ class ManagersCleaner {
 
                         Timber.w(
 
-                            "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                            "$tag Manager :: ${manager.getWho()} :: " +
                                     "Not cleaned"
                         )
 

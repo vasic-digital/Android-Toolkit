@@ -320,7 +320,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    protected open fun getWho(): String? = null
+    override fun getWho(): String? = null
 
     override fun onInitializationFailed(e: Exception) {
 
