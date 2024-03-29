@@ -66,7 +66,7 @@ class ManagersInitializer {
 
                                     Timber.v(
 
-                                        "Manager: ${manager.javaClass.simpleName} " +
+                                        "Manager: ${manager.getWho()} " +
                                                 "initialization completed with success " +
                                                 "(${manager.isInitialized()})"
                                     )
@@ -88,7 +88,7 @@ class ManagersInitializer {
 
                                 Timber.v(
 
-                                    "Manager: ${manager.javaClass.simpleName} " +
+                                    "Manager: ${manager.getWho()} " +
                                             "injecting context: $ctx"
                                 )
 
@@ -103,7 +103,7 @@ class ManagersInitializer {
 
                                 Timber.v(
 
-                                    "Manager: ${manager.javaClass.simpleName} " +
+                                    "Manager: ${manager.getWho()} " +
                                             "setting defaults from resource: $defaultResource"
                                 )
 
