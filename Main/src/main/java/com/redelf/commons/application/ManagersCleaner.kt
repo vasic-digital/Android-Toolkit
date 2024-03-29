@@ -4,6 +4,7 @@ import android.content.Context
 import com.redelf.commons.context.Contextual
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.exec
+import com.redelf.commons.instantiation.SingleInstance
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.EncryptedPersistence
@@ -97,6 +98,56 @@ class ManagersCleaner {
 
                             "$tag Manager :: ${manager.javaClass.simpleName} :: UNLOCKED"
                         )
+                    }
+                }
+
+                callback.onCleanup(!failure.get())
+            }
+
+        } catch (e: RejectedExecutionException) {
+
+            callback.onCleanup(false, e)
+        }
+    }
+
+    fun cleanupManagers(
+
+        managers: List<SingleInstance<*>>,
+        callback: CleanupCallback,
+
+        ) {
+
+        val tag = "Managers :: Cleanup ::"
+
+        try {
+
+            Timber.v("$tag START")
+
+            exec {
+
+                val failure = AtomicBoolean()
+
+                managers.forEach { manager ->
+
+                    Timber.v("$tag Manager :: ${manager.javaClass.simpleName}")
+
+                    if (manager.reset()) {
+
+                        Timber.v(
+
+                            "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                                    "Cleaned"
+                        )
+
+                    } else {
+
+                        Timber.w(
+
+                            "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                                    "Not cleaned"
+                        )
+
+                        failure.set(true)
                     }
                 }
 
