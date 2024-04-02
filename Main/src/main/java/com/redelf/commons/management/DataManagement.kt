@@ -302,7 +302,7 @@ abstract class DataManagement<T> :
 
                     Timber.v("$tag Storage key: $sKey")
 
-                    result = this.encStorage?.delete(sKey) ?: false
+                    result = this.encStorage?.delete(sKey) ?: true
 
                 } else {
 
