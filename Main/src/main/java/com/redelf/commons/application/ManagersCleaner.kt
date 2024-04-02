@@ -1,7 +1,6 @@
 package com.redelf.commons.application
 
 import com.redelf.commons.exec
-import com.redelf.commons.instantiation.SingleInstance
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import timber.log.Timber
@@ -104,9 +103,9 @@ class ManagersCleaner {
         }
     }
 
-    fun cleanupManagerSingletons(
+    fun cleanupDataManagers(
 
-        managers: List<SingleInstance<*>>,
+        managers: List<DataManagement<*>>,
         callback: CleanupCallback,
 
         ) {

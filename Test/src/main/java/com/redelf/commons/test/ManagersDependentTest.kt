@@ -13,7 +13,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
-abstract class ManagersDependantTest : BaseTest() {
+abstract class ManagersDependentTest : BaseTest() {
 
     private lateinit var persistence: EncryptedPersistence
 
