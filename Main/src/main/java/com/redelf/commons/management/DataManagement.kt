@@ -287,6 +287,10 @@ abstract class DataManagement<T> :
 
     override fun reset(): Boolean {
 
+        val tag = "DataManagement :: Reset :: ${getWho()}"
+
+        Timber.v("$tag START")
+
         try {
 
             var result = true
@@ -294,23 +298,47 @@ abstract class DataManagement<T> :
 
             sKey?.let {
 
-                result = this.encStorage?.delete(sKey) ?: false
+                if (isNotEmpty(sKey)) {
+
+                    Timber.v("$tag Storage key: $sKey")
+
+                    result = this.encStorage?.delete(sKey) ?: false
+
+                } else {
+
+                    Timber.w("$tag Empty storage key")
+                }
             }
 
+            if (sKey == null) {
+
+                Timber.w("$tag No storage key available")
+            }
 
             this.data = null
             this.encStorage = null
+
+            if (result) {
+
+                Timber.v("$tag END")
+
+            } else {
+
+                Timber.e("$tag END: FAILED (1)")
+            }
 
             return result
 
         } catch (e: RejectedExecutionException) {
 
-            recordException(e)
+            Timber.e(tag, e)
 
         } catch (e: IllegalStateException) {
 
-            recordException(e)
+            Timber.e(tag, e)
         }
+
+        Timber.e("$tag END: FAILED (2)")
 
         return false
     }

@@ -39,7 +39,7 @@ class ManagersCleaner {
 
                         Timber.v(
 
-                            "$tag Manager :: ${manager.javaClass.simpleName} :: LOCKED"
+                            "$tag Manager :: ${manager.getWho()} :: LOCKED"
                         )
                     }
                 }
@@ -48,7 +48,7 @@ class ManagersCleaner {
 
                 managers.forEach { manager ->
 
-                    Timber.v("$tag Manager :: ${manager.javaClass.simpleName}")
+                    Timber.v("$tag Manager :: ${manager.getWho()}")
 
                     if (manager is DataManagement<*>) {
 
@@ -56,7 +56,7 @@ class ManagersCleaner {
 
                             Timber.v(
 
-                                "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                                "$tag Manager :: ${manager.getWho()} :: " +
                                         "Cleaned"
                             )
 
@@ -64,8 +64,8 @@ class ManagersCleaner {
 
                             Timber.w(
 
-                                "$tag Manager :: ${manager.javaClass.simpleName} :: " +
-                                        "Not cleaned"
+                                "$tag Manager :: ${manager.getWho()} :: " +
+                                        "Not cleaned, not data manager"
                             )
 
                             failure.set(true)
@@ -75,7 +75,7 @@ class ManagersCleaner {
 
                         Timber.w(
 
-                            "$tag Manager :: ${manager.javaClass.simpleName} :: " +
+                            "$tag Manager :: ${manager.getWho()} :: " +
                                     "SKIPPED: Not data manager"
                         )
                     }
@@ -89,7 +89,7 @@ class ManagersCleaner {
 
                         Timber.v(
 
-                            "$tag Manager :: ${manager.javaClass.simpleName} :: UNLOCKED"
+                            "$tag Manager :: ${manager.getWho()} :: UNLOCKED"
                         )
                     }
                 }
