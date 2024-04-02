@@ -44,6 +44,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 abstract class BaseActivity : AppCompatActivity() {
@@ -65,6 +66,7 @@ abstract class BaseActivity : AppCompatActivity() {
     protected open val canSendOnTransmissionServiceConnected = true
 
     private var created = false
+    private val paused = AtomicBoolean()
     private var unregistrar: Unregistrar? = null
     private val dialogs = mutableListOf<AlertDialog>()
     private var attachmentsDialog: AttachFileDialog? = null
@@ -110,6 +112,19 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+
+        paused.set(true)
+
+        super.onPause()
+    }
+
+    override fun onResume() {
+
+        paused.set(false)
+
+        super.onResume()
+    }
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
 
@@ -658,6 +673,8 @@ abstract class BaseActivity : AppCompatActivity() {
         attachmentsDialog = AttachFileDialog(this, onPickFromCameraCallback, multiple = true)
         attachmentsDialog?.show(style = getAddAttachmentDialogStyle())
     }
+
+    protected fun isPaused(): Boolean = paused.get()
 
     protected open fun getAddAttachmentDialogStyle(): Int = 0
 
