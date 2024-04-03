@@ -508,14 +508,6 @@ abstract class BaseApplication :
 
     override fun onActivityPreStopped(activity: Activity) {
 
-        TOP_ACTIVITY?.let {
-
-            if (it == activity::class.java) {
-
-                TOP_ACTIVITY = null
-            }
-        }
-
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-STOPPED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPreStopped(activity)
@@ -523,12 +515,12 @@ abstract class BaseApplication :
 
     override fun onActivityStopped(activity: Activity) {
 
-        // Ignore
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG STOPPED :: ${activity.javaClass.simpleName}")
     }
 
     override fun onActivityPostStopped(activity: Activity) {
 
-        // Ignore
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG POST-STOPPED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPostStopped(activity)
     }
@@ -554,14 +546,24 @@ abstract class BaseApplication :
 
     override fun onActivityPreDestroyed(activity: Activity) {
 
-        // Ignore
+        TOP_ACTIVITY?.let {
+
+            if (it == activity::class.java) {
+
+                TOP_ACTIVITY = null
+            }
+        }
+
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
+
+        Timber.d("$ACTIVITY_LIFECYCLE_TAG No top activity")
 
         super.onActivityPreDestroyed(activity)
     }
 
     override fun onActivityDestroyed(activity: Activity) {
 
-        // Ignore
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG DESTROYED :: ${activity.javaClass.simpleName}")
     }
 
     override fun onActivityPostDestroyed(activity: Activity) {
