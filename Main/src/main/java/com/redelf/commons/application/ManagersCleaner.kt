@@ -4,6 +4,7 @@ import com.redelf.commons.exec
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import timber.log.Timber
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -118,33 +119,41 @@ class ManagersCleaner {
 
             exec {
 
-                val failure = AtomicBoolean()
+                val success = AtomicBoolean(true)
+                val latch = CountDownLatch(managers.size)
 
                 managers.forEach { manager ->
 
                     Timber.v("$tag Manager :: ${manager.getWho()}")
 
-                    if (manager.reset()) {
+                    exec {
 
-                        Timber.v(
+                        if (manager.reset()) {
 
-                            "$tag Manager :: ${manager.getWho()} :: " +
-                                    "Cleaned"
-                        )
+                            Timber.v(
 
-                    } else {
+                                "$tag Manager :: ${manager.getWho()} :: " +
+                                        "Cleaned"
+                            )
 
-                        Timber.w(
+                        } else {
 
-                            "$tag Manager :: ${manager.getWho()} :: " +
-                                    "Not cleaned"
-                        )
+                            Timber.w(
 
-                        failure.set(true)
+                                "$tag Manager :: ${manager.getWho()} :: " +
+                                        "Not cleaned"
+                            )
+
+                            success.set(false)
+                        }
+
+                        latch.countDown()
                     }
                 }
 
-                callback.onCleanup(!failure.get())
+                latch.await()
+
+                callback.onCleanup(success.get())
             }
 
         } catch (e: RejectedExecutionException) {
