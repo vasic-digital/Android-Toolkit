@@ -57,7 +57,7 @@ abstract class BaseApplication :
         lateinit var CONTEXT: Context
 
         var STRICT_MODE_DISABLED = false
-        var TOP_ACTIVITY: Class<out Activity>? = null
+        var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
 
         const val ACTIVITY_LIFECYCLE_TAG = "Activity lifecycle ::"
 
@@ -464,11 +464,13 @@ abstract class BaseApplication :
 
     override fun onActivityPreResumed(activity: Activity) {
 
-        TOP_ACTIVITY = activity::class.java
+        val clazz = activity::class.java
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${TOP_ACTIVITY?.simpleName}")
+        TOP_ACTIVITY.add(clazz)
 
-        Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${TOP_ACTIVITY?.simpleName}")
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${clazz.simpleName}")
+
+        Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
 
         super.onActivityPreResumed(activity)
     }
@@ -546,17 +548,30 @@ abstract class BaseApplication :
 
     override fun onActivityPreDestroyed(activity: Activity) {
 
-        TOP_ACTIVITY?.let {
+        val iterator = TOP_ACTIVITY.iterator()
 
-            if (it == activity::class.java) {
+        while (iterator.hasNext()) {
 
-                TOP_ACTIVITY = null
+            val item = iterator.next()
+
+            if (item == activity::class.java) {
+
+                iterator.remove()
             }
         }
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
 
-        Timber.d("$ACTIVITY_LIFECYCLE_TAG No top activity")
+        if (TOP_ACTIVITY.isEmpty()) {
+
+            Timber.d("$ACTIVITY_LIFECYCLE_TAG No top activity")
+
+        } else {
+
+            val clazz = TOP_ACTIVITY.last()
+
+            Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+        }
 
         super.onActivityPreDestroyed(activity)
     }
