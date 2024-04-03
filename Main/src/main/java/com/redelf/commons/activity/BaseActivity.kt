@@ -141,6 +141,11 @@ abstract class BaseActivity : AppCompatActivity() {
 
                     handleFinishBroadcast(intent)
                 }
+
+                if (Broadcast.ACTION_FINISH_ALL == intent.action) {
+
+                    handleFinishAllBroadcast()
+                }
             }
         }
     }
@@ -461,6 +466,17 @@ abstract class BaseActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
+    fun broadcastFinishAll() {
+
+        if (!isFinishing) {
+
+            finish()
+        }
+
+        val intent = Intent(Broadcast.ACTION_FINISH_ALL)
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+    }
+
     protected open fun onRegistrationWithGoogleCompleted(tokenId: String) {
 
         Timber.v("Registration with Google completed: $tokenId")
@@ -694,7 +710,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     protected open fun handleFinishBroadcast(intent: Intent? = null) {
 
-        val tag = "handleFinishBroadcast ::"
+        val tag = "Finish broadcast ::"
 
         Timber.v("$tag START")
 
@@ -946,5 +962,25 @@ abstract class BaseActivity : AppCompatActivity() {
                     onRegistrationWithGoogleFailed(e)
                 }
             }
+    }
+
+    private fun handleFinishAllBroadcast() {
+
+        val tag = "Finish broadcast :: All ::"
+
+        Timber.v("$tag START")
+
+        val hash = this.hashCode()
+
+        if (isFinishing) {
+
+            Timber.v("$tag ALREADY FINISHING, THIS_HASH=$hash")
+
+        } else {
+
+            Timber.v("$tag FINISHING, THIS_HASH=$hash")
+
+            finish()
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.redelf.commons
 object Broadcast {
 
     const val ACTION_FINISH = "ACTION_FINISH"
+    const val ACTION_FINISH_ALL = "ACTION_FINISH.ALL"
     const val ACTION_SETTINGS = "ACTION_SETTINGS"
 
     const val EXTRA_SETTINGS_KEY = "EXTRA_SETTINGS_KEY"
