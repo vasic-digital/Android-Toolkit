@@ -468,6 +468,8 @@ abstract class BaseApplication :
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${TOP_ACTIVITY?.simpleName}")
 
+        Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${TOP_ACTIVITY?.simpleName}")
+
         super.onActivityPreResumed(activity)
     }
 
