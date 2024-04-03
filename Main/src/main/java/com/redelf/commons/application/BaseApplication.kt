@@ -51,14 +51,15 @@ abstract class BaseApplication :
 
 {
 
-    private val activityLifecycleTag = "Activity lifecycle ::"
-
     companion object : ContextAvailability, ApplicationVersion {
 
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: Context
 
         var STRICT_MODE_DISABLED = false
+        var TOP_ACTIVITY: Class<out Activity>? = null
+
+        const val ACTIVITY_LIFECYCLE_TAG = "Activity lifecycle ::"
 
         override fun takeContext() = CONTEXT
 
@@ -463,47 +464,57 @@ abstract class BaseApplication :
 
     override fun onActivityPreResumed(activity: Activity) {
 
-        Timber.v("$activityLifecycleTag PRE-RESUMED :: ${activity.javaClass.simpleName}")
+        TOP_ACTIVITY = activity::class.java
+
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${TOP_ACTIVITY?.simpleName}")
 
         super.onActivityPreResumed(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {
 
-        Timber.v("$activityLifecycleTag RESUMED :: ${activity.javaClass.simpleName}")
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
     }
 
     override fun onActivityPostResumed(activity: Activity) {
 
-        Timber.v("$activityLifecycleTag POST-RESUMED :: ${activity.javaClass.simpleName}")
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG POST-RESUMED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPostResumed(activity)
     }
 
     override fun onActivityPrePaused(activity: Activity) {
 
-        Timber.v("$activityLifecycleTag PRE-PAUSED :: ${activity.javaClass.simpleName}")
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPrePaused(activity)
     }
 
     override fun onActivityPaused(activity: Activity) {
 
-        Timber.v("$activityLifecycleTag PAUSED :: ${activity.javaClass.simpleName}")
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG PAUSED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPrePaused(activity)
     }
 
     override fun onActivityPostPaused(activity: Activity) {
 
-        Timber.v("$activityLifecycleTag POST-PAUSED :: ${activity.javaClass.simpleName}")
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG POST-PAUSED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPostPaused(activity)
     }
 
     override fun onActivityPreStopped(activity: Activity) {
 
-        Timber.v("$activityLifecycleTag PRE-STOPPED :: ${activity.javaClass.simpleName}")
+        TOP_ACTIVITY?.let {
+
+            if (it == activity::class.java) {
+
+                TOP_ACTIVITY = null
+            }
+        }
+
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-STOPPED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPreStopped(activity)
     }
