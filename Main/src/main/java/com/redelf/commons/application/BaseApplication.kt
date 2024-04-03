@@ -51,6 +51,8 @@ abstract class BaseApplication :
 
 {
 
+    private val activityLifecycleTag = "Activity lifecycle ::"
+
     companion object : ContextAvailability, ApplicationVersion {
 
         @SuppressLint("StaticFieldLeak")
@@ -461,45 +463,47 @@ abstract class BaseApplication :
 
     override fun onActivityPreResumed(activity: Activity) {
 
-        // Ignore
+        Timber.v("$activityLifecycleTag PRE-RESUMED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPreResumed(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {
 
-        // Ignore
+        Timber.v("$activityLifecycleTag RESUMED :: ${activity.javaClass.simpleName}")
     }
 
     override fun onActivityPostResumed(activity: Activity) {
 
-        // Ignore
+        Timber.v("$activityLifecycleTag POST-RESUMED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPostResumed(activity)
     }
 
     override fun onActivityPrePaused(activity: Activity) {
 
-        // Ignore
+        Timber.v("$activityLifecycleTag PRE-PAUSED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPrePaused(activity)
     }
 
     override fun onActivityPaused(activity: Activity) {
 
-        // Ignore
+        Timber.v("$activityLifecycleTag PAUSED :: ${activity.javaClass.simpleName}")
+
+        super.onActivityPrePaused(activity)
     }
 
     override fun onActivityPostPaused(activity: Activity) {
 
-        // Ignore
+        Timber.v("$activityLifecycleTag POST-PAUSED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPostPaused(activity)
     }
 
     override fun onActivityPreStopped(activity: Activity) {
 
-        // Ignore
+        Timber.v("$activityLifecycleTag PRE-STOPPED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPreStopped(activity)
     }
