@@ -76,7 +76,11 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val filter = IntentFilter(Broadcast.ACTION_FINISH)
+        val filter = IntentFilter()
+
+        filter.addAction(Broadcast.ACTION_FINISH)
+        filter.addAction(Broadcast.ACTION_FINISH_ALL)
+
         LocalBroadcastManager.getInstance(applicationContext)
             .registerReceiver(finishReceiver, filter)
 
