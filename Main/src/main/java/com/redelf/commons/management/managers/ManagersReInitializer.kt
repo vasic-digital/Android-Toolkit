@@ -361,7 +361,7 @@ class ManagersReInitializer {
 
     private fun resetManagers(managers: MutableList<SingleInstance<*>>): Boolean {
 
-        val result = AtomicBoolean()
+        val result = AtomicBoolean(true)
         val latch = CountDownLatch(managers.size)
 
         managers.forEach { m ->
