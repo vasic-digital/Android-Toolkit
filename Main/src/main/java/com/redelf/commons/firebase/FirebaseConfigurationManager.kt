@@ -21,7 +21,7 @@ object FirebaseConfigurationManager :
     override val storageKey = "remote_configuration"
 
     private const val logTag = "FirebaseConfigurationManager ::"
-    override fun getInitTag() = "FirebaseConfigurationManager ::"
+    override fun getInitTag() = "$logTag ${hashCode()} ::"
 
     override fun getWho(): String? = FirebaseConfigurationManager::class.java.simpleName
 

@@ -287,7 +287,7 @@ abstract class DataManagement<T> :
 
     override fun reset(): Boolean {
 
-        val tag = "DataManagement :: Reset :: ${getWho()}"
+        val tag = "${getInitTag()} :: Reset ::"
 
         Timber.v("$tag START")
 
