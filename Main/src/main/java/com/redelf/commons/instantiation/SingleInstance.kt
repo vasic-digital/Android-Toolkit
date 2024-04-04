@@ -40,7 +40,7 @@ abstract class SingleInstance<T> :
         var prefix = ""
         instance?.let {
 
-            prefix = "${it::class.simpleName} :: ${it.hashCode()} ::"
+            prefix = "${it::class.simpleName} :: ${it.hashCode()} :: "
         }
         val tag = "${prefix}Reset ::"
 

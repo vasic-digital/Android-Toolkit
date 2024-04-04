@@ -227,17 +227,27 @@ class ManagersReInitializer {
 
     ) {
 
+        val tag = "Reinitialize managers ::"
+
+        Timber.v("$tag START")
+
         try {
 
             exec {
+
+                Timber.v("$tag We are going to reset managers")
 
                 val ok = resetManagers(managers)
 
                 if (!ok) {
 
+                    Timber.e("$tag Managers failed to reset with success")
+
                     callback.onCompleted(false)
                     return@exec
                 }
+
+                Timber.v("$tag Managers have been reset with success")
 
                 val failure = AtomicBoolean()
                 val latch = CountDownLatch(managers.size)
@@ -249,6 +259,10 @@ class ManagersReInitializer {
                         val manager = m.obtain()
 
                         if (manager is DataManagement<*>) {
+
+                            val mTag = "$tag ${manager.getWho()} :: ${manager.hashCode()}"
+
+                            Timber.v("$mTag START")
 
                             val lifecycleCallback = object : ManagerLifecycleCallback() {
 
@@ -263,12 +277,17 @@ class ManagersReInitializer {
 
                                         Timber.v(
 
-                                            "Manager: ${manager.getWho()} " +
-                                                    "initialization completed with success " +
+                                            "$mTag " +
+                                                    "Initialization completed with success: " +
                                                     "(${manager.isInitialized()})"
                                         )
 
                                     } else {
+
+                                        Timber.e(
+
+                                            "$mTag Initialization completed with failure"
+                                        )
 
                                         failure.set(true)
                                     }
@@ -277,47 +296,45 @@ class ManagersReInitializer {
                                 }
                             }
 
-                            if (manager is Contextual) {
-
-                                context?.let { ctx ->
-
-                                    Timber.v(
-
-                                        "Manager: ${manager.getWho()} " +
-                                                "injecting context: $ctx"
-                                    )
-
-                                    manager.injectContext(ctx)
-                                }
-                            }
-
-                            if (manager is ResourceDefaults) {
-
-                                val defaultResource = defaultResources?.get(manager.javaClass)
-
-                                defaultResource?.let {
-
-                                    Timber.v(
-
-                                        "Manager: ${manager.getWho()} " +
-                                                "setting defaults from resource: $defaultResource"
-                                    )
-
-                                    manager.setDefaults(it)
-                                }
-                            }
-
                             if (manager.initializationReady()) {
+
+                                if (manager is Contextual) {
+
+                                    context?.let { ctx ->
+
+                                        Timber.v(
+
+                                            "Manager: ${manager.getWho()} " +
+                                                    "injecting context: $ctx"
+                                        )
+
+                                        manager.injectContext(ctx)
+                                    }
+                                }
+
+                                if (manager is ResourceDefaults) {
+
+                                    val defaultResource = defaultResources?.get(manager.javaClass)
+
+                                    defaultResource?.let {
+
+                                        Timber.v(
+
+                                            "Manager: ${manager.getWho()} " +
+                                                    "setting defaults from resource: $defaultResource"
+                                        )
+
+                                        manager.setDefaults(it)
+                                    }
+                                }
+
+                                Timber.v("$mTag Ready to initialize")
 
                                 manager.initialize(lifecycleCallback, persistence = persistence)
 
                             } else {
 
-                                Timber.w(
-
-                                    "Manager: " +
-                                            "${manager.getWho()} not initialization ready"
-                                )
+                                Timber.w("$mTag Not initialization ready")
 
                                 latch.countDown()
                             }
