@@ -491,7 +491,7 @@ abstract class DataManagement<T> :
 
     private fun getFullStorageKey(): String? {
 
-        val tag = "${getLogTag()} :: Get storage key ::"
+        val tag = "${getLogTag()} Get storage key ::"
 
         Timber.v("$tag START")
 
@@ -533,7 +533,7 @@ abstract class DataManagement<T> :
 
     private fun createStorage(): EncryptedPersistence? {
 
-        val tag = "${getLogTag()} :: Create storage ::"
+        val tag = "${getLogTag()} Create storage ::"
 
         Timber.v("$tag START")
 
