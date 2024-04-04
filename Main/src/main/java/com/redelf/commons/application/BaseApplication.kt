@@ -118,9 +118,9 @@ abstract class BaseApplication :
         }
     }
 
-    val managers = mutableListOf<DataManagement<*>>(
+    val managers = mutableListOf<List<DataManagement<*>>>(
 
-        FirebaseConfigurationManager
+        listOf(FirebaseConfigurationManager)
     )
 
     val defaultManagerResources = mutableMapOf<Class<*>, Int>()
@@ -128,7 +128,7 @@ abstract class BaseApplication :
     protected abstract fun onDoCreate()
     protected abstract fun takeSalt(): String
 
-    protected open fun populateManagers() = listOf<DataManagement<*>>()
+    protected open fun populateManagers() = listOf<List<DataManagement<*>>>()
 
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
 
@@ -276,68 +276,20 @@ abstract class BaseApplication :
                 intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
                 registerReceiver(screenReceiver, intentFilter)
 
-                val managersInitializerCallback = object : ManagersInitializer.InitializationCallback {
+                val success = initializeManagers()
 
-                    override fun onInitialization(success: Boolean, error: Throwable?) {
+                if (success) {
 
-                        if (success) {
+                    onManagersInitialized()
 
-                            onManagersInitialized()
+                    Timber.v("Installing profile: START")
+                    ProfileInstaller.writeProfile(applicationContext)
+                    Timber.v("Installing profile: END")
 
-                        } else {
+                } else {
 
-                            error?.let {
-
-                                recordException(it)
-
-                                throw it
-                            }
-                        }
-                    }
-
-                    override fun onInitialization(
-
-                        manager: Management,
-                        success: Boolean,
-                        error: Throwable?
-
-                    ) {
-
-                        if (success) {
-
-                            if (manager is InitializationCondition) {
-
-                                Timber.i(
-
-                                    "Manager: ${manager.javaClass.simpleName} " +
-                                            "initialized (${manager.isInitialized()})"
-                                )
-
-                            } else {
-
-                                Timber.i(
-
-                                    "Manager: ${manager.javaClass.simpleName} initialized"
-                                )
-                            }
-
-                        } else {
-
-                            error?.let {
-
-                                recordException(it)
-
-                                throw it
-                            }
-                        }
-                    }
+                    Timber.e("Failed to initialize managers")
                 }
-
-                initializeManagers(managersInitializerCallback)
-
-                Timber.v("Installing profile: START")
-                ProfileInstaller.writeProfile(applicationContext)
-                Timber.v("Installing profile: END")
             }
 
         } catch (e: RejectedExecutionException) {
@@ -378,15 +330,26 @@ abstract class BaseApplication :
         Timber.i("Managers: Ready")
     }
 
-    private fun initializeManagers(callback: ManagersInitializer.InitializationCallback) {
+    private fun initializeManagers(): Boolean {
 
-        ManagersInitializer().initializeManagers(
+        var success = true
 
-            managers = managers,
-            callback = callback,
-            context = applicationContext,
-            defaultResources = defaultManagerResources
-        )
+        managers.forEach {
+
+            val result = ManagersInitializer().initializeManagers(
+
+                managers = it,
+                context = applicationContext,
+                defaultResources = defaultManagerResources
+            )
+
+            if (!result) {
+
+                success = false
+            }
+        }
+
+        return success
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")

@@ -24,6 +24,52 @@ class ManagersInitializer {
     fun initializeManagers(
 
         managers: List<Management>,
+        persistence: EncryptedPersistence? = null,
+        context: Context? = null,
+        defaultResources: Map<Class<*>, Int>? = null
+
+    ) : Boolean {
+
+        val latch = CountDownLatch(1)
+        val result = AtomicBoolean(true)
+
+        val callback = object : InitializationCallback {
+
+            override fun onInitialization(success: Boolean, error: Throwable?) {
+
+                if (!success) {
+
+                    result.set(false)
+                }
+
+                latch.countDown()
+            }
+
+            override fun onInitialization(
+
+                manager: Management,
+                success: Boolean,
+                error: Throwable?
+
+            ) {
+
+                error?.let {
+
+                    Timber.e(it)
+                }
+            }
+        }
+
+        initializeManagers(managers, callback, persistence, context, defaultResources)
+
+        latch.await()
+
+        return result.get()
+    }
+
+    fun initializeManagers(
+
+        managers: List<Management>,
         callback: InitializationCallback,
         persistence: EncryptedPersistence? = null,
         context: Context? = null,
