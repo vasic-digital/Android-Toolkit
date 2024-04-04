@@ -150,7 +150,7 @@ abstract class DataManagement<T> :
 
     override fun lock() {
 
-        Timber.v("${getLogTag()} :: Lock")
+        Timber.v("${getLogTag()} Lock")
 
         locked.set(true)
     }

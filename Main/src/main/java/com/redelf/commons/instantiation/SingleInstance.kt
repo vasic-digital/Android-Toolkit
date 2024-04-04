@@ -5,6 +5,7 @@ import com.redelf.commons.isNotEmpty
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.reset.Resettable
+import timber.log.Timber
 
 abstract class SingleInstance<T> :
 
@@ -36,17 +37,44 @@ abstract class SingleInstance<T> :
 
     override fun reset(): Boolean {
 
+        var prefix = ""
         instance?.let {
+
+            prefix = "${it::class.simpleName} :: ${it.hashCode()} ::"
+        }
+        val tag = "${prefix}Reset ::"
+
+        Timber.v("$tag START")
+
+        instance?.let {
+
+            Timber.v("$tag To lock")
 
             if (it is Lockable) {
 
                 it.lock()
+
+                Timber.v("$tag Locked")
             }
         }
 
         val newManager = instantiate()
+
+        Timber.v("$tag New instance: ${newManager.hashCode()}")
+
         val result = newManager != instance
         instance = newManager
+
+        Timber.v("$tag New instance confirmed: ${instance.hashCode()}")
+
+        if (result) {
+
+            Timber.v("$tag END")
+
+        } else {
+
+            Timber.e("$tag END: Instance was not changed")
+        }
 
         return result
     }
