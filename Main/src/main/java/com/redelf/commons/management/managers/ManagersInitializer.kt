@@ -31,102 +31,116 @@ class ManagersInitializer {
 
     ) {
 
+        val tag = "Initialize managers ::"
+
         try {
 
             exec {
 
+                Timber.v("$tag START")
+
                 val failure = AtomicBoolean()
+                val latch = CountDownLatch(managers.size)
 
                 managers.forEach { manager ->
 
-                    if (failure.get()) {
+                    val mTag = "$tag ${manager.getWho()} :: ${manager.hashCode()} ::"
 
-                        Timber.e(
+                    exec {
 
-                            "Manager: ${manager.getWho()} initialization skipped"
-                        )
+                        if (failure.get()) {
 
-                        return@exec
-                    }
+                            Timber.e("$mTag initialization skipped")
 
-                    if (manager is DataManagement<*>) {
+                            latch.countDown()
 
-                        val latch = CountDownLatch(1)
+                        } else {
 
-                        val lifecycleCallback = object : ManagerLifecycleCallback() {
+                            if (manager is DataManagement<*>) {
 
-                            override fun onInitialization(
+                                val lifecycleCallback = object : ManagerLifecycleCallback() {
 
-                                success: Boolean,
-                                vararg args: EncryptedPersistence
+                                    override fun onInitialization(
 
-                            ) {
+                                        success: Boolean,
+                                        vararg args: EncryptedPersistence
 
-                                if (success) {
+                                    ) {
 
-                                    Timber.v(
+                                        if (success) {
 
-                                        "Manager: ${manager.getWho()} " +
-                                                "initialization completed with success " +
-                                                "(${manager.isInitialized()})"
-                                    )
+                                            Timber.v(
+
+                                                "$mTag " +
+                                                        "Initialization completed with success: " +
+                                                        "(${manager.isInitialized()})"
+                                            )
+
+                                        } else {
+
+                                            Timber.v("$mTag Initialization failed")
+
+                                            failure.set(true)
+                                        }
+
+                                        callback.onInitialization(manager, success)
+
+                                        latch.countDown()
+                                    }
+                                }
+
+                                if (manager.initializationReady()) {
+
+                                    if (manager is Contextual) {
+
+                                        context?.let { ctx ->
+
+                                            Timber.v(
+
+                                                "$mTag Injecting context: $ctx"
+                                            )
+
+                                            manager.injectContext(ctx)
+                                        }
+                                    }
+
+                                    if (manager is ResourceDefaults) {
+
+                                        val defaultResource = defaultResources?.get(manager.javaClass)
+                                        defaultResource?.let {
+
+                                            Timber.v(
+
+                                                "$mTag Setting defaults from the " +
+                                                        "resource: $defaultResource"
+                                            )
+
+                                            manager.setDefaults(it)
+                                        }
+                                    }
+
+                                    manager.initialize(lifecycleCallback, persistence = persistence)
 
                                 } else {
 
                                     failure.set(true)
+
+                                    Timber.w("$mTag Not ready to initialize")
+
+                                    latch.countDown()
                                 }
 
-                                callback.onInitialization(manager, success)
+                            } else {
+
+                                Timber.w("$mTag Not supported")
 
                                 latch.countDown()
                             }
                         }
-
-                        if (manager is Contextual) {
-
-                            context?.let { ctx ->
-
-                                Timber.v(
-
-                                    "Manager: ${manager.getWho()} " +
-                                            "injecting context: $ctx"
-                                )
-
-                                manager.injectContext(ctx)
-                            }
-                        }
-
-                        if (manager is ResourceDefaults) {
-
-                            val defaultResource = defaultResources?.get(manager.javaClass)
-                            defaultResource?.let {
-
-                                Timber.v(
-
-                                    "Manager: ${manager.getWho()} " +
-                                            "setting defaults from resource: $defaultResource"
-                                )
-
-                                manager.setDefaults(it)
-                            }
-                        }
-
-                        if (manager.initializationReady()) {
-
-                            manager.initialize(lifecycleCallback, persistence = persistence)
-
-                        } else {
-
-                            Timber.w(
-
-                                "Manager: " +
-                                        "${manager.getWho()} not initialization ready"
-                            )
-                        }
-
-                        latch.await()
                     }
                 }
+
+                latch.await()
 
                 callback.onInitialization(!failure.get())
             }
