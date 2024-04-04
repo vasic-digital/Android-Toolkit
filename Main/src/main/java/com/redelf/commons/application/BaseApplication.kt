@@ -29,10 +29,8 @@ import com.redelf.commons.exec
 import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.isNotEmpty
-import com.redelf.commons.lifecycle.InitializationCondition
 import com.redelf.commons.logging.LogsGathering
 import com.redelf.commons.management.DataManagement
-import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.Data
@@ -276,20 +274,12 @@ abstract class BaseApplication :
                 intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
                 registerReceiver(screenReceiver, intentFilter)
 
-                val success = initializeManagers()
+                initializeManagers()
+                onManagers()
 
-                if (success) {
-
-                    onManagersInitialized()
-
-                    Timber.v("Installing profile: START")
-                    ProfileInstaller.writeProfile(applicationContext)
-                    Timber.v("Installing profile: END")
-
-                } else {
-
-                    Timber.e("Failed to initialize managers")
-                }
+                Timber.v("Installing profile: START")
+                ProfileInstaller.writeProfile(applicationContext)
+                Timber.v("Installing profile: END")
             }
 
         } catch (e: RejectedExecutionException) {
@@ -552,7 +542,7 @@ abstract class BaseApplication :
         super.onActivityPostDestroyed(activity)
     }
 
-    private fun onManagersInitialized() {
+    private fun onManagers() {
 
         initializeFcm()
         onManagersReady()
