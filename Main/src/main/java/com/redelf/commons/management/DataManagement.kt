@@ -16,7 +16,6 @@ import com.redelf.commons.lifecycle.exception.NotInitializedException
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.EncryptedPersistence
-import com.redelf.commons.recordException
 import com.redelf.commons.reset.Resettable
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
@@ -46,7 +45,7 @@ abstract class DataManagement<T> :
     private val initCallbacks =
         Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag())
 
-    protected abstract fun getInitTag(): String
+    protected abstract fun getLogTag(): String
 
     protected open fun getStorageClassificationIdentifier(): String? = null
 
@@ -149,14 +148,14 @@ abstract class DataManagement<T> :
 
     override fun lock() {
 
-        Timber.v("DataManagement :: Lock")
+        Timber.v("${getLogTag()} :: Lock")
 
         locked.set(true)
     }
 
     override fun unlock() {
 
-        Timber.v("DataManagement :: Unlock")
+        Timber.v("${getLogTag()} :: Unlock")
 
         locked.set(false)
     }
@@ -171,7 +170,7 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     override fun initialization(): Boolean {
 
-        Timber.v("DataManagement :: initialization")
+        Timber.v("${getLogTag()} initialization")
         return true
     }
 
@@ -184,7 +183,7 @@ abstract class DataManagement<T> :
 
         if (isLocked()) {
 
-            Timber.w("DataManagement :: Obtain :: Locked")
+            Timber.w("${getLogTag()} Obtain :: Locked")
             return null
         }
 
@@ -240,7 +239,7 @@ abstract class DataManagement<T> :
 
         if (isLocked()) {
 
-            Timber.w("DataManagement :: pushData :: Locked: SKIPPING")
+            Timber.w("${getLogTag()} Push data :: Locked: SKIPPING")
 
             return
         }
@@ -270,7 +269,7 @@ abstract class DataManagement<T> :
 
         if (isLocked()) {
 
-            Timber.w("DataManagement :: pushData :: Locked: SKIPPING")
+            Timber.w("${getLogTag()} Push data :: Locked: SKIPPING")
 
             return false
         }
@@ -287,7 +286,7 @@ abstract class DataManagement<T> :
 
     override fun reset(): Boolean {
 
-        val tag = "${getInitTag()} :: Reset ::"
+        val tag = "${getLogTag()} :: Reset ::"
 
         Timber.v("$tag START")
 
@@ -381,11 +380,11 @@ abstract class DataManagement<T> :
 
         if (e == null) {
 
-            Timber.v("DataManagement :: initialization completed with success")
+            Timber.v("${getLogTag()} Initialization completed with success")
 
         } else {
 
-            Timber.e(e, "DataManagement :: initialization completed with failure")
+            Timber.e(e, "${getLogTag()} Initialization completed with failure")
         }
     }
 
@@ -542,5 +541,5 @@ abstract class DataManagement<T> :
         return null
     }
 
-    private fun initCallbacksTag() = "${getInitTag()} Data management initialization"
+    private fun initCallbacksTag() = "${getLogTag()} Data management initialization"
 }
