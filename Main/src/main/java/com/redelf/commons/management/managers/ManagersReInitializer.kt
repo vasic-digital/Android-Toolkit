@@ -8,7 +8,6 @@ import com.redelf.commons.instantiation.SingleInstance
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.persistance.Data
 import com.redelf.commons.persistance.EncryptedPersistence
 import timber.log.Timber
 import java.util.concurrent.CountDownLatch

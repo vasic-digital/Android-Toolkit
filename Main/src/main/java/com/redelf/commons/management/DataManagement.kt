@@ -29,7 +29,9 @@ abstract class DataManagement<T> :
     InitializationReady,
     Obtain<T?>,
     Resettable,
-    Lockable {
+    Lockable
+
+{
 
     protected abstract val storageKey: String
     protected open val instantiateDataObject: Boolean = false
@@ -489,22 +491,36 @@ abstract class DataManagement<T> :
 
     private fun getFullStorageKey(): String? {
 
+        val tag = "${getLogTag()} :: Get storage key ::"
+
+        Timber.v("$tag START")
+
         if (storageClassificationIdentifierRequired) {
+
+            Timber.v("$tag Storage classification identifier required")
 
             if (isEmpty(classificationIdentifier)) {
 
                 classificationIdentifier = getStorageClassificationIdentifier()
+
+                Timber.v("$tag Storage classification identifier: $classificationIdentifier")
             }
 
             if (isEmpty(classificationIdentifier)) {
+
+                Timber.e("$tag No storage classification identifier")
 
                 return null
             }
 
         } else {
 
+            Timber.v("$tag Storage classification identifier not required")
+
             classificationIdentifier = "0"
         }
+
+        Timber.v("$tag END")
 
         if (BuildConfig.DEBUG) {
 
@@ -517,17 +533,27 @@ abstract class DataManagement<T> :
 
     private fun createStorage(): EncryptedPersistence? {
 
+        val tag = "${getLogTag()} :: Create storage ::"
+
+        Timber.v("$tag START")
+
         if (isLocked()) {
+
+            Timber.e("$tag LOCKED")
 
             return null
         }
 
         encStorage?.let {
 
+            Timber.v("$tag Storage already initialized")
+
             return it
         }
 
         val key = getFullStorageKey()
+
+        Timber.v("$tag Key: $key")
 
         key?.let {
 
@@ -535,8 +561,12 @@ abstract class DataManagement<T> :
 
             encStorage = store
 
+            Timber.v("$tag END")
+
             return store
         }
+
+        Timber.e("$tag END")
 
         return null
     }
