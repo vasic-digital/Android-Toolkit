@@ -1,4 +1,4 @@
-package com.redelf.commons.application
+package com.redelf.commons.management.managers
 
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.persistance.EncryptedPersistence

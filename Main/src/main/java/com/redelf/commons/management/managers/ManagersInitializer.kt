@@ -1,4 +1,4 @@
-package com.redelf.commons.application
+package com.redelf.commons.management.managers
 
 import android.content.Context
 import com.redelf.commons.context.Contextual

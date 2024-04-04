@@ -1,4 +1,4 @@
-package com.redelf.commons.application
+package com.redelf.commons.management.managers
 
 import com.redelf.commons.exec
 import com.redelf.commons.management.DataManagement
@@ -22,7 +22,7 @@ class ManagersCleaner {
         managers: List<Management>,
         callback: CleanupCallback,
 
-    ) {
+        ) {
 
         val tag = "Managers :: Cleanup ::"
 

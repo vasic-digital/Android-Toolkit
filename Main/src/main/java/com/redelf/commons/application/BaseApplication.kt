@@ -33,6 +33,7 @@ import com.redelf.commons.lifecycle.InitializationCondition
 import com.redelf.commons.logging.LogsGathering
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
+import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.Data
 import com.redelf.commons.persistance.GsonParser

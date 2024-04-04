@@ -2,7 +2,7 @@ package com.redelf.commons.test
 
 import com.redelf.commons.Credentials
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.application.ManagersInitializer
+import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.management.Management
 import com.redelf.commons.persistance.EncryptedPersistence
 
