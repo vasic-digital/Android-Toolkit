@@ -294,7 +294,6 @@ abstract class DataManagement<T> :
 
         try {
 
-            var result = true
             val sKey = getFullStorageKey()
 
             sKey?.let {
@@ -303,7 +302,9 @@ abstract class DataManagement<T> :
 
                     Timber.v("$tag Storage key: $sKey")
 
-                    result = this.encStorage?.delete(sKey) ?: true
+                    this.encStorage?.delete(sKey) ?: true &&
+                        this.encStorage?.push(sKey, null) ?: true &&
+                        this.encStorage?.erase() ?: true
 
                 } else {
 
@@ -319,16 +320,9 @@ abstract class DataManagement<T> :
             this.data = null
             this.encStorage = null
 
-            if (result) {
+            Timber.v("$tag END")
 
-                Timber.v("$tag END")
-
-            } else {
-
-                Timber.e("$tag END: FAILED (1)")
-            }
-
-            return result
+            return true
 
         } catch (e: RejectedExecutionException) {
 
@@ -353,6 +347,8 @@ abstract class DataManagement<T> :
                 try {
 
                     var current: T? = obtain()
+
+                    Timber.v("${getLogTag()} Initialization completed: $current")
 
                     if (current == null) {
 

@@ -25,6 +25,19 @@ class ManagersReInitializer {
 
     ) : Boolean {
 
+        if (managers.isEmpty()) {
+
+            return true
+        }
+
+        val cleaner = ManagersCleaner()
+        val cleanupResult = cleaner.cleanupManagers(managers)
+
+        if (!cleanupResult) {
+
+            return false
+        }
+
         val success = AtomicBoolean()
         val latch = CountDownLatch(1)
 
@@ -106,7 +119,7 @@ class ManagersReInitializer {
         return success.get()
     }
 
-    fun reInitializeManagerInstances(
+    private fun reInitializeManagerInstances(
 
         context: Context? = null,
         callback: OnObtain<Boolean>,
@@ -217,7 +230,7 @@ class ManagersReInitializer {
         }
     }
 
-    fun reInitializeManagers(
+    private fun reInitializeManagers(
 
         context: Context? = null,
         callback: OnObtain<Boolean>,
@@ -382,15 +395,11 @@ class ManagersReInitializer {
         return result.get()
     }
 
-    private fun resetManagerInstances(
-
-        managers: MutableList<DataManagement<*>>,
-
-    ): Boolean {
+    private fun resetManagerInstances(managers: MutableList<DataManagement<*>>): Boolean {
 
         val result = AtomicBoolean()
-        val latch = CountDownLatch(1)
         val cleaner = ManagersCleaner()
+        val latch = CountDownLatch(1)
 
         val callback = object : ManagersCleaner.CleanupCallback {
 

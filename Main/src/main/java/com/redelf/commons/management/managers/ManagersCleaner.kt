@@ -17,12 +17,44 @@ class ManagersCleaner {
         fun onCleanup(manager: Management, success: Boolean, error: Throwable? = null)
     }
 
-    fun cleanupManagers(
+    fun cleanupManagers(managers: List<Management>): Boolean {
 
-        managers: List<Management>,
-        callback: CleanupCallback,
+        val latch = CountDownLatch(1)
+        val result = AtomicBoolean(true)
 
-        ) {
+        val callback = object : CleanupCallback {
+
+            override fun onCleanup(success: Boolean, error: Throwable?) {
+
+                result.set(success)
+
+                error?.let {
+
+                    Timber.e(it)
+                }
+
+                latch.countDown()
+            }
+
+            override fun onCleanup(manager: Management, success: Boolean, error: Throwable?) {
+
+                error?.let {
+
+                    Timber.e(it)
+                }
+
+                latch.countDown()
+            }
+        }
+
+        cleanupManagers(managers, callback)
+
+        latch.await()
+
+        return result.get()
+    }
+
+    fun cleanupManagers(managers: List<Management>, callback: CleanupCallback) {
 
         val tag = "Managers :: Cleanup ::"
 
@@ -32,70 +64,75 @@ class ManagersCleaner {
 
             exec {
 
-                managers.forEach { manager ->
-
-                    if (manager is DataManagement<*>) {
-
-                        manager.lock()
-
-                        Timber.v(
-
-                            "$tag Manager :: ${manager.getWho()} :: LOCKED"
-                        )
-                    }
-                }
-
-                val failure = AtomicBoolean()
+                val success = AtomicBoolean(true)
+                val latch = CountDownLatch(managers.size)
 
                 managers.forEach { manager ->
 
-                    Timber.v("$tag Manager :: ${manager.getWho()}")
+                    try {
 
-                    if (manager is DataManagement<*>) {
+                        exec {
 
-                        if (manager.reset()) {
+                            Timber.v("$tag Manager :: ${manager.getWho()}")
 
-                            Timber.v(
+                            if (manager is DataManagement<*>) {
 
-                                "$tag Manager :: ${manager.getWho()} :: " +
-                                        "Cleaned"
-                            )
+                                manager.lock()
 
-                        } else {
+                                Timber.v(
 
-                            Timber.w(
+                                    "$tag Manager :: ${manager.getWho()} :: LOCKED"
+                                )
 
-                                "$tag Manager :: ${manager.getWho()} :: " +
-                                        "Not cleaned, not data manager"
-                            )
+                                if (manager.reset()) {
 
-                            failure.set(true)
+                                    Timber.v(
+
+                                        "$tag Manager :: ${manager.getWho()} :: " +
+                                                "Cleaned"
+                                    )
+
+                                } else {
+
+                                    Timber.w(
+
+                                        "$tag Manager :: ${manager.getWho()} :: " +
+                                                "Not cleaned, not data manager"
+                                    )
+
+                                    success.set(false)
+                                }
+
+                                manager.unlock()
+
+                                Timber.v(
+
+                                    "$tag Manager :: ${manager.getWho()} :: UNLOCKED"
+                                )
+
+                            } else {
+
+                                Timber.w(
+
+                                    "$tag Manager :: ${manager.getWho()} :: " +
+                                            "SKIPPED: Not data manager"
+                                )
+                            }
+
+                            latch.countDown()
                         }
 
-                    } else {
+                    } catch (e: RejectedExecutionException) {
 
-                        Timber.w(
+                        success.set(false)
 
-                            "$tag Manager :: ${manager.getWho()} :: " +
-                                    "SKIPPED: Not data manager"
-                        )
+                        latch.countDown()
                     }
                 }
 
-                managers.forEach { manager ->
+                latch.await()
 
-                    if (manager is DataManagement<*>) {
-
-                        manager.unlock()
-
-                        Timber.v(
-
-                            "$tag Manager :: ${manager.getWho()} :: UNLOCKED"
-                        )
-                    }
-                }
-
-                callback.onCleanup(!failure.get())
+                callback.onCleanup(success.get())
             }
 
         } catch (e: RejectedExecutionException) {
