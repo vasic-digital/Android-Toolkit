@@ -2,6 +2,7 @@ package com.redelf.commons.fcm
 
 import android.content.Intent
 import android.os.PowerManager
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import timber.log.Timber
@@ -41,7 +42,7 @@ class FcmService : FirebaseMessagingService() {
 
         val intent = Intent(BROADCAST_ACTION_TOKEN)
         intent.putExtra(BROADCAST_KEY_TOKEN, token)
-        sendBroadcast(intent)
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
@@ -61,7 +62,7 @@ class FcmService : FirebaseMessagingService() {
             intent.putExtra(key, value)
         }
 
-        sendBroadcast(intent)
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
     @Suppress("DEPRECATION")
