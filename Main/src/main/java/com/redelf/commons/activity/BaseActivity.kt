@@ -27,6 +27,7 @@ import com.redelf.commons.Broadcast
 import com.redelf.commons.R
 import com.redelf.commons.dialog.AttachFileDialog
 import com.redelf.commons.dialog.OnPickFromCameraCallback
+import com.redelf.commons.exec
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.initRegistrationWithGoogle
@@ -45,8 +46,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.TimedValue
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -696,6 +699,22 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     protected fun isPaused(): Boolean = paused.get()
+
+    protected fun execute(what: Runnable): Boolean {
+
+        try {
+
+            exec(what)
+
+        } catch (e: RejectedExecutionException) {
+
+            Timber.e(e)
+
+            return false
+        }
+
+        return true
+    }
 
     protected open fun getAddAttachmentDialogStyle(): Int = 0
 
