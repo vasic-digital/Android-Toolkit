@@ -27,6 +27,7 @@ import com.redelf.commons.Broadcast
 import com.redelf.commons.R
 import com.redelf.commons.dialog.AttachFileDialog
 import com.redelf.commons.dialog.OnPickFromCameraCallback
+import com.redelf.commons.execution.Executor
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.initRegistrationWithGoogle
 import com.redelf.commons.isServiceRunning
@@ -54,7 +55,7 @@ abstract class BaseActivity : AppCompatActivity() {
     protected var attachmentObtainedUris: MutableList<Uri> = mutableListOf()
     protected var attachmentObtainedFiles: MutableList<File> = mutableListOf()
 
-    protected val executor = TaskExecutor.instantiate(5)
+    protected val executor = Executor.MAIN
     protected val dismissDialogsRunnable = Runnable { dismissDialogs() }
 
     protected val dismissDialogsAndTerminateRunnable = Runnable {
