@@ -1,11 +1,7 @@
 package com.redelf.commons.management
 
-import com.redelf.commons.BuildConfig
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
-import com.redelf.commons.execution.TaskExecutor
-import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.InitializationPerformer
@@ -24,127 +20,26 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class DataManagement<T> :
 
     Management,
-    Initialization<EncryptedPersistence>,
-    InitializationPerformer,
-    InitializationReady,
     Obtain<T?>,
     Resettable,
-    Lockable
+    Lockable {
 
-{
+    companion object {
+
+        private val DATA_STORAGE: EncryptedPersistence =
+            EncryptedPersistence(storageTag = "Data_Managed")
+    }
 
     protected abstract val storageKey: String
     protected open val instantiateDataObject: Boolean = false
-    protected open val storageClassificationIdentifierRequired = false
-    protected open val storageExecutor = TaskExecutor.instantiateSingle()
 
     private var data: T? = null
     private val locked = AtomicBoolean()
-    private var classificationIdentifier: String? = null
-    private var encStorage: EncryptedPersistence? = null
-    private val initializing = AtomicBoolean(false)
 
     private val initCallbacks =
         Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag())
 
     protected abstract fun getLogTag(): String
-
-    protected open fun getStorageClassificationIdentifier(): String? = null
-
-    override fun canInitialize() = isUnlocked()
-
-    override fun initializationReady(): Boolean {
-
-        if (storageClassificationIdentifierRequired) {
-
-            val identifier = getStorageClassificationIdentifier()
-            return isNotEmpty(identifier)
-        }
-
-        return true
-    }
-
-    fun initialize(
-
-        callback: LifecycleCallback<EncryptedPersistence>,
-        persistence: EncryptedPersistence? = null,
-
-        ) {
-
-        if (isLocked()) {
-
-            callback.onInitialization(true)
-            return
-        }
-
-        persistence?.let {
-
-            encStorage = it
-        }
-
-        initialize(callback)
-    }
-
-    final override fun initialize(callback: LifecycleCallback<EncryptedPersistence>) {
-
-        val sKey = getFullStorageKey()
-
-        if (sKey == null) {
-
-            Timber.w("No storage key available for ${getWho()}")
-
-            callback.onInitialization(false)
-            return
-        }
-
-        initCallbacks.register(callback)
-
-        if (initializing.get()) {
-
-            return
-        }
-
-        try {
-
-            storageExecutor.execute {
-
-                initializing.set(true)
-
-                val store = createStorage()
-
-                if (store == null) {
-
-                    val e = NotInitializedException(who = getWho())
-                    onInitializationFailed(e)
-
-                } else {
-
-                    data = store.pull(sKey)
-
-                    try {
-
-                        if (initialization()) {
-
-                            onInitializationCompleted()
-
-                        } else {
-
-                            val e = NotInitializedException(who = getWho())
-                            onInitializationFailed(e)
-                        }
-
-                    } catch (e: IllegalStateException) {
-
-                        onInitializationFailed(e)
-                    }
-                }
-            }
-
-        } catch (e: RejectedExecutionException) {
-
-            onInitializationFailed(e)
-        }
-    }
 
     protected open fun createDataObject(): T? = null
 
@@ -162,23 +57,12 @@ abstract class DataManagement<T> :
         locked.set(false)
     }
 
-    override fun isLocked(): Boolean {
+    final override fun isLocked(): Boolean {
 
         return locked.get()
     }
 
-    override fun isUnlocked() = !isLocked()
-
-    @Throws(IllegalStateException::class)
-    override fun initialization(): Boolean {
-
-        Timber.v("${getLogTag()} initialization")
-        return true
-    }
-
-    override fun isInitialized() = isLocked() || (encStorage != null && !isInitializing())
-
-    override fun isInitializing() = initializing.get()
+    final override fun isUnlocked() = !isLocked()
 
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(): T? {
@@ -186,16 +70,13 @@ abstract class DataManagement<T> :
         if (isLocked()) {
 
             Timber.w("${getLogTag()} Obtain :: Locked")
+
             return null
         }
 
-        if (isInitializing() || isNotInitialized()) {
+        if (data == null) {
 
-            Initialization.waitForInitialization(
-
-                who = this,
-                initLogTag = initCallbacksTag()
-            )
+            data = DATA_STORAGE.pull(storageKey)
         }
 
         if (instantiateDataObject) {
@@ -229,11 +110,7 @@ abstract class DataManagement<T> :
             return null
         }
 
-        encStorage?.let {
-
-            return it
-
-        } ?: throw NotInitializedException("Storage")
+        return DATA_STORAGE
     }
 
     @Throws(IllegalStateException::class)
@@ -246,19 +123,13 @@ abstract class DataManagement<T> :
             return
         }
 
-        val sKey = getFullStorageKey()
-            ?: throw IllegalStateException("No storage key available for ${getWho()}")
-
         val store = takeStorage()
 
         this.data = data
 
         try {
 
-            storageExecutor.execute {
-
-                store?.push(sKey, data)
-            }
+            store?.push(storageKey, data)
 
         } catch (e: RejectedExecutionException) {
 
@@ -276,14 +147,11 @@ abstract class DataManagement<T> :
             return false
         }
 
-        val sKey = getFullStorageKey()
-            ?: throw IllegalStateException("No storage key available for ${getWho()}")
-
         val store = takeStorage()
 
         this.data = data
 
-        return store?.push(sKey, data) ?: false
+        return store?.push(storageKey, data) ?: false
     }
 
     override fun reset(): Boolean {
@@ -294,31 +162,32 @@ abstract class DataManagement<T> :
 
         try {
 
-            val sKey = getFullStorageKey()
+            if (isNotEmpty(storageKey)) {
 
-            sKey?.let {
+                Timber.v("$tag Storage key: $storageKey")
 
-                if (isNotEmpty(sKey)) {
+                if (instantiateDataObject) {
 
-                    Timber.v("$tag Storage key: $sKey")
+                    data = createDataObject()
 
-                    this.encStorage?.delete(sKey) ?: true &&
-                        this.encStorage?.push(sKey, null) ?: true &&
-                        this.encStorage?.erase() ?: true
+                    data?.let {
+
+                        pushData(it)
+                    }
 
                 } else {
 
-                    Timber.w("$tag Empty storage key")
+                    val s = takeStorage()
+
+                    s?.delete(storageKey)
                 }
-            }
 
-            if (sKey == null) {
+            } else {
 
-                Timber.w("$tag No storage key available")
+                Timber.w("$tag Empty storage key")
             }
 
             this.data = null
-            this.encStorage = null
 
             Timber.v("$tag END")
 
@@ -338,127 +207,7 @@ abstract class DataManagement<T> :
         return false
     }
 
-    override fun initializationCompleted(e: Exception?) {
-
-        if (e == null) {
-
-            if (instantiateDataObject) {
-
-                try {
-
-                    var current: T? = obtain()
-
-                    Timber.v("${getLogTag()} Initialization completed: $current")
-
-                    if (current == null) {
-
-                        current = createDataObject()
-
-                        current?.let {
-
-                            pushData(current)
-                        }
-
-                        if (current == null) {
-
-                            throw IllegalStateException("Data object creation failed")
-                        }
-                    }
-
-                } catch (e: IllegalStateException) {
-
-                    initializationCompleted(e)
-
-                } catch (e: IllegalArgumentException) {
-
-                    initializationCompleted(e)
-                }
-            }
-        }
-
-        if (e == null) {
-
-            Timber.v("${getLogTag()} Initialization completed with success")
-
-        } else {
-
-            Timber.e(e, "${getLogTag()} Initialization completed with failure")
-        }
-    }
-
     override fun getWho(): String? = this::class.simpleName
-
-    override fun onInitializationFailed(e: Exception) {
-
-        val doOnAllAction = object :
-            CallbackOperation<LifecycleCallback<EncryptedPersistence>> {
-
-            override fun perform(callback: LifecycleCallback<EncryptedPersistence>) {
-
-                Timber.e(e)
-
-                if (isLocked()) {
-
-                    callback.onInitialization(false)
-
-                } else {
-
-                    encStorage?.let {
-
-                        callback.onInitialization(true, it)
-                    }
-
-                    if (encStorage == null) {
-
-                        callback.onInitialization(false)
-                    }
-                }
-
-
-
-                initCallbacks.unregister(callback)
-            }
-        }
-
-        initializing.set(false)
-        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag())
-
-        initializationCompleted(e)
-    }
-
-    override fun onInitializationCompleted() {
-
-        val doOnAllAction = object :
-            CallbackOperation<LifecycleCallback<EncryptedPersistence>> {
-
-            override fun perform(callback: LifecycleCallback<EncryptedPersistence>) {
-
-                if (isLocked()) {
-
-                    callback.onInitialization(false)
-
-                } else {
-
-                    encStorage?.let {
-
-                        callback.onInitialization(true, it)
-                    }
-
-                    if (encStorage == null) {
-
-                        callback.onInitialization(false)
-                    }
-                }
-
-                initCallbacks.unregister(callback)
-            }
-        }
-
-        initializing.set(false)
-        initCallbacks.doOnAll(doOnAllAction, initCallbacksTag())
-
-        initializationCompleted()
-    }
 
     @Throws(IllegalStateException::class)
     protected fun getData(): T {
@@ -483,88 +232,6 @@ abstract class DataManagement<T> :
         }
 
         throw IllegalStateException(msg)
-    }
-
-    private fun getFullStorageKey(): String? {
-
-        val tag = "${getLogTag()} Get storage key ::"
-
-        Timber.v("$tag START")
-
-        if (storageClassificationIdentifierRequired) {
-
-            Timber.v("$tag Storage classification identifier required")
-
-            if (isEmpty(classificationIdentifier)) {
-
-                classificationIdentifier = getStorageClassificationIdentifier()
-
-                Timber.v("$tag Storage classification identifier: $classificationIdentifier")
-            }
-
-            if (isEmpty(classificationIdentifier)) {
-
-                Timber.e("$tag No storage classification identifier")
-
-                return null
-            }
-
-        } else {
-
-            Timber.v("$tag Storage classification identifier not required")
-
-            classificationIdentifier = "0"
-        }
-
-        Timber.v("$tag END")
-
-        if (BuildConfig.DEBUG) {
-
-            return "${storageKey}.${classificationIdentifier}.DEBUG" +
-                    ".${BaseApplication.getVersionCode()}"
-        }
-
-        return "${storageKey}.${classificationIdentifier}"
-    }
-
-    private fun createStorage(): EncryptedPersistence? {
-
-        val tag = "${getLogTag()} Create storage ::"
-
-        Timber.v("$tag START")
-
-        if (isLocked()) {
-
-            Timber.e("$tag LOCKED")
-
-            return null
-        }
-
-        encStorage?.let {
-
-            Timber.v("$tag Storage already initialized")
-
-            return it
-        }
-
-        val key = getFullStorageKey()
-
-        Timber.v("$tag Key: $key")
-
-        key?.let {
-
-            val store = EncryptedPersistence(storageTag = it)
-
-            encStorage = store
-
-            Timber.v("$tag END")
-
-            return store
-        }
-
-        Timber.e("$tag END")
-
-        return null
     }
 
     private fun initCallbacksTag() = "${getLogTag()} Data management initialization"

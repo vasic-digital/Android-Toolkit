@@ -72,16 +72,10 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         if (writeTime > 0) {
 
-            Timber.v("Write timeout is: $writeTime in seconds")
-
             builder.writeTimeout(writeTime, TimeUnit.SECONDS)
         }
 
-        if (PINNED_CERTIFICATES.isEmpty()) {
-
-            Timber.v("No certificates to pin")
-
-        } else {
+        if (PINNED_CERTIFICATES.isNotEmpty()) {
 
             builder.certificatePinner(createCertificatePins())
         }

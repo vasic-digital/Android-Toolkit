@@ -6,6 +6,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
+import com.redelf.commons.loading.Loadable
 import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
@@ -16,7 +17,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 object FirebaseConfigurationManager :
 
     ContextualManager<ConcurrentHashMap<String, FirebaseRemoteConfigValue>>(),
-    ResourceDefaults {
+    ResourceDefaults,
+    Loadable
+
+{
 
     override val storageKey = "remote_configuration"
 
@@ -25,8 +29,7 @@ object FirebaseConfigurationManager :
 
     override fun getWho(): String? = FirebaseConfigurationManager::class.java.simpleName
 
-    @Throws(IllegalStateException::class)
-    override fun initialization(): Boolean {
+    override fun load() {
 
         val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
@@ -39,7 +42,6 @@ object FirebaseConfigurationManager :
         Timber.v("$logTag Config params fetching")
 
         val latch = CountDownLatch(1)
-        val success = AtomicBoolean(false)
 
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
@@ -68,8 +70,6 @@ object FirebaseConfigurationManager :
                         newMap.putAll(all)
                         pushData(newMap)
 
-                        success.set(true)
-
                     } catch (e: IllegalStateException) {
 
                         recordException(e)
@@ -84,16 +84,6 @@ object FirebaseConfigurationManager :
             }
 
         latch.await()
-
-        return success.get()
-    }
-
-    override fun initializationCompleted(e: Exception?) {
-
-        e?.let {
-
-            Timber.e(e)
-        }
     }
 
     @Throws(IllegalArgumentException::class)

@@ -24,11 +24,10 @@ class ManagersInitializer {
     fun initializeManagers(
 
         managers: List<Management>,
-        persistence: EncryptedPersistence? = null,
         context: Context? = null,
         defaultResources: Map<Class<*>, Int>? = null
 
-    ) : Boolean {
+    ): Boolean {
 
         val latch = CountDownLatch(1)
         val result = AtomicBoolean(true)
@@ -60,7 +59,7 @@ class ManagersInitializer {
             }
         }
 
-        initializeManagers(managers, callback, persistence, context, defaultResources)
+        initializeManagers(managers, callback, context, defaultResources)
 
         latch.await()
 
@@ -71,7 +70,6 @@ class ManagersInitializer {
 
         managers: List<Management>,
         callback: InitializationCallback,
-        persistence: EncryptedPersistence? = null,
         context: Context? = null,
         defaultResources: Map<Class<*>, Int>? = null
 
@@ -86,7 +84,6 @@ class ManagersInitializer {
                 Timber.v("$tag START")
 
                 val failure = AtomicBoolean()
-                val latch = CountDownLatch(managers.size)
 
                 managers.forEach { manager ->
 
@@ -98,95 +95,45 @@ class ManagersInitializer {
 
                             Timber.e("$mTag initialization skipped")
 
-                            latch.countDown()
-
                         } else {
 
                             if (manager is DataManagement<*>) {
 
-                                val lifecycleCallback = object : ManagerLifecycleCallback() {
+                                if (manager is Contextual) {
 
-                                    override fun onInitialization(
+                                    context?.let { ctx ->
 
-                                        success: Boolean,
-                                        vararg args: EncryptedPersistence
+                                        Timber.v(
 
-                                    ) {
+                                            "$mTag Injecting context: $ctx"
+                                        )
 
-                                        if (success) {
-
-                                            Timber.v(
-
-                                                "$mTag " +
-                                                        "Initialization completed with success: " +
-                                                        "(${manager.isInitialized()})"
-                                            )
-
-                                        } else {
-
-                                            Timber.v("$mTag Initialization failed")
-
-                                            failure.set(true)
-                                        }
-
-                                        callback.onInitialization(manager, success)
-
-                                        latch.countDown()
+                                        manager.injectContext(ctx)
                                     }
                                 }
 
-                                if (manager.initializationReady()) {
+                                if (manager is ResourceDefaults) {
 
-                                    if (manager is Contextual) {
+                                    val defaultResource = defaultResources?.get(manager.javaClass)
+                                    defaultResource?.let {
 
-                                        context?.let { ctx ->
+                                        Timber.v(
 
-                                            Timber.v(
+                                            "$mTag Setting defaults from the " +
+                                                    "resource: $defaultResource"
+                                        )
 
-                                                "$mTag Injecting context: $ctx"
-                                            )
-
-                                            manager.injectContext(ctx)
-                                        }
+                                        manager.setDefaults(it)
                                     }
-
-                                    if (manager is ResourceDefaults) {
-
-                                        val defaultResource = defaultResources?.get(manager.javaClass)
-                                        defaultResource?.let {
-
-                                            Timber.v(
-
-                                                "$mTag Setting defaults from the " +
-                                                        "resource: $defaultResource"
-                                            )
-
-                                            manager.setDefaults(it)
-                                        }
-                                    }
-
-                                    manager.initialize(lifecycleCallback, persistence = persistence)
-
-                                } else {
-
-                                    failure.set(true)
-
-                                    Timber.w("$mTag Not ready to initialize")
-
-                                    latch.countDown()
                                 }
 
                             } else {
 
                                 Timber.w("$mTag Not supported")
-
-                                latch.countDown()
                             }
                         }
                     }
                 }
-
-                latch.await()
 
                 callback.onInitialization(!failure.get())
             }
