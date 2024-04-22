@@ -83,7 +83,12 @@ object Data {
 
         val callable = Callable<T?> { facade?.get(key) }
 
-        return doExec(callable, executor = getExecutor(), logTag = "Do exec :: Get :: $key")
+        return doExec(
+
+            callable,
+            executor = getExecutor(),
+            logTag = "Do exec :: Get :: $key"
+        )
     }
 
     /**
