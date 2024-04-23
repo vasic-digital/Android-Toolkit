@@ -38,6 +38,7 @@ internal class DBStorage(context: Context) : Storage<String> {
     }
 
     private val dbHelper = DbHelper(context)
+    private val db = dbHelper.writableDatabase
 
     companion object {
 
@@ -59,7 +60,7 @@ internal class DBStorage(context: Context) : Storage<String> {
 
         try {
 
-            val db = dbHelper.writableDatabase
+
 
             val values = ContentValues().apply {
 
@@ -67,7 +68,9 @@ internal class DBStorage(context: Context) : Storage<String> {
                 put(COLUMN_VALUE, value)
             }
 
-            return (db?.insert(TABLE, null, values) ?: -1) > 0
+            val res = (db?.insert(TABLE, null, values) ?: -1) > 0
+
+            return res
 
         } catch (e: Exception) {
 
@@ -83,7 +86,6 @@ internal class DBStorage(context: Context) : Storage<String> {
 
         try {
 
-            val db = dbHelper.readableDatabase
             val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
 
             val selection = "$COLUMN_KEY = ?"
@@ -122,11 +124,12 @@ internal class DBStorage(context: Context) : Storage<String> {
 
         try {
 
-            val db = dbHelper.readableDatabase
             val selection = "$COLUMN_KEY = ?"
             val selectionArgs = arrayOf(key)
 
-            return db.delete(TABLE, selection, selectionArgs) > 0
+            val res = db.delete(TABLE, selection, selectionArgs) > 0
+
+            return res
 
         } catch (e: Exception) {
 
@@ -145,9 +148,9 @@ internal class DBStorage(context: Context) : Storage<String> {
 
         try {
 
-            val db = dbHelper.readableDatabase
+            val res = db.delete(TABLE, null, null) > 0
 
-            return db.delete(TABLE, null, null) > 0
+            return res
 
         } catch (e: Exception) {
 
@@ -163,7 +166,6 @@ internal class DBStorage(context: Context) : Storage<String> {
 
         try {
 
-            val db = dbHelper.readableDatabase
             val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
 
             val cursor = db.query(
