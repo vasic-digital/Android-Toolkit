@@ -149,6 +149,8 @@ abstract class DataManagement<T> :
 
                 Timber.v("$tag Storage key: $storageKey")
 
+                val s = takeStorage()
+
                 if (instantiateDataObject) {
 
                     data = createDataObject()
@@ -160,10 +162,10 @@ abstract class DataManagement<T> :
 
                 } else {
 
-                    val s = takeStorage()
-
                     s?.delete(storageKey)
                 }
+
+                s?.shutdown()
 
             } else {
 

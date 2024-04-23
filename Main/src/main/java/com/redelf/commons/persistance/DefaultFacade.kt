@@ -3,6 +3,7 @@ package com.redelf.commons.persistance
 import com.redelf.commons.exec
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.TaskExecutor
+import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.Callable
@@ -29,7 +30,10 @@ object DefaultFacade : Facade {
         logInterceptor?.onLog("init -> Encryption : " + encryption?.javaClass?.simpleName)
     }
 
+    override fun shutdown(): Boolean {
 
+        return storage?.shutdown() ?: false
+    }
 
     override fun <T> put(key: String, value: T): Boolean {
 

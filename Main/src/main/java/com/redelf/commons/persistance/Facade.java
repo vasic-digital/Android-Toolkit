@@ -1,6 +1,8 @@
 package com.redelf.commons.persistance;
 
-public interface Facade {
+import com.redelf.commons.lifecycle.TerminationSynchronized;
+
+public interface Facade extends TerminationSynchronized {
 
   <T> boolean put(String key, T value);
 
@@ -64,6 +66,11 @@ public interface Facade {
 
     @Override public void destroy() {
       throwValidation();
+    }
+
+    @Override
+    public boolean shutdown() {
+      return true;
     }
 
     private void throwValidation() {

@@ -1,5 +1,7 @@
 package com.redelf.commons.persistance;
 
+import com.redelf.commons.lifecycle.TerminationSynchronized;
+
 /**
  * Intermediate layer which stores the given data. Used by Data.
  *
@@ -7,7 +9,7 @@ package com.redelf.commons.persistance;
  *
  * @see SharedPreferencesStorage
  */
-public interface Storage<T> {
+public interface Storage<T> extends TerminationSynchronized {
 
   boolean put(String key, T value);
 

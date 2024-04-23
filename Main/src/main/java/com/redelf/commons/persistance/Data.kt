@@ -6,16 +6,15 @@ import com.redelf.commons.doExec
 import com.redelf.commons.exec
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.TaskExecutor
+import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.persistance.Facade.EmptyFacade
 import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
-/**
- * Secure, simple key-value storage for Android.
- */
-object Data {
+
+object Data : TerminationSynchronized {
 
     private var facade: Facade? = EmptyFacade()
 
@@ -53,6 +52,11 @@ object Data {
         DefaultFacade.initialize(persistenceBuilder)
 
         facade = DefaultFacade
+    }
+
+    override fun shutdown(): Boolean {
+
+        return facade?.shutdown() ?: false
     }
 
     fun <T> put(key: String?, value: T): Boolean = facade?.put(key, value) ?: false

@@ -11,6 +11,12 @@ final class SharedPreferencesStorage implements Storage<String> {
     }
 
     @Override
+    public boolean shutdown() {
+
+        return true;
+    }
+
+    @Override
     public boolean put(String key, String value) {
 
         PersistenceUtils.checkNull("key", key);

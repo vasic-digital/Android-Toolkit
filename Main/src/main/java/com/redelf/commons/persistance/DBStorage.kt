@@ -7,9 +7,10 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
 import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
+import com.redelf.commons.lifecycle.TerminationSynchronized
 import timber.log.Timber
 
-internal class DBStorage(context: Context) : Storage<String> {
+internal class DBStorage(context: Context) : Storage<String>, TerminationSynchronized {
 
     private class DbHelper(context: Context) :
         SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -52,6 +53,23 @@ internal class DBStorage(context: Context) : Storage<String> {
                     "$COLUMN_VALUE TEXT)"
 
         private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE"
+    }
+
+    override fun shutdown(): Boolean {
+
+        db?.let {
+
+            try {
+
+                it.close()
+
+            } catch (e: Exception) {
+
+                Timber.e(e)
+            }
+        }
+
+        return true
     }
 
     override fun put(key: String, value: String): Boolean {
