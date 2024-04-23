@@ -12,7 +12,7 @@ import timber.log.Timber
 class ConcealEncryption constructor(
 
     private val crypto: Crypto,
-    private val salter: Salter
+    salter: Salter
 
 ) : Encryption {
     constructor(context: Context, salter: Salter) :
