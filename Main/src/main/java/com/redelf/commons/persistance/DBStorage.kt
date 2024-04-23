@@ -9,8 +9,11 @@ import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal class DBStorage(context: Context) : Storage<String>, TerminationSynchronized {
+
+    private val terminated = AtomicBoolean()
 
     private class DbHelper(context: Context) :
         SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -57,11 +60,20 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
 
     override fun shutdown(): Boolean {
 
+        if (terminated.get()) {
+
+            return true
+        }
+
+        terminated.set(true)
+
         db?.let {
 
             try {
 
                 it.close()
+
+                return true
 
             } catch (e: Exception) {
 
@@ -69,16 +81,19 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
             }
         }
 
-        return true
+        return false
     }
 
     override fun put(key: String, value: String): Boolean {
 
+        if (terminated.get()) {
+
+            return false
+        }
+
         PersistenceUtils.checkNull("key", key)
 
         try {
-
-
 
             val values = ContentValues().apply {
 
@@ -101,6 +116,11 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
     override fun get(key: String): String {
 
         var result = ""
+
+        if (terminated.get()) {
+
+            return result
+        }
 
         try {
 
@@ -140,6 +160,11 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
 
     override fun delete(key: String): Boolean {
 
+        if (terminated.get()) {
+
+            return false
+        }
+
         try {
 
             val selection = "$COLUMN_KEY = ?"
@@ -159,10 +184,20 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
 
     override fun contains(key: String): Boolean {
 
+        if (terminated.get()) {
+
+            return false
+        }
+
         return isNotEmpty(get(key))
     }
 
     override fun deleteAll(): Boolean {
+
+        if (terminated.get()) {
+
+            return false
+        }
 
         try {
 
@@ -181,6 +216,11 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
     override fun count(): Long {
 
         var result = 0L
+
+        if (terminated.get()) {
+
+            return result
+        }
 
         try {
 

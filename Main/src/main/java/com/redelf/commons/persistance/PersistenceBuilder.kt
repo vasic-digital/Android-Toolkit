@@ -16,7 +16,7 @@ class PersistenceBuilder(
 
 ) {
 
-    var parser: Obtain<Parser?> = object : Obtain<Parser?> {
+    private var parser: Obtain<Parser?> = object : Obtain<Parser?> {
 
         override fun obtain() = GsonParser(
 

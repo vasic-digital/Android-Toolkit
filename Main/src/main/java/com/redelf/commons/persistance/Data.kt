@@ -56,7 +56,9 @@ object Data : TerminationSynchronized {
 
     override fun shutdown(): Boolean {
 
-        return facade?.shutdown() ?: false
+        val res = facade?.shutdown() ?: false
+        facade = null
+        return res
     }
 
     fun <T> put(key: String?, value: T): Boolean = facade?.put(key, value) ?: false
