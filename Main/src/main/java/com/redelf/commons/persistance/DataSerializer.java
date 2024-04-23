@@ -1,5 +1,7 @@
 package com.redelf.commons.persistance;
 
+import android.text.TextUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -83,6 +85,11 @@ class DataSerializer implements Serializer {
 
     @Override
     public DataInfo deserialize(String serializedText) {
+
+        if (TextUtils.isEmpty(serializedText)) {
+
+            return null;
+        }
 
         try {
 

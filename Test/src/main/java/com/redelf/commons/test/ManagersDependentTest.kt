@@ -15,8 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 abstract class ManagersDependentTest : BaseTest() {
 
-    private lateinit var persistence: EncryptedPersistence
-
     protected open val managers: List<Management> = listOf()
 
     /**
@@ -40,16 +38,6 @@ abstract class ManagersDependentTest : BaseTest() {
 
         Timber.plant(Timber.DebugTree())
         Timber.v("Timber initialized: $this")
-
-        val keySalt = "test.${System.currentTimeMillis()}"
-        val storageTag = "test.${System.currentTimeMillis()}"
-
-        persistence = EncryptedPersistence(
-
-            ctx = applicationContext,
-            keySalt = keySalt,
-            storageTag = storageTag
-        )
     }
 
     private fun setupManagers() {
@@ -92,7 +80,6 @@ abstract class ManagersDependentTest : BaseTest() {
 
             managers,
             managersInitializerCallback,
-            persistence = persistence,
             context = applicationContext
         )
 

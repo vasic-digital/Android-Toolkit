@@ -145,9 +145,4 @@ constructor(
 
         return Data.deleteAll()
     }
-
-    fun deleteKeysWithPrefix(value: String): Boolean {
-
-        return Data.deleteKeysWithPrefix(value)
-    }
 }

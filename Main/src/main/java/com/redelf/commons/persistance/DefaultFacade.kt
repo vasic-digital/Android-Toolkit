@@ -12,25 +12,19 @@ import java.util.concurrent.ThreadPoolExecutor
 
 object DefaultFacade : Facade {
 
-    private var storage: Storage? = null
     private var converter: Converter? = null
     private var encryption: Encryption? = null
     private var serializer: Serializer? = null
+    private var storage: Storage<String>? = null
     private var logInterceptor: LogInterceptor? = null
-    private var executor = TaskExecutor.instantiateSingle()
 
-    fun initialize(builder: PersistenceBuilder, executorToSet: ThreadPoolExecutor? = null) {
+    fun initialize(builder: PersistenceBuilder) {
 
         storage = builder.storage
         converter = builder.converter
         encryption = builder.encryption
         serializer = builder.serializer
         logInterceptor = builder.logInterceptor
-
-        executorToSet?.let {
-
-            executor = executorToSet
-        }
 
         logInterceptor?.onLog("init -> Encryption : " + encryption?.javaClass?.simpleName)
     }
@@ -39,64 +33,64 @@ object DefaultFacade : Facade {
 
     override fun <T> put(key: String, value: T): Boolean {
 
-        val callable = object : Callable<Boolean> {
+        // Validate
+        PersistenceUtils.checkNull("Key", key)
+        log("put -> key: " + key + ", value: " + (value != null))
 
-            override fun call(): Boolean {
+        // If the value is null, delete it
+        if (value == null) {
 
-                // Validate
-                PersistenceUtils.checkNull("Key", key)
-                log("put -> key: " + key + ", value: " + (value != null))
-
-                // If the value is null, delete it
-                if (value == null) {
-                    log("put -> Value is null. Any existing value will be deleted with the given key")
-                    return delete(key)
-                }
-
-                // 1. Convert to text
-                val plainText = converter?.toString(value)
-                log("put -> Converted: " + (plainText != null))
-                if (plainText == null) {
-                    log("put -> Converter failed")
-                    return false
-                }
-
-                // 2. Encrypt the text
-                var cipherText: ByteArray? = null
-                try {
-                    cipherText = encryption?.encrypt(key, plainText)
-                    log("put -> Encrypted: " + (cipherText != null))
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                if (cipherText == null) {
-                    log("put -> Encryption failed")
-                    return false
-                }
-
-                // 3. Serialize the given object along with the cipher text
-                val serializedText = serializer?.serialize(cipherText, value)
-                log("put -> Serialized: " + (serializedText != null))
-                if (serializedText == null) {
-                    log("put -> Serialization failed")
-                    return false
-                }
-
-                // 4. Save to the storage
-                return if (storage?.put(key, serializedText) == true) {
-
-                    log("put -> Stored successfully")
-                    true
-
-                } else {
-
-                    log("put -> Store operation failed")
-                    false
-                }
-            }
+            log("put -> Value is null. Any existing value will be deleted with the given key")
+            return delete(key)
         }
 
-        return exec(callable, executor = getExecutor())
+        // 1. Convert to text
+        val plainText = converter?.toString(value)
+        log("put -> Converted: " + (plainText != null))
+        if (plainText == null) {
+
+            log("put -> Converter failed")
+            return false
+        }
+
+        // 2. Encrypt the text
+        var cipherText: ByteArray? = null
+        try {
+
+            cipherText = encryption?.encrypt(key, plainText)
+            log("put -> Encrypted: " + (cipherText != null))
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+        }
+
+        if (cipherText == null) {
+
+            log("put -> Encryption failed")
+            return false
+        }
+
+        // 3. Serialize the given object along with the cipher text
+        val serializedText = serializer?.serialize(cipherText, value)
+        log("put -> Serialized: " + (serializedText != null))
+        if (serializedText == null) {
+
+            log("put -> Serialization failed")
+            return false
+        }
+
+        // 4. Save to the storage
+        return if (storage?.put(key, serializedText) == true) {
+
+            log("put -> Stored successfully")
+            true
+
+        } else {
+
+            log("put -> Store operation failed")
+            false
+        }
     }
 
     override fun <T> get(key: String): T? {
@@ -104,7 +98,7 @@ object DefaultFacade : Facade {
         log("get -> key: $key")
 
         // 1. Get serialized text from the storage
-        val serializedText = storage?.get<String?>(key)
+        val serializedText = storage?.get(key)
         log("get -> Fetched from storage: " + (serializedText != null))
 
         if (serializedText == null) {
@@ -171,11 +165,6 @@ object DefaultFacade : Facade {
         return storage?.delete(key) ?: false
     }
 
-    override fun deleteKeysWithPrefix(value: String?): Boolean {
-
-        return storage?.deleteKeysWithPrefix(value) ?: true
-    }
-
     override fun contains(key: String): Boolean {
 
         return storage?.contains(key) ?: false
@@ -189,43 +178,5 @@ object DefaultFacade : Facade {
     private fun log(message: String) {
 
         logInterceptor?.onLog(message)
-    }
-
-    private fun getExecutor() = object : Execution {
-
-        @Throws(RejectedExecutionException::class)
-        override fun <T> execute(callable: Callable<T>): Future<T> {
-
-            return executor.submit(callable)
-        }
-
-        override fun execute(action: Runnable, delayInMillis: Long) {
-
-            executor.execute {
-
-                try {
-
-                    Thread.sleep(delayInMillis)
-
-                    action.run()
-
-                } catch (e: InterruptedException) {
-
-                    Timber.e(e)
-                }
-            }
-        }
-
-        override fun execute(what: Runnable) {
-
-            try {
-
-                executor.execute(what)
-
-            } catch (e: RejectedExecutionException) {
-
-                recordException(e)
-            }
-        }
     }
 }

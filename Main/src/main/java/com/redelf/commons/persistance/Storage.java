@@ -7,28 +7,11 @@ package com.redelf.commons.persistance;
  *
  * @see SharedPreferencesStorage
  */
-public interface Storage {
+public interface Storage<T> {
 
-  /**
-   * Put a single entry to storage
-   *
-   * @param key   the name of entry to put
-   * @param value the value of entry
-   * @param <T>   type of value of entry
-   *
-   * @return true if entry added successfully, otherwise false
-   */
-  <T> boolean put(String key, T value);
+  boolean put(String key, T value);
 
-  /**
-   * Get single entry from storage
-   *
-   * @param key the name of entry to get
-   * @param <T> type of value of entry
-   *
-   * @return the object related to given key
-   */
-  <T> T get(String key);
+  T get(String key);
 
   /**
    * Remove single entry from storage
@@ -39,29 +22,9 @@ public interface Storage {
    */
   boolean delete(String key);
 
-  /**
-   * Remove all entries in the storage
-   *
-   * @return true if clearance if successful, otherwise false
-   */
   boolean deleteAll();
 
-  boolean deleteKeysWithPrefix(String value);
-
-  /**
-   * Retrieve count of entries in the storage
-   *
-   * @return entry count in the storage
-   */
   long count();
 
-  /**
-   * Checks whether the storage contains an entry.
-   *
-   * @param key the name of entry to check
-   *
-   * @return true if the entry exists in the storage, otherwise false
-   */
   boolean contains(String key);
-
 }

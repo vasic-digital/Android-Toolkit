@@ -14,7 +14,6 @@ public interface Facade {
 
   boolean delete(String key);
 
-  boolean deleteKeysWithPrefix(String value);
 
   boolean contains(String key);
 
@@ -50,11 +49,6 @@ public interface Facade {
     }
 
     @Override public boolean delete(String key) {
-      throwValidation();
-      return false;
-    }
-
-    @Override public boolean deleteKeysWithPrefix(String value) {
       throwValidation();
       return false;
     }

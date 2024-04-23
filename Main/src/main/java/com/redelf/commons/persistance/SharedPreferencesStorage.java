@@ -1,30 +1,25 @@
 package com.redelf.commons.persistance;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
-final class SharedPreferencesStorage implements Storage {
+final class SharedPreferencesStorage implements Storage<String> {
 
     private final SharedPreferences preferences;
-
-    SharedPreferencesStorage(Context context, String tag) {
-        preferences = context.getSharedPreferences(tag, Context.MODE_PRIVATE);
-    }
 
     SharedPreferencesStorage(SharedPreferences preferences) {
         this.preferences = preferences;
     }
 
     @Override
-    public <T> boolean put(String key, T value) {
+    public boolean put(String key, String value) {
+
         PersistenceUtils.checkNull("key", key);
         return getEditor().putString(key, String.valueOf(value)).commit();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> T get(String key) {
-        return (T) preferences.getString(key, null);
+    public String get(String key) {
+        return preferences.getString(key, "");
     }
 
     @Override
@@ -40,20 +35,6 @@ final class SharedPreferencesStorage implements Storage {
     @Override
     public boolean deleteAll() {
         return getEditor().clear().commit();
-    }
-
-    @Override
-    public boolean deleteKeysWithPrefix(String value) {
-
-        for (final String key : preferences.getAll().keySet()) {
-
-            if (key.startsWith(value)) {
-
-                delete(key);
-            }
-        }
-
-        return true;
     }
 
     @Override

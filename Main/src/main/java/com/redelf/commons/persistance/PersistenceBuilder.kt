@@ -30,13 +30,11 @@ class PersistenceBuilder(
         )
     }
 
+    var serializer: Serializer? = DataSerializer()
+    var storage: Storage<String> = DBStorage(context)
     var converter: Converter? = DataConverter(parser)
-    var logInterceptor: LogInterceptor? = LogInterceptor { }
+    var logInterceptor: LogInterceptor = LogInterceptor { }
     var encryption: Encryption? = ConcealEncryption(context, salter)
-    var storage: Storage? = SharedPreferencesStorage(context, storageTag)
-
-    var serializer: Serializer? =
-        DataSerializer()
 
     init {
 
@@ -59,7 +57,7 @@ class PersistenceBuilder(
         return this
     }
 
-    fun setLogInterceptor(logInterceptor: LogInterceptor?): PersistenceBuilder {
+    fun setLogInterceptor(logInterceptor: LogInterceptor): PersistenceBuilder {
 
         this.logInterceptor = logInterceptor
         return this
