@@ -137,23 +137,6 @@ abstract class DataManagement<T> :
         }
     }
 
-    @Throws(IllegalStateException::class)
-    fun pushDataSynchronized(data: T): Boolean {
-
-        if (isLocked()) {
-
-            Timber.w("${getLogTag()} Push data :: Locked: SKIPPING")
-
-            return false
-        }
-
-        val store = takeStorage()
-
-        this.data = data
-
-        return store?.push(storageKey, data) ?: false
-    }
-
     override fun reset(): Boolean {
 
         val tag = "${getLogTag()} :: Reset ::"
