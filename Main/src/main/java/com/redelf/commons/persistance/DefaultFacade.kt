@@ -78,7 +78,7 @@ object DefaultFacade : Facade {
         }
 
         // 4. Save to the storage
-        return if (storage?.put(key, serializedText.compress()) == true) {
+        return if (storage?.put(key, serializedText) == true) {
 
             log("put -> Stored successfully")
             true
@@ -99,7 +99,7 @@ object DefaultFacade : Facade {
 
         try {
 
-            serializedText = storage?.get(key)?.decompress()
+            serializedText = storage?.get(key)
 
         } catch (e: Exception) {
 
