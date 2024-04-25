@@ -1,11 +1,8 @@
 package com.redelf.commons.management
 
-import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.interruption.Abort
 import com.redelf.commons.isNotEmpty
-import com.redelf.commons.lifecycle.Initialization
-import com.redelf.commons.lifecycle.InitializationPerformer
-import com.redelf.commons.lifecycle.InitializationReady
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
@@ -22,7 +19,10 @@ abstract class DataManagement<T> :
     Management,
     Obtain<T?>,
     Resettable,
-    Lockable {
+    Lockable,
+    Abort
+
+{
 
     companion object {
 
@@ -43,9 +43,13 @@ abstract class DataManagement<T> :
 
     protected open fun createDataObject(): T? = null
 
+    override fun abort() = Unit
+
     override fun lock() {
 
         Timber.v("${getLogTag()} Lock")
+
+        abort()
 
         locked.set(true)
     }

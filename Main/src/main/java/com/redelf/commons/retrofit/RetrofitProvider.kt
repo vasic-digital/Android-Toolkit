@@ -2,9 +2,11 @@ package com.redelf.commons.retrofit
 
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.obtain.ObtainParametrized
+import okhttp3.Call
 import okhttp3.CertificatePinner
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -44,10 +46,19 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             GsonConverterFactory.create()
         }
 
+        val callFactory = Call.Factory { request ->
+
+            val call = client.newCall(request)
+            val tag = request.url.toString()
+            param.callsWrapper[tag] = call
+            call
+        }
+
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .addConverterFactory(converter)
             .client(client)
+            .callFactory(callFactory)
             .build()
     }
 
