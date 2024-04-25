@@ -181,8 +181,6 @@ abstract class DataManagement<T> :
                     s?.delete(storageKey)
                 }
 
-                s?.shutdown()
-
             } else {
 
                 Timber.w("$tag Empty storage key")
