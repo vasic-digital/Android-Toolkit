@@ -50,7 +50,7 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
         const val COLUMN_VALUE = "content"
         const val COLUMN_KEY = "identifier"
 
-        private val SQL_CREATE_ENTRIES = "CREATE TABLE $TABLE (" +
+        private const val SQL_CREATE_ENTRIES = "CREATE TABLE $TABLE (" +
                     "${BaseColumns._ID} INTEGER PRIMARY KEY," +
                     "$COLUMN_KEY TEXT," +
                     "$COLUMN_VALUE TEXT)"
@@ -101,9 +101,7 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
                 put(COLUMN_VALUE, value)
             }
 
-            val res = (db?.insert(TABLE, null, values) ?: -1) > 0
-
-            return res
+            return (db?.insert(TABLE, null, values) ?: -1) > 0
 
         } catch (e: Exception) {
 
@@ -122,12 +120,11 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
             return result
         }
 
+        val selectionArgs = arrayOf(key)
+        val selection = "$COLUMN_KEY = ?"
+        val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
+
         try {
-
-            val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
-
-            val selection = "$COLUMN_KEY = ?"
-            val selectionArgs = arrayOf(key)
 
             val cursor = db.query(
 
@@ -153,6 +150,13 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
         } catch (e: Exception) {
 
             Timber.e(e)
+
+            Timber.e(
+
+                "SQL args :: Selection: $selection, Selection args:" +
+                        " ${selectionArgs.toMutableList()}, projection: " +
+                        "${projection.toMutableList()}"
+            )
         }
 
         return result
@@ -165,18 +169,22 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
             return false
         }
 
+        val selection = "$COLUMN_KEY = ?"
+        val selectionArgs = arrayOf(key)
+
         try {
 
-            val selection = "$COLUMN_KEY = ?"
-            val selectionArgs = arrayOf(key)
-
-            val res = db.delete(TABLE, selection, selectionArgs) > 0
-
-            return res
+            return db.delete(TABLE, selection, selectionArgs) > 0
 
         } catch (e: Exception) {
 
             Timber.e(e)
+
+            Timber.e(
+
+                "SQL args :: Selection: $selection, Selection args: " +
+                    "${selectionArgs.toMutableList()}"
+            )
         }
 
         return false
@@ -201,13 +209,13 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
 
         try {
 
-            val res = db.delete(TABLE, null, null) > 0
-
-            return res
+            return db.delete(TABLE, null, null) > 0
 
         } catch (e: Exception) {
 
             Timber.e(e)
+
+            Timber.e("SQL args :: TO DELETE ALL")
         }
 
         return false
