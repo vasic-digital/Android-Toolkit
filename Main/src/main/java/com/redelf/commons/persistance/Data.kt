@@ -72,20 +72,23 @@ object Data : TerminationSynchronized {
 
     fun count(): Long = facade?.count() ?: 0
 
-    fun deleteAll(): Boolean {
-
-        return facade?.deleteAll() ?: false
-    }
-
     fun delete(key: String?): Boolean = facade?.delete(key) ?: false
 
     operator fun contains(key: String?): Boolean = facade?.contains(key) ?: false
 
     val isBuilt: Boolean = facade?.isBuilt ?: false
 
+    /*
+         DANGER ZONE:
+    */
     fun destroy() {
 
         facade?.destroy()
+    }
+
+    fun deleteAll(): Boolean {
+
+        return facade?.deleteAll() ?: false
     }
 }
 

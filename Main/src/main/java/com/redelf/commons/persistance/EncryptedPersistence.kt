@@ -147,6 +147,9 @@ constructor(
         return Data.delete(what)
     }
 
+    /*
+         DANGER ZONE:
+    */
     override fun erase(): Boolean {
 
         return Data.deleteAll()

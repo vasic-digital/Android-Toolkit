@@ -17,34 +17,45 @@ class ApplicationCleanup {
     private val cleanupAction = Runnable {
 
         val success = Data.deleteAll()
+
         if (success) {
+
             Timber.i("Application has been cleaned up")
+
         } else {
+
             Timber.w("Could not clean up the application")
         }
+
         callbacks.doOnAll(
 
             object : CallbackOperation<ApplicationCleanupCallback> {
+
                 override fun perform(callback: ApplicationCleanupCallback) {
 
                     callback.onCleanup(success)
                     callbacks.unregister(callback)
                 }
             },
-            "Cleanup action"
+
+            operationName = "Cleanup action"
         )
+
         cleaningUp.set(false)
     }
 
     fun cleanup(callback: ApplicationCleanupCallback) {
 
         callbacks.register(callback)
+
         if (cleaningUp.get()) {
 
             Timber.w("Already cleaning up the application")
             return
         }
+
         cleaningUp.set(true)
+
         Executor.MAIN.execute(cleanupAction)
     }
 }
