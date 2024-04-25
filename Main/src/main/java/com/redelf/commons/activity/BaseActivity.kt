@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.TimedValue
 
-abstract class BaseActivity : AppCompatActivity() {
+abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected var googleSignInRequestCode = AtomicInteger()
     protected var transmissionService: TransmissionService? = null
@@ -132,6 +132,28 @@ abstract class BaseActivity : AppCompatActivity() {
         paused.set(false)
 
         super.onResume()
+    }
+
+    override fun showProgress() {
+
+        Timber.v("Progress :: SHOW")
+    }
+
+    override fun hideProgress() {
+
+        Timber.v("Progress :: HIDE")
+    }
+
+    override fun toggleProgress(show: Boolean) {
+
+        if (show) {
+
+            showProgress()
+
+        } else {
+
+            hideProgress()
+        }
     }
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
