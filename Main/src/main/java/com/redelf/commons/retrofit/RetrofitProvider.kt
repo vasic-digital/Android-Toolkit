@@ -3,6 +3,7 @@ package com.redelf.commons.retrofit
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.obtain.ObtainParametrized
 import okhttp3.CertificatePinner
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
@@ -59,11 +60,19 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
     ): OkHttpClient {
 
+        val pool = ConnectionPool(
+
+            maxIdleConnections = 10,
+            keepAliveDuration = 5,
+            timeUnit = TimeUnit.MINUTES
+        )
+
         val builder = OkHttpClient
             .Builder()
             .readTimeout(readTime, TimeUnit.SECONDS)
             .connectTimeout(connTime, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
+            .connectionPool(pool)
 
         loggingInterceptor?.let {
 
