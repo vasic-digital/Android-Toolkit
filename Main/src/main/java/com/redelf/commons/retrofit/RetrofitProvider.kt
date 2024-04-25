@@ -50,14 +50,15 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
             val call = client.newCall(request)
             val tag = request.url.toString()
+
             param.callsWrapper[tag] = call
+
             call
         }
 
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .addConverterFactory(converter)
-            .client(client)
             .callFactory(callFactory)
             .build()
     }
