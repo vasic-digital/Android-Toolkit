@@ -26,7 +26,15 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         if (BuildConfig.DEBUG) {
 
             interceptor = HttpLoggingInterceptor()
-            interceptor.level = HttpLoggingInterceptor.Level.BODY
+
+            if (param.bodyLog) {
+
+                interceptor.level = HttpLoggingInterceptor.Level.BODY
+
+            } else {
+
+                interceptor.level = HttpLoggingInterceptor.Level.BASIC
+            }
         }
 
         val ctx = param.ctx.applicationContext
