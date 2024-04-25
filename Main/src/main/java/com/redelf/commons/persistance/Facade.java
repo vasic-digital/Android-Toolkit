@@ -1,8 +1,13 @@
 package com.redelf.commons.persistance;
 
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+
+import com.redelf.commons.lifecycle.InitializationWithContext;
 import com.redelf.commons.lifecycle.TerminationSynchronized;
 
-public interface Facade extends TerminationSynchronized {
+public interface Facade extends TerminationSynchronized, InitializationWithContext {
 
   <T> boolean put(String key, T value);
 
@@ -71,6 +76,12 @@ public interface Facade extends TerminationSynchronized {
     @Override
     public boolean shutdown() {
       return true;
+    }
+
+    @Override
+    public void initialize(@NonNull Context ctx) {
+
+      // Ignore
     }
 
     private void throwValidation() {

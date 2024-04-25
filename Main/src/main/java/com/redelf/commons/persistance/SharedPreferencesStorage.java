@@ -1,6 +1,9 @@
 package com.redelf.commons.persistance;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+
+import androidx.annotation.NonNull;
 
 final class SharedPreferencesStorage implements Storage<String> {
 
@@ -14,6 +17,12 @@ final class SharedPreferencesStorage implements Storage<String> {
     public boolean shutdown() {
 
         return true;
+    }
+
+    @Override
+    public void initialize(@NonNull Context ctx) {
+
+        // Ignore
     }
 
     @Override

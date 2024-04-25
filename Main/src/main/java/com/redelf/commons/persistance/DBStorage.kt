@@ -54,7 +54,7 @@ internal object DBStorage : Storage<String> {
     private lateinit var dbHelper: DbHelper
     private lateinit var db: SQLiteDatabase
 
-    fun initialize(ctx: Context) {
+    override fun initialize(ctx: Context) {
 
         try {
 
@@ -69,7 +69,7 @@ internal object DBStorage : Storage<String> {
 
     override fun shutdown(): Boolean {
 
-        db?.let {
+        db.let {
 
             try {
 

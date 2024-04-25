@@ -1,5 +1,6 @@
 package com.redelf.commons.persistance
 
+import android.content.Context
 import com.redelf.commons.compress
 import com.redelf.commons.decompress
 import timber.log.Timber
@@ -28,6 +29,11 @@ object DefaultFacade : Facade {
     override fun shutdown(): Boolean {
 
         return storage?.shutdown() ?: false
+    }
+
+    override fun initialize(ctx: Context) {
+
+        storage?.initialize(ctx)
     }
 
     override fun <T> put(key: String, value: T): Boolean {

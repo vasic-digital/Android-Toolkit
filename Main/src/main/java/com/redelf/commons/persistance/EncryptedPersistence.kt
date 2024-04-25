@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.redelf.commons.Erasing
 import com.redelf.commons.R
+import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.obtain.Obtain
 import timber.log.Timber
@@ -22,7 +23,7 @@ constructor(
     private val keySalt: String = "st",
     private val storageTag: String = ctx.getString(R.string.app_name)
 
-) : Persistence<String>, Erasing, TerminationSynchronized {
+) : Persistence<String>, Erasing, TerminationSynchronized, InitializationWithContext {
 
     companion object {
 
@@ -110,6 +111,11 @@ constructor(
     override fun shutdown(): Boolean {
 
         return data?.shutdown() ?: false
+    }
+
+    override fun initialize(ctx: Context) {
+
+        data?.initialize(ctx)
     }
 
     override fun <T> pull(key: String): T? {
