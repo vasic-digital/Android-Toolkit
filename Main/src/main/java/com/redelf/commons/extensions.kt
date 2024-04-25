@@ -37,6 +37,8 @@ import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 var GLOBAL_RECORD_EXCEPTIONS = true
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
@@ -852,15 +854,12 @@ fun StrictMode.VmPolicy.Builder.detectAllExpect(
 
 ): StrictMode.VmPolicy.Builder {
 
-    return detectAll().penaltyListener(
+    val ex = Executors.newSingleThreadExecutor()
 
-        Executors.newSingleThreadExecutor(), StrictMode.OnVmViolationListener
+    return detectAll().penaltyListener(ex) {
 
-        {
-
-            it.filter(ignoredViolationPackageName, justVerbose)
-        }
-    )
+        it.filter(ignoredViolationPackageName, justVerbose)
+    }
 }
 
 
@@ -876,5 +875,55 @@ private fun Violation.filter(
     if (violationPackageName != ignoredViolationPackageName && justVerbose) {
 
         Timber.v(this)
+    }
+}
+
+fun String.compress(): String? {
+
+    val uncompressed = this
+
+    try {
+
+        val byteOS = ByteArrayOutputStream()
+        val gzipOut = GZIPOutputStream(byteOS)
+
+        gzipOut.write(uncompressed.toByteArray())
+        gzipOut.close()
+
+        return Base64.encodeToString(byteOS.toByteArray(), Base64.DEFAULT)
+
+    } catch (e: IOException) {
+
+        Timber.e(e)
+
+        return null
+    }
+}
+
+fun String.decompress(): String? {
+
+    val compressed: String = this
+
+    try {
+
+        val compressedData = Base64.decode(compressed, Base64.DEFAULT)
+        val byteArrayIS = ByteArrayInputStream(compressedData)
+        val gzipIn = GZIPInputStream(byteArrayIS)
+        val byteArrayOS = ByteArrayOutputStream()
+        val buffer = ByteArray(1024)
+        var bytesRead: Int
+
+        while (gzipIn.read(buffer).also { bytesRead = it } != -1) {
+
+            byteArrayOS.write(buffer, 0, bytesRead)
+        }
+
+        return String(byteArrayOS.toByteArray(), Charsets.UTF_8)
+
+    } catch (e: IOException) {
+
+        Timber.e(e)
+
+        return null
     }
 }

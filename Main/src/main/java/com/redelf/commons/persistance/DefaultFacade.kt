@@ -1,15 +1,8 @@
 package com.redelf.commons.persistance
 
-import com.redelf.commons.exec
-import com.redelf.commons.execution.Execution
-import com.redelf.commons.execution.TaskExecutor
-import com.redelf.commons.lifecycle.TerminationSynchronized
-import com.redelf.commons.recordException
+import com.redelf.commons.compress
+import com.redelf.commons.decompress
 import timber.log.Timber
-import java.util.concurrent.Callable
-import java.util.concurrent.Future
-import java.util.concurrent.RejectedExecutionException
-import java.util.concurrent.ThreadPoolExecutor
 
 object DefaultFacade : Facade {
 
@@ -85,7 +78,7 @@ object DefaultFacade : Facade {
         }
 
         // 4. Save to the storage
-        return if (storage?.put(key, serializedText) == true) {
+        return if (storage?.put(key, serializedText.compress()) == true) {
 
             log("put -> Stored successfully")
             true
@@ -102,7 +95,7 @@ object DefaultFacade : Facade {
         log("get -> key: $key")
 
         // 1. Get serialized text from the storage
-        val serializedText = storage?.get(key)
+        val serializedText = storage?.get(key)?.decompress()
         log("get -> Fetched from storage: " + (serializedText != null))
 
         if (serializedText == null) {
