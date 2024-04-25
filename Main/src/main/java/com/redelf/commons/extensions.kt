@@ -882,6 +882,11 @@ fun String.compress(): String? {
 
     val uncompressed = this
 
+    if (isEmpty(uncompressed)) {
+
+        return null
+    }
+
     try {
 
         val byteOS = ByteArrayOutputStream()
@@ -903,6 +908,11 @@ fun String.compress(): String? {
 fun String.decompress(): String? {
 
     val compressed: String = this
+
+    if (isEmpty(compressed)) {
+
+        return null
+    }
 
     try {
 
