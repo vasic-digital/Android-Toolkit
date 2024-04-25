@@ -95,7 +95,19 @@ object DefaultFacade : Facade {
         log("get -> key: $key")
 
         // 1. Get serialized text from the storage
-        val serializedText = storage?.get(key)?.decompress()
+        val serializedText: String?
+
+        try {
+
+            serializedText = storage?.get(key)?.decompress()
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+
+            return null
+        }
+
         log("get -> Fetched from storage: " + (serializedText != null))
 
         if (serializedText == null) {
