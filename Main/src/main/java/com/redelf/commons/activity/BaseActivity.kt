@@ -134,25 +134,27 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         super.onResume()
     }
 
-    override fun showProgress() {
+    override fun showProgress(from: String) {
 
-        Timber.v("Progress :: SHOW")
+        Timber.v("Progress :: SHOW, from: $from")
     }
 
-    override fun hideProgress() {
+    override fun hideProgress(from: String) {
 
-        Timber.v("Progress :: HIDE")
+        Timber.v("Progress :: HIDE, from: $from")
     }
 
-    override fun toggleProgress(show: Boolean) {
+    override fun toggleProgress(show: Boolean, from: String) {
+
+        val f = "Toggle progress <- from: $from"
 
         if (show) {
 
-            showProgress()
+            showProgress(f)
 
         } else {
 
-            hideProgress()
+            hideProgress(f)
         }
     }
 
