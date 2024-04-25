@@ -17,6 +17,7 @@ import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.LifecycleCheck
 import com.redelf.commons.lifecycle.Termination
+import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.Data
@@ -101,7 +102,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         override fun persist(identifier: String, data: String): Boolean {
 
-            return Data.put(identifier, data)
+            return DataManagement.STORAGE.push(identifier, data)
         }
     }
 
@@ -137,7 +138,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val action = Runnable {
 
-            val json = Data[storageIdentifier, ""]
+            val json = DataManagement.STORAGE.pull(storageIdentifier) ?: ""
 
             if (TextUtils.isEmpty(json)) {
 

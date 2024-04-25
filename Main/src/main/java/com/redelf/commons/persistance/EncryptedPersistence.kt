@@ -15,12 +15,12 @@ class EncryptedPersistence
 @Throws(IllegalArgumentException::class)
 constructor(
 
-    ctx: Context? = null,
+    ctx: Context,
     serializationExclusionStrategy: ExclusionStrategy? = null,
     deserializationExclusionStrategy: ExclusionStrategy? = null,
 
-    private val keySalt: String = "",
-    private val storageTag: String = ctx?.getString(R.string.app_name) ?: "storage"
+    private val keySalt: String = "s.l.t",
+    private val storageTag: String = ctx.getString(R.string.app_name)
 
 ) : Persistence<String>, Erasing, TerminationSynchronized {
 
@@ -29,35 +29,15 @@ constructor(
         var DEBUG = true
     }
 
+    private var data: Data? = null
+
     init {
 
         Timber.v("Encrypted persistence :: Initialization :: Storage tag: '$storageTag'")
 
         val tag = "Exclusion strategies ::"
 
-        val err = IllegalArgumentException(
-
-            "Context is required with combination " +
-                    "with the exclusion strategies"
-        )
-
-        serializationExclusionStrategy?.let {
-
-            if (ctx == null) {
-
-                throw err
-            }
-        }
-
-        deserializationExclusionStrategy?.let {
-
-            if (ctx == null) {
-
-                throw err
-            }
-        }
-
-        ctx?.let {
+        ctx.let {
 
             val getParser = object : Obtain<Parser?> {
 
@@ -120,7 +100,7 @@ constructor(
                 override fun getSalt() = keySalt
             }
 
-            Data.init(it, salter = salter, storageTag = storageTag)
+            data = PersistenceBuilder.instantiate(it, salter = salter, storageTag = storageTag)
                 .setParser(getParser)
                 .setLogInterceptor(logger)
                 .build()
@@ -129,22 +109,22 @@ constructor(
 
     override fun shutdown(): Boolean {
 
-        return Data.shutdown()
+        return data?.shutdown() ?: false
     }
 
     override fun <T> pull(key: String): T? {
 
-        return Data[key]
+        return data?.get(key)
     }
 
     override fun <T> push(key: String, what: T): Boolean {
 
-        return Data.put(key, what)
+        return data?.put(key, what) ?: false
     }
 
     override fun delete(what: String): Boolean {
 
-        return Data.delete(what)
+        return data?.delete(what) ?: false
     }
 
     /*
@@ -152,6 +132,6 @@ constructor(
     */
     override fun erase(): Boolean {
 
-        return Data.deleteAll()
+        return data?.deleteAll() ?: false
     }
 }

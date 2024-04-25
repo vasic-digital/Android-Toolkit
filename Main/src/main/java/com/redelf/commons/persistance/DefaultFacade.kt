@@ -12,7 +12,7 @@ object DefaultFacade : Facade {
     private var storage: Storage<String>? = null
     private var logInterceptor: LogInterceptor? = null
 
-    fun initialize(builder: PersistenceBuilder) {
+    fun initialize(builder: PersistenceBuilder): Facade {
 
         storage = builder.storage
         converter = builder.converter
@@ -21,6 +21,8 @@ object DefaultFacade : Facade {
         logInterceptor = builder.logInterceptor
 
         logInterceptor?.onLog("init -> Encryption : " + encryption?.javaClass?.simpleName)
+
+        return this
     }
 
     override fun shutdown(): Boolean {

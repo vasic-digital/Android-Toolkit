@@ -1,8 +1,11 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
+import android.text.TextUtils
 import com.google.gson.Gson
+import com.redelf.commons.instantiation.Instantiable
 import com.redelf.commons.obtain.Obtain
+import timber.log.Timber
 
 class PersistenceBuilder(
 
@@ -15,6 +18,37 @@ class PersistenceBuilder(
     }
 
 ) {
+
+    companion object {
+
+        fun instantiate(
+
+            context: Context,
+            storageTag: String? = null,
+            salter: Salter? = null
+
+        ): PersistenceBuilder {
+
+            Timber.i("Data :: Initializing")
+
+            if (!TextUtils.isEmpty(storageTag) && storageTag != null) {
+
+                salter?.let {
+
+                    return PersistenceBuilder(context, storageTag = storageTag, salter = it)
+                }
+
+                return PersistenceBuilder(context, storageTag = storageTag)
+            }
+
+            salter?.let {
+
+                return PersistenceBuilder(context, salter = it)
+            }
+
+            return PersistenceBuilder(context)
+        }
+    }
 
     private var parser: Obtain<Parser?> = object : Obtain<Parser?> {
 
@@ -38,8 +72,6 @@ class PersistenceBuilder(
 
     init {
 
-        PersistenceUtils.checkNull("Context", context)
-
         if (!(encryption as ConcealEncryption).init()) {
 
             encryption = NoEncryption()
@@ -53,6 +85,7 @@ class PersistenceBuilder(
     }
 
     fun setSerializer(serializer: Serializer?): PersistenceBuilder {
+
         this.serializer = serializer
         return this
     }
@@ -64,6 +97,7 @@ class PersistenceBuilder(
     }
 
     fun setConverter(converter: Converter?): PersistenceBuilder {
+
         this.converter = converter
         return this
     }
@@ -74,8 +108,8 @@ class PersistenceBuilder(
         return this
     }
 
-    fun build() {
+    fun build(): Data {
 
-        Data.build(this)
+        return Data.instantiate(this)
     }
 }

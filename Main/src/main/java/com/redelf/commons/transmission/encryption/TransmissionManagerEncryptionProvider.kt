@@ -3,6 +3,7 @@ package com.redelf.commons.transmission.encryption
 import android.text.TextUtils
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.management.DataManagement
 import com.redelf.commons.persistance.Data
 import com.redelf.commons.recordException
 import com.redelf.commons.security.encryption.AES
@@ -105,13 +106,13 @@ class TransmissionManagerEncryptionProvider(
             var retryCount = 0
             val maxRetries = 10
             val key = UUID.randomUUID().toString()
-            var persisted = Data.put(encryptionKey, key)
+            var persisted = DataManagement.STORAGE.push(encryptionKey, key)
 
             while (!persisted && retryCount < maxRetries) {
 
                 Thread.sleep(500)
                 Timber.w("Persisting encryption key, retry no: %d", ++retryCount)
-                persisted = Data.put(encryptionKey, key)
+                persisted = DataManagement.STORAGE.push(encryptionKey, key)
             }
 
             callback.onNewEncryptionKeyGenerated(key, persisted)
@@ -129,7 +130,7 @@ class TransmissionManagerEncryptionProvider(
 
             Timber.v("We are about to obtain existing signing key")
 
-            val key: String = Data[encryptionKey] ?: ""
+            val key: String = DataManagement.STORAGE.pull(encryptionKey) ?: ""
             val success = !TextUtils.isEmpty(key)
 
             callback.onExistingEncryptionKeyObtained(key, success)

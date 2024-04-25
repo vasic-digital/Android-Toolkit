@@ -201,6 +201,8 @@ abstract class BaseApplication :
             enableStrictMode()
         }
 
+        DataManagement.initialize(CONTEXT)
+
         LogsGathering.ENABLED = isLogsGatheringEnabled()
 
         if (LogsGathering.ENABLED) {
@@ -222,50 +224,6 @@ abstract class BaseApplication :
         try {
 
             exec {
-
-                Timber.i("Data: Initializing")
-
-                val salter = object : Salter {
-
-                    override fun getSalt(): String {
-
-                        var salt = takeSalt()
-
-                        if (salt.length > 5) {
-
-                            salt = salt.substring(0, 5)
-                        }
-
-                        Timber.v("Get salt :: Length: ${salt.length}")
-
-                        return salt
-                    }
-                }
-
-                val getParser = object : Obtain<Parser?> {
-
-                    override fun obtain(): Parser {
-
-                        return GsonParser(
-
-                            object : Obtain<Gson> {
-
-                                override fun obtain(): Gson {
-
-                                    return GsonBuilder()
-                                        .enableComplexMapKeySerialization()
-                                        .create()
-                                }
-                            }
-                        )
-                    }
-                }
-
-                Data.init(applicationContext, getString(R.string.app_name), salter)
-                    .setParser(getParser)
-                    .build()
-
-                Timber.i("Data: Initialized")
 
                 onDoCreate()
 

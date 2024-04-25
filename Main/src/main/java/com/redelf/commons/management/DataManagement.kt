@@ -1,6 +1,9 @@
 package com.redelf.commons.management
 
+import android.content.Context
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.context.Contextual
 import com.redelf.commons.interruption.Abort
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.LifecycleCallback
@@ -20,14 +23,23 @@ abstract class DataManagement<T> :
     Obtain<T?>,
     Resettable,
     Lockable,
-    Abort
+    Abort,
+    Contextual
 
 {
 
     companion object {
 
-        private val DATA_STORAGE: EncryptedPersistence =
-            EncryptedPersistence(storageTag = "Data_Managed")
+        lateinit var STORAGE: EncryptedPersistence
+
+        fun initialize(ctx: Context) {
+
+            STORAGE = EncryptedPersistence(
+
+                ctx = ctx,
+                storageTag = "dt_mgmt"
+            )
+        }
     }
 
     protected abstract val storageKey: String
@@ -80,7 +92,7 @@ abstract class DataManagement<T> :
 
         if (data == null) {
 
-            data = DATA_STORAGE.pull(storageKey)
+            data = STORAGE.pull(storageKey)
         }
 
         if (instantiateDataObject) {
@@ -114,7 +126,7 @@ abstract class DataManagement<T> :
             return null
         }
 
-        return DATA_STORAGE
+        return STORAGE
     }
 
     @Throws(IllegalStateException::class)
