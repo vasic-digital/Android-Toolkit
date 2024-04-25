@@ -201,7 +201,7 @@ abstract class BaseApplication :
             enableStrictMode()
         }
 
-        DataManagement.initialize(CONTEXT)
+        DataManagement.initialize(applicationContext)
 
         LogsGathering.ENABLED = isLogsGatheringEnabled()
 

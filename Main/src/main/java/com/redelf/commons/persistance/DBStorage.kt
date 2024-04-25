@@ -5,24 +5,34 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
+import com.redelf.commons.activity.BaseActivity
 import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.recordException
 import timber.log.Timber
+import java.sql.SQLException
 import java.util.concurrent.atomic.AtomicBoolean
 
-internal class DBStorage(context: Context) : Storage<String>, TerminationSynchronized {
+internal object DBStorage : Storage<String> {
 
-    private val terminated = AtomicBoolean()
+    private const val DATABASE_VERSION = 1
+    private const val DATABASE_NAME = "Storage.DB"
+
+    private const val TABLE = "entries"
+    private const val COLUMN_VALUE = "content"
+    private const val COLUMN_KEY = "identifier"
+
+    private const val SQL_CREATE_ENTRIES = "CREATE TABLE $TABLE (" +
+            "${BaseColumns._ID} INTEGER PRIMARY KEY," +
+            "$COLUMN_KEY TEXT," +
+            "$COLUMN_VALUE TEXT)"
+
+    private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE"
 
     private class DbHelper(context: Context) :
         SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
-        companion object {
-
-            const val DATABASE_VERSION = 1
-            const val DATABASE_NAME = "Storage.DB"
-        }
         override fun onCreate(db: SQLiteDatabase) {
 
             db.execSQL(SQL_CREATE_ENTRIES)
@@ -41,31 +51,23 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
         }
     }
 
-    private val dbHelper = DbHelper(context)
-    private val db = dbHelper.writableDatabase
+    private lateinit var dbHelper: DbHelper
+    private lateinit var db: SQLiteDatabase
 
-    companion object {
+    fun initialize(ctx: Context) {
 
-        const val TABLE = "entries"
-        const val COLUMN_VALUE = "content"
-        const val COLUMN_KEY = "identifier"
+        try {
 
-        private const val SQL_CREATE_ENTRIES = "CREATE TABLE $TABLE (" +
-                    "${BaseColumns._ID} INTEGER PRIMARY KEY," +
-                    "$COLUMN_KEY TEXT," +
-                    "$COLUMN_VALUE TEXT)"
+            dbHelper = DbHelper(ctx)
+            db = dbHelper.writableDatabase
 
-        private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE"
+        } catch (e: SQLException) {
+
+            recordException(e)
+        }
     }
 
     override fun shutdown(): Boolean {
-
-        if (terminated.get()) {
-
-            return true
-        }
-
-        terminated.set(true)
 
         db?.let {
 
@@ -85,11 +87,6 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
     }
 
     override fun put(key: String, value: String): Boolean {
-
-        if (terminated.get()) {
-
-            return false
-        }
 
         PersistenceUtils.checkNull("key", key)
 
@@ -114,12 +111,6 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
     override fun get(key: String): String {
 
         var result = ""
-
-        if (terminated.get()) {
-
-            return result
-        }
-
         val selectionArgs = arrayOf(key)
         val selection = "$COLUMN_KEY = ?"
         val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
@@ -164,11 +155,6 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
 
     override fun delete(key: String): Boolean {
 
-        if (terminated.get()) {
-
-            return false
-        }
-
         val selection = "$COLUMN_KEY = ?"
         val selectionArgs = arrayOf(key)
 
@@ -192,20 +178,10 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
 
     override fun contains(key: String): Boolean {
 
-        if (terminated.get()) {
-
-            return false
-        }
-
         return isNotEmpty(get(key))
     }
 
     override fun deleteAll(): Boolean {
-
-        if (terminated.get()) {
-
-            return false
-        }
 
         try {
 
@@ -224,11 +200,6 @@ internal class DBStorage(context: Context) : Storage<String>, TerminationSynchro
     override fun count(): Long {
 
         var result = 0L
-
-        if (terminated.get()) {
-
-            return result
-        }
 
         try {
 

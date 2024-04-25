@@ -19,7 +19,7 @@ constructor(
     serializationExclusionStrategy: ExclusionStrategy? = null,
     deserializationExclusionStrategy: ExclusionStrategy? = null,
 
-    private val keySalt: String = "s.l.t",
+    private val keySalt: String = "st",
     private val storageTag: String = ctx.getString(R.string.app_name)
 
 ) : Persistence<String>, Erasing, TerminationSynchronized {

@@ -64,8 +64,8 @@ class PersistenceBuilder(
         )
     }
 
+    var storage: Storage<String> = DBStorage
     var serializer: Serializer? = DataSerializer()
-    var storage: Storage<String> = DBStorage(context)
     var converter: Converter? = DataConverter(parser)
     var logInterceptor: LogInterceptor = LogInterceptor { }
     var encryption: Encryption? = ConcealEncryption(context, salter)

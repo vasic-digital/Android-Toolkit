@@ -11,6 +11,7 @@ import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.persistance.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.reset.Resettable
 import timber.log.Timber
@@ -33,6 +34,8 @@ abstract class DataManagement<T> :
         lateinit var STORAGE: EncryptedPersistence
 
         fun initialize(ctx: Context) {
+
+            DBStorage.initialize(ctx = ctx)
 
             STORAGE = EncryptedPersistence(
 
