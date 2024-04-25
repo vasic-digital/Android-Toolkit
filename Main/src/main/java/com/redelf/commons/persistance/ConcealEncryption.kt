@@ -33,7 +33,7 @@ class ConcealEncryption constructor(
     @Throws(Exception::class)
     override fun encrypt(key: String?, value: String?): ByteArray? {
 
-        val entity = Entity.create(key + salt)
+        val entity = Entity.create((key + salt).hashCode().toString())
         val encrypted = crypto.encrypt(value?.toByteArray(), entity)
 
         if (encrypted.isEmpty()) {
@@ -47,7 +47,7 @@ class ConcealEncryption constructor(
     @Throws(Exception::class)
     override fun decrypt(key: String?, value: ByteArray?): String {
 
-        val entity = Entity.create(key + salt)
+        val entity = Entity.create((key + salt).hashCode().toString())
         val decrypted = crypto.decrypt(value, entity)
 
         Timber.v("Decrypted: ${decrypted.isNotEmpty()}")
