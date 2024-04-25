@@ -74,7 +74,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         val pool = ConnectionPool(
 
-            maxIdleConnections = 5,
+            maxIdleConnections = 7,
             keepAliveDuration = 5,
             timeUnit = TimeUnit.MINUTES
         )

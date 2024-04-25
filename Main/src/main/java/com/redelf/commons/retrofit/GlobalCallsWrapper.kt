@@ -17,20 +17,11 @@ object GlobalCallsWrapper : Abort {
 
         CALLS.forEach { (k, v) ->
 
-            Timber.v("$tag Cancel: $k")
+            Timber.v("$tag Cancel :: $k")
 
             try {
 
-                if (v.isCanceled() || v.isExecuted()) {
-
-                    Timber.v("$tag Skipped: $k")
-
-                } else {
-
-                    v.cancel()
-
-                    Timber.v("$tag Canceled: $k")
-                }
+                v.cancel()
 
             } catch (e: Exception) {
 
