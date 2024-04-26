@@ -80,7 +80,16 @@ class DataSerializer implements Serializer {
                 valueClassName
         );
 
-        return gsn.toJson(dataInfo);
+        try {
+
+            return gsn.toJson(dataInfo);
+
+        } catch (Exception e) {
+
+            Timber.e(e);
+        }
+
+        return null;
     }
 
     @Override
