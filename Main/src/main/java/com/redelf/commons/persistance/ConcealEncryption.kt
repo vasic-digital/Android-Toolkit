@@ -59,6 +59,6 @@ class ConcealEncryption constructor(
 
         val raw = (key + salt).hashCode().toString().toCharArray()
 
-        return "${raw.first()}${raw.last()}"
+        return "${raw.last()}"
     }
 }
