@@ -4,6 +4,7 @@ import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
+import com.redelf.commons.exec
 import com.redelf.commons.interruption.Abort
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.LifecycleCallback
@@ -142,13 +143,23 @@ abstract class DataManagement<T> :
             return
         }
 
-        val store = takeStorage()
-
-        this.data = data
-
         try {
 
-            store?.push(storageKey, data)
+            exec {
+
+                val store = takeStorage()
+
+                this.data = data
+
+                try {
+
+                    store?.push(storageKey, data)
+
+                } catch (e: RejectedExecutionException) {
+
+                    Timber.e(e)
+                }
+            }
 
         } catch (e: RejectedExecutionException) {
 
