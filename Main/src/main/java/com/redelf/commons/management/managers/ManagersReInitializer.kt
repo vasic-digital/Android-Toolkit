@@ -140,18 +140,15 @@ class ManagersReInitializer {
 
                 managers.forEach { manager ->
 
-                    if (manager is Contextual) {
+                    context?.let { ctx ->
 
-                        context?.let { ctx ->
+                        Timber.v(
 
-                            Timber.v(
+                            "Manager: ${manager.getWho()} " +
+                                    "injecting context: $ctx"
+                        )
 
-                                "Manager: ${manager.getWho()} " +
-                                        "injecting context: $ctx"
-                            )
-
-                            manager.injectContext(ctx)
-                        }
+                        manager.injectContext(ctx)
                     }
 
                     if (manager is ResourceDefaults) {
