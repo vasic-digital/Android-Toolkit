@@ -47,6 +47,7 @@ abstract class DataManagement<T> :
     }
 
     protected abstract val storageKey: String
+    protected open val persist: Boolean = true
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
@@ -94,7 +95,7 @@ abstract class DataManagement<T> :
             return null
         }
 
-        if (data == null) {
+        if (data == null && persist) {
 
             data = STORAGE.pull(storageKey)
         }
@@ -147,17 +148,24 @@ abstract class DataManagement<T> :
 
             exec {
 
-                val store = takeStorage()
-
                 this.data = data
 
-                try {
+                if (persist) {
 
-                    store?.push(storageKey, data)
+                    try {
 
-                } catch (e: RejectedExecutionException) {
+                        val store = takeStorage()
 
-                    Timber.e(e)
+                        store?.push(storageKey, data)
+
+                    } catch (e: RejectedExecutionException) {
+
+                        Timber.e(e)
+                    }
+
+                } else {
+
+                    Timber.v("${getLogTag()} Push data :: Not persisting")
                 }
             }
 
