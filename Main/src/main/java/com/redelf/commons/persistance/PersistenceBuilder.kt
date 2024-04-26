@@ -15,7 +15,9 @@ class PersistenceBuilder(
     salter: Salter = object : Salter {
 
         override fun getSalt() = storageTag
-    }
+    },
+
+    private var encrypt: Boolean = false
 
 ) {
 
@@ -64,18 +66,34 @@ class PersistenceBuilder(
         )
     }
 
+    private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption {
+
+        if (encrypt) {
+
+            return ConcealEncryption(context, salter)
+        }
+
+        return NoEncryption()
+    }
+
     var storage: Storage<String> = DBStorage
     var serializer: Serializer? = DataSerializer()
     var converter: Converter? = DataConverter(parser)
     var logInterceptor: LogInterceptor = LogInterceptor { }
-    var encryption: Encryption? = ConcealEncryption(context, salter)
+    var encryption: Encryption? = instantiateDefaultEncryption(context, salter)
 
     init {
 
-        if (!(encryption as ConcealEncryption).init()) {
+        if (encryption is ConcealEncryption && (!(encryption as ConcealEncryption).init())) {
 
             encryption = NoEncryption()
         }
+    }
+
+    fun setEncrypt(enc: Boolean): PersistenceBuilder {
+
+        this.encrypt = enc
+        return this
     }
 
     fun setParser(parser: Obtain<Parser?>): PersistenceBuilder {

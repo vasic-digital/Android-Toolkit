@@ -1,11 +1,8 @@
 package com.redelf.commons.persistance
 
-/**
- * Provides Base64 encoding as non-encryption option.
- * This doesn't provide any encryption
- */
 class NoEncryption : Encryption {
     override fun init(): Boolean {
+
         return true
     }
 
@@ -16,7 +13,7 @@ class NoEncryption : Encryption {
     }
 
     @Throws(Exception::class)
-    override fun decrypt(key: String?, value: ByteArray?): String? {
+    override fun decrypt(key: String?, value: ByteArray?): String {
 
         value?.let {
 
