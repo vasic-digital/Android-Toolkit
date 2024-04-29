@@ -13,6 +13,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
 import android.provider.Settings
+import android.telecom.TelecomManager
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -116,12 +119,17 @@ abstract class BaseApplication :
         }
     }
 
+    private var telecomManager: TelecomManager? = null
+    private var telephonyManager: TelephonyManager? = null
+
     val managers = mutableListOf<List<DataManagement<*>>>(
 
         listOf(FirebaseConfigurationManager)
     )
 
     val defaultManagerResources = mutableMapOf<Class<*>, Int>()
+
+    protected open val detectPhoneCallReceived = false
 
     protected abstract fun onDoCreate()
     protected abstract fun takeSalt(): String
@@ -183,6 +191,40 @@ abstract class BaseApplication :
         }
     }
 
+    @Suppress("DEPRECATION")
+    private val phoneStateListener = object : PhoneStateListener() {
+
+        @Deprecated("Deprecated in Java")
+        @Suppress("DEPRECATION")
+        override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+
+            super.onCallStateChanged(state, phoneNumber)
+
+            when (state) {
+
+                TelephonyManager.CALL_STATE_RINGING -> {
+
+                    onPhoneIsRinging()
+                }
+
+                TelephonyManager.CALL_STATE_OFFHOOK -> {
+
+                    Timber.v("Phone is OFF-HOOK")
+                }
+
+                TelephonyManager.CALL_STATE_IDLE -> {
+
+                    Timber.v("Phone is IDLE")
+                }
+            }
+        }
+    }
+
+    protected open fun onPhoneIsRinging() {
+
+        Timber.v("Phone is RINGING")
+    }
+
     override fun takeContext() = CONTEXT
 
     override fun onCreate() {
@@ -238,6 +280,15 @@ abstract class BaseApplication :
                 Timber.v("Installing profile: START")
                 ProfileInstaller.writeProfile(applicationContext)
                 Timber.v("Installing profile: END")
+
+                if (detectPhoneCallReceived) {
+
+                    telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+                    telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+
+                    @Suppress("DEPRECATION")
+                    telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+                }
             }
 
         } catch (e: RejectedExecutionException) {
