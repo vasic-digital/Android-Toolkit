@@ -1,6 +1,7 @@
 package com.redelf.commons.management.managers
 
 import android.content.Context
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.Contextual
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.exec
@@ -24,7 +25,7 @@ class ManagersInitializer {
     fun initializeManagers(
 
         managers: List<Management>,
-        context: Context? = null,
+        context: BaseApplication? = null,
         defaultResources: Map<Class<*>, Int>? = null
 
     ): Boolean {
@@ -70,7 +71,7 @@ class ManagersInitializer {
 
         managers: List<Management>,
         callback: InitializationCallback,
-        context: Context? = null,
+        context: BaseApplication? = null,
         defaultResources: Map<Class<*>, Int>? = null
 
     ) {
@@ -99,17 +100,14 @@ class ManagersInitializer {
 
                             if (manager is DataManagement<*>) {
 
-                                if (manager is Contextual) {
+                                context?.let { ctx ->
 
-                                    context?.let { ctx ->
+                                    Timber.v(
 
-                                        Timber.v(
+                                        "$mTag Injecting context: $ctx"
+                                    )
 
-                                            "$mTag Injecting context: $ctx"
-                                        )
-
-                                        manager.injectContext(ctx)
-                                    }
+                                    manager.injectContext(ctx)
                                 }
 
                                 if (manager is ResourceDefaults) {

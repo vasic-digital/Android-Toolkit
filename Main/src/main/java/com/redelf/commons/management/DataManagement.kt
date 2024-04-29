@@ -26,7 +26,7 @@ abstract class DataManagement<T> :
     Resettable,
     Lockable,
     Abort,
-    Contextual
+    Contextual<BaseApplication>
 
 {
 

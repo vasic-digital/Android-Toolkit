@@ -2,7 +2,7 @@ package com.redelf.commons.context
 
 import android.content.Context
 
-interface ContextInjection {
+interface ContextInjection<T : Context> {
 
-    fun injectContext(ctx: Context)
+    fun injectContext(ctx: T)
 }

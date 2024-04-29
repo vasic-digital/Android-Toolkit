@@ -28,7 +28,8 @@ abstract class ManagersDependentTest : BaseTest() {
         Timber.plant(Timber.DebugTree())
         Timber.v("Timber initialized: $this")
 
-        BaseApplication.CONTEXT = applicationContext
+        // FIXME: Check this cast if valid
+        BaseApplication.CONTEXT = applicationContext as BaseApplication
 
         setupStorage()
         setupManagers()

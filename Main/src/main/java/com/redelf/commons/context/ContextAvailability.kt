@@ -2,7 +2,7 @@ package com.redelf.commons.context
 
 import android.content.Context
 
-interface ContextAvailability {
+interface ContextAvailability<T : Context> {
 
-    fun takeContext(): Context
+    fun takeContext(): T
 }

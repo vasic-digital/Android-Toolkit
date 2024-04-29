@@ -1,3 +1,5 @@
 package com.redelf.commons.context
 
-interface Contextual : ContextAvailability, ContextInjection
+import android.content.Context
+
+interface Contextual<T : Context> : ContextAvailability<T>, ContextInjection<T>

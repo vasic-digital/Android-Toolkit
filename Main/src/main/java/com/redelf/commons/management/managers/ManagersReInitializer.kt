@@ -1,6 +1,7 @@
 package com.redelf.commons.management.managers
 
 import android.content.Context
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.Contextual
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.exec
@@ -18,7 +19,7 @@ class ManagersReInitializer {
 
     fun reInitializeManagerInstances(
 
-        context: Context? = null,
+        context: BaseApplication? = null,
         managers: MutableList<DataManagement<*>>,
         defaultResources: Map<Class<*>, Int>? = null
 
@@ -74,7 +75,7 @@ class ManagersReInitializer {
 
     fun reInitializeManagers(
 
-        context: Context? = null,
+        context: BaseApplication? = null,
         managers: MutableList<SingleInstance<*>>,
         defaultResources: Map<Class<*>, Int>? = null
 
@@ -117,7 +118,7 @@ class ManagersReInitializer {
 
     private fun reInitializeManagerInstances(
 
-        context: Context? = null,
+        context: BaseApplication? = null,
         callback: OnObtain<Boolean>,
         managers: MutableList<DataManagement<*>>,
         defaultResources: Map<Class<*>, Int>? = null
@@ -179,7 +180,7 @@ class ManagersReInitializer {
 
     private fun reInitializeManagers(
 
-        context: Context? = null,
+        context: BaseApplication? = null,
         callback: OnObtain<Boolean>,
         managers: MutableList<SingleInstance<*>>,
         defaultResources: Map<Class<*>, Int>? = null
@@ -222,18 +223,15 @@ class ManagersReInitializer {
 
                             Timber.v("$mTag START")
 
-                            if (manager is Contextual) {
+                            context?.let { ctx ->
 
-                                context?.let { ctx ->
+                                Timber.v(
 
-                                    Timber.v(
+                                    "Manager: ${manager.getWho()} " +
+                                            "injecting context: $ctx"
+                                )
 
-                                        "Manager: ${manager.getWho()} " +
-                                                "injecting context: $ctx"
-                                    )
-
-                                    manager.injectContext(ctx)
-                                }
+                                manager.injectContext(ctx)
                             }
 
                             if (manager is ResourceDefaults) {

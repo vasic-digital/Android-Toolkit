@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.redelf.commons.application
 
 import android.annotation.SuppressLint
@@ -22,8 +24,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.context.ContextAvailability
@@ -35,11 +35,6 @@ import com.redelf.commons.isNotEmpty
 import com.redelf.commons.logging.LogsGathering
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
-import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.persistance.Data
-import com.redelf.commons.persistance.GsonParser
-import com.redelf.commons.persistance.Parser
-import com.redelf.commons.persistance.Salter
 import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
@@ -47,16 +42,16 @@ import java.util.concurrent.RejectedExecutionException
 abstract class BaseApplication :
 
     Application(),
-    ContextAvailability,
+    ContextAvailability<BaseApplication>,
     ActivityLifecycleCallbacks,
     LifecycleObserver
 
 {
 
-    companion object : ContextAvailability, ApplicationVersion {
+    companion object : ContextAvailability<BaseApplication>, ApplicationVersion {
 
         @SuppressLint("StaticFieldLeak")
-        lateinit var CONTEXT: Context
+        lateinit var CONTEXT: BaseApplication
 
         var STRICT_MODE_DISABLED = false
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
@@ -129,7 +124,7 @@ abstract class BaseApplication :
 
     val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
-    protected open val detectPhoneCallReceived = false
+    open val detectPhoneCallReceived = false
 
     protected abstract fun onDoCreate()
     protected abstract fun takeSalt(): String
@@ -220,6 +215,29 @@ abstract class BaseApplication :
         }
     }
 
+    fun registerPhoneStateListener() {
+
+        if (detectPhoneCallReceived) {
+
+            telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+            telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+
+            try {
+
+                @Suppress("DEPRECATION")
+                telephonyManager?.listen(
+
+                    phoneStateListener,
+                    PhoneStateListener.LISTEN_CALL_STATE
+                )
+
+            } catch (e: SecurityException) {
+
+                Timber.e(e)
+            }
+        }
+    }
+
     protected open fun onPhoneIsRinging() {
 
         Timber.v("Phone is RINGING")
@@ -232,7 +250,7 @@ abstract class BaseApplication :
 
         disableActivityAnimations(applicationContext)
 
-        CONTEXT = applicationContext
+        CONTEXT = this
 
         if (BuildConfig.DEBUG) {
 
@@ -280,25 +298,6 @@ abstract class BaseApplication :
                 Timber.v("Installing profile: START")
                 ProfileInstaller.writeProfile(applicationContext)
                 Timber.v("Installing profile: END")
-
-                if (detectPhoneCallReceived) {
-
-                    telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
-                    telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-
-                    try {
-
-                        @Suppress("DEPRECATION")
-                        telephonyManager?.listen(
-                            phoneStateListener,
-                            PhoneStateListener.LISTEN_CALL_STATE
-                        )
-
-                    } catch (e: SecurityException) {
-
-                        Timber.e(e)
-                    }
-                }
             }
 
         } catch (e: RejectedExecutionException) {
@@ -348,7 +347,7 @@ abstract class BaseApplication :
             val result = ManagersInitializer().initializeManagers(
 
                 managers = it,
-                context = applicationContext,
+                context = this,
                 defaultResources = defaultManagerResources
             )
 

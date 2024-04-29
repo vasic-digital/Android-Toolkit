@@ -1,5 +1,6 @@
 package com.redelf.commons.activity
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
@@ -8,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +20,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
@@ -25,6 +29,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.redelf.commons.Broadcast
 import com.redelf.commons.R
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.dialog.AttachFileDialog
 import com.redelf.commons.dialog.OnPickFromCameraCallback
 import com.redelf.commons.exec
@@ -34,6 +39,7 @@ import com.redelf.commons.initRegistrationWithGoogle
 import com.redelf.commons.isServiceRunning
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.obtain.OnObtain
+import com.redelf.commons.randomInteger
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.util.UriUtil
@@ -68,10 +74,12 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     }
 
     protected open val canSendOnTransmissionServiceConnected = true
+    protected open val detectPhoneCallReceived = BaseApplication.takeContext().detectPhoneCallReceived
 
     private var created = false
     private val paused = AtomicBoolean()
     private var unregistrar: Unregistrar? = null
+    private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
     private var attachmentsDialog: AttachFileDialog? = null
     private lateinit var backPressedCallback: OnBackPressedCallback
@@ -119,6 +127,63 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
             onKeyboardVisibilityEvent(it)
         }
     }
+
+    override fun onPostResume() {
+        super.onPostResume()
+
+        if (detectPhoneCallReceived) {
+
+            val permissionResult = ContextCompat
+                .checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+
+            val granted = permissionResult != PackageManager.PERMISSION_GRANTED
+
+            if (granted) {
+
+                ActivityCompat.requestPermissions(
+
+                    this,
+                    arrayOf(Manifest.permission.READ_PHONE_STATE),
+                    requestPhoneState
+                )
+
+            } else {
+
+                BaseApplication.takeContext().registerPhoneStateListener()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+
+            requestPhoneState -> {
+
+                val granted = grantResults.isNotEmpty() &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED
+
+                if (granted) {
+
+                    BaseApplication.takeContext().registerPhoneStateListener()
+
+                } else {
+
+                    Timber.e("Permission denied for phone state listener")
+                }
+
+                return
+            }
+        }
+    }
+
 
     override fun onPause() {
 

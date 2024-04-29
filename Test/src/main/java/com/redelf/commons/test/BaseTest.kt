@@ -2,6 +2,7 @@ package com.redelf.commons.test
 
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.TaskExecutor
 import timber.log.Timber
 import java.io.BufferedOutputStream
@@ -18,7 +19,9 @@ abstract class BaseTest {
     protected val testPrepare = "TEST PREPARE"
     protected val executor = TaskExecutor.instantiate(5)
     protected val testContext: Context = instrumentation.context
-    protected val applicationContext: Context = instrumentation.targetContext
+
+    // FIXME: Check if this is valid casting
+    protected val applicationContext: BaseApplication = instrumentation.targetContext as BaseApplication
 
     protected fun log(what: String) = Timber.d(what)
 

@@ -4,11 +4,11 @@ import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.management.DataManagement
 
-abstract class ContextualManager<T> : DataManagement<T>(), Contextual {
+abstract class ContextualManager<T> : DataManagement<T>(), Contextual<BaseApplication> {
 
-    private lateinit var ctx: Context
+    private lateinit var ctx: BaseApplication
 
-    override fun takeContext(): Context {
+    override fun takeContext(): BaseApplication {
 
         if (!this::ctx.isInitialized) {
 
@@ -19,8 +19,8 @@ abstract class ContextualManager<T> : DataManagement<T>(), Contextual {
     }
 
     @Synchronized
-    override fun injectContext(ctx: Context) {
+    override fun injectContext(ctx: BaseApplication) {
 
-        this@ContextualManager.ctx = ctx.applicationContext
+        this@ContextualManager.ctx = ctx
     }
 }
