@@ -286,8 +286,18 @@ abstract class BaseApplication :
                     telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
                     telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
-                    @Suppress("DEPRECATION")
-                    telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+                    try {
+
+                        @Suppress("DEPRECATION")
+                        telephonyManager?.listen(
+                            phoneStateListener,
+                            PhoneStateListener.LISTEN_CALL_STATE
+                        )
+
+                    } catch (e: SecurityException) {
+
+                        Timber.e(e)
+                    }
                 }
             }
 
