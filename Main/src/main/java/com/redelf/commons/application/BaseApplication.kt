@@ -38,6 +38,7 @@ import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class BaseApplication :
 
@@ -116,6 +117,7 @@ abstract class BaseApplication :
 
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null
+    private val registeredForPhoneCallsDetection = AtomicBoolean()
 
     val managers = mutableListOf<List<DataManagement<*>>>(
 
@@ -217,7 +219,20 @@ abstract class BaseApplication :
 
     fun registerPhoneStateListener() {
 
+        val tag = "Register phone state listener ::"
+
+        Timber.v("$tag START")
+
+        if (registeredForPhoneCallsDetection.get()) {
+
+            Timber.v("$tag Already registered")
+
+            return
+        }
+
         if (detectPhoneCallReceived) {
+
+            Timber.v("$tag Phone calls detection enabled")
 
             telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
             telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
@@ -231,10 +246,18 @@ abstract class BaseApplication :
                     PhoneStateListener.LISTEN_CALL_STATE
                 )
 
+                Timber.v("$tag Phone state listener registered with success")
+
+                registeredForPhoneCallsDetection.set(true)
+
             } catch (e: SecurityException) {
 
-                Timber.e(e)
+                Timber.e(tag, e)
             }
+
+        } else {
+
+            Timber.v("$tag Phone calls detection disabled")
         }
     }
 
