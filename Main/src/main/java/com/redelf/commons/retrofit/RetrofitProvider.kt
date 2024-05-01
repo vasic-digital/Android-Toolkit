@@ -6,7 +6,6 @@ import okhttp3.Call
 import okhttp3.CertificatePinner
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
 import retrofit2.Retrofit

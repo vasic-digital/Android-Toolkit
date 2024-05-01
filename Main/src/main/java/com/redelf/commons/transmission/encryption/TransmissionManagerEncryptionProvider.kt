@@ -4,7 +4,6 @@ import android.text.TextUtils
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.management.DataManagement
-import com.redelf.commons.persistance.Data
 import com.redelf.commons.recordException
 import com.redelf.commons.security.encryption.AES
 import com.redelf.commons.security.encryption.Encryption

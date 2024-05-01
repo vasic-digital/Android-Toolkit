@@ -34,7 +34,6 @@ import com.redelf.commons.dialog.AttachFileDialog
 import com.redelf.commons.dialog.OnPickFromCameraCallback
 import com.redelf.commons.exec
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.initRegistrationWithGoogle
 import com.redelf.commons.isServiceRunning
 import com.redelf.commons.lifecycle.LifecycleCallback
@@ -55,7 +54,6 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.time.TimedValue
 
 abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
@@ -391,7 +389,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         super.onDestroy()
     }
 
-    @Suppress("DEPRECATION")
     override fun finish() {
         super.finish()
 

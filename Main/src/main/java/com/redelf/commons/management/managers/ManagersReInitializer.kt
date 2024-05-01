@@ -1,15 +1,12 @@
 package com.redelf.commons.management.managers
 
-import android.content.Context
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.context.Contextual
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.exec
 import com.redelf.commons.instantiation.SingleInstance
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.persistance.EncryptedPersistence
 import timber.log.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException

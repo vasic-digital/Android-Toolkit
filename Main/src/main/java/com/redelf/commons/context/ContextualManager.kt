@@ -1,6 +1,5 @@
 package com.redelf.commons.context
 
-import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.management.DataManagement
 

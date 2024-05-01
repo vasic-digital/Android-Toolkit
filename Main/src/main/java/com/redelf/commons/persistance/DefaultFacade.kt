@@ -1,8 +1,6 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
-import com.redelf.commons.compress
-import com.redelf.commons.decompress
 import timber.log.Timber
 
 object DefaultFacade : Facade {

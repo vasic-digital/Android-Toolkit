@@ -5,14 +5,11 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
-import com.redelf.commons.activity.BaseActivity
 import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
-import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.recordException
 import timber.log.Timber
 import java.sql.SQLException
-import java.util.concurrent.atomic.AtomicBoolean
 
 internal object DBStorage : Storage<String> {
 
@@ -98,7 +95,7 @@ internal object DBStorage : Storage<String> {
                 put(COLUMN_VALUE, value)
             }
 
-            return (db?.insert(TABLE, null, values) ?: -1) > 0
+            return (db.insert(TABLE, null, values) ?: -1) > 0
 
         } catch (e: Exception) {
 

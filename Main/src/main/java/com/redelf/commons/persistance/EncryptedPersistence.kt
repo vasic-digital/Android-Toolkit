@@ -133,6 +133,11 @@ constructor(
         return data?.delete(what) ?: false
     }
 
+    override fun contains(key: String): Boolean {
+
+        return data?.contains(key) ?: false
+    }
+
     /*
          DANGER ZONE:
     */
