@@ -98,8 +98,9 @@ constructor(
             data = PersistenceBuilder.instantiate(it, salter = salter, storageTag = storageTag)
                 .setParser(getParser)
                 .setLogInterceptor(logger)
-//                .setDoLog(true)
-//                .setLogRawData(true)
+                .setDoLog(true)
+                .setLogRawData(true)
+                .addKeysFilter("yuno_settings")
                 .build()
         }
     }

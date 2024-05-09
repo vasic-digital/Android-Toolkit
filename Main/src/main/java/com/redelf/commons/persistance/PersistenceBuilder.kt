@@ -5,6 +5,7 @@ import android.text.TextUtils
 import com.google.gson.Gson
 import com.redelf.commons.obtain.Obtain
 import timber.log.Timber
+import java.util.concurrent.CopyOnWriteArrayList
 
 class PersistenceBuilder(
 
@@ -81,6 +82,7 @@ class PersistenceBuilder(
     var serializer: Serializer? = DataSerializer()
     var converter: Converter? = DataConverter(parser)
     var logInterceptor: LogInterceptor = PersistenceLogInterceptor
+    var keysFilter: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
     var encryption: Encryption? = instantiateDefaultEncryption(context, salter)
 
     init {
@@ -100,6 +102,18 @@ class PersistenceBuilder(
     fun setLogRawData(logRawData: Boolean): PersistenceBuilder {
 
         this.logRawData = logRawData
+        return this
+    }
+
+    fun addKeysFilter(filter: String): PersistenceBuilder {
+
+        this.keysFilter.add(filter)
+        return this
+    }
+
+    fun addKeysFilters(filters: CopyOnWriteArrayList<String>): PersistenceBuilder {
+
+        this.keysFilter.addAll(filters)
         return this
     }
 

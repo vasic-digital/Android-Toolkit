@@ -3,12 +3,15 @@ package com.redelf.commons.persistance
 import android.content.Context
 import com.redelf.commons.isEmpty
 import timber.log.Timber
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 object DefaultFacade : Facade {
 
     private val doLog = AtomicBoolean()
     private val logRawData = AtomicBoolean()
+    private val keysFilter = CopyOnWriteArrayList<String>()
+
     private var converter: Converter? = null
     private var encryption: Encryption? = null
     private var serializer: Serializer? = null
@@ -26,6 +29,7 @@ object DefaultFacade : Facade {
 
         doLog.set(builder.doLog)
         logRawData.set(builder.logRawData)
+        keysFilter.addAll(builder.keysFilter)
 
         log("init -> Encryption : " + encryption?.javaClass?.simpleName)
 
@@ -60,12 +64,12 @@ object DefaultFacade : Facade {
         val plainText = converter?.toString(value)
 
         var logValue = "${plainText != null}"
-        if (logRawData.get()) {
+        if (canLogKey(key)) {
 
             logValue = plainText.toString()
         }
 
-        if (logRawData.get()) {
+        if (canLogKey(key)) {
 
             dbg("put -> key: $key -> Raw: $logValue")
 
@@ -170,12 +174,12 @@ object DefaultFacade : Facade {
             plainText = encryption?.decrypt(key, dataInfo.cipherText)
 
             var logValue = "${plainText != null}"
-            if (logRawData.get()) {
+            if (canLogKey(key)) {
 
                 logValue = plainText.toString()
             }
 
-            if (logRawData.get()) {
+            if (canLogKey(key)) {
 
                 dbg("get -> key: $key -> Decrypted: $logValue")
 
@@ -202,12 +206,12 @@ object DefaultFacade : Facade {
             result = converter?.fromString(plainText, dataInfo)
 
             var logValue = "${result != null}"
-            if (logRawData.get()) {
+            if (canLogKey(key)) {
 
                 logValue = result.toString()
             }
 
-            if (logRawData.get()) {
+            if (canLogKey(key)) {
 
                 dbg("get -> key: $key -> Converted: $logValue")
 
@@ -275,5 +279,10 @@ object DefaultFacade : Facade {
     private fun err(message: String) {
 
         logInterceptor?.onError("$LOG_TAG $message")
+    }
+
+    private fun canLogKey(key: String): Boolean {
+
+        return logRawData.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
     }
 }
