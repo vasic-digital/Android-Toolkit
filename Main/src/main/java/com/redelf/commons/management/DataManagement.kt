@@ -88,17 +88,29 @@ abstract class DataManagement<T> :
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(): T? {
 
+        val tag = "${getLogTag()} Obtain ::"
+
+        Timber.v("$tag START")
+
         if (isLocked()) {
 
-            Timber.w("${getLogTag()} Obtain :: Locked")
+            Timber.w("$tag Locked")
 
             return null
         }
 
+        val dataObjTag = "$tag Data object ::"
+
+        Timber.v("$dataObjTag Initial: ${data != null}")
+
         if (data == null && persist) {
 
             data = STORAGE.pull(storageKey)
+
+            Timber.d("$dataObjTag Obtained from storage: $data")
         }
+
+        Timber.v("$dataObjTag Intermediate: ${data != null}")
 
         if (instantiateDataObject) {
 
@@ -118,7 +130,11 @@ abstract class DataManagement<T> :
                     throw IllegalStateException("Data object creation failed")
                 }
             }
+
+            Timber.v("$dataObjTag Instantiated: ${data != null}")
         }
+
+        Timber.v("$dataObjTag Final: $data")
 
         return data
     }

@@ -9,6 +9,11 @@ object PersistenceLogInterceptor : LogInterceptor {
         Timber.v("${Persistence.tag} $message")
     }
 
+    override fun onDebug(message: String?) {
+
+        Timber.d("${Persistence.tag} $message")
+    }
+
     override fun onError(message: String?) {
 
         Timber.e("${Persistence.tag} $message")

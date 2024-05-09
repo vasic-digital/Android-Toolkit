@@ -47,13 +47,7 @@ object DefaultFacade : Facade {
         // Validate
         PersistenceUtils.checkNull("Key", key)
 
-        var logValue = "${value != null}"
-        if (logRawData.get()) {
-
-            logValue = value.toString()
-        }
-
-        log("put -> key: $key -> has value: $logValue")
+        log("put -> key: $key -> has value: ${value != null}")
 
         // If the value is null, delete it
         if (value == null) {
@@ -64,7 +58,21 @@ object DefaultFacade : Facade {
 
         // 1. Convert to text
         val plainText = converter?.toString(value)
-        log("put -> key: $key -> Converted: " + (plainText != null))
+
+        var logValue = "${plainText != null}"
+        if (logRawData.get()) {
+
+            logValue = plainText.toString()
+        }
+
+        if (logRawData.get()) {
+
+            dbg("put -> key: $key -> Raw: $logValue")
+
+        } else {
+
+            log("put -> key: $key -> Converted: $logValue")
+        }
 
         if (plainText == null) {
 
@@ -160,7 +168,21 @@ object DefaultFacade : Facade {
         try {
 
             plainText = encryption?.decrypt(key, dataInfo.cipherText)
-            log("get -> key: $key -> Decrypted: " + (plainText != null))
+
+            var logValue = "${plainText != null}"
+            if (logRawData.get()) {
+
+                logValue = plainText.toString()
+            }
+
+            if (logRawData.get()) {
+
+                dbg("get -> key: $key -> Decrypted: $logValue")
+
+            } else {
+
+                log("get -> key: $key -> Decrypted: $logValue")
+            }
 
         } catch (e: Exception) {
 
@@ -185,7 +207,14 @@ object DefaultFacade : Facade {
                 logValue = result.toString()
             }
 
-            log("get -> key: $key -> Converted: $logValue")
+            if (logRawData.get()) {
+
+                dbg("get -> key: $key -> Converted: $logValue")
+
+            } else {
+
+                log("get -> key: $key -> Converted: $logValue")
+            }
 
         } catch (e: Exception) {
 
@@ -222,6 +251,7 @@ object DefaultFacade : Facade {
     }
 
     override fun isBuilt(): Boolean {
+
         return true
     }
 
@@ -231,6 +261,14 @@ object DefaultFacade : Facade {
         if (doLog.get()) {
 
             logInterceptor?.onLog("$LOG_TAG $message")
+        }
+    }
+
+    private fun dbg(message: String) {
+
+        if (doLog.get()) {
+
+            logInterceptor?.onDebug("$LOG_TAG $message")
         }
     }
 
