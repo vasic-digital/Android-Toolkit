@@ -67,7 +67,7 @@ abstract class DataManagement<T> :
 
     protected open fun createDataObject(): T? = null
 
-    protected open fun canLog() = LOGGABLE_MANAGERS.isEmpty() ||
+    open fun canLog() = LOGGABLE_MANAGERS.isEmpty() ||
             LOGGABLE_MANAGERS.contains(javaClass)
 
     override fun abort() = Unit

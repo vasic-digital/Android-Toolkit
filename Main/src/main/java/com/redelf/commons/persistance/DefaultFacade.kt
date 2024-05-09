@@ -34,7 +34,8 @@ object DefaultFacade : Facade {
         val message =
 
             "init -> encryption='${encryption?.javaClass?.simpleName}', " +
-                "doLog=${doLog.get()}, logRawData=${logRawData.get()}, keysFilter=${keysFilter.size}"
+                "doLog=${doLog.get()}, logRawData=${logRawData.get()}, " +
+                    "keysFilter=${keysFilter.toMutableList()}"
 
         logInterceptor?.onLog("$LOG_TAG $message")
 
