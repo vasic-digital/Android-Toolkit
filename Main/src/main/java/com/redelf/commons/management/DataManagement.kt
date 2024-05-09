@@ -162,10 +162,6 @@ abstract class DataManagement<T> :
 
                         Timber.e(e)
                     }
-
-                } else {
-
-                    Timber.v("${getLogTag()} Push data :: Not persisting")
                 }
             }
 
