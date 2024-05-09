@@ -28,13 +28,14 @@ constructor(
     companion object {
 
         var DEBUG = true
+        val logTag = "${Persistence.tag} Encrypted ::"
     }
 
     private var data: Data? = null
 
     init {
 
-        Timber.v("Encrypted persistence :: Initialization :: Storage tag: '$storageTag'")
+        Timber.v("$logTag :: Initialization :: Storage tag: '$storageTag'")
 
         val tag = "Exclusion strategies ::"
 
@@ -87,14 +88,7 @@ constructor(
                 }
             }
 
-            val logger =
-                LogInterceptor { message ->
-
-                    if (DEBUG) {
-
-                        Timber.v(message)
-                    }
-                }
+            val logger = PersistenceLogInterceptor
 
             val salter = object : Salter {
 
