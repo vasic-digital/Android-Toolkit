@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 object DefaultFacade : Facade {
 
     private val doLog = AtomicBoolean()
+    private val logRawData = AtomicBoolean()
     private var converter: Converter? = null
     private var encryption: Encryption? = null
     private var serializer: Serializer? = null
@@ -24,6 +25,7 @@ object DefaultFacade : Facade {
         logInterceptor = builder.logInterceptor
 
         doLog.set(builder.doLog)
+        logRawData.set(builder.logRawData)
 
         log("init -> Encryption : " + encryption?.javaClass?.simpleName)
 
@@ -44,22 +46,29 @@ object DefaultFacade : Facade {
 
         // Validate
         PersistenceUtils.checkNull("Key", key)
-        log("put -> key: " + key + ", value: " + (value != null))
+
+        var logValue = "${value != null}"
+        if (logRawData.get()) {
+
+            logValue = value.toString()
+        }
+
+        log("put -> key: $key -> has value: $logValue")
 
         // If the value is null, delete it
         if (value == null) {
 
-            log("put -> Value is null. Any existing value will be deleted with the given key")
+            log("put -> key: $key -> null value, any existing value will be deleted with the given key")
             return delete(key)
         }
 
         // 1. Convert to text
         val plainText = converter?.toString(value)
-        log("put -> Converted: " + (plainText != null))
+        log("put -> key: $key -> Converted: " + (plainText != null))
 
         if (plainText == null) {
 
-            err("put -> Converter failed")
+            err("put -> key: $key -> Converter failed")
             return false
         }
 
@@ -69,7 +78,7 @@ object DefaultFacade : Facade {
         try {
 
             cipherText = encryption?.encrypt(key, plainText)
-            log("put -> Encrypted: " + (cipherText != null))
+            log("put -> key: $key -> Encrypted: " + (cipherText != null))
 
         } catch (e: Exception) {
 
@@ -78,37 +87,37 @@ object DefaultFacade : Facade {
 
         if (cipherText == null) {
 
-            err("put -> Encryption failed")
+            err("put -> key: $key -> Encryption failed")
             return false
         }
 
         // 3. Serialize the given object along with the cipher text
         val serializedText = serializer?.serialize(cipherText, value)
 
-        log("put -> Serialized: " + (serializedText != null))
+        log("put -> key: $key -> Serialized: " + (serializedText != null))
 
         if (serializedText == null) {
 
-            err("put -> Serialization failed")
+            err("put -> key: $key -> Serialization failed")
             return false
         }
 
         // 4. Save to the storage
         return if (storage?.put(key, serializedText) == true) {
 
-            log("put -> Stored successfully")
+            log("put -> key: $key -> Stored successfully")
             true
 
         } else {
 
-            err("put -> Store operation failed")
+            err("put -> key: $key -> Store operation failed")
             false
         }
     }
 
     override fun <T> get(key: String): T? {
 
-        log("get -> key: $key")
+        log("get -> key: $key -> key: $key")
 
         // 1. Get serialized text from the storage
         val serializedText: String?
@@ -128,22 +137,22 @@ object DefaultFacade : Facade {
 
         if (empty) {
 
-            log("get -> Nothing fetched from the storage for key: $key")
+            log("get -> key: $key -> Nothing fetched from the storage for key: $key")
             return null
         }
 
-        log("get -> Fetched from storage for key: $key")
+        log("get -> key: $key -> Fetched from storage for key: $key")
 
         // 2. Deserialize
         val dataInfo = serializer?.deserialize(serializedText)
 
         if (dataInfo == null) {
 
-            err("get -> Deserialization failed for key: $key")
+            err("get -> key: $key -> Deserialization failed for key: $key")
             return null
         }
 
-        log("get -> Deserialized")
+        log("get -> key: $key -> Deserialized")
 
         // 3. Decrypt
         var plainText: String? = null
@@ -151,16 +160,16 @@ object DefaultFacade : Facade {
         try {
 
             plainText = encryption?.decrypt(key, dataInfo.cipherText)
-            log("get -> Decrypted: " + (plainText != null))
+            log("get -> key: $key -> Decrypted: " + (plainText != null))
 
         } catch (e: Exception) {
 
-            err("get -> Decrypt failed: " + e.message)
+            err("get -> key: $key -> Decrypt failed: " + e.message)
         }
 
         if (plainText == null) {
 
-            err("get -> Decrypt failed")
+            err("get -> key: $key -> Decrypt failed")
             return null
         }
 
@@ -169,12 +178,19 @@ object DefaultFacade : Facade {
         try {
 
             result = converter?.fromString(plainText, dataInfo)
-            log("get -> Converted: " + (result != null))
+
+            var logValue = "${result != null}"
+            if (logRawData.get()) {
+
+                logValue = result.toString()
+            }
+
+            log("get -> key: $key -> Converted: $logValue")
 
         } catch (e: Exception) {
 
             val message = e.message
-            err("get -> Converter failed, error='$message'")
+            err("get -> key: $key -> Converter failed, error='$message'")
         }
 
         return result

@@ -76,6 +76,7 @@ class PersistenceBuilder(
     }
 
     var doLog: Boolean = false
+    var logRawData: Boolean = false
     var storage: Storage<String> = DBStorage
     var serializer: Serializer? = DataSerializer()
     var converter: Converter? = DataConverter(parser)
@@ -93,6 +94,12 @@ class PersistenceBuilder(
     fun setDoLog(doLog: Boolean): PersistenceBuilder {
 
         this.doLog = doLog
+        return this
+    }
+
+    fun setLogRawData(logRawData: Boolean): PersistenceBuilder {
+
+        this.logRawData = logRawData
         return this
     }
 
