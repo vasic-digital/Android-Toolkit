@@ -35,6 +35,7 @@ abstract class DataManagement<T> :
 
         val DO_LOG = AtomicBoolean()
         val LOG_RAW_DATA = AtomicBoolean()
+        val LOGGABLE_MANAGERS: CopyOnWriteArrayList<Class<*>> = CopyOnWriteArrayList()
         val LOGGABLE_STORAGE_KEYS: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
 
         fun initialize(ctx: Context) {
@@ -66,6 +67,9 @@ abstract class DataManagement<T> :
 
     protected open fun createDataObject(): T? = null
 
+    protected open fun canLog() = LOGGABLE_MANAGERS.isEmpty() ||
+            LOGGABLE_MANAGERS.contains(javaClass)
+
     override fun abort() = Unit
 
     override fun lock() {
@@ -96,7 +100,7 @@ abstract class DataManagement<T> :
 
         val tag = "${getLogTag()} Obtain ::"
 
-        Timber.v("$tag START")
+        if (canLog()) Timber.v("$tag START")
 
         if (isLocked()) {
 
@@ -107,7 +111,7 @@ abstract class DataManagement<T> :
 
         val dataObjTag = "$tag Data object ::"
 
-        Timber.v("$dataObjTag Initial: ${data != null}")
+        if (canLog()) Timber.v("$dataObjTag Initial: ${data != null}")
 
         if (data == null && persist) {
 
@@ -115,15 +119,15 @@ abstract class DataManagement<T> :
 
             if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
-                Timber.d("$dataObjTag Obtained from storage: $data")
+                if (canLog()) Timber.d("$dataObjTag Obtained from storage: $data")
 
             } else {
 
-                Timber.v("$dataObjTag Obtained from storage: ${data != null}")
+                if (canLog()) Timber.v("$dataObjTag Obtained from storage: ${data != null}")
             }
         }
 
-        Timber.v("$dataObjTag Intermediate: ${data != null}")
+        if (canLog()) Timber.v("$dataObjTag Intermediate: ${data != null}")
 
         if (instantiateDataObject) {
 
@@ -144,16 +148,16 @@ abstract class DataManagement<T> :
                 }
             }
 
-            Timber.v("$dataObjTag Instantiated: ${data != null}")
+            if (canLog()) Timber.v("$dataObjTag Instantiated: ${data != null}")
         }
 
         if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
-            Timber.v("$dataObjTag Final: $data")
+            if (canLog()) Timber.v("$dataObjTag Final: $data")
 
         } else {
 
-            Timber.v("$dataObjTag Final: ${data != null}")
+            if (canLog()) Timber.v("$dataObjTag Final: ${data != null}")
         }
 
         return data

@@ -56,31 +56,30 @@ object DefaultFacade : Facade {
         // Validate
         PersistenceUtils.checkNull("Key", key)
 
-        log("put -> key: $key -> has value: ${value != null}")
+        if (canLogKey(key)) log("put -> key: $key -> has value: ${value != null}")
 
         // If the value is null, delete it
         if (value == null) {
 
-            log("put -> key: $key -> null value, any existing value will be deleted with the given key")
+            if (canLogKey(key)) log(
+
+                "put -> key: $key -> null value, any existing value will " +
+                        "be deleted with the given key"
+            )
+
             return delete(key)
         }
 
         // 1. Convert to text
         val plainText = converter?.toString(value)
 
-        var logValue = "${plainText != null}"
         if (canLogKey(key)) {
 
-            logValue = plainText.toString()
-        }
-
-        if (canLogKey(key)) {
-
-            dbg("put -> key: $key -> Raw: $logValue")
+            dbg("put -> key: $key -> Raw: $plainText")
 
         } else {
 
-            log("put -> key: $key -> Converted: $logValue")
+            if (canLogKey(key)) log("put -> key: $key -> Converted: ${plainText != null}")
         }
 
         if (plainText == null) {
@@ -95,7 +94,7 @@ object DefaultFacade : Facade {
         try {
 
             cipherText = encryption?.encrypt(key, plainText)
-            log("put -> key: $key -> Encrypted: " + (cipherText != null))
+            if (canLogKey(key)) log("put -> key: $key -> Encrypted: " + (cipherText != null))
 
         } catch (e: Exception) {
 
@@ -111,7 +110,7 @@ object DefaultFacade : Facade {
         // 3. Serialize the given object along with the cipher text
         val serializedText = serializer?.serialize(cipherText, value)
 
-        log("put -> key: $key -> Serialized: " + (serializedText != null))
+        if (canLogKey(key)) log("put -> key: $key -> Serialized: " + (serializedText != null))
 
         if (serializedText == null) {
 
@@ -122,7 +121,7 @@ object DefaultFacade : Facade {
         // 4. Save to the storage
         return if (storage?.put(key, serializedText) == true) {
 
-            log("put -> key: $key -> Stored successfully")
+            if (canLogKey(key)) log("put -> key: $key -> Stored successfully")
             true
 
         } else {
@@ -134,7 +133,7 @@ object DefaultFacade : Facade {
 
     override fun <T> get(key: String): T? {
 
-        log("get -> key: $key -> key: $key")
+        if (canLogKey(key)) log("get -> key: $key -> key: $key")
 
         // 1. Get serialized text from the storage
         val serializedText: String?
@@ -154,11 +153,11 @@ object DefaultFacade : Facade {
 
         if (empty) {
 
-            log("get -> key: $key -> Nothing fetched from the storage for key: $key")
+            if (canLogKey(key)) log("get -> key: $key -> Nothing fetched from the storage for key: $key")
             return null
         }
 
-        log("get -> key: $key -> Fetched from storage for key: $key")
+        if (canLogKey(key)) log("get -> key: $key -> Fetched from storage for key: $key")
 
         // 2. Deserialize
         val dataInfo = serializer?.deserialize(serializedText)
@@ -169,7 +168,7 @@ object DefaultFacade : Facade {
             return null
         }
 
-        log("get -> key: $key -> Deserialized")
+        if (canLogKey(key)) log("get -> key: $key -> Deserialized")
 
         // 3. Decrypt
         var plainText: String? = null
@@ -178,19 +177,13 @@ object DefaultFacade : Facade {
 
             plainText = encryption?.decrypt(key, dataInfo.cipherText)
 
-            var logValue = "${plainText != null}"
-            if (canLogKey(key)) {
+            if (canLogKeyRaw(key)) {
 
-                logValue = plainText.toString()
-            }
-
-            if (canLogKey(key)) {
-
-                dbg("get -> key: $key -> Decrypted: $logValue")
+                dbg("get -> key: $key -> Decrypted: $plainText")
 
             } else {
 
-                log("get -> key: $key -> Decrypted: $logValue")
+                if (canLogKey(key)) log("get -> key: $key -> Decrypted: ${plainText != null}")
             }
 
         } catch (e: Exception) {
@@ -210,19 +203,13 @@ object DefaultFacade : Facade {
 
             result = converter?.fromString(plainText, dataInfo)
 
-            var logValue = "${result != null}"
-            if (canLogKey(key)) {
+            if (canLogKeyRaw(key)) {
 
-                logValue = result.toString()
-            }
-
-            if (canLogKey(key)) {
-
-                dbg("get -> key: $key -> Converted: $logValue")
+                dbg("get -> key: $key -> Converted: $result")
 
             } else {
 
-                log("get -> key: $key -> Converted: $logValue")
+                if (canLogKey(key)) log("get -> key: $key -> Converted: ${result != null}")
             }
 
         } catch (e: Exception) {
@@ -286,8 +273,14 @@ object DefaultFacade : Facade {
         logInterceptor?.onError("$LOG_TAG $message")
     }
 
+    private fun canLogKeyRaw(key: String): Boolean {
+
+        return doLog.get() && logRawData.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
+    }
+
+
     private fun canLogKey(key: String): Boolean {
 
-        return logRawData.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
+        return doLog.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
     }
 }
