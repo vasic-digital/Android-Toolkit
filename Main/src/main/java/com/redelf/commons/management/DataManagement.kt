@@ -16,6 +16,7 @@ import com.redelf.commons.persistance.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.reset.Resettable
 import timber.log.Timber
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -34,6 +35,10 @@ abstract class DataManagement<T> :
 
         lateinit var STORAGE: EncryptedPersistence
 
+        val DO_LOG = AtomicBoolean()
+        val LOG_RAW_DATA = AtomicBoolean()
+        val LOGGABLE_STORAGE_KEYS: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
+
         fun initialize(ctx: Context) {
 
             DBStorage.initialize(ctx = ctx)
@@ -41,7 +46,10 @@ abstract class DataManagement<T> :
             STORAGE = EncryptedPersistence(
 
                 ctx = ctx,
-                storageTag = "dt_mgmt"
+                storageTag = "dt_mgmt",
+                doLog = DO_LOG.get(),
+                logRawData = LOG_RAW_DATA.get(),
+                logStorageKeys = LOGGABLE_STORAGE_KEYS
             )
         }
     }

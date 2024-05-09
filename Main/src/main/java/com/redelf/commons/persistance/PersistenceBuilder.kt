@@ -111,7 +111,7 @@ class PersistenceBuilder(
         return this
     }
 
-    fun addKeysFilters(filters: CopyOnWriteArrayList<String>): PersistenceBuilder {
+    fun addKeysFilters(filters: List<String>): PersistenceBuilder {
 
         this.keysFilter.addAll(filters)
         return this

@@ -21,7 +21,11 @@ constructor(
     deserializationExclusionStrategy: ExclusionStrategy? = null,
 
     private val keySalt: String = "st",
-    private val storageTag: String = ctx.getString(R.string.app_name)
+    private val storageTag: String = ctx.getString(R.string.app_name),
+
+    private val doLog: Boolean = false,
+    private val logRawData: Boolean = false,
+    private val logStorageKeys: List<String> = emptyList()
 
 ) : Persistence<String>, Erasing, TerminationSynchronized, InitializationWithContext {
 
@@ -98,9 +102,9 @@ constructor(
             data = PersistenceBuilder.instantiate(it, salter = salter, storageTag = storageTag)
                 .setParser(getParser)
                 .setLogInterceptor(logger)
-                .setDoLog(true)
-                .setLogRawData(true)
-                .addKeysFilter("yuno_settings")
+                .setDoLog(doLog)
+                .setLogRawData(logRawData)
+                .addKeysFilters(logStorageKeys)
                 .build()
         }
     }
