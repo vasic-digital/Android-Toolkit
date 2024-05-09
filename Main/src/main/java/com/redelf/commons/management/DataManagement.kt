@@ -27,9 +27,7 @@ abstract class DataManagement<T> :
     Resettable,
     Lockable,
     Abort,
-    Contextual<BaseApplication>
-
-{
+    Contextual<BaseApplication> {
 
     companion object {
 
@@ -115,7 +113,14 @@ abstract class DataManagement<T> :
 
             data = STORAGE.pull(storageKey)
 
-            Timber.d("$dataObjTag Obtained from storage: $data")
+            if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
+
+                Timber.d("$dataObjTag Obtained from storage: $data")
+
+            } else {
+
+                Timber.v("$dataObjTag Obtained from storage: ${data != null}")
+            }
         }
 
         Timber.v("$dataObjTag Intermediate: ${data != null}")
@@ -142,7 +147,14 @@ abstract class DataManagement<T> :
             Timber.v("$dataObjTag Instantiated: ${data != null}")
         }
 
-        Timber.v("$dataObjTag Final: $data")
+        if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
+
+            Timber.v("$dataObjTag Final: $data")
+
+        } else {
+
+            Timber.v("$dataObjTag Final: ${data != null}")
+        }
 
         return data
     }

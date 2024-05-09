@@ -31,7 +31,12 @@ object DefaultFacade : Facade {
         logRawData.set(builder.logRawData)
         keysFilter.addAll(builder.keysFilter)
 
-        log("init -> Encryption : " + encryption?.javaClass?.simpleName)
+        val message =
+
+            "init -> encryption='${encryption?.javaClass?.simpleName}', " +
+                "doLog=${doLog.get()}, logRawData=${logRawData.get()}, keysFilter=${keysFilter.size}"
+
+        logInterceptor?.onLog("$LOG_TAG $message")
 
         return this
     }
