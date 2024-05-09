@@ -75,6 +75,7 @@ class PersistenceBuilder(
         return NoEncryption()
     }
 
+    var doLog: Boolean = false
     var storage: Storage<String> = DBStorage
     var serializer: Serializer? = DataSerializer()
     var converter: Converter? = DataConverter(parser)
@@ -87,6 +88,12 @@ class PersistenceBuilder(
 
             encryption = NoEncryption()
         }
+    }
+
+    fun setDoLog(doLog: Boolean): PersistenceBuilder {
+
+        this.doLog = doLog
+        return this
     }
 
     fun setEncrypt(enc: Boolean): PersistenceBuilder {

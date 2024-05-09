@@ -7,8 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 object DefaultFacade : Facade {
 
-    var DO_LOG = AtomicBoolean(true)
-
+    private val doLog = AtomicBoolean()
     private var converter: Converter? = null
     private var encryption: Encryption? = null
     private var serializer: Serializer? = null
@@ -23,6 +22,8 @@ object DefaultFacade : Facade {
         encryption = builder.encryption
         serializer = builder.serializer
         logInterceptor = builder.logInterceptor
+
+        doLog.set(builder.doLog)
 
         log("init -> Encryption : " + encryption?.javaClass?.simpleName)
 
@@ -211,7 +212,7 @@ object DefaultFacade : Facade {
     override fun destroy() {}
     private fun log(message: String) {
 
-        if (DO_LOG.get()) {
+        if (doLog.get()) {
 
             logInterceptor?.onLog("$LOG_TAG $message")
         }
