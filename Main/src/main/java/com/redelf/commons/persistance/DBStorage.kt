@@ -95,10 +95,23 @@ internal object DBStorage : Storage<String> {
                 put(COLUMN_VALUE, value)
             }
 
-            /*
-                FIXME: Do update
-            */
-            return (db.insert(TABLE, null, values)) > 0
+            val selection = "$COLUMN_KEY = ?"
+            val selectionArgs = arrayOf(key)
+
+            val rowsUpdated = db.update(
+
+                TABLE,
+                values,
+                selection,
+                selectionArgs
+            )
+
+            if (rowsUpdated > 0) {
+
+                return true
+            }
+
+            return db.insert(TABLE, null, values) > 0
 
         } catch (e: Exception) {
 
