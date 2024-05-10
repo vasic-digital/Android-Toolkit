@@ -95,7 +95,10 @@ internal object DBStorage : Storage<String> {
                 put(COLUMN_VALUE, value)
             }
 
-            return (db.insert(TABLE, null, values) ?: -1) > 0
+            /*
+                FIXME: Do update
+            */
+            return (db.insert(TABLE, null, values)) > 0
 
         } catch (e: Exception) {
 
