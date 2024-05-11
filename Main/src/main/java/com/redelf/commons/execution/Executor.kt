@@ -12,7 +12,7 @@ enum class Executor : Execution {
 
     MAIN {
 
-        var DEBUG = false
+        var debug = false
 
         private val cpus = CPUs()
         private val cores = cpus.numberOfCores
@@ -51,7 +51,7 @@ enum class Executor : Execution {
 
         private fun logCapacity() {
 
-            if (!DEBUG) {
+            if (!debug) {
 
                 return
             }
