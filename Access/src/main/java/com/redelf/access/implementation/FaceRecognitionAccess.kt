@@ -20,7 +20,7 @@ class FaceRecognitionAccess(priority: Int, ctx: AppCompatActivity) : BiometricAc
     override fun isAvailable(): Boolean {
 
         /*
-            FIXME:  PackageManager.FEATURE_FACE or IRIS is always false on devcies that actually
+            PackageManager.FEATURE_FACE or IRIS is always false on devcies that actually
                 support biometry! Let's wait for Google to fix the API.
         */
         return packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)
