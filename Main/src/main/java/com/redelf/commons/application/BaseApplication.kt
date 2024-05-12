@@ -20,6 +20,7 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
@@ -58,8 +59,13 @@ abstract class BaseApplication :
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
 
         const val ACTIVITY_LIFECYCLE_TAG = "Activity lifecycle ::"
+        const val BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND = "APPLICATION_STATE.BACKGROUND"
+        const val BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND = "APPLICATION_STATE.FOREGROUND"
 
         override fun takeContext() = CONTEXT
+
+        private var activityCount = 0
+        private var isAppInBackground = false
 
         fun restart(context: Context) {
 
@@ -470,9 +476,36 @@ abstract class BaseApplication :
         super.onActivityPreResumed(activity)
     }
 
+    override fun onActivityPaused(activity: Activity) {
+
+        Timber.v("$ACTIVITY_LIFECYCLE_TAG PAUSED :: ${activity.javaClass.simpleName}")
+
+        super.onActivityPrePaused(activity)
+
+        activityCount--
+        if (activityCount == 0) {
+
+            isAppInBackground = true
+
+            val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
+            sendBroadcast(intent)
+        }
+    }
+
     override fun onActivityResumed(activity: Activity) {
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
+
+        activityCount++
+        if (activityCount == 1) {
+
+            if (isAppInBackground) {
+
+                val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
+                sendBroadcast(intent)
+            }
+            isAppInBackground = false
+        }
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -485,13 +518,6 @@ abstract class BaseApplication :
     override fun onActivityPrePaused(activity: Activity) {
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
-
-        super.onActivityPrePaused(activity)
-    }
-
-    override fun onActivityPaused(activity: Activity) {
-
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG PAUSED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPrePaused(activity)
     }
@@ -643,6 +669,34 @@ abstract class BaseApplication :
         } catch (e: Throwable) {
 
             Timber.e(e)
+        }
+    }
+
+    override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
+
+        receiver?.let { r ->
+            filter?.let { f ->
+
+                LocalBroadcastManager.getInstance(applicationContext).registerReceiver(r, f)
+            }
+        }
+
+        return null
+    }
+
+    override fun unregisterReceiver(receiver: BroadcastReceiver?) {
+
+        receiver?.let {
+
+            LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(it)
+        }
+    }
+
+    override fun sendBroadcast(intent: Intent?) {
+
+        intent?.let {
+
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
         }
     }
 }
