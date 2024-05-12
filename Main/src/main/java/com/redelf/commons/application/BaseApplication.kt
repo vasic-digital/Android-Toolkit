@@ -54,7 +54,7 @@ abstract class BaseApplication :
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
 
-        var STRICT_MODE_DISABLED = false
+        var STRICT_MODE_DISABLED = BuildConfig.DEBUG
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
 
         const val ACTIVITY_LIFECYCLE_TAG = "Activity lifecycle ::"
