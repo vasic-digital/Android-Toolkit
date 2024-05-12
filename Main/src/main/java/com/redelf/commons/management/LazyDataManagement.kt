@@ -31,6 +31,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
                         onForeground()
                     }
 
+                    BaseApplication.BROADCAST_ACTION_APPLICATION_SCREEN_OFF,
                     BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND -> {
 
                         onBackground()
@@ -50,6 +51,8 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
         try {
 
             val filter = IntentFilter()
+
+            filter.addAction(BaseApplication.BROADCAST_ACTION_APPLICATION_SCREEN_OFF)
             filter.addAction(BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
             filter.addAction(BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
 

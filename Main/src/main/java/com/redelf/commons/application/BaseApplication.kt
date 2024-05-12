@@ -59,6 +59,7 @@ abstract class BaseApplication :
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
 
         const val ACTIVITY_LIFECYCLE_TAG = "Activity lifecycle ::"
+        const val BROADCAST_ACTION_APPLICATION_SCREEN_OFF = "APPLICATION_STATE.SCREEN_OFF"
         const val BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND = "APPLICATION_STATE.BACKGROUND"
         const val BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND = "APPLICATION_STATE.FOREGROUND"
 
@@ -349,6 +350,9 @@ abstract class BaseApplication :
     protected open fun onScreenOff() {
 
         Timber.v("Screen is OFF")
+
+        val intent = Intent(BROADCAST_ACTION_APPLICATION_SCREEN_OFF)
+        sendBroadcast(intent)
     }
 
     protected open fun onFcmToken(token: String) {
@@ -478,8 +482,6 @@ abstract class BaseApplication :
     override fun onActivityPaused(activity: Activity) {
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PAUSED :: ${activity.javaClass.simpleName}")
-
-        super.onActivityPrePaused(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {
@@ -506,14 +508,29 @@ abstract class BaseApplication :
 
     override fun onActivityPrePaused(activity: Activity) {
 
+        val clazz = activity::class.java
+
+        TOP_ACTIVITY.remove(clazz)
+
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
+
+        Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
 
         super.onActivityPrePaused(activity)
     }
 
     override fun onActivityPostPaused(activity: Activity) {
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG POST-PAUSED :: ${activity.javaClass.simpleName}")
+        Timber.v(
+
+            "$ACTIVITY_LIFECYCLE_TAG POST-PAUSED :: ${activity.javaClass.simpleName}, " +
+                    "Active: ${TOP_ACTIVITY.size}"
+        )
+
+        if (TOP_ACTIVITY.size <= 1) {
+
+            onAppBackgroundState()
+        }
 
         super.onActivityPostPaused(activity)
     }
@@ -576,12 +593,7 @@ abstract class BaseApplication :
 
             Timber.d("$ACTIVITY_LIFECYCLE_TAG No top activity")
 
-            isAppInBackground.set(true)
-
-            val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
-            sendBroadcast(intent)
-
-            Timber.d("$ACTIVITY_LIFECYCLE_TAG Background")
+            onAppBackgroundState()
 
         } else {
 
@@ -694,5 +706,15 @@ abstract class BaseApplication :
 
             LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
         }
+    }
+
+    private fun onAppBackgroundState() {
+
+        isAppInBackground.set(true)
+
+        val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
+        sendBroadcast(intent)
+
+        Timber.d("$ACTIVITY_LIFECYCLE_TAG Background")
     }
 }
