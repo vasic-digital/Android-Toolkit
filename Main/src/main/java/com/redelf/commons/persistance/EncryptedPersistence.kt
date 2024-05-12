@@ -21,6 +21,7 @@ constructor(
     deserializationExclusionStrategy: ExclusionStrategy? = null,
 
     private val keySalt: String = "st",
+    private val doEncrypt: Boolean = true,
     private val storageTag: String = ctx.getString(R.string.app_name),
 
     private val doLog: Boolean = false,
@@ -103,6 +104,7 @@ constructor(
                 .setParser(getParser)
                 .setLogInterceptor(logger)
                 .setDoLog(doLog)
+                .setEncrypt(doEncrypt)
                 .setLogRawData(logRawData)
                 .addKeysFilters(logStorageKeys)
                 .build()

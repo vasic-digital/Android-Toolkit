@@ -34,6 +34,7 @@ abstract class DataManagement<T> :
         lateinit var STORAGE: EncryptedPersistence
 
         val DO_LOG = AtomicBoolean()
+        val DO_ENCRYPT = AtomicBoolean()
         val LOG_RAW_DATA = AtomicBoolean()
         val LOGGABLE_MANAGERS: CopyOnWriteArrayList<Class<*>> = CopyOnWriteArrayList()
         val LOGGABLE_STORAGE_KEYS: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
@@ -45,6 +46,7 @@ abstract class DataManagement<T> :
             STORAGE = EncryptedPersistence(
 
                 ctx = ctx,
+                doEncrypt = DO_ENCRYPT.get(),
                 storageTag = "dt_mgmt",
                 doLog = DO_LOG.get(),
                 logRawData = LOG_RAW_DATA.get(),
