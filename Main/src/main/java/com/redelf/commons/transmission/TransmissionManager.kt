@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.text.TextUtils
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -129,9 +130,8 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         check.setInitializing(true)
 
-        val ctx = getContext()
         val intentFilter = IntentFilter(BROADCAST_ACTION_SEND)
-        LocalBroadcastManager.getInstance(ctx).registerReceiver(sendRequestReceiver, intentFilter)
+        registerReceiver(sendRequestReceiver, intentFilter)
 
         Timber.v("BROADCAST_ACTION_SEND receiver registered")
 
@@ -685,11 +685,9 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     private fun terminate(): Boolean {
 
-        val ctx = getContext()
-
         try {
 
-            LocalBroadcastManager.getInstance(ctx).unregisterReceiver(sendRequestReceiver)
+            unregisterReceiver(sendRequestReceiver)
 
             Timber.v("BROADCAST_ACTION_SEND receiver unregistered")
 
@@ -751,4 +749,34 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         Timber.v("Setting: Sending data to %b", sending)
         this.sending.set(sending)
     }
+
+    protected fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
+
+        receiver?.let { r ->
+            filter?.let { f ->
+
+                LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(r, f)
+            }
+        }
+
+        return null
+    }
+
+    protected fun unregisterReceiver(receiver: BroadcastReceiver?) {
+
+        receiver?.let {
+
+            LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(it)
+        }
+    }
+
+    protected fun sendBroadcast(intent: Intent?) {
+
+        intent?.let {
+
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(it)
+        }
+    }
+
+    protected fun getApplicationContext(): Context = getContext().applicationContext
 }

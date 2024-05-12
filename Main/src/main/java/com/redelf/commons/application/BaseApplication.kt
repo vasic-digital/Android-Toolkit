@@ -20,7 +20,7 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
 import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
@@ -391,8 +391,8 @@ abstract class BaseApplication :
         val tokenFilter = IntentFilter(FcmService.BROADCAST_ACTION_TOKEN)
         val eventFilter = IntentFilter(FcmService.BROADCAST_ACTION_EVENT)
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(fcmTokenReceiver, tokenFilter)
-        LocalBroadcastManager.getInstance(this).registerReceiver(fcmEventReceiver, eventFilter)
+        registerReceiver(fcmTokenReceiver, tokenFilter)
+        registerReceiver(fcmEventReceiver, eventFilter)
 
         FirebaseMessaging.getInstance()
             .token

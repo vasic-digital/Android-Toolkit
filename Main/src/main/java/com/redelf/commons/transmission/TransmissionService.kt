@@ -1,22 +1,22 @@
 package com.redelf.commons.transmission
 
-import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.scheduling.alarm.AlarmReceiver
 import com.redelf.commons.scheduling.alarm.AlarmScheduler
+import com.redelf.commons.service.BaseService
 import com.redelf.commons.transmission.alarm.TransmissionAlarmCallback
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
-class TransmissionService : Service() {
+class TransmissionService : BaseService() {
 
     companion object {
 
@@ -88,7 +88,7 @@ class TransmissionService : Service() {
         registerReceiver(connectivityListener, connectivityIntentFilter)
 
         val resultsIntentFilter = IntentFilter(TransmissionManager.BROADCAST_ACTION_RESULT)
-        LocalBroadcastManager.getInstance(this).registerReceiver(resultsReceiver, resultsIntentFilter)
+        registerReceiver(resultsReceiver, resultsIntentFilter)
 
         send(this, "onStartCommand")
 
@@ -119,7 +119,7 @@ class TransmissionService : Service() {
 
         try {
 
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(resultsReceiver)
+            unregisterReceiver(resultsReceiver)
 
         } catch (e: IllegalArgumentException) {
 

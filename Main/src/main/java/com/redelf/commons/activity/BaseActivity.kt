@@ -13,6 +13,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
 import android.text.TextUtils
 import androidx.activity.OnBackPressedCallback
@@ -23,6 +24,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
@@ -1093,4 +1095,34 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
             finish()
         }
     }
+
+    override fun sendBroadcast(intent: Intent?) {
+
+        intent?.let {
+
+            LocalBroadcastManager.getInstance(getActivityContext()).sendBroadcast(intent);
+        }
+    }
+
+    override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
+
+        receiver?.let { r ->
+            filter?.let { f ->
+
+                LocalBroadcastManager.getInstance(getActivityContext()).registerReceiver(r, f)
+            }
+        }
+
+        return null
+    }
+
+    override fun unregisterReceiver(receiver: BroadcastReceiver?) {
+
+        receiver?.let { r ->
+
+            LocalBroadcastManager.getInstance(getActivityContext()).unregisterReceiver(r)
+        }
+    }
+
+    protected fun getActivityContext(): Context = this
 }

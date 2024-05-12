@@ -1,13 +1,16 @@
 package com.redelf.commons.fcm
 
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.PowerManager
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import timber.log.Timber
 
-class FcmService : FirebaseMessagingService() {
+open class FcmService : FirebaseMessagingService() {
 
     companion object {
 
@@ -42,7 +45,7 @@ class FcmService : FirebaseMessagingService() {
 
         val intent = Intent(BROADCAST_ACTION_TOKEN)
         intent.putExtra(BROADCAST_KEY_TOKEN, token)
-        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+        sendBroadcast(intent)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
@@ -62,7 +65,7 @@ class FcmService : FirebaseMessagingService() {
             intent.putExtra(key, value)
         }
 
-        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+        sendBroadcast(intent)
     }
 
     @Suppress("DEPRECATION")
@@ -87,6 +90,34 @@ class FcmService : FirebaseMessagingService() {
 
             val wlCpu = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)
             wlCpu.acquire(2000)
+        }
+    }
+
+    override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
+
+        receiver?.let { r ->
+            filter?.let { f ->
+
+                LocalBroadcastManager.getInstance(applicationContext).registerReceiver(r, f)
+            }
+        }
+
+        return null
+    }
+
+    override fun unregisterReceiver(receiver: BroadcastReceiver?) {
+
+        receiver?.let {
+
+            LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(it)
+        }
+    }
+
+    override fun sendBroadcast(intent: Intent?) {
+
+        intent?.let {
+
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
         }
     }
 }
