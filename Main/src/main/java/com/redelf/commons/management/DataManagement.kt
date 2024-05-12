@@ -102,13 +102,26 @@ abstract class DataManagement<T> :
 
         val tag = "${getLogTag()} Obtain ::"
 
-        if (canLog()) Timber.v("$tag START")
+        if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
+
+            if (canLog()) Timber.v("$tag START")
+        }
 
         if (isLocked()) {
 
             Timber.w("$tag Locked")
 
             return null
+        }
+
+        if (data != null) {
+
+            if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
+
+                if (canLog()) Timber.v("$tag END: OK")
+            }
+
+            return data
         }
 
         val dataObjTag = "$tag Data object ::"
