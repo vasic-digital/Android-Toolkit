@@ -64,8 +64,7 @@ abstract class BaseApplication :
 
         override fun takeContext() = CONTEXT
 
-        private var activityCount = 0
-        private var isAppInBackground = false
+        private var isAppInBackground = AtomicBoolean()
 
         fun restart(context: Context) {
 
@@ -481,30 +480,20 @@ abstract class BaseApplication :
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PAUSED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPrePaused(activity)
-
-        activityCount--
-        if (activityCount == 0) {
-
-            isAppInBackground = true
-
-            val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
-            sendBroadcast(intent)
-        }
     }
 
     override fun onActivityResumed(activity: Activity) {
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
 
-        activityCount++
-        if (activityCount == 1) {
+        if (isAppInBackground.get()) {
 
-            if (isAppInBackground) {
+            val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
+            sendBroadcast(intent)
 
-                val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
-                sendBroadcast(intent)
-            }
-            isAppInBackground = false
+            Timber.d("$ACTIVITY_LIFECYCLE_TAG Foreground")
+
+            isAppInBackground.set(false)
         }
     }
 
@@ -586,6 +575,16 @@ abstract class BaseApplication :
         if (TOP_ACTIVITY.isEmpty()) {
 
             Timber.d("$ACTIVITY_LIFECYCLE_TAG No top activity")
+
+            if (!isAppInBackground.get()) {
+
+                isAppInBackground.set(true)
+
+                val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
+                sendBroadcast(intent)
+
+                Timber.d("$ACTIVITY_LIFECYCLE_TAG Background")
+            }
 
         } else {
 
