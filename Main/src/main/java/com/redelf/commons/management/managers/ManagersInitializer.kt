@@ -125,9 +125,20 @@ class ManagersInitializer {
 
                                 if (manager is LazyDataManagement<*>) {
 
+                                    val mlTag = "$mTag Registering to app lifecycle events ::"
+
+                                    Timber.v("$mlTag START")
+
                                     context?.let { ctx ->
 
+                                        Timber.v("$mlTag REGISTERING")
+
                                         manager.register(ctx)
+
+                                        Timber.v(
+
+                                            "$mlTag REGISTERED: ${manager.isRegistered(ctx)}"
+                                        )
                                     }
                                 }
 
