@@ -135,7 +135,8 @@ abstract class DataManagement<T> :
 
         if (data == null && persist) {
 
-            data = STORAGE.pull(storageKey)
+            val pulled = STORAGE.pull<T?>(storageKey)
+            overwriteData(pulled)
 
             if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
@@ -197,6 +198,12 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     open fun pushData(data: T) {
 
+        doPushData(data)
+    }
+
+    @Throws(IllegalStateException::class)
+    protected fun doPushData(data: T) {
+
         if (isLocked()) {
 
             Timber.w("${getLogTag()} Push data :: Locked: SKIPPING")
@@ -210,7 +217,7 @@ abstract class DataManagement<T> :
 
             exec {
 
-                this.data = data
+                overwriteData(data)
 
                 if (persist) {
 
@@ -266,7 +273,7 @@ abstract class DataManagement<T> :
 
                 if (instantiateDataObject) {
 
-                    data = createDataObject()
+                    overwriteData(createDataObject())
 
                     data?.let {
 
@@ -283,7 +290,7 @@ abstract class DataManagement<T> :
                 Timber.w("$tag Empty storage key")
             }
 
-            this.data = null
+            eraseData()
 
             Timber.v("$tag END")
 
@@ -328,6 +335,16 @@ abstract class DataManagement<T> :
         }
 
         throw IllegalStateException(msg)
+    }
+
+    protected fun eraseData() {
+
+        overwriteData()
+    }
+
+    protected fun overwriteData(data: T? = null) {
+
+        this.data = data
     }
 
     private fun initCallbacksTag() = "${getLogTag()} Data management initialization"

@@ -88,6 +88,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
     override fun isRegistered(subscriber: Context) = registered.get()
 
+    @Throws(IllegalStateException::class)
     override fun pushData(data: T) {
 
         if (lazySaving) {
@@ -114,11 +115,29 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
     private fun onForeground() {
 
-        Timber.v("Application on foreground")
+        Timber.v("Application is in foreground")
     }
 
     private fun onBackground() {
 
-        Timber.v("Application on background")
+        val tag = "Application went to background ::"
+
+        Timber.v("$tag START")
+
+        try {
+
+            Timber.v("$tag SAVING")
+
+            val data = obtain()
+            overwriteData(data)
+
+            Timber.v("$tag SAVED")
+
+        } catch (e: IllegalStateException) {
+
+            Timber.e(tag, e)
+        }
+
+        Timber.v("$tag END")
     }
 }
