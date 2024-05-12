@@ -27,7 +27,9 @@ abstract class DataManagement<T> :
     Resettable,
     Lockable,
     Abort,
-    Contextual<BaseApplication> {
+    Contextual<BaseApplication>
+
+{
 
     companion object {
 
@@ -160,7 +162,7 @@ abstract class DataManagement<T> :
 
                 current?.let {
 
-                    pushData(current)
+                    doPushData(current)
                 }
 
                 if (current == null) {
@@ -183,6 +185,8 @@ abstract class DataManagement<T> :
 
         return data
     }
+
+    fun takeStorageKey() = storageKey
 
     @Throws(IllegalStateException::class)
     fun takeStorage(): EncryptedPersistence? {
