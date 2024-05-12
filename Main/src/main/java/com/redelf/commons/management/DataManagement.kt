@@ -196,6 +196,8 @@ abstract class DataManagement<T> :
 
             Timber.w("${getLogTag()} Push data :: Locked: SKIPPING")
 
+            onDataPushed(success = false)
+
             return
         }
 
@@ -210,19 +212,36 @@ abstract class DataManagement<T> :
                     try {
 
                         val store = takeStorage()
+                        val pushed = store?.push(storageKey, data)
 
-                        store?.push(storageKey, data)
+                        onDataPushed(success = pushed)
 
                     } catch (e: RejectedExecutionException) {
 
-                        Timber.e(e)
+                        onDataPushed(err = e)
                     }
+
+                } else {
+
+                    onDataPushed(success = true)
                 }
             }
 
         } catch (e: RejectedExecutionException) {
 
-            Timber.e(e)
+            onDataPushed(err = e)
+        }
+    }
+
+    protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
+
+        if (success == true) {
+
+            Timber.v("${getLogTag()} :: Data pushed")
+
+        } else {
+
+            Timber.e("${getLogTag()} :: Data push failed", err)
         }
     }
 
