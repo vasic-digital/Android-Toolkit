@@ -69,6 +69,11 @@ abstract class DataManagement<T> :
 
     protected open fun createDataObject(): T? = null
 
+    protected open fun postInitialize(ctx: Context) {
+
+        // Do nothing
+    }
+
     open fun canLog() = LOGGABLE_MANAGERS.isEmpty() ||
             LOGGABLE_MANAGERS.contains(javaClass)
 

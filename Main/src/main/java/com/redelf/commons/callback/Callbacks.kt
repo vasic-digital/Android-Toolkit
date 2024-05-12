@@ -1,6 +1,6 @@
 package com.redelf.commons.callback
 
-import com.redelf.commons.Registration
+import com.redelf.commons.registration.Registration
 import timber.log.Timber
 import java.util.concurrent.ConcurrentLinkedQueue
 

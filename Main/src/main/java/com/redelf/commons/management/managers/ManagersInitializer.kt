@@ -4,6 +4,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.exec
 import com.redelf.commons.management.DataManagement
+import com.redelf.commons.management.LazyDataManagement
 import com.redelf.commons.management.Management
 import timber.log.Timber
 import java.util.concurrent.CountDownLatch
@@ -119,6 +120,14 @@ class ManagersInitializer {
                                         )
 
                                         manager.setDefaults(it)
+                                    }
+                                }
+
+                                if (manager is LazyDataManagement<*>) {
+
+                                    context?.let { ctx ->
+
+                                        manager.register(ctx)
                                     }
                                 }
 

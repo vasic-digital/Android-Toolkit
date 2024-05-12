@@ -2,7 +2,7 @@ package com.redelf.access.implementation.pin
 
 import android.content.Intent
 import com.redelf.access.implementation.AccessActivity
-import com.redelf.commons.Registration
+import com.redelf.commons.registration.Registration
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.CommonExecutionCallback

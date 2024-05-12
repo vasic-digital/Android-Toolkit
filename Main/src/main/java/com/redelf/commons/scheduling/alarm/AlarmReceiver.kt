@@ -3,7 +3,7 @@ package com.redelf.commons.scheduling.alarm
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.redelf.commons.Registration
+import com.redelf.commons.registration.Registration
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import timber.log.Timber

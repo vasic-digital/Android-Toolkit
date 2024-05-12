@@ -1,12 +1,92 @@
 package com.redelf.commons.management
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.recordException
+import com.redelf.commons.registration.Registration
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class LazyDataManagement<T> : DataManagement<T>() {
+abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context> {
 
     protected open val lazySaving = false
 
     private val saved = AtomicBoolean()
+    private val registered = AtomicBoolean()
+
+    private val receiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            intent?.let {
+
+                when (it.action) {
+
+                    BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND -> {
+
+                        onForeground()
+                    }
+
+                    BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND -> {
+
+                        onBackground()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun register(subscriber: Context) {
+
+        if (registered.get()) {
+
+            return
+        }
+
+        try {
+
+            val filter = IntentFilter()
+            filter.addAction(BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
+            filter.addAction(BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
+
+            LocalBroadcastManager
+                .getInstance(subscriber.applicationContext)
+                .registerReceiver(receiver, filter)
+
+            registered.set(true)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+    }
+
+    override fun unregister(subscriber: Context) {
+
+        if (!registered.get()) {
+
+            return
+        }
+
+        try {
+
+            LocalBroadcastManager
+                .getInstance(subscriber.applicationContext)
+                .unregisterReceiver(receiver)
+
+            registered.set(false)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+    }
+
+    override fun isRegistered(subscriber: Context) = registered.get()
 
     override fun pushData(data: T) {
 
@@ -30,5 +110,15 @@ abstract class LazyDataManagement<T> : DataManagement<T>() {
                 saved.set(true)
             }
         }
+    }
+
+    private fun onForeground() {
+
+        Timber.v("Application on foreground")
+    }
+
+    private fun onBackground() {
+
+        Timber.v("Application on background")
     }
 }
