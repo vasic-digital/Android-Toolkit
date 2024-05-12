@@ -492,9 +492,9 @@ abstract class BaseApplication :
             sendBroadcast(intent)
 
             Timber.d("$ACTIVITY_LIFECYCLE_TAG Foreground")
-
-            isAppInBackground.set(false)
         }
+
+        isAppInBackground.set(false)
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -576,15 +576,12 @@ abstract class BaseApplication :
 
             Timber.d("$ACTIVITY_LIFECYCLE_TAG No top activity")
 
-            if (!isAppInBackground.get()) {
+            isAppInBackground.set(true)
 
-                isAppInBackground.set(true)
+            val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
+            sendBroadcast(intent)
 
-                val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
-                sendBroadcast(intent)
-
-                Timber.d("$ACTIVITY_LIFECYCLE_TAG Background")
-            }
+            Timber.d("$ACTIVITY_LIFECYCLE_TAG Background")
 
         } else {
 
