@@ -14,6 +14,7 @@ import com.redelf.commons.randomString
 import timber.log.Timber
 import java.lang.StringBuilder
 import java.sql.SQLException
+import kotlin.math.min
 
 /*
     TODO: Make sure that this is not static object
@@ -149,12 +150,14 @@ internal object DBStorage : Storage<String> {
 
                 override fun encrypt(key: String?, value: String?): ByteArray {
 
-                    fun getRandom() = randomInteger(max = 3, min = 1)
+                    fun getRandom(max: Int = 3) = randomInteger(max = max, min = 1)
 
                     fun getRandomString() = randomString(getRandom())
 
-                    val separator = "_"
+                    fun getSeparator() = randomString(getRandom(max = 2))
+
                     val builder = StringBuilder()
+                    val separator = getSeparator()
 
                     value?.forEach { letter ->
 
