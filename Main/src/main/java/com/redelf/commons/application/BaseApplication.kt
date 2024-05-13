@@ -57,6 +57,7 @@ abstract class BaseApplication :
 
         var STRICT_MODE_DISABLED = BuildConfig.DEBUG
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
+        var TOP_ACTIVITIES = mutableListOf<Class<out Activity>>()
 
         const val ACTIVITY_LIFECYCLE_TAG = "Activity lifecycle ::"
         const val BROADCAST_ACTION_APPLICATION_SCREEN_OFF = "APPLICATION_STATE.SCREEN_OFF"
@@ -471,6 +472,7 @@ abstract class BaseApplication :
         val clazz = activity::class.java
 
         TOP_ACTIVITY.add(clazz)
+        TOP_ACTIVITIES.add(clazz)
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${clazz.simpleName}")
 
@@ -510,7 +512,7 @@ abstract class BaseApplication :
 
         val clazz = activity::class.java
 
-        TOP_ACTIVITY.remove(clazz)
+        TOP_ACTIVITIES.remove(clazz)
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
 
@@ -527,7 +529,7 @@ abstract class BaseApplication :
                     "Active: ${TOP_ACTIVITY.size}"
         )
 
-        if (TOP_ACTIVITY.size <= 1) {
+        if (TOP_ACTIVITIES.size <= 1) {
 
             onAppBackgroundState()
         }
@@ -589,7 +591,7 @@ abstract class BaseApplication :
 
         Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
 
-        if (TOP_ACTIVITY.isEmpty()) {
+        if (TOP_ACTIVITIES.isEmpty()) {
 
             Timber.d("$ACTIVITY_LIFECYCLE_TAG No top activity")
 
