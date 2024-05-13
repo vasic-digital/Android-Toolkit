@@ -481,7 +481,19 @@ internal object DBStorage : Storage<String> {
         return result
     }
 
-    private fun take() = dbHelper?.writableDatabase
+    private fun take(): SQLiteDatabase? {
+
+        try {
+
+            return dbHelper?.writableDatabase
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+        }
+
+        return null
+    }
 
     private abstract class LocalDBStorageOperation<T> : DBStorageOperation<T>(db = take())
 
