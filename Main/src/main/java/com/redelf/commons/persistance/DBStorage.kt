@@ -17,6 +17,10 @@ import java.sql.SQLException
 */
 internal object DBStorage : Storage<String> {
 
+    /*
+        TODO: Implement the mechanism to split data into chunks
+    */
+
     private const val DATABASE_VERSION = 1
 
     private const val TABLE = "entries"
@@ -31,7 +35,7 @@ internal object DBStorage : Storage<String> {
     private const val SQL_CREATE_ENTRIES = "CREATE TABLE $TABLE (" +
             "${BaseColumns._ID} INTEGER PRIMARY KEY," +
             "$COLUMN_KEY TEXT," +
-            "$COLUMN_VALUE TEXT)"
+            "$COLUMN_VALUE TEXT(1000))"
 
     private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE"
 
@@ -196,7 +200,7 @@ internal object DBStorage : Storage<String> {
 
             if (rowsUpdated > 0) {
 
-                Timber.v("$tag END: rowsUpdated = $rowsUpdated")
+                Timber.v("$tag END: rowsUpdated = $rowsUpdated, length = ${value.length}")
 
                 return true
             }
@@ -205,7 +209,7 @@ internal object DBStorage : Storage<String> {
 
             if (rowsInserted > 0) {
 
-                Timber.v("$tag END: rowsInserted = $rowsInserted")
+                Timber.v("$tag END: rowsInserted = $rowsInserted, length = ${value.length}")
 
                 return true
             }
@@ -215,7 +219,11 @@ internal object DBStorage : Storage<String> {
             Timber.e(tag, e)
         }
 
-        Timber.e("$tag END :: Nothing was inserted or updated, value: '$value'")
+        Timber.e(
+
+            "$tag END :: Nothing was inserted or updated, length =" +
+                    " ${value.length}, value = '$value'"
+        )
 
         return false
     }
