@@ -9,7 +9,6 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
-import com.redelf.commons.recordException
 import timber.log.Timber
 import java.sql.SQLException
 
@@ -155,6 +154,12 @@ internal object DBStorage : Storage<String> {
 
         PersistenceUtils.checkNull("key", key)
 
+        if (db?.isOpen == false) {
+
+            Timber.w("DB is not open")
+            return false
+        }
+
         try {
 
             val values = ContentValues().apply {
@@ -196,6 +201,12 @@ internal object DBStorage : Storage<String> {
         val selectionArgs = arrayOf(key)
         val selection = "$COLUMN_KEY = ?"
         val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
+
+        if (db?.isOpen == false) {
+
+            Timber.w("DB is not open")
+            return result
+        }
 
         try {
 
@@ -244,6 +255,12 @@ internal object DBStorage : Storage<String> {
 
         Timber.v("$tag START")
 
+        if (db?.isOpen == false) {
+
+            Timber.w("DB is not open")
+            return false
+        }
+
         val selection = "$COLUMN_KEY = ?"
         val selectionArgs = arrayOf(key)
 
@@ -281,6 +298,12 @@ internal object DBStorage : Storage<String> {
         val tag = "Delete :: All ::"
 
         Timber.v("$tag START")
+
+        if (db?.isOpen == false) {
+
+            Timber.w("DB is not open")
+            return false
+        }
 
         try {
 
@@ -352,6 +375,12 @@ internal object DBStorage : Storage<String> {
     override fun count(): Long {
 
         var result = 0L
+
+        if (db?.isOpen == false) {
+
+            Timber.w("DB is not open")
+            return 0
+        }
 
         try {
 
