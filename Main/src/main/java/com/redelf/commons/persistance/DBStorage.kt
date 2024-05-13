@@ -12,6 +12,7 @@ import com.redelf.commons.isNotEmpty
 import timber.log.Timber
 import java.sql.SQLException
 
+
 /*
     TODO: Make sure that this is not static object
 */
@@ -50,9 +51,7 @@ internal object DBStorage : Storage<String> {
 
         ),
 
-        ContextAvailability<BaseApplication>
-
-    {
+        ContextAvailability<BaseApplication> {
 
         override fun onCreate(db: SQLiteDatabase) {
 
@@ -75,28 +74,25 @@ internal object DBStorage : Storage<String> {
 
             return BaseApplication.takeContext()
         }
+
+        fun closeDatabase() {
+
+            val db = readableDatabase
+
+            if (db.isOpen) {
+
+                db.close()
+            }
+        }
     }
 
     private var dbHelper: DbHelper? = null
-    private var db: SQLiteDatabase? = null
 
     override fun initialize(ctx: Context) {
 
         val tag = "Initialize ::"
 
         Timber.v("$tag START")
-
-        db?.let {
-
-            if (db?.isOpen == true) {
-
-                Timber.v("$tag ALREADY INITIALIZED")
-
-                return
-            }
-
-            Timber.v("$tag AVAILABLE, BUT NOT OPEN")
-        }
 
         try {
 
@@ -123,7 +119,6 @@ internal object DBStorage : Storage<String> {
             Timber.v("$tag dbName = $dbName")
 
             dbHelper = DbHelper(ctx, dbName)
-            db = dbHelper?.writableDatabase
 
             Timber.v("$tag END")
 
@@ -135,23 +130,9 @@ internal object DBStorage : Storage<String> {
 
     override fun shutdown(): Boolean {
 
-        db.let {
+        dbHelper?.closeDatabase()
 
-            try {
-
-                it?.close()
-
-                db = null
-
-                return true
-
-            } catch (e: Exception) {
-
-                Timber.e(e)
-            }
-        }
-
-        return false
+        return true
     }
 
     override fun terminate(): Boolean {
@@ -172,60 +153,80 @@ internal object DBStorage : Storage<String> {
 
         Timber.v("$tag START")
 
+        val db = take()
+
         if (db?.isOpen == false) {
 
-            Timber.e("$tag DB is not open")
+            Timber.w("DB is not open")
             return false
         }
 
-        try {
+        return transact(
 
-            val values = ContentValues().apply {
+            object : LocalDBStorageOperation<Boolean>() {
 
-                put(COLUMN_KEY, key)
-                put(COLUMN_VALUE, value)
+                override fun perform(): Boolean {
+
+                    try {
+
+                        val values = ContentValues().apply {
+
+                            put(COLUMN_KEY, key)
+                            put(COLUMN_VALUE, value)
+                        }
+
+                        val selection = "$COLUMN_KEY = ?"
+                        val selectionArgs = arrayOf(key)
+
+                        val rowsUpdated = db?.update(
+
+                            TABLE,
+                            values,
+                            selection,
+                            selectionArgs
+
+                        ) ?: 0
+
+                        if (rowsUpdated > 0) {
+
+                            Timber.v(
+
+                                "$tag END: rowsUpdated = $rowsUpdated, " +
+                                        "length = ${value.length}"
+                            )
+
+                            return true
+                        }
+
+                        val rowsInserted = (db?.insert(TABLE, null, values) ?: 0)
+
+                        if (rowsInserted > 0) {
+
+                            Timber.v(
+
+                                "$tag END: rowsInserted = $rowsInserted, " +
+                                        "length = ${value.length}"
+                            )
+
+                            return true
+                        }
+
+                    } catch (e: Exception) {
+
+                        Timber.e(tag, e)
+                    }
+
+                    Timber.e(
+
+                        "$tag END :: Nothing was inserted or updated, length =" +
+                                " ${value.length}, value = '$value'"
+                    )
+
+                    return false
+                }
             }
 
-            val selection = "$COLUMN_KEY = ?"
-            val selectionArgs = arrayOf(key)
-
-            val rowsUpdated = db?.update(
-
-                TABLE,
-                values,
-                selection,
-                selectionArgs
-
-            ) ?: 0
-
-            if (rowsUpdated > 0) {
-
-                Timber.v("$tag END: rowsUpdated = $rowsUpdated, length = ${value.length}")
-
-                return true
-            }
-
-            val rowsInserted = (db?.insert(TABLE, null, values) ?: 0)
-
-            if (rowsInserted > 0) {
-
-                Timber.v("$tag END: rowsInserted = $rowsInserted, length = ${value.length}")
-
-                return true
-            }
-
-        } catch (e: Exception) {
-
-            Timber.e(tag, e)
-        }
-
-        Timber.e(
-
-            "$tag END :: Nothing was inserted or updated, length =" +
-                    " ${value.length}, value = '$value'"
-        )
-
-        return false
+        ) ?: false
     }
 
     override fun get(key: String): String {
@@ -238,9 +239,11 @@ internal object DBStorage : Storage<String> {
 
         Timber.v("$tag START")
 
+        val db = take()
+
         if (db?.isOpen == false) {
 
-            Timber.w("$tag DB is not open")
+            Timber.w("DB is not open")
             return result
         }
 
@@ -298,42 +301,53 @@ internal object DBStorage : Storage<String> {
 
         Timber.v("$tag START")
 
+        val db = take()
+
         if (db?.isOpen == false) {
 
             Timber.w("DB is not open")
             return false
         }
 
-        val selection = "$COLUMN_KEY = ?"
-        val selectionArgs = arrayOf(key)
+        return transact(
 
-        try {
+            object : LocalDBStorageOperation<Boolean>() {
 
-            val result = (db?.delete(TABLE, selection, selectionArgs) ?: 0) > 0
+                override fun perform(): Boolean {
 
-            if (result) {
+                    val selection = "$COLUMN_KEY = ?"
+                    val selectionArgs = arrayOf(key)
 
-                Timber.v("$tag END")
+                    try {
 
-            } else {
+                        val result = (db?.delete(TABLE, selection, selectionArgs) ?: 0) > 0
 
-                Timber.e("$tag FAILED")
+                        if (result) {
+
+                            Timber.v("$tag END")
+
+                        } else {
+
+                            Timber.e("$tag FAILED")
+                        }
+
+                        return result
+
+                    } catch (e: Exception) {
+
+                        Timber.e(
+
+                            "$tag ERROR :: SQL args :: Selection: $selection, " +
+                                    "Selection args: " +
+                                    "${selectionArgs.toMutableList()}", e
+                        )
+                    }
+
+                    return false
+                }
             }
 
-            return result
-
-        } catch (e: Exception) {
-
-            Timber.e(e)
-
-            Timber.e(
-
-                "$tag ERROR :: SQL args :: Selection: $selection, Selection args: " +
-                    "${selectionArgs.toMutableList()}"
-            )
-        }
-
-        return false
+        ) ?: false
     }
 
     override fun deleteAll(): Boolean {
@@ -342,35 +356,47 @@ internal object DBStorage : Storage<String> {
 
         Timber.v("$tag START")
 
+        val db = take()
+
         if (db?.isOpen == false) {
 
             Timber.w("DB is not open")
             return false
         }
 
-        try {
+        return transact(
 
-            val result = (db?.delete(TABLE, null, null) ?: 0) > 0
+            object : LocalDBStorageOperation<Boolean>() {
 
-            if (result) {
+                override fun perform(): Boolean {
 
-                Timber.v("$tag END")
+                    try {
 
-            } else {
+                        val result = (db?.delete(TABLE, null, null) ?: 0) > 0
 
-                Timber.e("$tag FAILED")
+                        if (result) {
+
+                            Timber.v("$tag END")
+
+                        } else {
+
+                            Timber.e("$tag FAILED")
+                        }
+
+                        return result
+
+                    } catch (e: Exception) {
+
+                        Timber.e(e)
+
+                        Timber.e("$tag ERROR :: SQL args :: TO DELETE ALL")
+                    }
+
+                    return false
+                }
             }
 
-            return result
-
-        } catch (e: Exception) {
-
-            Timber.e(e)
-
-            Timber.e("$tag ERROR :: SQL args :: TO DELETE ALL")
-        }
-
-        return false
+        ) ?: false
     }
 
     private fun deleteDatabase(): Boolean {
@@ -381,12 +407,13 @@ internal object DBStorage : Storage<String> {
 
         try {
 
+            val dbName = dbHelper?.databaseName
             val context = dbHelper?.takeContext()
-            val result = context?.deleteDatabase(dbHelper?.databaseName) ?: false
+            val result = context?.deleteDatabase(dbName) ?: false
 
             if (result) {
 
-                Timber.v("$tag END")
+                Timber.v("$tag END: DB '$dbName' has been deleted")
 
                 if (prefs?.delete(DATABASE_NAME_SUFFIX_KEY) != true) {
 
@@ -417,13 +444,15 @@ internal object DBStorage : Storage<String> {
 
     override fun count(): Long {
 
-        var result = 0L
+        val db = take()
 
         if (db?.isOpen == false) {
 
             Timber.w("DB is not open")
             return 0
         }
+
+        var result = 0L
 
         try {
 
@@ -450,5 +479,40 @@ internal object DBStorage : Storage<String> {
         }
 
         return result
+    }
+
+    private fun take() = dbHelper?.writableDatabase
+
+    private abstract class LocalDBStorageOperation<T> : DBStorageOperation<T>(db = take())
+
+    private fun <T> transact(operation: DBStorageOperation<T>): T? {
+
+        val db = operation.db
+        var success: T? = null
+
+        db?.let {
+
+            it.beginTransaction()
+
+            try {
+
+                success = operation.perform()
+
+                success?.let {
+
+                    db.setTransactionSuccessful()
+                }
+
+            } catch (e: Exception) {
+
+                Timber.e(e)
+
+            } finally {
+
+                db.endTransaction()
+            }
+        }
+
+        return success
     }
 }
