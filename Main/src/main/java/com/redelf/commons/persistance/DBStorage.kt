@@ -79,12 +79,12 @@ internal object DBStorage : Storage<String> {
 
     private fun columnKey() = getString(COLUMN_KEY_)
 
-    private val SQL_CREATE_ENTRIES = "CREATE TABLE $table (" +
+    private fun sqlCreate() = "CREATE TABLE $table (" +
             "${BaseColumns._ID} INTEGER PRIMARY KEY," +
             "$columnKey TEXT," +
             "$columnValue TEXT)"
 
-    private val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $table"
+    private fun sqlDelete() = "DROP TABLE IF EXISTS $table"
 
     private class DbHelper(context: Context, dbName: String) :
 
@@ -100,12 +100,12 @@ internal object DBStorage : Storage<String> {
 
         override fun onCreate(db: SQLiteDatabase) {
 
-            db.execSQL(SQL_CREATE_ENTRIES)
+            db.execSQL(sqlCreate())
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-            db.execSQL(SQL_DELETE_ENTRIES)
+            db.execSQL(sqlDelete())
 
             onCreate(db)
         }
