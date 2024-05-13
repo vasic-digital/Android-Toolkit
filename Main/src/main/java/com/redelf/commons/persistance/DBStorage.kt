@@ -25,7 +25,7 @@ internal object DBStorage : Storage<String> {
 
     private const val DATABASE_VERSION = 1
 
-    private const val DATABASE_NAME = "Storage.DB"
+    private const val DATABASE_NAME = "sdb"
     private const val DATABASE_NAME_SUFFIX_KEY = "DATABASE.NAME.SUFFIX.KEY"
 
     private const val TABLE_ = "dt"
