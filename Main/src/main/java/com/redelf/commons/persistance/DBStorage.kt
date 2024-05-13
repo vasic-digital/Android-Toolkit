@@ -28,9 +28,9 @@ internal object DBStorage : Storage<String> {
     private const val DATABASE_NAME = "Storage.DB"
     private const val DATABASE_NAME_SUFFIX_KEY = "DATABASE.NAME.SUFFIX.KEY"
 
-    private const val TABLE_ = "entries"
-    private const val COLUMN_VALUE_ = "content"
-    private const val COLUMN_KEY_ = "identifier"
+    private const val TABLE_ = "dt"
+    private const val COLUMN_KEY_ = "ky"
+    private const val COLUMN_VALUE_ = "ct"
 
     private var enc: Encryption = NoEncryption()
     private var prefs: SharedPreferencesStorage? = null
