@@ -10,6 +10,7 @@ import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.randomInteger
+import com.redelf.commons.randomString
 import timber.log.Timber
 import java.lang.StringBuilder
 import java.sql.SQLException
@@ -148,10 +149,9 @@ internal object DBStorage : Storage<String> {
 
                 override fun encrypt(key: String?, value: String?): ByteArray {
 
-                    fun getRandom() = randomInteger(max = 110, min = 11)
+                    fun getRandom() = randomInteger(max = 3, min = 1)
 
-                    fun getRandomString() = getRandom().toString()
-                        .map { it.code.toChar() }.joinToString("")
+                    fun getRandomString() = randomString(getRandom())
 
                     val separator = "_"
                     val builder = StringBuilder()

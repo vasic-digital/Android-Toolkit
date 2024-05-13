@@ -49,6 +49,23 @@ fun randomInteger(max: Int = 1000, min: Int = 300) =
 fun randomBigInteger(max: Int = 10000, min: Int = 300) =
     Random().nextInt((max - min) + 1) + min
 
+fun randomString(length: Int): String {
+
+    val random = Random()
+    val charset = Charsets.US_ASCII
+    val randomString = StringBuilder(length)
+
+    val charsetBytes = charset.newEncoder().maxBytesPerChar().toInt()
+
+    for (i in 0 until length) {
+
+        val randomChar = random.nextInt(charsetBytes).toChar()
+        randomString.append(randomChar)
+    }
+
+    return randomString.toString()
+}
+
 fun yieldWhile(condition: () -> Boolean) {
 
     while (condition() && !Thread.currentThread().isInterrupted) {
