@@ -81,8 +81,8 @@ internal object DBStorage : Storage<String> {
 
     private val SQL_CREATE_ENTRIES = "CREATE TABLE $table (" +
             "${BaseColumns._ID} INTEGER PRIMARY KEY," +
-            "${columnKey} TEXT," +
-            "${columnValue} TEXT)"
+            "$columnKey TEXT," +
+            "$columnValue TEXT)"
 
     private val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $table"
 
@@ -205,7 +205,9 @@ internal object DBStorage : Storage<String> {
 
         } catch (e: SQLException) {
 
-            Timber.e(tag, e)
+            Timber.e(tag, e.message ?: "Unknown error")
+
+            Timber.e(e)
         }
     }
 
@@ -230,7 +232,7 @@ internal object DBStorage : Storage<String> {
 
         PersistenceUtils.checkNull("key", key)
 
-        val tag = "Put :: $key ::"
+        val tag = "Put :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
         Timber.v("$tag START")
 
@@ -256,7 +258,7 @@ internal object DBStorage : Storage<String> {
                             put(columnValue, value)
                         }
 
-                        val selection = "${columnKey} = ?"
+                        val selection = "$columnKey = ?"
                         val selectionArgs = arrayOf(key)
 
                         val rowsUpdated = db?.update(
@@ -294,12 +296,15 @@ internal object DBStorage : Storage<String> {
 
                     } catch (e: Exception) {
 
-                        Timber.e(tag, e)
+                        Timber.e(tag, e.message ?: "Unknown error")
+
+                        Timber.e(e)
                     }
 
                     Timber.e(
 
-                        "$tag END :: Nothing was inserted or updated, length = ${value.length}"
+                        "$tag END :: Nothing was inserted or updated, " +
+                                "length = ${value.length}"
                     )
 
                     return false
@@ -312,10 +317,10 @@ internal object DBStorage : Storage<String> {
     override fun get(key: String): String {
 
         var result = ""
-        val tag = "Get :: $key ::"
         val selectionArgs = arrayOf(key)
-        val selection = "${columnKey} = ?"
+        val selection = "$columnKey = ?"
         val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
+        val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
         Timber.v("$tag START")
 
@@ -359,8 +364,10 @@ internal object DBStorage : Storage<String> {
 
                 "$tag SQL args :: Selection: $selection, Selection args:" +
                         " ${selectionArgs.toMutableList()}, projection: " +
-                        "${projection.toMutableList()}", e
+                        "${projection.toMutableList()}", e.message ?: "Unknown error"
             )
+
+            Timber.e(e)
         }
 
         if (isNotEmpty(result)) {
@@ -395,7 +402,7 @@ internal object DBStorage : Storage<String> {
 
                 override fun perform(): Boolean {
 
-                    val selection = "${columnKey} = ?"
+                    val selection = "$columnKey = ?"
                     val selectionArgs = arrayOf(key)
 
                     try {
@@ -419,8 +426,12 @@ internal object DBStorage : Storage<String> {
 
                             "$tag ERROR :: SQL args :: Selection: $selection, " +
                                     "Selection args: " +
-                                    "${selectionArgs.toMutableList()}", e
+                                    "${selectionArgs.toMutableList()}",
+
+                            e.message ?: "Unknown error"
                         )
+
+                        Timber.e(e)
                     }
 
                     return false
@@ -467,7 +478,13 @@ internal object DBStorage : Storage<String> {
 
                     } catch (e: Exception) {
 
-                        Timber.e("$tag ERROR :: SQL args :: TO DELETE ALL", e)
+                        Timber.e(
+
+                            "$tag ERROR :: SQL args :: " +
+                                    "TO DELETE ALL", e.message ?: "Unknown error"
+                        )
+
+                        Timber.e(e)
                     }
 
                     return false
@@ -529,7 +546,13 @@ internal object DBStorage : Storage<String> {
 
         } catch (e: Exception) {
 
-            Timber.e("$tag ERROR :: SQL args :: TO DELETE DB", e)
+            Timber.e(
+
+                "$tag ERROR :: SQL args :: " +
+                        "TO DELETE DB", e.message ?: "Unknown error"
+            )
+
+            Timber.e(e)
         }
 
         return false
