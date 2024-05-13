@@ -35,6 +35,9 @@ abstract class DataManagement<T> :
 
         lateinit var STORAGE: EncryptedPersistence
 
+        /*
+            TODO: Refactor - Move away from the static context access
+        */
         val DO_LOG = AtomicBoolean()
         val DO_ENCRYPT = AtomicBoolean()
         val LOG_RAW_DATA = AtomicBoolean()
@@ -69,6 +72,9 @@ abstract class DataManagement<T> :
 
     protected abstract fun getLogTag(): String
 
+    /*
+        TODO: Cluster data object into smaller chunks so serialization and deserialization is improved
+    */
     protected open fun createDataObject(): T? = null
 
     protected open fun postInitialize(ctx: Context) {

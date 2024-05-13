@@ -14,6 +14,9 @@ import timber.log.Timber;
 
 class DataSerializer implements Serializer {
 
+    /*
+        TODO: Create a flavor that uses Jackson lib for stream-like serialization / deserialization
+    */
     private final Gson gsn;
 
     {

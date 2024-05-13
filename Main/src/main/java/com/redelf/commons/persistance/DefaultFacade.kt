@@ -6,6 +6,9 @@ import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
+/*
+    TODO: Eliminate use of objects (statics) in persistence mechanism
+*/
 object DefaultFacade : Facade {
 
     private val doLog = AtomicBoolean()
