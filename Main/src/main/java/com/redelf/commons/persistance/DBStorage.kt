@@ -226,12 +226,27 @@ internal object DBStorage : Storage<String> {
 
     override fun delete(key: String): Boolean {
 
+        val tag = "Delete :: By key :: $key ::"
+
+        Timber.v("$tag START")
+
         val selection = "$COLUMN_KEY = ?"
         val selectionArgs = arrayOf(key)
 
         try {
 
-            return db.delete(TABLE, selection, selectionArgs) > 0
+            val result = db.delete(TABLE, selection, selectionArgs) > 0
+
+            if (result) {
+
+                Timber.v("$tag END")
+
+            } else {
+
+                Timber.e("$tag FAILED")
+            }
+
+            return result
 
         } catch (e: Exception) {
 
@@ -239,9 +254,72 @@ internal object DBStorage : Storage<String> {
 
             Timber.e(
 
-                "SQL args :: Selection: $selection, Selection args: " +
+                "$tag ERROR :: SQL args :: Selection: $selection, Selection args: " +
                     "${selectionArgs.toMutableList()}"
             )
+        }
+
+        return false
+    }
+
+    override fun deleteAll(): Boolean {
+
+        val tag = "Delete :: All ::"
+
+        Timber.v("$tag START")
+
+        try {
+
+            val result = db.delete(TABLE, null, null) > 0
+
+            if (result) {
+
+                Timber.v("$tag END")
+
+            } else {
+
+                Timber.e("$tag FAILED")
+            }
+
+            return result
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+
+            Timber.e("$tag ERROR :: SQL args :: TO DELETE ALL")
+        }
+
+        return false
+    }
+
+    private fun deleteDatabase(): Boolean {
+
+        val tag = "Delete :: Database ::"
+
+        Timber.v("$tag START")
+
+        try {
+
+            val context = dbHelper.takeContext()
+            val result = context.deleteDatabase(dbHelper.databaseName)
+
+            if (result) {
+
+                Timber.v("$tag END")
+
+            } else {
+
+                Timber.e("$tag FAILED")
+            }
+
+            return result
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+
+            Timber.e("$tag ERROR :: SQL args :: TO DELETE DB")
         }
 
         return false
@@ -250,22 +328,6 @@ internal object DBStorage : Storage<String> {
     override fun contains(key: String): Boolean {
 
         return isNotEmpty(get(key))
-    }
-
-    override fun deleteAll(): Boolean {
-
-        try {
-
-            return db.delete(TABLE, null, null) > 0
-
-        } catch (e: Exception) {
-
-            Timber.e(e)
-
-            Timber.e("SQL args :: TO DELETE ALL")
-        }
-
-        return false
     }
 
     override fun count(): Long {
@@ -297,21 +359,5 @@ internal object DBStorage : Storage<String> {
         }
 
         return result
-    }
-
-    private fun deleteDatabase(): Boolean {
-
-        try {
-
-            val context = dbHelper.takeContext()
-            return context.deleteDatabase(dbHelper.databaseName)
-
-
-        } catch (e: Exception) {
-
-            Timber.e(e)
-        }
-
-        return false
     }
 }
