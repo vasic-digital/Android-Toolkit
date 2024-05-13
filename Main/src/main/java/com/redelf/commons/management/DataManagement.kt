@@ -51,9 +51,9 @@ abstract class DataManagement<T> :
             STORAGE = EncryptedPersistence(
 
                 ctx = ctx,
-                doEncrypt = DO_ENCRYPT.get(),
-                storageTag = "dt_mgmt",
                 doLog = DO_LOG.get(),
+                storageTag = "dt_mgmt",
+                doEncrypt = DO_ENCRYPT.get(),
                 logRawData = LOG_RAW_DATA.get(),
                 logStorageKeys = LOGGABLE_STORAGE_KEYS
             )
@@ -82,6 +82,11 @@ abstract class DataManagement<T> :
         // Do nothing
     }
 
+    /*
+        TODO: Create another version of the method that will use into the account:
+            if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) { ...
+            Instead of having it repeatedly used all over the codebase.
+    */
     open fun canLog() = LOGGABLE_MANAGERS.isEmpty() ||
             LOGGABLE_MANAGERS.contains(javaClass)
 
@@ -257,7 +262,7 @@ abstract class DataManagement<T> :
 
     protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
 
-        if (canLog()) {
+        if (canLog() && LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
             if (success == true) {
 
