@@ -49,7 +49,26 @@ fun randomInteger(max: Int = 1000, min: Int = 300) =
 fun randomBigInteger(max: Int = 10000, min: Int = 300) =
     Random().nextInt((max - min) + 1) + min
 
-fun randomString(length: Int): String {
+fun generateValidColumnName(length: Int): String {
+
+    val random = Random()
+    val randomString = StringBuilder(length)
+
+    for (i in 0 until length) {
+
+        val randomChar = (random.nextInt(26) + 'a'.toInt()).toChar()
+        randomString.append(randomChar)
+    }
+
+    return randomString.toString()
+}
+
+fun randomString(length: Int, sqliteFriendly: Boolean = true): String {
+
+    if (sqliteFriendly) {
+
+        return generateValidColumnName(length)
+    }
 
     val random = Random()
     val randomString = StringBuilder(length)
