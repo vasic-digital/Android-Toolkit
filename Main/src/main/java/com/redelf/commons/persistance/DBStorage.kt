@@ -12,6 +12,9 @@ import com.redelf.commons.isNotEmpty
 import timber.log.Timber
 import java.sql.SQLException
 
+/*
+    TODO: Make sure that this is not static object
+*/
 internal object DBStorage : Storage<String> {
 
     private const val DATABASE_VERSION = 1
@@ -81,9 +84,14 @@ internal object DBStorage : Storage<String> {
 
         db?.let {
 
-            Timber.v("$tag ALREADY INITIALIZED")
+            if (db?.isOpen == true) {
 
-            return
+                Timber.v("$tag ALREADY INITIALIZED")
+
+                return
+            }
+
+            Timber.v("$tag AVAILABLE, BUT NOT OPEN")
         }
 
         try {
@@ -129,6 +137,8 @@ internal object DBStorage : Storage<String> {
 
                 it?.close()
 
+                db = null
+
                 return true
 
             } catch (e: Exception) {
@@ -154,9 +164,13 @@ internal object DBStorage : Storage<String> {
 
         PersistenceUtils.checkNull("key", key)
 
+        val tag = "Put :: $key ::"
+
+        Timber.v("$tag START")
+
         if (db?.isOpen == false) {
 
-            Timber.w("DB is not open")
+            Timber.e("$tag DB is not open")
             return false
         }
 
@@ -182,15 +196,26 @@ internal object DBStorage : Storage<String> {
 
             if (rowsUpdated > 0) {
 
+                Timber.v("$tag END: rowsUpdated = $rowsUpdated")
+
                 return true
             }
 
-            return (db?.insert(TABLE, null, values) ?: 0) > 0
+            val rowsInserted = (db?.insert(TABLE, null, values) ?: 0)
+
+            if (rowsInserted > 0) {
+
+                Timber.v("$tag END: rowsInserted = $rowsInserted")
+
+                return true
+            }
 
         } catch (e: Exception) {
 
-            Timber.e(e)
+            Timber.e(tag, e)
         }
+
+        Timber.e("$tag END: Nothing was inserted or updated")
 
         return false
     }
@@ -198,13 +223,16 @@ internal object DBStorage : Storage<String> {
     override fun get(key: String): String {
 
         var result = ""
+        val tag = "Get :: $key ::"
         val selectionArgs = arrayOf(key)
         val selection = "$COLUMN_KEY = ?"
         val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
 
+        Timber.v("$tag START")
+
         if (db?.isOpen == false) {
 
-            Timber.w("DB is not open")
+            Timber.w("$tag DB is not open")
             return result
         }
 
@@ -236,14 +264,21 @@ internal object DBStorage : Storage<String> {
 
         } catch (e: Exception) {
 
-            Timber.e(e)
-
             Timber.e(
 
-                "SQL args :: Selection: $selection, Selection args:" +
+                "$tag SQL args :: Selection: $selection, Selection args:" +
                         " ${selectionArgs.toMutableList()}, projection: " +
-                        "${projection.toMutableList()}"
+                        "${projection.toMutableList()}", e
             )
+        }
+
+        if (isNotEmpty(result)) {
+
+            Timber.v("$tag END")
+
+        } else {
+
+            Timber.w("$tag END: Nothing found")
         }
 
         return result
