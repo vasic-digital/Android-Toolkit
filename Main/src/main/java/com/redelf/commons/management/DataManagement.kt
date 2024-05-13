@@ -257,13 +257,16 @@ abstract class DataManagement<T> :
 
     protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
 
-        if (success == true) {
+        if (canLog()) {
 
-            Timber.v("${getLogTag()} :: Data pushed")
+            if (success == true) {
 
-        } else {
+                Timber.v("${getLogTag()} Data pushed")
 
-            Timber.e("${getLogTag()} :: Data push failed", err)
+            } else {
+
+                Timber.e("${getLogTag()} Data push failed", err)
+            }
         }
     }
 
