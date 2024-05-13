@@ -43,9 +43,11 @@ import java.util.zip.GZIPOutputStream
 var GLOBAL_RECORD_EXCEPTIONS = true
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
 
-fun randomInteger() = Random().nextInt((1000 - 300) + 1) + 300
+fun randomInteger(max: Int = 1000, min: Int = 300) =
+    Random().nextInt((max - min) + 1) + min
 
-fun randomBigInteger() = Random().nextInt((10000 - 300) + 1) + 300
+fun randomBigInteger(max: Int = 10000, min: Int = 300) =
+    Random().nextInt((max - min) + 1) + min
 
 fun yieldWhile(condition: () -> Boolean) {
 

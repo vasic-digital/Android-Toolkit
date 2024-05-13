@@ -9,9 +9,10 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
+import com.redelf.commons.randomInteger
 import timber.log.Timber
+import java.lang.StringBuilder
 import java.sql.SQLException
-
 
 /*
     TODO: Make sure that this is not static object
@@ -24,21 +25,49 @@ internal object DBStorage : Storage<String> {
 
     private const val DATABASE_VERSION = 1
 
-    private const val TABLE = "entries"
     private const val DATABASE_NAME = "Storage.DB"
     private const val DATABASE_NAME_SUFFIX_KEY = "DATABASE.NAME.SUFFIX.KEY"
 
-    private const val COLUMN_VALUE = "content"
-    private const val COLUMN_KEY = "identifier"
+    private const val TABLE_ = "entries"
+    private const val COLUMN_VALUE_ = "content"
+    private const val COLUMN_KEY_ = "identifier"
 
+    private var enc: Encryption = NoEncryption()
     private var prefs: SharedPreferencesStorage? = null
 
-    private const val SQL_CREATE_ENTRIES = "CREATE TABLE $TABLE (" +
-            "${BaseColumns._ID} INTEGER PRIMARY KEY," +
-            "$COLUMN_KEY TEXT," +
-            "$COLUMN_VALUE TEXT)"
+    fun getString(source: String, key: String = DATABASE_NAME): String {
 
-    private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE"
+        var result = source
+
+        try {
+
+            val bytes = enc.encrypt(key, source)
+
+            bytes?.let {
+
+                result = String(bytes)
+            }
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+        }
+
+        return result
+    }
+
+    private fun table() = getString(TABLE_)
+
+    private fun columnValue() = getString(COLUMN_VALUE_)
+
+    private fun columnKey() = getString(COLUMN_KEY_)
+
+    private val SQL_CREATE_ENTRIES = "CREATE TABLE ${table()} (" +
+            "${BaseColumns._ID} INTEGER PRIMARY KEY," +
+            "${columnKey()} TEXT," +
+            "${columnValue()} TEXT)"
+
+    private val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${table()}"
 
     private class DbHelper(context: Context, dbName: String) :
 
@@ -48,7 +77,6 @@ internal object DBStorage : Storage<String> {
             dbName,
             null,
             DATABASE_VERSION
-
         ),
 
         ContextAvailability<BaseApplication> {
@@ -100,8 +128,6 @@ internal object DBStorage : Storage<String> {
             val sPrefs = ctx.getSharedPreferences(mainKey, Context.MODE_PRIVATE)
             val nPrefs = SharedPreferencesStorage(sPrefs)
 
-            prefs = nPrefs
-
             var suffix = nPrefs.get(DATABASE_NAME_SUFFIX_KEY)
 
             if (isEmpty(suffix)) {
@@ -114,9 +140,39 @@ internal object DBStorage : Storage<String> {
                 }
             }
 
-            val dbName = "$mainKey.$suffix"
+            prefs = nPrefs
 
-            Timber.v("$tag dbName = $dbName")
+            enc = object : Encryption {
+
+                override fun init() = true
+
+                override fun encrypt(key: String?, value: String?): ByteArray {
+
+                    fun getRandom() = randomInteger(max = 110, min = 11)
+
+                    val separator = "_"
+                    val builder = StringBuilder()
+
+                    value?.forEach { letter ->
+
+                        builder.append(letter)
+                            .append(separator)
+                            .append(getRandom())
+                    }
+
+                    return builder.toString().toByteArray()
+                }
+
+                override fun decrypt(key: String?, value: ByteArray?) : String {
+
+                    return value?.let { String(it) } ?: ""
+                }
+            }
+
+            val rawName = "$mainKey.$suffix"
+            val dbName = getString(suffix, rawName)
+
+            Timber.v("$tag dbName = '$dbName', rawName = '$rawName'")
 
             dbHelper = DbHelper(ctx, dbName)
 
@@ -171,16 +227,16 @@ internal object DBStorage : Storage<String> {
 
                         val values = ContentValues().apply {
 
-                            put(COLUMN_KEY, key)
-                            put(COLUMN_VALUE, value)
+                            put(columnKey(), key)
+                            put(columnValue(), value)
                         }
 
-                        val selection = "$COLUMN_KEY = ?"
+                        val selection = "${columnKey()} = ?"
                         val selectionArgs = arrayOf(key)
 
                         val rowsUpdated = db?.update(
 
-                            TABLE,
+                            table(),
                             values,
                             selection,
                             selectionArgs
@@ -198,7 +254,7 @@ internal object DBStorage : Storage<String> {
                             return true
                         }
 
-                        val rowsInserted = (db?.insert(TABLE, null, values) ?: 0)
+                        val rowsInserted = (db?.insert(table(), null, values) ?: 0)
 
                         if (rowsInserted > 0) {
 
@@ -234,8 +290,8 @@ internal object DBStorage : Storage<String> {
         var result = ""
         val tag = "Get :: $key ::"
         val selectionArgs = arrayOf(key)
-        val selection = "$COLUMN_KEY = ?"
-        val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
+        val selection = "${columnKey()} = ?"
+        val projection = arrayOf(BaseColumns._ID, columnKey(), columnValue())
 
         Timber.v("$tag START")
 
@@ -251,7 +307,7 @@ internal object DBStorage : Storage<String> {
 
             val cursor = db?.query(
 
-                TABLE,
+                table(),
                 projection,
                 selection,
                 selectionArgs,
@@ -266,7 +322,7 @@ internal object DBStorage : Storage<String> {
 
                     while (moveToNext() && isEmpty(result)) {
 
-                        result = getString(getColumnIndexOrThrow(COLUMN_VALUE))
+                        result = getString(getColumnIndexOrThrow(columnValue()))
                     }
                 }
             }
@@ -315,12 +371,12 @@ internal object DBStorage : Storage<String> {
 
                 override fun perform(): Boolean {
 
-                    val selection = "$COLUMN_KEY = ?"
+                    val selection = "${columnKey()} = ?"
                     val selectionArgs = arrayOf(key)
 
                     try {
 
-                        val result = (db?.delete(TABLE, selection, selectionArgs) ?: 0) > 0
+                        val result = (db?.delete(table(), selection, selectionArgs) ?: 0) > 0
 
                         if (result) {
 
@@ -372,7 +428,7 @@ internal object DBStorage : Storage<String> {
 
                     try {
 
-                        val result = (db?.delete(TABLE, null, null) ?: 0) > 0
+                        val result = (db?.delete(table(), null, null) ?: 0) > 0
 
                         if (result) {
 
@@ -456,11 +512,11 @@ internal object DBStorage : Storage<String> {
 
         try {
 
-            val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
+            val projection = arrayOf(BaseColumns._ID, columnKey(), columnValue())
 
             val cursor = db?.query(
 
-                TABLE,
+                table(),
                 projection,
                 null,
                 null,
@@ -521,7 +577,14 @@ internal object DBStorage : Storage<String> {
 
             } finally {
 
-                db.endTransaction()
+                try {
+
+                    db.endTransaction()
+
+                } catch (e: Exception) {
+
+                    Timber.e(e)
+                }
             }
         }
 
