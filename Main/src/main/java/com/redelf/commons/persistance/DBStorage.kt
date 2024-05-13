@@ -215,7 +215,7 @@ internal object DBStorage : Storage<String> {
             Timber.e(tag, e)
         }
 
-        Timber.e("$tag END: Nothing was inserted or updated")
+        Timber.e("$tag END :: Nothing was inserted or updated, value: '$value'")
 
         return false
     }
