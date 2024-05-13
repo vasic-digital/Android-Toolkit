@@ -1,6 +1,6 @@
 package com.redelf.commons.lifecycle
 
-interface Termination<T> {
+interface Shutdown<T> {
 
     fun shutdown(callback: LifecycleCallback<T>)
 }

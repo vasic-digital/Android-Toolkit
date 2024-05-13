@@ -5,9 +5,16 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.redelf.commons.lifecycle.InitializationWithContext;
+import com.redelf.commons.lifecycle.ShutdownSynchronized;
 import com.redelf.commons.lifecycle.TerminationSynchronized;
 
-public interface Facade extends TerminationSynchronized, InitializationWithContext {
+public interface Facade extends
+
+        ShutdownSynchronized,
+        TerminationSynchronized,
+        InitializationWithContext
+
+{
 
   <T> boolean put(String key, T value);
 
@@ -75,6 +82,11 @@ public interface Facade extends TerminationSynchronized, InitializationWithConte
 
     @Override
     public boolean shutdown() {
+      return true;
+    }
+
+    @Override
+    public boolean terminate() {
       return true;
     }
 

@@ -5,6 +5,8 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
+import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.isEmpty
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.recordException
@@ -14,11 +16,15 @@ import java.sql.SQLException
 internal object DBStorage : Storage<String> {
 
     private const val DATABASE_VERSION = 1
-    private const val DATABASE_NAME = "Storage.DB"
 
     private const val TABLE = "entries"
+    private const val DATABASE_NAME = "Storage.DB"
+    private const val DATABASE_NAME_SUFFIX_KEY = "DATABASE.NAME.SUFFIX.KEY"
+
     private const val COLUMN_VALUE = "content"
     private const val COLUMN_KEY = "identifier"
+
+    private var prefs: SharedPreferencesStorage? = null
 
     private const val SQL_CREATE_ENTRIES = "CREATE TABLE $TABLE (" +
             "${BaseColumns._ID} INTEGER PRIMARY KEY," +
@@ -27,8 +33,20 @@ internal object DBStorage : Storage<String> {
 
     private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE"
 
-    private class DbHelper(context: Context) :
-        SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+    private class DbHelper(context: Context, dbName: String) :
+
+        SQLiteOpenHelper(
+
+            context,
+            dbName,
+            null,
+            DATABASE_VERSION
+
+        ),
+
+        ContextAvailability<BaseApplication>
+
+    {
 
         override fun onCreate(db: SQLiteDatabase) {
 
@@ -46,6 +64,11 @@ internal object DBStorage : Storage<String> {
 
             onUpgrade(db, oldVersion, newVersion)
         }
+
+        override fun takeContext(): BaseApplication {
+
+            return BaseApplication.takeContext()
+        }
     }
 
     private lateinit var dbHelper: DbHelper
@@ -55,7 +78,27 @@ internal object DBStorage : Storage<String> {
 
         try {
 
-            dbHelper = DbHelper(ctx)
+            val mainKey = "$DATABASE_NAME.$DATABASE_VERSION"
+            val sPrefs = ctx.getSharedPreferences(mainKey, Context.MODE_PRIVATE)
+            val nPrefs = SharedPreferencesStorage(sPrefs)
+
+            prefs = nPrefs
+
+            var suffix = nPrefs.get(DATABASE_NAME_SUFFIX_KEY)
+
+            if (isEmpty(suffix)) {
+
+                suffix = "_" + System.currentTimeMillis()
+
+                if (!nPrefs.put(DATABASE_NAME_SUFFIX_KEY, suffix)) {
+
+                    Timber.e("Error saving key preferences: $DATABASE_NAME_SUFFIX_KEY")
+                }
+            }
+
+            val dbName = "$mainKey.$suffix"
+
+            dbHelper = DbHelper(ctx, dbName)
             db = dbHelper.writableDatabase
 
         } catch (e: SQLException) {
@@ -65,6 +108,11 @@ internal object DBStorage : Storage<String> {
     }
 
     override fun shutdown(): Boolean {
+
+        if (prefs?.delete(DATABASE_NAME_SUFFIX_KEY) != true) {
+
+            Timber.e("Error deleting key preferences: $DATABASE_NAME_SUFFIX_KEY")
+        }
 
         db.let {
 
@@ -78,6 +126,16 @@ internal object DBStorage : Storage<String> {
 
                 Timber.e(e)
             }
+        }
+
+        return false
+    }
+
+    override fun terminate(): Boolean {
+
+        if (shutdown()) {
+
+            return deleteDatabase()
         }
 
         return false
@@ -239,5 +297,21 @@ internal object DBStorage : Storage<String> {
         }
 
         return result
+    }
+
+    private fun deleteDatabase(): Boolean {
+
+        try {
+
+            val context = dbHelper.takeContext()
+            return context.deleteDatabase(dbHelper.databaseName)
+
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+        }
+
+        return false
     }
 }

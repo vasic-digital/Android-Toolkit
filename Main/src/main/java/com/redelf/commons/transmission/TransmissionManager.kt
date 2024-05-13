@@ -17,7 +17,7 @@ import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.LifecycleCheck
-import com.redelf.commons.lifecycle.Termination
+import com.redelf.commons.lifecycle.Shutdown
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: String) :
 
     Management,
-    Initialization<Unit>, Termination<Unit>
+    Initialization<Unit>, Shutdown<Unit>
 
 {
 

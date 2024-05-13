@@ -2,10 +2,12 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import com.redelf.commons.lifecycle.InitializationWithContext
+import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 
 class Data private constructor(private val facade: Facade):
 
+    ShutdownSynchronized,
     TerminationSynchronized,
     InitializationWithContext
 
@@ -24,6 +26,11 @@ class Data private constructor(private val facade: Facade):
     override fun shutdown(): Boolean {
 
         return facade.shutdown()
+    }
+
+    override fun terminate(): Boolean {
+
+        return facade.terminate()
     }
 
     override fun initialize(ctx: Context) {

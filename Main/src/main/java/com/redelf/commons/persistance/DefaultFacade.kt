@@ -50,6 +50,11 @@ object DefaultFacade : Facade {
         return storage?.shutdown() ?: false
     }
 
+    override fun terminate(): Boolean {
+
+        return storage?.terminate() ?: false
+    }
+
     override fun initialize(ctx: Context) {
 
         storage?.initialize(ctx)

@@ -20,6 +20,12 @@ final class SharedPreferencesStorage implements Storage<String> {
     }
 
     @Override
+    public boolean terminate() {
+
+        return true;
+    }
+
+    @Override
     public void initialize(@NonNull Context ctx) {
 
         // Ignore

@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder
 import com.redelf.commons.Erasing
 import com.redelf.commons.R
 import com.redelf.commons.lifecycle.InitializationWithContext
+import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.obtain.Obtain
 import timber.log.Timber
@@ -28,7 +29,15 @@ constructor(
     private val logRawData: Boolean = false,
     private val logStorageKeys: List<String> = emptyList()
 
-) : Persistence<String>, Erasing, TerminationSynchronized, InitializationWithContext {
+) :
+
+    Persistence<String>,
+    Erasing,
+    ShutdownSynchronized,
+    TerminationSynchronized,
+    InitializationWithContext
+
+{
 
     companion object {
 
@@ -114,6 +123,11 @@ constructor(
     override fun shutdown(): Boolean {
 
         return data?.shutdown() ?: false
+    }
+
+    override fun terminate(): Boolean {
+
+        return data?.terminate() ?: false
     }
 
     override fun initialize(ctx: Context) {
