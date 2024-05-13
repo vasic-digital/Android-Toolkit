@@ -71,10 +71,21 @@ internal object DBStorage : Storage<String> {
         }
     }
 
-    private lateinit var dbHelper: DbHelper
-    private lateinit var db: SQLiteDatabase
+    private var dbHelper: DbHelper? = null
+    private var db: SQLiteDatabase? = null
 
     override fun initialize(ctx: Context) {
+
+        val tag = "Initialize ::"
+
+        Timber.v("$tag START")
+
+        db?.let {
+
+            Timber.v("$tag ALREADY INITIALIZED")
+
+            return
+        }
 
         try {
 
@@ -98,27 +109,26 @@ internal object DBStorage : Storage<String> {
 
             val dbName = "$mainKey.$suffix"
 
+            Timber.v("$tag dbName = $dbName")
+
             dbHelper = DbHelper(ctx, dbName)
-            db = dbHelper.writableDatabase
+            db = dbHelper?.writableDatabase
+
+            Timber.v("$tag END")
 
         } catch (e: SQLException) {
 
-            recordException(e)
+            Timber.e(tag, e)
         }
     }
 
     override fun shutdown(): Boolean {
 
-        if (prefs?.delete(DATABASE_NAME_SUFFIX_KEY) != true) {
-
-            Timber.e("Error deleting key preferences: $DATABASE_NAME_SUFFIX_KEY")
-        }
-
         db.let {
 
             try {
 
-                it.close()
+                it?.close()
 
                 return true
 
@@ -156,20 +166,21 @@ internal object DBStorage : Storage<String> {
             val selection = "$COLUMN_KEY = ?"
             val selectionArgs = arrayOf(key)
 
-            val rowsUpdated = db.update(
+            val rowsUpdated = db?.update(
 
                 TABLE,
                 values,
                 selection,
                 selectionArgs
-            )
+
+            ) ?: 0
 
             if (rowsUpdated > 0) {
 
                 return true
             }
 
-            return db.insert(TABLE, null, values) > 0
+            return (db?.insert(TABLE, null, values) ?: 0) > 0
 
         } catch (e: Exception) {
 
@@ -188,7 +199,7 @@ internal object DBStorage : Storage<String> {
 
         try {
 
-            val cursor = db.query(
+            val cursor = db?.query(
 
                 TABLE,
                 projection,
@@ -199,15 +210,18 @@ internal object DBStorage : Storage<String> {
                 null
             )
 
-            with(cursor) {
+            cursor?.let {
 
-                while (moveToNext() && isEmpty(result)) {
+                with(it) {
 
-                    result = getString(getColumnIndexOrThrow(COLUMN_VALUE))
+                    while (moveToNext() && isEmpty(result)) {
+
+                        result = getString(getColumnIndexOrThrow(COLUMN_VALUE))
+                    }
                 }
             }
 
-            cursor.close()
+            cursor?.close()
 
         } catch (e: Exception) {
 
@@ -235,7 +249,7 @@ internal object DBStorage : Storage<String> {
 
         try {
 
-            val result = db.delete(TABLE, selection, selectionArgs) > 0
+            val result = (db?.delete(TABLE, selection, selectionArgs) ?: 0) > 0
 
             if (result) {
 
@@ -270,7 +284,7 @@ internal object DBStorage : Storage<String> {
 
         try {
 
-            val result = db.delete(TABLE, null, null) > 0
+            val result = (db?.delete(TABLE, null, null) ?: 0) > 0
 
             if (result) {
 
@@ -301,12 +315,17 @@ internal object DBStorage : Storage<String> {
 
         try {
 
-            val context = dbHelper.takeContext()
-            val result = context.deleteDatabase(dbHelper.databaseName)
+            val context = dbHelper?.takeContext()
+            val result = context?.deleteDatabase(dbHelper?.databaseName) ?: false
 
             if (result) {
 
                 Timber.v("$tag END")
+
+                if (prefs?.delete(DATABASE_NAME_SUFFIX_KEY) != true) {
+
+                    Timber.e("Error deleting key preferences: $DATABASE_NAME_SUFFIX_KEY")
+                }
 
             } else {
 
@@ -338,7 +357,7 @@ internal object DBStorage : Storage<String> {
 
             val projection = arrayOf(BaseColumns._ID, COLUMN_KEY, COLUMN_VALUE)
 
-            val cursor = db.query(
+            val cursor = db?.query(
 
                 TABLE,
                 projection,
@@ -349,9 +368,9 @@ internal object DBStorage : Storage<String> {
                 null
             )
 
-            result = cursor.count.toLong()
+            result = cursor?.count?.toLong() ?: 0
 
-            cursor.close()
+            cursor?.close()
 
         } catch (e: Exception) {
 
