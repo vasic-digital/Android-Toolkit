@@ -35,7 +35,7 @@ internal object DBStorage : Storage<String> {
     private const val SQL_CREATE_ENTRIES = "CREATE TABLE $TABLE (" +
             "${BaseColumns._ID} INTEGER PRIMARY KEY," +
             "$COLUMN_KEY TEXT," +
-            "$COLUMN_VALUE TEXT(1000))"
+            "$COLUMN_VALUE TEXT)"
 
     private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE"
 
