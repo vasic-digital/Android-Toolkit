@@ -127,6 +127,12 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
         Timber.v("$tag START")
 
+        if (!lazySaving) {
+
+            Timber.v("$tag END, Skipped")t
+            return
+        }
+
         try {
 
             Timber.v("$tag SAVING")
