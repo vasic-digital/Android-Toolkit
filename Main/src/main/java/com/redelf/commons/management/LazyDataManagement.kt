@@ -31,7 +31,15 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
                         onForeground()
                     }
 
-                    BaseApplication.BROADCAST_ACTION_APPLICATION_SCREEN_OFF,
+                    BaseApplication.BROADCAST_ACTION_APPLICATION_SCREEN_OFF -> {
+
+                        // TODO: Check if screen is off with >= screens in stack
+//                        if () {
+//
+//                            onBackground()
+//                        }
+                    }
+
                     BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND -> {
 
                         onBackground()
