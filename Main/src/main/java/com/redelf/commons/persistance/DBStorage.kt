@@ -150,6 +150,9 @@ internal object DBStorage : Storage<String> {
 
                     fun getRandom() = randomInteger(max = 110, min = 11)
 
+                    fun getRandomString() = getRandom().toString()
+                        .map { it.code.toChar() }.joinToString("")
+
                     val separator = "_"
                     val builder = StringBuilder()
 
@@ -157,7 +160,7 @@ internal object DBStorage : Storage<String> {
 
                         builder.append(letter)
                             .append(separator)
-                            .append(getRandom())
+                            .append(getRandomString())
                     }
 
                     return builder.toString().toByteArray()
