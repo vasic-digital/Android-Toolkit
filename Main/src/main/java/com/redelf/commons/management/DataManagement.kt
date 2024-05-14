@@ -5,6 +5,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
 import com.redelf.commons.exec
+import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.interruption.Abort
 import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.LifecycleCallback
@@ -15,6 +16,10 @@ import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.reset.Resettable
+import com.redelf.commons.session.Session
+import com.redelf.commons.session.SessionOperation
+import com.redelf.commons.transaction.Transaction
+import com.redelf.commons.transaction.TransactionOperation
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.RejectedExecutionException
@@ -27,7 +32,8 @@ abstract class DataManagement<T> :
     Resettable,
     Lockable,
     Abort,
-    Contextual<BaseApplication>
+    Contextual<BaseApplication>,
+    ExecuteWithResult<DataManagement.DataTransaction<T>>
 
 {
 
@@ -60,11 +66,53 @@ abstract class DataManagement<T> :
         }
     }
 
+    abstract class DataTransaction<T>(
+
+        private val parent: DataManagement<T>,
+        private val operation: TransactionOperation
+
+    ) : Transaction {
+
+        override fun start(): Boolean {
+
+            return true
+        }
+
+        override fun perform(): Boolean {
+
+            return parent.session.execute(operation)
+        }
+
+        override fun end(): Boolean {
+
+            var result = false
+
+            try {
+
+                val data = parent.obtain()
+
+                data?.let {
+
+                    parent.pushData(it)
+
+                    result = true
+                }
+
+            } catch (e: IllegalStateException) {
+
+                Timber.e(e)
+            }
+
+            return result
+        }
+    }
+
     protected abstract val storageKey: String
     protected open val persist: Boolean = true
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
+    private var session = Session()
     private val locked = AtomicBoolean()
 
     private val initCallbacks =
@@ -91,6 +139,14 @@ abstract class DataManagement<T> :
             LOGGABLE_MANAGERS.contains(javaClass)
 
     override fun abort() = Unit
+
+    override fun execute(what: DataTransaction<T>): Boolean {
+
+        /*
+            TODO: Implement a way to avoid using the session for each transaction
+        */
+        return false
+    }
 
     override fun lock() {
 
@@ -284,6 +340,8 @@ abstract class DataManagement<T> :
         Timber.v("$tag START")
 
         try {
+
+            session.reset()
 
             if (isNotEmpty(storageKey)) {
 
