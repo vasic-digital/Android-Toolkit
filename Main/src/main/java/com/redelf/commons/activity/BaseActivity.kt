@@ -389,6 +389,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         super.onDestroy()
     }
 
+    @Suppress("DEPRECATION")
     override fun finish() {
         super.finish()
 
