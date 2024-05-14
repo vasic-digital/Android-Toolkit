@@ -18,7 +18,7 @@ class Session(
 
     init {
 
-        Timber.v("$name :: Created :: Session: $identifier")
+        Timber.d("Created :: Session: $identifier @ $name")
     }
 
     fun takeName() = name
