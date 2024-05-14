@@ -169,8 +169,8 @@ abstract class DataManagement<T> :
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
-    private var session = Session()
     private val locked = AtomicBoolean()
+    private var session = Session(name = javaClass.simpleName)
 
     private val initCallbacks =
         Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag())
