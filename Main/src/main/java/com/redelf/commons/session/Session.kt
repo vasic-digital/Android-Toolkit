@@ -18,7 +18,7 @@ class Session(
 
     init {
 
-        Timber.v("$name :: Created")
+        Timber.v("$name :: Created :: Session: $identifier")
     }
 
     fun takeName() = name
@@ -29,38 +29,50 @@ class Session(
 
         val transactionId = identifier
 
-        Timber.v("$name :: Execute :: START: $transactionId")
+        Timber.v("$name :: Execute :: START :: Session: $transactionId")
 
         val started = what.start()
 
         if (started) {
 
-            Timber.v("$name :: Execute :: STARTED: $transactionId")
+            Timber.v("$name :: Execute :: STARTED :: Session: $transactionId")
 
             val success = what.perform()
 
             if (success) {
 
-                Timber.v("$name :: Execute :: PERFORMED :: $transactionId :: Success")
+                Timber.v(
+
+                    "$name :: Execute :: PERFORMED :: Session: $transactionId :: Success"
+                )
 
             } else {
 
-                Timber.e("$name :: Execute :: PERFORMED :: $transactionId :: Failure")
+                Timber.e(
+
+                    "$name :: Execute :: PERFORMED :: Session: $transactionId :: Failure"
+                )
             }
 
             if (success && transactionId == identifier) {
 
-                Timber.v("$name :: Execute :: ENDING :: $transactionId")
+                Timber.v("$name :: Execute :: ENDING :: Session: $transactionId")
 
                 val ended = what.end()
 
                 if (ended) {
 
-                    Timber.v("$name :: Execute :: ENDED :: $transactionId :: Success")
+                    Timber.v(
+
+                        "$name :: Execute :: ENDED :: Session: $transactionId :: Success"
+                    )
 
                 } else {
 
-                    Timber.v("$name :: Execute :: ENDED :: $transactionId :: Failure")
+                    Timber.v(
+
+                        "$name :: Execute :: ENDED :: Session: $transactionId :: Failure"
+                    )
                 }
 
                 return ended
@@ -69,7 +81,7 @@ class Session(
 
                 if (transactionId != identifier) {
 
-                    Timber.w("$name :: Execute :: ENDED :: Skipped")
+                    Timber.w("$name :: Execute :: ENDED :: Session: Skipped")
                 }
             }
         }
@@ -89,7 +101,7 @@ class Session(
             name = identifier.toString()
         }
 
-        Timber.v("$oldName :: Reset: $name")
+        Timber.d("$oldName :: Reset :: Session: $oldId -> $identifier")
 
         return oldId != identifier
     }

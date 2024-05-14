@@ -78,7 +78,7 @@ abstract class DataManagement<T> :
 
             Timber.v(
 
-                "Transaction :: INIT :: $name :: " +
+                "Transaction :: Session: $session :: INIT :: $name :: " +
                     "With operation = ${operation != null}"
             )
 
@@ -92,14 +92,14 @@ abstract class DataManagement<T> :
 
             session = parent.session.takeIdentifier()
 
-            Timber.v("Transaction :: $name :: START :: Session = $session")
+            Timber.v("Transaction :: Session: $session :: START :: $name")
 
             return true
         }
 
         override fun perform(): Boolean {
 
-            Timber.v("Transaction :: $name :: PERFORM")
+            Timber.v("Transaction :: Session: $session :: PERFORM :: $name")
 
             operation?.let {
 
@@ -107,28 +107,28 @@ abstract class DataManagement<T> :
 
                 if (result) {
 
-                    Timber.v("Transaction :: $name :: PERFORMED")
+                    Timber.v("Transaction :: Session: $session :: PERFORMED :: $name")
 
                 } else {
 
-                    Timber.e("Transaction :: $name :: FAILED")
+                    Timber.e("Transaction :: Session: $session :: FAILED :: $name")
                 }
 
                 return result
             }
 
-            Timber.v("Transaction :: $name :: PERFORMED")
+            Timber.v("Transaction :: Session: $session :: PERFORMED :: $name")
 
             return true
         }
 
         override fun end(): Boolean {
 
-            Timber.v("Transaction :: $name :: ENDING")
+            Timber.v("Transaction :: Session: $session :: ENDING :: $name")
 
             if (session != parent.session.takeIdentifier()) {
 
-                Timber.w("Transaction :: $name :: SKIPPED")
+                Timber.w("Transaction :: Session: $session :: SKIPPED :: $name")
 
                 return false
             }
@@ -145,7 +145,7 @@ abstract class DataManagement<T> :
 
                     result = true
 
-                    Timber.v("Transaction :: $name :: ENDED")
+                    Timber.v("Transaction :: Session: $session :: ENDED :: $name")
                 }
 
             } catch (e: IllegalStateException) {
@@ -155,7 +155,7 @@ abstract class DataManagement<T> :
 
             if (!result) {
 
-                Timber.e("Transaction :: $name :: ENDING: Failed")
+                Timber.v("Transaction :: Session: $session :: ENDING :: Failed: $name")
             }
 
             return result
@@ -199,23 +199,29 @@ abstract class DataManagement<T> :
         val transaction = what.name
         val session = what.getSession()
 
-        Timber.v("$session :: Execute :: START: $transaction")
+        Timber.v("Session: $session :: Execute :: START: $transaction")
 
         val started = what.start()
 
         if (started) {
 
-            Timber.v("$session :: Execute :: STARTED: $transaction")
+            Timber.v("Session: $session :: Execute :: STARTED: $transaction")
 
             val success = what.perform()
 
             if (success) {
 
-                Timber.v("$session :: Execute :: PERFORMED :: $transaction :: Success")
+                Timber.v(
+
+                    "Session: $session :: Execute :: PERFORMED :: $transaction :: Success"
+                )
 
             } else {
 
-                Timber.e("$session :: Execute :: PERFORMED :: $transaction :: Failure")
+                Timber.e(
+
+                    "Session: $session :: Execute :: PERFORMED :: $transaction :: Failure"
+                )
             }
 
             return success
