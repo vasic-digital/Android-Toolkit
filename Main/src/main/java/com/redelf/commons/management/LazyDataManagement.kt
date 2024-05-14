@@ -131,15 +131,14 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
     private fun onBackground() {
 
-        val tag = "Application went to background ::"
-
-        Timber.v("$tag START")
-
         if (!lazySaving) {
 
-            Timber.v("$tag END, Skipped")
             return
         }
+
+        val tag = "Application went to background :: ${getWho()} ::"
+
+        Timber.v("$tag START")
 
         try {
 
