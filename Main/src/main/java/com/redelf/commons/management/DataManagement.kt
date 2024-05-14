@@ -74,26 +74,61 @@ abstract class DataManagement<T> :
 
         private var session: UUID? = parent.session.takeIdentifier()
 
+        init {
+
+            Timber.v(
+
+                "Transaction :: INIT :: $name :: " +
+                    "With operation = ${operation != null}"
+            )
+
+            if (operation == null) {
+
+                start()
+            }
+        }
+
         override fun start(): Boolean {
 
             session = parent.session.takeIdentifier()
+
+            Timber.v("Transaction :: $name :: START :: Session = $session")
 
             return true
         }
 
         override fun perform(): Boolean {
 
+            Timber.v("Transaction :: $name :: PERFORM")
+
             operation?.let {
 
-                return parent.session.execute(operation)
+                val result =  parent.session.execute(operation)
+
+                if (result) {
+
+                    Timber.v("Transaction :: $name :: PERFORMED")
+
+                } else {
+
+                    Timber.e("Transaction :: $name :: FAILED")
+                }
+
+                return result
             }
+
+            Timber.v("Transaction :: $name :: PERFORMED")
 
             return true
         }
 
         override fun end(): Boolean {
 
+            Timber.v("Transaction :: $name :: ENDING")
+
             if (session != parent.session.takeIdentifier()) {
+
+                Timber.w("Transaction :: $name :: SKIPPED")
 
                 return false
             }
@@ -109,11 +144,18 @@ abstract class DataManagement<T> :
                     parent.pushData(it)
 
                     result = true
+
+                    Timber.v("Transaction :: $name :: ENDED")
                 }
 
             } catch (e: IllegalStateException) {
 
                 Timber.e(e)
+            }
+
+            if (!result) {
+
+                Timber.e("Transaction :: $name :: ENDING: Failed")
             }
 
             return result
