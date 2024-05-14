@@ -241,6 +241,8 @@ abstract class DataManagement<T> :
         )
     }
 
+    protected fun transaction(name: String): Transaction = DataTransaction(name, this)
+
     override fun lock() {
 
         Timber.v("${getLogTag()} Lock")
