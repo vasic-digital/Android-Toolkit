@@ -60,7 +60,19 @@ class ManagersCleaner {
 
         try {
 
-            Timber.v("$tag START")
+            var managersListLog = ""
+
+            managers.forEachIndexed { index, it ->
+
+                managersListLog += "${it.getWho()}"
+
+                if (index < managers.size - 1) {
+
+                    managersListLog += ", "
+                }
+            }
+
+            Timber.v("$tag START: $managersListLog$")
 
             exec {
 

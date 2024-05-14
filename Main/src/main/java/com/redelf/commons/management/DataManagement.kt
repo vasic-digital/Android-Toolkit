@@ -213,6 +213,8 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     open fun pushData(data: T) {
 
+        Timber.v("${getLogTag()} Push data :: START")
+
         doPushData(data)
     }
 
@@ -295,7 +297,7 @@ abstract class DataManagement<T> :
 
                     data?.let {
 
-                        pushData(it)
+                        doPushData(it)
                     }
 
                 } else {
