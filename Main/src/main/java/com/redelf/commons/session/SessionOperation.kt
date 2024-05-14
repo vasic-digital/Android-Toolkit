@@ -2,7 +2,7 @@ package com.redelf.commons.session
 
 interface SessionOperation {
 
-    fun start(): Boolean
+    fun start(): Boolean = true
 
     fun perform(): Boolean
 

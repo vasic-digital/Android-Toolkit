@@ -21,6 +21,8 @@ class Session(
         Timber.v("$name :: Created")
     }
 
+    fun takeIdentifier() = name
+
     override fun execute(what: SessionOperation): Boolean {
 
         val transactionId = identifier

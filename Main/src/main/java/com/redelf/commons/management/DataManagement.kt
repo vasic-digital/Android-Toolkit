@@ -17,7 +17,6 @@ import com.redelf.commons.persistance.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.reset.Resettable
 import com.redelf.commons.session.Session
-import com.redelf.commons.session.SessionOperation
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import timber.log.Timber
@@ -33,9 +32,7 @@ abstract class DataManagement<T> :
     Lockable,
     Abort,
     Contextual<BaseApplication>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>>
-
-{
+    ExecuteWithResult<DataManagement.DataTransaction<T>> {
 
     companion object {
 
@@ -66,8 +63,9 @@ abstract class DataManagement<T> :
         }
     }
 
-    abstract class DataTransaction<T>(
+    class DataTransaction<T>(
 
+        val name: String,
         private val parent: DataManagement<T>,
         private val operation: TransactionOperation
 
@@ -105,6 +103,8 @@ abstract class DataManagement<T> :
 
             return result
         }
+
+        fun getSession() = parent.session.takeIdentifier()
     }
 
     protected abstract val storageKey: String
@@ -125,10 +125,7 @@ abstract class DataManagement<T> :
     */
     protected open fun createDataObject(): T? = null
 
-    protected open fun postInitialize(ctx: Context) {
-
-        // Do nothing
-    }
+    protected open fun postInitialize(ctx: Context) = Unit
 
     /*
         TODO: Create another version of the method that will use into the account:
@@ -142,10 +139,49 @@ abstract class DataManagement<T> :
 
     override fun execute(what: DataTransaction<T>): Boolean {
 
-        /*
-            TODO: Implement a way to avoid using the session for each transaction
-        */
+        val transaction = what.name
+        val session = what.getSession()
+
+        Timber.v("$session :: Execute :: START: $transaction")
+
+        val started = what.start()
+
+        if (started) {
+
+            Timber.v("$session :: Execute :: STARTED: $transaction")
+
+            val success = what.perform()
+
+            if (success) {
+
+                Timber.v("$session :: Execute :: PERFORMED :: $transaction :: Success")
+
+            } else {
+
+                Timber.e("$session :: Execute :: PERFORMED :: $transaction :: Failure")
+            }
+
+            return success
+        }
+
         return false
+    }
+
+    protected fun transaction(name: String, action: Obtain<Boolean>) {
+
+        execute(
+
+            DataTransaction(
+
+                name = name,
+                parent = this,
+
+                operation = object : TransactionOperation {
+
+                    override fun perform() = action.obtain()
+                }
+            )
+        )
     }
 
     override fun lock() {
