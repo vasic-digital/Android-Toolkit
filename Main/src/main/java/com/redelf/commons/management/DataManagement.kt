@@ -20,6 +20,7 @@ import com.redelf.commons.session.Session
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import timber.log.Timber
+import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -67,21 +68,35 @@ abstract class DataManagement<T> :
 
         val name: String,
         private val parent: DataManagement<T>,
-        private val operation: TransactionOperation
+        private val operation: TransactionOperation? = null
 
     ) : Transaction {
 
+        private var session: UUID? = parent.session.takeIdentifier()
+
         override fun start(): Boolean {
+
+            session = parent.session.takeIdentifier()
 
             return true
         }
 
         override fun perform(): Boolean {
 
-            return parent.session.execute(operation)
+            operation?.let {
+
+                return parent.session.execute(operation)
+            }
+
+            return true
         }
 
         override fun end(): Boolean {
+
+            if (session != parent.session.takeIdentifier()) {
+
+                return false
+            }
 
             var result = false
 
@@ -104,7 +119,7 @@ abstract class DataManagement<T> :
             return result
         }
 
-        fun getSession() = parent.session.takeIdentifier()
+        fun getSession() = parent.session.takeName()
     }
 
     protected abstract val storageKey: String

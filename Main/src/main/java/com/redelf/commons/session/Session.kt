@@ -21,7 +21,9 @@ class Session(
         Timber.v("$name :: Created")
     }
 
-    fun takeIdentifier() = name
+    fun takeName() = name
+
+    fun takeIdentifier() = identifier
 
     override fun execute(what: SessionOperation): Boolean {
 
