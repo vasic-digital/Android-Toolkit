@@ -230,7 +230,7 @@ abstract class DataManagement<T> :
         return false
     }
 
-    protected fun transaction(name: String, action: Obtain<Boolean>) {
+    fun transaction(name: String, action: Obtain<Boolean>) {
 
         execute(
 
@@ -247,7 +247,7 @@ abstract class DataManagement<T> :
         )
     }
 
-    protected fun transaction(name: String): Transaction = DataTransaction(name, this)
+    fun transaction(name: String): Transaction = DataTransaction(name, this)
 
     override fun lock() {
 
