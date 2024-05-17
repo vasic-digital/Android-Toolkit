@@ -100,14 +100,22 @@ internal object DBStorage : Storage<String> {
 
         override fun onCreate(db: SQLiteDatabase) {
 
-            db.execSQL(sqlCreate())
+            try {
+
+                db.execSQL(sqlCreate())
+
+            } catch (e: Exception) {
+
+                Timber.e(e)
+            }
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-            db.execSQL(sqlDelete())
+            // db.execSQL(sqlDelete())
+            // onCreate(db)
 
-            onCreate(db)
+            Timber.v("Old version: $oldVersion :: New version: $newVersion")
         }
 
         override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -122,11 +130,18 @@ internal object DBStorage : Storage<String> {
 
         fun closeDatabase() {
 
-            val db = readableDatabase
+            try {
 
-            if (db.isOpen) {
+                val db = readableDatabase
 
-                db.close()
+                if (db.isOpen) {
+
+                    db.close()
+                }
+
+            } catch (e: Exception) {
+
+                Timber.e(e)
             }
         }
     }
