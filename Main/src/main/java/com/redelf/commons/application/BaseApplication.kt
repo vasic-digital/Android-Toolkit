@@ -27,6 +27,7 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
+import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.detectAllExpect
 import com.redelf.commons.exec
@@ -46,6 +47,7 @@ abstract class BaseApplication :
     Application(),
     ContextAvailability<BaseApplication>,
     ActivityLifecycleCallbacks,
+    ActivityCount,
     LifecycleObserver
 
 {
@@ -430,6 +432,11 @@ abstract class BaseApplication :
                     }
                 }
             )
+    }
+
+    override fun getActivityCount(): Int {
+
+        return TOP_ACTIVITY.size
     }
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
