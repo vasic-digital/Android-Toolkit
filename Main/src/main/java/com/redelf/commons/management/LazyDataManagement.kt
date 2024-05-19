@@ -170,6 +170,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
             return
         }
 
+        if (isLocked()) {
+
+            return
+        }
+
         val tag = "Application went to background :: ${getWho()} ::"
 
         Timber.v("$tag START")
