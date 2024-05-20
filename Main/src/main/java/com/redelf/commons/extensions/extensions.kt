@@ -1,4 +1,4 @@
-package com.redelf.commons
+package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -24,6 +24,7 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.redelf.commons.R
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.persistance.PropertiesHash

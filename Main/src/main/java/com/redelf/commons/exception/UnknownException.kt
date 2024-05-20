@@ -1,7 +1,7 @@
 package com.redelf.commons.exception
 
 import android.text.TextUtils
-import com.redelf.commons.recordException
+import com.redelf.commons.extensions.recordException
 
 class UnknownException
     private constructor(reason: String = "") : IllegalStateException(getMessage(reason)) {

@@ -4,10 +4,10 @@ import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
-import com.redelf.commons.exec
 import com.redelf.commons.execution.ExecuteWithResult
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.interruption.Abort
-import com.redelf.commons.isNotEmpty
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException

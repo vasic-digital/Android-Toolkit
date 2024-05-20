@@ -1,7 +1,7 @@
 package com.redelf.commons.instantiation
 
 import com.redelf.commons.desription.Subject
-import com.redelf.commons.isNotEmpty
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.reset.Resettable

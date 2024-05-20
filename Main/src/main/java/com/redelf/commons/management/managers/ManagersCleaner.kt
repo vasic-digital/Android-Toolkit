@@ -1,6 +1,6 @@
 package com.redelf.commons.management.managers
 
-import com.redelf.commons.exec
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import timber.log.Timber

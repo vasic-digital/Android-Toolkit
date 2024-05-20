@@ -7,7 +7,7 @@ import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.Connectivity
-import com.redelf.commons.recordException
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.registration.Registration
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean

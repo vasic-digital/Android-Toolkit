@@ -21,7 +21,6 @@ import android.telephony.TelephonyManager
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-
 import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
@@ -29,15 +28,15 @@ import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
-import com.redelf.commons.detectAllExpect
-import com.redelf.commons.exec
+import com.redelf.commons.extensions.detectAllExpect
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
-import com.redelf.commons.isNotEmpty
 import com.redelf.commons.logging.LogsGathering
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
-import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean

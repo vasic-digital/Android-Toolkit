@@ -32,13 +32,13 @@ import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.dialog.AttachFileDialog
 import com.redelf.commons.dialog.OnPickFromCameraCallback
-import com.redelf.commons.exec
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.initRegistrationWithGoogle
-import com.redelf.commons.isServiceRunning
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.initRegistrationWithGoogle
+import com.redelf.commons.extensions.isServiceRunning
+import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.randomInteger
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.util.UriUtil

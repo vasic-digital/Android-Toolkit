@@ -3,8 +3,8 @@ package com.redelf.commons.transmission.encryption
 import android.text.TextUtils
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.management.DataManagement
-import com.redelf.commons.recordException
 import com.redelf.commons.security.encryption.AES
 import com.redelf.commons.security.encryption.Encryption
 import com.redelf.commons.security.encryption.EncryptionProvider

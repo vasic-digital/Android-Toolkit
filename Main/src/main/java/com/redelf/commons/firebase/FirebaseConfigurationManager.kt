@@ -6,8 +6,8 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
-import com.redelf.commons.recordException
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch

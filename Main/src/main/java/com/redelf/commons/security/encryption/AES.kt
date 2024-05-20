@@ -2,7 +2,7 @@ package com.redelf.commons.security.encryption
 
 import android.os.Build
 import android.util.Base64
-import com.redelf.commons.isBase64Encoded
+import com.redelf.commons.extensions.isBase64Encoded
 import timber.log.Timber
 import java.security.GeneralSecurityException
 import java.security.spec.KeySpec

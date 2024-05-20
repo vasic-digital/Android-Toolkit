@@ -1,6 +1,6 @@
 package com.redelf.commons.lifecycle
 
-import com.redelf.commons.exec
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.lifecycle.exception.NotInitializedException
 import timber.log.Timber
 import java.util.concurrent.Callable

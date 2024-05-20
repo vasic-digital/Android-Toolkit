@@ -1,7 +1,7 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
-import com.redelf.commons.isEmpty
+import com.redelf.commons.extensions.isEmpty
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean

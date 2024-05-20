@@ -7,10 +7,10 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
-import com.redelf.commons.isEmpty
-import com.redelf.commons.isNotEmpty
-import com.redelf.commons.randomInteger
-import com.redelf.commons.randomString
+import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.randomInteger
+import com.redelf.commons.extensions.randomString
 import timber.log.Timber
 import java.sql.SQLException
 
