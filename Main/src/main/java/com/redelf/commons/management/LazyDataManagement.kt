@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.recordException
 import com.redelf.commons.registration.Registration
 import timber.log.Timber
@@ -33,11 +34,10 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                     BaseApplication.BROADCAST_ACTION_APPLICATION_SCREEN_OFF -> {
 
-                        // TODO: Check if screen is off with >= screens in stack
-//                        if () {
-//
-//                            onBackground()
-//                        }
+                        if (takeContext().getActivityCount() >= 2) {
+
+                            onBackground()
+                        }
                     }
 
                     BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND -> {
@@ -46,6 +46,40 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
                     }
                 }
             }
+        }
+    }
+
+    private val connectivityListener = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            context?.let {
+
+                val conn = Connectivity()
+
+                if (!conn.isNetworkAvailable(it)) {
+
+                    onBackground()
+                }
+            }
+        }
+    }
+
+    override fun injectContext(ctx: BaseApplication) {
+
+        try {
+
+            val filter = IntentFilter()
+
+            filter.addAction("android.net.conn.CONNECTIVITY_CHANGE")
+            filter.addAction("android.net.wifi.WIFI_STATE_CHANGED")
+            filter.addAction("android.net.wifi.STATE_CHANGE")
+
+            ctx.registerReceiver(connectivityListener, filter)
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
         }
     }
 
@@ -132,6 +166,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
     private fun onBackground() {
 
         if (!lazySaving) {
+
+            return
+        }
+
+        if (isLocked()) {
 
             return
         }
