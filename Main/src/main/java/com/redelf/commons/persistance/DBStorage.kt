@@ -640,9 +640,9 @@ internal object DBStorage : Storage<String> {
 
         db?.let {
 
-            it.beginTransaction()
-
             try {
+
+                it.beginTransaction()
 
                 success = operation.perform()
 
