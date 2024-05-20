@@ -79,19 +79,22 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
     override fun injectContext(ctx: BaseApplication) {
 
-        try {
+        if (lazySaving) {
 
-            val filter = IntentFilter()
+            try {
 
-            filter.addAction("android.net.conn.CONNECTIVITY_CHANGE")
-            filter.addAction("android.net.wifi.WIFI_STATE_CHANGED")
-            filter.addAction("android.net.wifi.STATE_CHANGE")
+                val filter = IntentFilter()
 
-            ctx.registerReceiver(connectivityListener, filter)
+                filter.addAction("android.net.conn.CONNECTIVITY_CHANGE")
+                filter.addAction("android.net.wifi.WIFI_STATE_CHANGED")
+                filter.addAction("android.net.wifi.STATE_CHANGE")
 
-        } catch (e: Exception) {
+                ctx.registerReceiver(connectivityListener, filter)
 
-            Timber.e(e)
+            } catch (e: Exception) {
+
+                Timber.e(e)
+            }
         }
     }
 
