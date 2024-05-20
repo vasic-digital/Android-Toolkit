@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context> {
 
     protected open val lazySaving = false
+    protected open val triggerOnBackgroundForScreenOff = false
 
     private val saved = AtomicBoolean()
     private val registered = AtomicBoolean()
@@ -34,9 +35,20 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                     BaseApplication.BROADCAST_ACTION_APPLICATION_SCREEN_OFF -> {
 
-                        if (takeContext().getActivityCount() >= 2) {
+                        if (takeContext().getActivityCount() >= 1) {
 
-                            onBackground()
+                            val tag = "Application is in background for screen off ::"
+
+                            if (triggerOnBackgroundForScreenOff) {
+
+                                Timber.v("$tag OK")
+
+                                onBackground()
+
+                            } else {
+
+                                Timber.v("$tag SKIPPING")
+                            }
                         }
                     }
 
