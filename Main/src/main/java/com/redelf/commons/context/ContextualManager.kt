@@ -1,7 +1,6 @@
 package com.redelf.commons.context
 
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.LazyDataManagement
 
 abstract class ContextualManager<T> : LazyDataManagement<T>(), Contextual<BaseApplication> {

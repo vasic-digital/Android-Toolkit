@@ -12,7 +12,6 @@ import com.redelf.commons.isNotEmpty
 import com.redelf.commons.randomInteger
 import com.redelf.commons.randomString
 import timber.log.Timber
-import java.lang.StringBuilder
 import java.sql.SQLException
 
 /*

@@ -7,4 +7,7 @@
     <!-- Logs gathering -->
     <bool name="logs_gathering_enabled">false</bool>
 
+    <!-- Retrofit -->
+    <bool name="retrofit_full_log">false</bool>
+
 </resources>
