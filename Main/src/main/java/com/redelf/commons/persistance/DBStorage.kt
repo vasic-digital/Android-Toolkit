@@ -7,12 +7,16 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.extensions.randomString
 import timber.log.Timber
 import java.sql.SQLException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /*
     TODO: Make sure that this is not static object
@@ -21,6 +25,7 @@ internal object DBStorage : Storage<String> {
 
     /*
         TODO: Implement the mechanism to split data into chunks
+        TODO: MAke possible for data managers to have multiple databases - each manager its own
     */
 
     private const val DATABASE_VERSION = 1
@@ -36,6 +41,7 @@ internal object DBStorage : Storage<String> {
     private var columnKey = COLUMN_KEY_
     private var columnValue = COLUMN_VALUE_
 
+    private val executor = Executor.SINGLE
     private var enc: Encryption = NoEncryption()
     private var prefs: SharedPreferencesStorage? = null
 
@@ -198,7 +204,7 @@ internal object DBStorage : Storage<String> {
                     return builder.toString().toByteArray()
                 }
 
-                override fun decrypt(key: String?, value: ByteArray?) : String {
+                override fun decrypt(key: String?, value: ByteArray?): String {
 
                     return value?.let { String(it) } ?: ""
                 }
@@ -250,82 +256,97 @@ internal object DBStorage : Storage<String> {
 
         Timber.v("$tag START")
 
-        val db = take()
+        val result = AtomicBoolean()
+        val latch = CountDownLatch(1)
 
-        if (db?.isOpen == false) {
+        withDb { db ->
 
-            Timber.w("DB is not open")
-            return false
-        }
+            if (db?.isOpen == false) {
 
-        return transact(
+                Timber.w("DB is not open")
 
-            object : LocalDBStorageOperation<Boolean>() {
+                latch.countDown()
 
-                override fun perform(): Boolean {
-
-                    try {
-
-                        val values = ContentValues().apply {
-
-                            put(columnKey, key)
-                            put(columnValue, value)
-                        }
-
-                        val selection = "$columnKey = ?"
-                        val selectionArgs = arrayOf(key)
-
-                        val rowsUpdated = db?.update(
-
-                            table,
-                            values,
-                            selection,
-                            selectionArgs
-
-                        ) ?: 0
-
-                        if (rowsUpdated > 0) {
-
-                            Timber.v(
-
-                                "$tag END: rowsUpdated = $rowsUpdated, " +
-                                        "length = ${value.length}"
-                            )
-
-                            return true
-                        }
-
-                        val rowsInserted = (db?.insert(table(), null, values) ?: 0)
-
-                        if (rowsInserted > 0) {
-
-                            Timber.v(
-
-                                "$tag END: rowsInserted = $rowsInserted, " +
-                                        "length = ${value.length}"
-                            )
-
-                            return true
-                        }
-
-                    } catch (e: Exception) {
-
-                        Timber.e(tag, e.message ?: "Unknown error")
-
-                        Timber.e(e)
-                    }
-
-                    Timber.e(
-
-                        "$tag END :: Nothing was inserted or updated, " +
-                                "length = ${value.length}"
-                    )
-
-                    return false
-                }
+                return@withDb
             }
 
-        ) ?: false
+            val res = transact(
+
+                object : LocalDBStorageOperation<Boolean>(db) {
+
+                    override fun perform(): Boolean {
+
+                        try {
+
+                            val values = ContentValues().apply {
+
+                                put(columnKey, key)
+                                put(columnValue, value)
+                            }
+
+                            val selection = "$columnKey = ?"
+                            val selectionArgs = arrayOf(key)
+
+                            val rowsUpdated = db?.update(
+
+                                table,
+                                values,
+                                selection,
+                                selectionArgs
+
+                            ) ?: 0
+
+                            if (rowsUpdated > 0) {
+
+                                Timber.v(
+
+                                    "$tag END: rowsUpdated = $rowsUpdated, " +
+                                            "length = ${value.length}"
+                                )
+
+                                return true
+                            }
+
+                            val rowsInserted = (db?.insert(table(), null, values) ?: 0)
+
+                            if (rowsInserted > 0) {
+
+                                Timber.v(
+
+                                    "$tag END: rowsInserted = $rowsInserted, " +
+                                            "length = ${value.length}"
+                                )
+
+                                return true
+                            }
+
+                        } catch (e: Exception) {
+
+                            Timber.e(tag, e.message ?: "Unknown error")
+
+                            Timber.e(e)
+                        }
+
+                        Timber.e(
+
+                            "$tag END :: Nothing was inserted or updated, " +
+                                    "length = ${value.length}"
+                        )
+
+                        return false
+                    }
+                }
+
+            ) ?: false
+
+            result.set(res)
+
+            latch.countDown()
+        }
+
+        latch.await()
+
+        return result.get()
     }
 
     override fun get(key: String): String {
@@ -333,65 +354,74 @@ internal object DBStorage : Storage<String> {
         var result = ""
         val selectionArgs = arrayOf(key)
         val selection = "$columnKey = ?"
+        val latch = CountDownLatch(1)
         val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
         val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
         Timber.v("$tag START")
 
-        val db = take()
+        withDb { db ->
 
-        if (db?.isOpen == false) {
+            if (db?.isOpen == false) {
 
-            Timber.w("DB is not open")
-            return result
-        }
+                Timber.w("DB is not open")
 
-        try {
+                latch.countDown()
 
-            val cursor = db?.query(
-
-                table,
-                projection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                null
-            )
-
-            cursor?.let {
-
-                with(it) {
-
-                    while (moveToNext() && isEmpty(result)) {
-
-                        result = getString(getColumnIndexOrThrow(columnValue))
-                    }
-                }
+                return@withDb
             }
 
-            cursor?.close()
+            try {
 
-        } catch (e: Exception) {
+                val cursor = db?.query(
 
-            Timber.e(
+                    table,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    null
+                )
 
-                "$tag SQL args :: Selection: $selection, Selection args:" +
-                        " ${selectionArgs.toMutableList()}, projection: " +
-                        "${projection.toMutableList()}", e.message ?: "Unknown error"
-            )
+                cursor?.let {
 
-            Timber.e(e)
+                    with(it) {
+
+                        while (moveToNext() && isEmpty(result)) {
+
+                            result = getString(getColumnIndexOrThrow(columnValue))
+                        }
+                    }
+                }
+
+                cursor?.close()
+
+            } catch (e: Exception) {
+
+                Timber.e(
+
+                    "$tag SQL args :: Selection: $selection, Selection args:" +
+                            " ${selectionArgs.toMutableList()}, projection: " +
+                            "${projection.toMutableList()}", e.message ?: "Unknown error"
+                )
+
+                Timber.e(e)
+            }
+
+            if (isNotEmpty(result)) {
+
+                Timber.v("$tag END")
+
+            } else {
+
+                Timber.w("$tag END: Nothing found")
+            }
+
+            latch.countDown()
         }
 
-        if (isNotEmpty(result)) {
-
-            Timber.v("$tag END")
-
-        } else {
-
-            Timber.w("$tag END: Nothing found")
-        }
+        latch.await()
 
         return result
     }
@@ -402,57 +432,72 @@ internal object DBStorage : Storage<String> {
 
         Timber.v("$tag START")
 
-        val db = take()
+        val result = AtomicBoolean()
+        val latch = CountDownLatch(1)
 
-        if (db?.isOpen == false) {
+        withDb { db ->
 
-            Timber.w("DB is not open")
-            return false
-        }
+            if (db?.isOpen == false) {
 
-        return transact(
+                Timber.w("DB is not open")
 
-            object : LocalDBStorageOperation<Boolean>() {
+                latch.countDown()
 
-                override fun perform(): Boolean {
-
-                    val selection = "$columnKey = ?"
-                    val selectionArgs = arrayOf(key)
-
-                    try {
-
-                        val result = (db?.delete(table, selection, selectionArgs) ?: 0) > 0
-
-                        if (result) {
-
-                            Timber.v("$tag END")
-
-                        } else {
-
-                            Timber.e("$tag FAILED")
-                        }
-
-                        return result
-
-                    } catch (e: Exception) {
-
-                        Timber.e(
-
-                            "$tag ERROR :: SQL args :: Selection: $selection, " +
-                                    "Selection args: " +
-                                    "${selectionArgs.toMutableList()}",
-
-                            e.message ?: "Unknown error"
-                        )
-
-                        Timber.e(e)
-                    }
-
-                    return false
-                }
+                return@withDb
             }
 
-        ) ?: false
+            val res = transact(
+
+                object : LocalDBStorageOperation<Boolean>(db) {
+
+                    override fun perform(): Boolean {
+
+                        val selection = "$columnKey = ?"
+                        val selectionArgs = arrayOf(key)
+
+                        try {
+
+                            val res = (db?.delete(table, selection, selectionArgs) ?: 0) > 0
+
+                            if (res) {
+
+                                Timber.v("$tag END")
+
+                            } else {
+
+                                Timber.e("$tag FAILED")
+                            }
+
+                            return res
+
+                        } catch (e: Exception) {
+
+                            Timber.e(
+
+                                "$tag ERROR :: SQL args :: Selection: $selection, " +
+                                        "Selection args: " +
+                                        "${selectionArgs.toMutableList()}",
+
+                                e.message ?: "Unknown error"
+                            )
+
+                            Timber.e(e)
+                        }
+
+                        return false
+                    }
+                }
+
+            ) ?: false
+
+            result.set(res)
+
+            latch.countDown()
+        }
+
+        latch.await()
+
+        return result.get()
     }
 
     override fun deleteAll(): Boolean {
@@ -461,51 +506,66 @@ internal object DBStorage : Storage<String> {
 
         Timber.v("$tag START")
 
-        val db = take()
+        val result = AtomicBoolean()
+        val latch = CountDownLatch(1)
 
-        if (db?.isOpen == false) {
+        withDb { db ->
 
-            Timber.w("DB is not open")
-            return false
-        }
+            if (db?.isOpen == false) {
 
-        return transact(
+                Timber.w("DB is not open")
 
-            object : LocalDBStorageOperation<Boolean>() {
+                latch.countDown()
 
-                override fun perform(): Boolean {
-
-                    try {
-
-                        val result = (db?.delete(table, null, null) ?: 0) > 0
-
-                        if (result) {
-
-                            Timber.v("$tag END")
-
-                        } else {
-
-                            Timber.e("$tag FAILED")
-                        }
-
-                        return result
-
-                    } catch (e: Exception) {
-
-                        Timber.e(
-
-                            "$tag ERROR :: SQL args :: " +
-                                    "TO DELETE ALL", e.message ?: "Unknown error"
-                        )
-
-                        Timber.e(e)
-                    }
-
-                    return false
-                }
+                return@withDb
             }
 
-        ) ?: false
+            val res = transact(
+
+                object : LocalDBStorageOperation<Boolean>(db) {
+
+                    override fun perform(): Boolean {
+
+                        try {
+
+                            val res = (db?.delete(table, null, null) ?: 0) > 0
+
+                            if (res) {
+
+                                Timber.v("$tag END")
+
+                            } else {
+
+                                Timber.e("$tag FAILED")
+                            }
+
+                            return res
+
+                        } catch (e: Exception) {
+
+                            Timber.e(
+
+                                "$tag ERROR :: SQL args :: " +
+                                        "TO DELETE ALL", e.message ?: "Unknown error"
+                            )
+
+                            Timber.e(e)
+                        }
+
+                        return false
+                    }
+                }
+
+            ) ?: false
+
+            result.set(res)
+
+            latch.countDown()
+        }
+
+        latch.await()
+
+        return result.get()
     }
 
     private fun deleteDatabase(): Boolean {
@@ -579,58 +639,55 @@ internal object DBStorage : Storage<String> {
 
     override fun count(): Long {
 
-        val db = take()
+        val result = AtomicLong()
+        val latch = CountDownLatch(1)
 
-        if (db?.isOpen == false) {
+        withDb { db ->
 
-            Timber.w("DB is not open")
-            return 0
+            if (db?.isOpen == false) {
+
+                Timber.w("DB is not open")
+
+                latch.countDown()
+
+                return@withDb
+            }
+
+            try {
+
+                val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
+
+                val cursor = db?.query(
+
+                    table,
+                    projection,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                )
+
+                val res = cursor?.count?.toLong() ?: 0
+                result.set(res)
+
+                cursor?.close()
+
+            } catch (e: Exception) {
+
+                Timber.e(e)
+            }
+
+            latch.countDown()
         }
 
-        var result = 0L
+        latch.await()
 
-        try {
-
-            val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
-
-            val cursor = db?.query(
-
-                table,
-                projection,
-                null,
-                null,
-                null,
-                null,
-                null
-            )
-
-            result = cursor?.count?.toLong() ?: 0
-
-            cursor?.close()
-
-        } catch (e: Exception) {
-
-            Timber.e(e)
-        }
-
-        return result
+        return result.get()
     }
 
-    private fun take(): SQLiteDatabase? {
-
-        try {
-
-            return dbHelper?.writableDatabase
-
-        } catch (e: Exception) {
-
-            Timber.e(e)
-        }
-
-        return null
-    }
-
-    private abstract class LocalDBStorageOperation<T> : DBStorageOperation<T>(db = take())
+    private abstract class LocalDBStorageOperation<T>(db: SQLiteDatabase?) :
+        DBStorageOperation<T>(db)
 
     private fun <T> transact(operation: DBStorageOperation<T>): T? {
 
@@ -668,5 +725,49 @@ internal object DBStorage : Storage<String> {
         }
 
         return success
+    }
+
+    private fun withDb(doWhat: (db: SQLiteDatabase?) -> Unit) {
+
+        var tag = "With DB :: doWhat = ${doWhat.hashCode()} ::"
+
+        try {
+
+            val db = dbHelper?.writableDatabase
+
+            tag = "$tag db = ${db?.hashCode()} ::"
+
+            Timber.v("$tag START")
+
+            db?.let {
+
+                if (db.isOpen) {
+
+                    Timber.v("$tag EXECUTING")
+
+                    executor.execute {
+
+                        doWhat(db)
+
+                        Timber.v("$tag EXECUTED")
+                    }
+
+                } else {
+
+                    Timber.w("$tag DB is not open")
+                }
+            }
+
+            if (db == null) {
+
+                Timber.e("$tag DB is null")
+            }
+
+        } catch (e: Exception) {
+
+            Timber.e("$tag ERROR ::", e.message ?: "Unknown error")
+
+            Timber.e(e)
+        }
     }
 }
