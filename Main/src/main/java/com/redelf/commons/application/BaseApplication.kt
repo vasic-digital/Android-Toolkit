@@ -138,6 +138,7 @@ abstract class BaseApplication :
 
     val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
+    open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
 
     protected abstract fun onDoCreate()
