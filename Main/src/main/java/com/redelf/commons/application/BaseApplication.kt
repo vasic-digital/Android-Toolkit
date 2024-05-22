@@ -11,6 +11,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager.NameNotFoundException
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
@@ -130,6 +132,7 @@ abstract class BaseApplication :
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null
     private val registeredForPhoneCallsDetection = AtomicBoolean()
+    private val registeredForAudioFocusDetection = AtomicBoolean()
 
     val managers = mutableListOf<List<DataManagement<*>>>(
 
@@ -232,6 +235,28 @@ abstract class BaseApplication :
         }
     }
 
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+
+        when (focusChange) {
+
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+
+                onExternalStreamStarted()
+            }
+
+            AudioManager.AUDIOFOCUS_GAIN -> {
+
+                Timber.v("Audio focus gained")
+            }
+
+            AudioManager.AUDIOFOCUS_LOSS -> {
+
+                Timber.v("Audio focus lost")
+            }
+        }
+    }
+
     fun registerPhoneStateListener() {
 
         val tag = "Register phone state listener ::"
@@ -276,9 +301,43 @@ abstract class BaseApplication :
         }
     }
 
+    fun registerAudioFocusChangeListener() {
+
+        val tag = "Register audio focus listener ::"
+
+        Timber.v("$tag START")
+
+        if (registeredForAudioFocusDetection.get()) {
+
+            Timber.v("$tag Already registered")
+
+            return
+        }
+
+        if (detectAudioStreamed) {
+
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager?
+
+            val audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                .build()
+
+            audioManager?.requestAudioFocus(audioFocusRequest)
+
+        } else {
+
+            Timber.v("$tag Audio focus detection disabled")
+        }
+    }
+
     protected open fun onPhoneIsRinging() {
 
         Timber.v("Phone is RINGING")
+    }
+
+    protected open fun onExternalStreamStarted() {
+
+        Timber.v("Audio focus transient or can dock")
     }
 
     override fun takeContext() = CONTEXT
