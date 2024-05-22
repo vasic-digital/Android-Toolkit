@@ -242,7 +242,7 @@ abstract class BaseApplication :
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
 
-                onExternalStreamStarted()
+                Timber.v("Audio focus :: Transient or can dock")
             }
 
             AudioManager.AUDIOFOCUS_GAIN -> {
@@ -252,7 +252,7 @@ abstract class BaseApplication :
 
             AudioManager.AUDIOFOCUS_LOSS -> {
 
-                Timber.v("Audio focus :: Lost")
+                onExternalStreamStarted()
             }
         }
     }
@@ -339,7 +339,7 @@ abstract class BaseApplication :
 
     protected open fun onExternalStreamStarted() {
 
-        Timber.d("Audio focus :: Transient or can dock")
+        Timber.d("Audio focus :: Lost")
     }
 
     override fun takeContext() = CONTEXT
