@@ -247,12 +247,12 @@ abstract class BaseApplication :
 
             AudioManager.AUDIOFOCUS_GAIN -> {
 
-                Timber.v("Audio focus gained")
+                Timber.v("Audio focus :: Gained")
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
 
-                Timber.v("Audio focus lost")
+                Timber.v("Audio focus :: Lost")
             }
         }
     }
@@ -324,6 +324,8 @@ abstract class BaseApplication :
 
             audioManager?.requestAudioFocus(audioFocusRequest)
 
+            Timber.v("$tag END")
+
         } else {
 
             Timber.v("$tag Audio focus detection disabled")
@@ -337,7 +339,7 @@ abstract class BaseApplication :
 
     protected open fun onExternalStreamStarted() {
 
-        Timber.v("Audio focus transient or can dock")
+        Timber.d("Audio focus :: Transient or can dock")
     }
 
     override fun takeContext() = CONTEXT
