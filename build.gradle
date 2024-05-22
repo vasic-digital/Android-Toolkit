@@ -1,5 +1,8 @@
 buildscript {
 
+    /*
+        TODO: Kotlin 2.0
+    */
     ext.kotlin_version = '1.8.20'
 
     repositories {
