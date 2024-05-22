@@ -242,7 +242,9 @@ abstract class BaseApplication :
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
 
-                Timber.v("Audio focus :: Transient or can dock")
+                Timber.d("Audio focus :: Transient or can dock")
+
+                onExternalStreamStarted()
             }
 
             AudioManager.AUDIOFOCUS_GAIN -> {
