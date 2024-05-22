@@ -28,6 +28,7 @@ import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.extensions.clearAllSharedPreferences
 import com.redelf.commons.extensions.detectAllExpect
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
@@ -37,7 +38,9 @@ import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.logging.LogsGathering
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
+import com.redelf.commons.updating.Updatable
 import timber.log.Timber
+import java.lang.NumberFormatException
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -47,7 +50,8 @@ abstract class BaseApplication :
     ContextAvailability<BaseApplication>,
     ActivityLifecycleCallbacks,
     ActivityCount,
-    LifecycleObserver
+    LifecycleObserver,
+    Updatable
 
 {
 
@@ -307,7 +311,32 @@ abstract class BaseApplication :
         managers.addAll(populateManagers())
         defaultManagerResources.putAll(populateDefaultManagerResources())
 
+        update()
+
         doCreate()
+    }
+
+    override fun update() {
+
+        val tag = "Update ::"
+
+        try {
+
+            val versionCode = getVersionCode().toInt()
+
+            if (versionCode >= 195L) {
+
+                Timber.v("$tag Version code updates :: $versionCode :: START")
+
+                clearAllSharedPreferences()
+
+                Timber.v("$tag Version code updates :: $versionCode :: END")
+            }
+
+        } catch (e: NumberFormatException) {
+
+            Timber.e(e)
+        }
     }
 
     private fun doCreate() {
