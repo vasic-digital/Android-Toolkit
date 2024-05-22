@@ -5,11 +5,17 @@ import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 
-final class SharedPreferencesStorage implements Storage<String> {
+public final class SharedPreferencesStorage implements Storage<String> {
 
     private final SharedPreferences preferences;
 
+    public SharedPreferencesStorage(Context context) {
+
+        this(context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE));
+    }
+
     SharedPreferencesStorage(SharedPreferences preferences) {
+
         this.preferences = preferences;
     }
 

@@ -28,9 +28,9 @@ import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
-import com.redelf.commons.extensions.clearAllSharedPreferences
 import com.redelf.commons.extensions.detectAllExpect
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.fcm.FcmService
@@ -38,6 +38,7 @@ import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.logging.LogsGathering
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
+import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.updating.Updatable
 import timber.log.Timber
 import java.lang.NumberFormatException
@@ -51,9 +52,7 @@ abstract class BaseApplication :
     ActivityLifecycleCallbacks,
     ActivityCount,
     LifecycleObserver,
-    Updatable
-
-{
+    Updatable<Long> {
 
     companion object : ContextAvailability<BaseApplication>, ApplicationVersion {
 
@@ -127,6 +126,7 @@ abstract class BaseApplication :
         }
     }
 
+    private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null
     private val registeredForPhoneCallsDetection = AtomicBoolean()
@@ -146,6 +146,8 @@ abstract class BaseApplication :
     protected open fun populateManagers() = listOf<List<DataManagement<*>>>()
 
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
+
+    protected lateinit var prefs: SharedPreferencesStorage
 
     private val screenReceiver: BroadcastReceiver = object : BroadcastReceiver() {
 
@@ -283,6 +285,8 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
+        prefs = SharedPreferencesStorage(applicationContext)
+
         disableActivityAnimations(applicationContext)
 
         CONTEXT = this
@@ -314,29 +318,6 @@ abstract class BaseApplication :
         update()
 
         doCreate()
-    }
-
-    override fun update() {
-
-        val tag = "Update ::"
-
-        try {
-
-            val versionCode = getVersionCode().toInt()
-
-            if (versionCode >= 195L) {
-
-                Timber.v("$tag Version code updates :: $versionCode :: START")
-
-                clearAllSharedPreferences()
-
-                Timber.v("$tag Version code updates :: $versionCode :: END")
-            }
-
-        } catch (e: NumberFormatException) {
-
-            Timber.e(e)
-        }
     }
 
     private fun doCreate() {
@@ -743,6 +724,88 @@ abstract class BaseApplication :
 
             LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
         }
+    }
+
+    protected open fun getUpdatesCodes() = setOf<Long>()
+
+    override fun update() {
+
+        var versionCode = 0
+        val tag = "Update ::"
+
+        try {
+
+            versionCode = getVersionCode().toInt()
+
+        } catch (e: NumberFormatException) {
+
+            onUpdatedFailed(0)
+
+            Timber.e(e)
+        }
+
+        getUpdatesCodes().forEach { code ->
+
+            if (versionCode >= code && isUpdateApplied(code)) {
+
+                Timber.v("$tag Code :: $versionCode :: START")
+
+                val success = update(code)
+
+                if (success) {
+
+                    onUpdated(code)
+
+                } else {
+
+                    onUpdatedFailed(code)
+                }
+
+                Timber.v("$tag Code :: $versionCode :: END")
+            }
+        }
+    }
+
+    override fun update(identifier: Long) = false
+
+    override fun onUpdatedFailed(identifier: Long) {
+
+        val msg = "Failed to update, versionCode = ${getVersionCode()}, " +
+                "identifier = $identifier"
+
+        val error = IllegalStateException(msg)
+        recordException(error)
+    }
+
+    override fun onUpdated(identifier: Long) {
+
+        val tag = "Update ::"
+        val key = "$prefsKeyUpdate.$identifier"
+        val result = prefs.put(key, "$identifier")
+
+        val msg = "$tag Success: versionCode = ${getVersionCode()}, " +
+                "identifier = $identifier"
+
+        Timber.d(msg)
+
+        if (!result) {
+
+            Timber.e("$tag Failed to update preferences :: key = '$key'")
+        }
+    }
+
+    override fun isUpdateApplied(identifier: Long): Boolean {
+
+        val key = "$prefsKeyUpdate.$identifier"
+        val value = prefs[key]
+        val updateAvailable = isEmpty(value)
+
+        if (updateAvailable) {
+
+            Timber.v("Update :: Available :: identifier = '$identifier'")
+        }
+
+        return updateAvailable
     }
 
     private fun onAppBackgroundState() {

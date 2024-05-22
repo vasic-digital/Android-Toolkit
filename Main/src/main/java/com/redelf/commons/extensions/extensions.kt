@@ -161,7 +161,9 @@ fun Context.closeKeyboard(v: View) {
     inputMethodManager?.hideSoftInputFromWindow(v.applicationWindowToken, 0)
 }
 
-fun Context.clearAllSharedPreferences() {
+fun Context.clearAllSharedPreferences(): Boolean {
+
+    var result = true
 
     try {
 
@@ -169,16 +171,25 @@ fun Context.clearAllSharedPreferences() {
 
         sharedPreferencesNames.forEach { sharedPreferencesName ->
 
-            getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
+            val res = getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
                 .edit()
                 .clear()
-                .apply()
+                .commit()
+
+            if (!res) {
+
+                result = false
+            }
         }
 
     } catch (e: SecurityException) {
 
         Timber.e(e)
+
+        result = false
     }
+
+    return result
 }
 
 fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_ACTIVITY_REQUEST) {
