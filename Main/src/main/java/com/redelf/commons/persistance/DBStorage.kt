@@ -135,18 +135,19 @@ internal object DBStorage : Storage<String> {
 
         fun closeDatabase() {
 
-            try {
+            withDb { db ->
 
-                val db = readableDatabase
+                try {
 
-                if (db.isOpen) {
+                    if (db?.isOpen == true) {
 
-                    db.close()
+                        db.close()
+                    }
+
+                } catch (e: Exception) {
+
+                    Timber.e(e)
                 }
-
-            } catch (e: Exception) {
-
-                Timber.e(e)
             }
         }
     }
