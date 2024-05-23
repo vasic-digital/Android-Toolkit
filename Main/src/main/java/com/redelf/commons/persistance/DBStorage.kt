@@ -135,6 +135,8 @@ internal object DBStorage : Storage<String> {
 
         fun closeDatabase() {
 
+            val latch = CountDownLatch(1)
+
             withDb { db ->
 
                 try {
@@ -148,7 +150,11 @@ internal object DBStorage : Storage<String> {
 
                     Timber.e(e)
                 }
+
+                latch.countDown()
             }
+
+            latch.await()
         }
     }
 
