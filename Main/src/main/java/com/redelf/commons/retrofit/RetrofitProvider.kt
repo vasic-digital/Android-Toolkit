@@ -2,6 +2,7 @@ package com.redelf.commons.retrofit
 
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.obtain.ObtainParametrized
+import com.redelf.commons.retrofit.gson.GsonLoggingInterceptor
 import okhttp3.Call
 import okhttp3.CertificatePinner
 import okhttp3.ConnectionPool
@@ -42,7 +43,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         val cTime = param.connectTimeoutInSeconds
         val baseUrl = ctx.getString(param.endpoint)
 
-        val client = newHttpClient(interceptor, rTime, cTime, wTime)
+        val client = newHttpClient(interceptor, rTime, cTime, wTime, verbose = param.bodyLog)
 
         val converter: Converter.Factory = if (param.scalar) {
 
@@ -75,7 +76,8 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         loggingInterceptor: HttpLoggingInterceptor?,
         readTime: Long,
         connTime: Long,
-        writeTime: Long = -1L
+        writeTime: Long = -1L,
+        verbose: Boolean = false
 
     ): OkHttpClient {
 
@@ -96,6 +98,12 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         loggingInterceptor?.let {
 
             builder.addInterceptor(it)
+        }
+
+        if (BuildConfig.DEBUG && verbose) {
+
+            val gsonInterceptor = GsonLoggingInterceptor()
+            builder.addInterceptor(gsonInterceptor)
         }
 
         if (writeTime > 0) {
