@@ -1,10 +1,14 @@
 package com.redelf.commons.retrofit
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.obtain.ObtainParametrized
-import com.redelf.commons.retrofit.gson.GsonLoggingInterceptor
+import com.redelf.commons.retrofit.gson.SerializationBenchmarkLoggingInterceptor
 import okhttp3.Call
 import okhttp3.CertificatePinner
 import okhttp3.ConnectionPool
@@ -13,6 +17,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -50,6 +55,18 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         val converter: Converter.Factory = if (param.scalar) {
 
             ScalarsConverterFactory.create()
+
+        } else if (param.jackson) {
+
+            val objectMapper = ObjectMapper()
+                .registerModule(JavaTimeModule()) // Register JavaTimeModule for handling Java 8 date/time types
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS) // Disable writing dates as timestamps
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
+                .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
+                .configure(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS, true)
+
+            JacksonConverterFactory.create(objectMapper)
 
         } else {
 
@@ -111,8 +128,8 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         if (BuildConfig.DEBUG && verbose) {
 
-            val gsonInterceptor = GsonLoggingInterceptor()
-            builder.addInterceptor(gsonInterceptor)
+            val benchInterceptor = SerializationBenchmarkLoggingInterceptor()
+            builder.addInterceptor(benchInterceptor)
         }
 
         if (writeTime > 0) {

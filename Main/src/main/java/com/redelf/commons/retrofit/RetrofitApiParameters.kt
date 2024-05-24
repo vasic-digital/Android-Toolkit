@@ -1,29 +1,49 @@
 package com.redelf.commons.retrofit
 
 import android.content.Context
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.redelf.commons.R
 import okhttp3.Call
 import java.util.concurrent.ConcurrentHashMap
 
-data class RetrofitApiParameters(
+data class RetrofitApiParameters @JsonCreator constructor(
 
+    @JsonIgnore
     @Transient
     val ctx: Context,
+
+    @JsonProperty("readTimeoutInSeconds")
     @SerializedName("readTimeoutInSeconds")
     val readTimeoutInSeconds: Long = 10,
+
+    @JsonProperty("connectTimeoutInSeconds")
     @SerializedName("connectTimeoutInSeconds")
     val connectTimeoutInSeconds: Long = 10,
+
+    @JsonProperty("writeTimeoutInSeconds")
     @SerializedName("writeTimeoutInSeconds")
     val writeTimeoutInSeconds: Long = -1,
+
+    @JsonProperty("endpoint")
     @SerializedName("endpoint")
     val endpoint: Int = R.string.retrofit_endpoint,
+
+    @JsonProperty("scalar")
     @SerializedName("scalar")
     val scalar: Boolean = false,
+
+    @JsonProperty("jackson")
     @SerializedName("jackson")
-    val jackson: Boolean = false,
+    val jackson: Boolean = true,
+
+    @JsonProperty("bodyLog")
     @SerializedName("bodyLog")
     var bodyLog: Boolean = true,
+
+    @JsonProperty("callsWrapper")
     @SerializedName("callsWrapper")
     val callsWrapper: ConcurrentHashMap<String, Call> = GlobalCallsWrapper.CALLS
 )

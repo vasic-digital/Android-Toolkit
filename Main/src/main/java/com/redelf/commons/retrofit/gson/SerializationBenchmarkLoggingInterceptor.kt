@@ -4,9 +4,9 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import timber.log.Timber
 
-class GsonLoggingInterceptor : Interceptor {
+class SerializationBenchmarkLoggingInterceptor : Interceptor {
 
-    private val tag = "GSON :: Interceptor ::"
+    private val tag = "Serialization benchmark :: Interceptor ::"
     override fun intercept(chain: Interceptor.Chain): Response {
 
         val request = chain.request()

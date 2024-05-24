@@ -1,5 +1,6 @@
 package com.redelf.commons.instantiation
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.redelf.commons.desription.Subject
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.locking.Lockable
@@ -17,6 +18,7 @@ abstract class SingleInstance<T> :
 {
 
     @Transient
+    @JsonIgnore
     private var instance: T? = null
 
     @Throws(InstantiationException::class)

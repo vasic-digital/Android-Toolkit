@@ -1,5 +1,7 @@
 package com.redelf.commons.persistance
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+
 class DataInfo(
 
     val cipherText: ByteArray?,
@@ -8,7 +10,10 @@ class DataInfo(
     val keyClazzName: String?,
     val valueClazzName: String?,
 
+    @JsonIgnore
     @Transient var keyClazz: Class<*>?,
+
+    @JsonIgnore
     @Transient var valueClazz: Class<*>?
 
 ) {
