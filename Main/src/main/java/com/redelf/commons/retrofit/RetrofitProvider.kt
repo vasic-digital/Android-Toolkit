@@ -59,12 +59,12 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         } else if (param.jackson) {
 
             val objectMapper = ObjectMapper()
-                .registerModule(JavaTimeModule()) // Register JavaTimeModule for handling Java 8 date/time types
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS) // Disable writing dates as timestamps
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .registerModule(JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
-                .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
-                .configure(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS, true)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
+                .configure(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS, false)
 
             JacksonConverterFactory.create(objectMapper)
 
