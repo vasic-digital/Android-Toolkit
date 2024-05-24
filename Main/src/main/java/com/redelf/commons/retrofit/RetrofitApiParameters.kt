@@ -39,7 +39,7 @@ data class RetrofitApiParameters @JsonCreator constructor(
 
     @JsonProperty("jackson")
     @SerializedName("jackson")
-    val jackson: Boolean? = true,
+    val jackson: Boolean? = false,
 
     @JsonProperty("bodyLog")
     @SerializedName("bodyLog")

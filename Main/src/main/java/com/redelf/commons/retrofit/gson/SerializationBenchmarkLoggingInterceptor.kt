@@ -19,7 +19,7 @@ class SerializationBenchmarkLoggingInterceptor : Interceptor {
 
         if (response.body != null) {
 
-            Timber.v("$tag Serializing time: $totalTime ms")
+            Timber.v("$tag Serializing time: $totalTime ms :: Url = ${request.url}")
 
         } else {
 

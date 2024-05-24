@@ -133,7 +133,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             builder.addInterceptor(it)
         }
 
-        if (BuildConfig.DEBUG && verbose) {
+        if (BuildConfig.DEBUG ) { //&& verbose
 
             val benchInterceptor = SerializationBenchmarkLoggingInterceptor()
             builder.addInterceptor(benchInterceptor)
