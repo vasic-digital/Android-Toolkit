@@ -28,19 +28,25 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
     override fun obtain(param: RetrofitApiParameters): Retrofit {
 
-        Timber.v("RetrofitProvider :: obtain: $param")
+        Timber.v("Retrofit :: Obtain: $param")
 
         var interceptor: HttpLoggingInterceptor? = null
 
         if (BuildConfig.DEBUG) {
 
+            Timber.v("Retrofit :: Debug :: ON")
+
             interceptor = HttpLoggingInterceptor()
 
             if (param.bodyLog == true) {
 
+                Timber.v("Retrofit :: Debug :: BODY")
+
                 interceptor.level = HttpLoggingInterceptor.Level.BODY
 
             } else {
+
+                Timber.v("Retrofit :: Debug :: BASIC")
 
                 interceptor.level = HttpLoggingInterceptor.Level.BASIC
             }
@@ -63,9 +69,13 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         val converter: Converter.Factory = if (param.scalar == true) {
 
+            Timber.v("Retrofit :: Converter: Scalar")
+
             ScalarsConverterFactory.create()
 
         } else if (param.jackson == true) {
+
+            Timber.v("Retrofit :: Converter: Jackson")
 
             val objectMapper = ObjectMapper()
                 .registerModule(JavaTimeModule())
@@ -78,6 +88,8 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             JacksonConverterFactory.create(objectMapper)
 
         } else {
+
+            Timber.v("Retrofit :: Converter: GSON")
 
             GsonBuilder()
                 .disableHtmlEscaping()
