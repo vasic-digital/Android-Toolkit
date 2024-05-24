@@ -65,11 +65,13 @@ dependencies {
      * TODO: Migrate to the latest versions of the dependencies
      */
 
+    final String okioVersion = "3.9.0"
     final String okHttpVersion = "4.12.0"
     final String jacksonVersion = "2.12.5"
     final String lifecycleVersion = "2.6.0"
-    final String retrofitHttpVersion = "2.9.0"
+    final String retrofitHttpVersion = "2.11.0"
 
+    api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"

@@ -14,7 +14,10 @@ fun retrofitApiParameters(
     writeTimeoutInSeconds: Long = -1,
 
     scalar: Boolean? = false,
-    jackson: Boolean? = false
+    jackson: Boolean? = false,
+
+    verbose: Boolean? = false,
+    bodyLog: Boolean? = false
 
 ) = RetrofitApiParameters(
 
@@ -23,8 +26,10 @@ fun retrofitApiParameters(
     writeTimeoutInSeconds = writeTimeoutInSeconds,
     connectTimeoutInSeconds = connectTimeoutInSeconds,
     endpoint = endpoint,
-    scalar = scalar,
-    bodyLog = ctx.resources.getBoolean(R.bool.retrofit_full_log),
-    verbose = ctx.resources.getBoolean(R.bool.retrofit_verbose_log),
+
+    bodyLog = bodyLog ?: ctx.resources.getBoolean(R.bool.retrofit_full_log),
+    verbose = verbose ?: ctx.resources.getBoolean(R.bool.retrofit_verbose_log),
+
+    scalar = scalar ?: ctx.resources.getBoolean(R.bool.retrofit_scalar),
     jackson = jackson ?: ctx.resources.getBoolean(R.bool.retrofit_jackson)
 )

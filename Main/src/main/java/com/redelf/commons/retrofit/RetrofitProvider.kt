@@ -56,14 +56,17 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         val rTime = param.readTimeoutInSeconds
         val wTime = param.writeTimeoutInSeconds
         val cTime = param.connectTimeoutInSeconds
+
         val baseUrl = ctx.getString(param.endpoint ?: 0)
 
         val client = newHttpClient(
 
             interceptor,
-            rTime ?: 0,
-            cTime ?: 0 ,
-            wTime ?: 0,
+
+            readTime = rTime ?: 0,
+            connTime = cTime ?: 0,
+            writeTime = wTime ?: 0,
+
             verbose = param.bodyLog == true || param.verbose == true
         )
 

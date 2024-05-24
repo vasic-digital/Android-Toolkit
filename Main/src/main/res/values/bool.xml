@@ -8,8 +8,9 @@
     <bool name="logs_gathering_enabled">false</bool>
 
     <!-- Retrofit -->
+    <bool name="retrofit_jackson">true</bool>
+    <bool name="retrofit_scalar">false</bool>
     <bool name="retrofit_full_log">false</bool>
     <bool name="retrofit_verbose_log">false</bool>
-    <bool name="retrofit_jackson">false</bool>
 
 </resources>
