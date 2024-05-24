@@ -1,5 +1,7 @@
 package com.redelf.commons.retrofit
 
+import com.google.gson.FieldNamingPolicy
+import com.google.gson.GsonBuilder
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.retrofit.gson.GsonLoggingInterceptor
@@ -51,7 +53,14 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         } else {
 
-            GsonConverterFactory.create()
+            GsonBuilder()
+                .disableHtmlEscaping()
+                .serializeNulls()
+                .setLenient()
+                .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
+                .create()
+
+            GsonConverterFactory.create(GsonBuilder().create())
         }
 
         val callFactory = Call.Factory { request ->

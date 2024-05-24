@@ -20,6 +20,8 @@ data class RetrofitApiParameters(
     val endpoint: Int = R.string.retrofit_endpoint,
     @SerializedName("scalar")
     val scalar: Boolean = false,
+    @SerializedName("jackson")
+    val jackson: Boolean = false,
     @SerializedName("bodyLog")
     var bodyLog: Boolean = true,
     @SerializedName("callsWrapper")
