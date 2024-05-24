@@ -34,7 +34,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
             interceptor = HttpLoggingInterceptor()
 
-            if (param.bodyLog) {
+            if (param.bodyLog == true) {
 
                 interceptor.level = HttpLoggingInterceptor.Level.BODY
 
@@ -48,15 +48,22 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         val rTime = param.readTimeoutInSeconds
         val wTime = param.writeTimeoutInSeconds
         val cTime = param.connectTimeoutInSeconds
-        val baseUrl = ctx.getString(param.endpoint)
+        val baseUrl = ctx.getString(param.endpoint ?: 0)
 
-        val client = newHttpClient(interceptor, rTime, cTime, wTime, verbose = param.bodyLog)
+        val client = newHttpClient(
 
-        val converter: Converter.Factory = if (param.scalar) {
+            interceptor,
+            rTime ?: 0,
+            cTime ?: 0 ,
+            wTime ?: 0,
+            verbose = param.bodyLog ?: false
+        )
+
+        val converter: Converter.Factory = if (param.scalar == true) {
 
             ScalarsConverterFactory.create()
 
-        } else if (param.jackson) {
+        } else if (param.jackson == true) {
 
             val objectMapper = ObjectMapper()
                 .registerModule(JavaTimeModule())
@@ -85,7 +92,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             val call = client.newCall(request)
             val tag = request.url.toString()
 
-            param.callsWrapper[tag] = call
+            param.callsWrapper?.set(tag, call)
 
             call
         }

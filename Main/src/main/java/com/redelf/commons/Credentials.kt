@@ -9,11 +9,11 @@ data class Credentials @JsonCreator constructor(
 
     @JsonProperty("username")
     @SerializedName("username")
-    val username: String = "",
+    val username: String? = "",
 
     @JsonProperty("password")
     @SerializedName("password")
-    val password: String = ""
+    val password: String? = ""
 
 ) {
 

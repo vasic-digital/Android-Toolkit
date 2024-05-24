@@ -19,33 +19,33 @@ data class RetrofitApiParameters @JsonCreator constructor(
 
     @JsonProperty("readTimeoutInSeconds")
     @SerializedName("readTimeoutInSeconds")
-    val readTimeoutInSeconds: Long = 10,
+    val readTimeoutInSeconds: Long? = 10,
 
     @JsonProperty("connectTimeoutInSeconds")
     @SerializedName("connectTimeoutInSeconds")
-    val connectTimeoutInSeconds: Long = 10,
+    val connectTimeoutInSeconds: Long? = 10,
 
     @JsonProperty("writeTimeoutInSeconds")
     @SerializedName("writeTimeoutInSeconds")
-    val writeTimeoutInSeconds: Long = -1,
+    val writeTimeoutInSeconds: Long? = -1,
 
     @JsonProperty("endpoint")
     @SerializedName("endpoint")
-    val endpoint: Int = R.string.retrofit_endpoint,
+    val endpoint: Int? = R.string.retrofit_endpoint,
 
     @JsonProperty("scalar")
     @SerializedName("scalar")
-    val scalar: Boolean = false,
+    val scalar: Boolean? = false,
 
     @JsonProperty("jackson")
     @SerializedName("jackson")
-    val jackson: Boolean = true,
+    val jackson: Boolean? = true,
 
     @JsonProperty("bodyLog")
     @SerializedName("bodyLog")
-    var bodyLog: Boolean = true,
+    var bodyLog: Boolean? = true,
 
     @JsonProperty("callsWrapper")
     @SerializedName("callsWrapper")
-    val callsWrapper: ConcurrentHashMap<String, Call> = GlobalCallsWrapper.CALLS
+    val callsWrapper: ConcurrentHashMap<String, Call>? = GlobalCallsWrapper.CALLS
 )
