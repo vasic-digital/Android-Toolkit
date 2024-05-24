@@ -9,6 +9,7 @@
 
     <!-- Retrofit -->
     <bool name="retrofit_full_log">false</bool>
+    <bool name="retrofit_verbose_log">false</bool>
     <bool name="retrofit_jackson">false</bool>
 
 </resources>

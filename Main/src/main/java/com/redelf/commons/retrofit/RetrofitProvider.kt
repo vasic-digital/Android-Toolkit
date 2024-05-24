@@ -28,25 +28,25 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
     override fun obtain(param: RetrofitApiParameters): Retrofit {
 
-        Timber.v("Retrofit :: Obtain: $param")
+        if (param.verbose == true) Timber.v("Retrofit :: Obtain: $param")
 
         var interceptor: HttpLoggingInterceptor? = null
 
         if (BuildConfig.DEBUG) {
 
-            Timber.v("Retrofit :: Debug :: ON")
+            if (param.verbose == true) Timber.v("Retrofit :: Debug :: ON")
 
             interceptor = HttpLoggingInterceptor()
 
             if (param.bodyLog == true) {
 
-                Timber.v("Retrofit :: Debug :: BODY")
+                if (param.verbose == true) Timber.v("Retrofit :: Debug :: BODY")
 
                 interceptor.level = HttpLoggingInterceptor.Level.BODY
 
             } else {
 
-                Timber.v("Retrofit :: Debug :: BASIC")
+                if (param.verbose == true) Timber.v("Retrofit :: Debug :: BASIC")
 
                 interceptor.level = HttpLoggingInterceptor.Level.BASIC
             }
@@ -64,18 +64,18 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             rTime ?: 0,
             cTime ?: 0 ,
             wTime ?: 0,
-            verbose = param.bodyLog ?: false
+            verbose = param.bodyLog == true || param.verbose == true
         )
 
         val converter: Converter.Factory = if (param.scalar == true) {
 
-            Timber.v("Retrofit :: Converter: Scalar")
+            if (param.verbose == true) Timber.v("Retrofit :: Converter: Scalar")
 
             ScalarsConverterFactory.create()
 
         } else if (param.jackson == true) {
 
-            Timber.v("Retrofit :: Converter: Jackson")
+            if (param.verbose == true) Timber.v("Retrofit :: Converter: Jackson")
 
             val objectMapper = ObjectMapper()
                 .registerModule(JavaTimeModule())
@@ -89,7 +89,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         } else {
 
-            Timber.v("Retrofit :: Converter: GSON")
+            if (param.verbose == true) Timber.v("Retrofit :: Converter: GSON")
 
             GsonBuilder()
                 .disableHtmlEscaping()
@@ -147,7 +147,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             builder.addInterceptor(it)
         }
 
-        if (BuildConfig.DEBUG ) { //&& verbose
+        if (BuildConfig.DEBUG && verbose) {
 
             val benchInterceptor = SerializationBenchmarkLoggingInterceptor()
             builder.addInterceptor(benchInterceptor)

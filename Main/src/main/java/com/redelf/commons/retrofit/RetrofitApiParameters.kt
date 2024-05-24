@@ -45,6 +45,10 @@ data class RetrofitApiParameters @JsonCreator constructor(
     @SerializedName("bodyLog")
     var bodyLog: Boolean? = true,
 
+    @JsonProperty("bodyLog")
+    @SerializedName("bodyLog")
+    var verbose: Boolean? = false,
+
     @JsonProperty("callsWrapper")
     @SerializedName("callsWrapper")
     val callsWrapper: ConcurrentHashMap<String, Call>? = GlobalCallsWrapper.CALLS
