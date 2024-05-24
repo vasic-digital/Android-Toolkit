@@ -1,6 +1,8 @@
 package com.redelf.commons.persistance
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 
 class DataInfo(
 
@@ -11,9 +13,13 @@ class DataInfo(
     val valueClazzName: String?,
 
     @JsonIgnore
+    @JsonProperty("keyClass")
+    @SerializedName("keyClass")
     @Transient var keyClazz: Class<*>?,
 
     @JsonIgnore
+    @JsonProperty("valueClass")
+    @SerializedName("valueClass")
     @Transient var valueClazz: Class<*>?
 
 ) {

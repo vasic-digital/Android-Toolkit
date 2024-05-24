@@ -13,6 +13,8 @@ data class RetrofitApiParameters @JsonCreator constructor(
 
     @JsonIgnore
     @Transient
+    @JsonProperty("ctx")
+    @SerializedName("ctx")
     val ctx: Context,
 
     @JsonProperty("readTimeoutInSeconds")

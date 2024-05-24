@@ -1,6 +1,8 @@
 package com.redelf.commons.instantiation
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 import com.redelf.commons.desription.Subject
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.locking.Lockable
@@ -19,6 +21,8 @@ abstract class SingleInstance<T> :
 
     @Transient
     @JsonIgnore
+    @JsonProperty("instance")
+    @SerializedName("instance")
     private var instance: T? = null
 
     @Throws(InstantiationException::class)
