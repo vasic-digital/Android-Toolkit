@@ -1,13 +1,17 @@
 package com.redelf.commons
 
 import android.text.TextUtils
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 
-data class Credentials(
+data class Credentials @JsonCreator constructor(
 
+    @JsonProperty("username")
     @SerializedName("username")
     val username: String = "",
 
+    @JsonProperty("password")
     @SerializedName("password")
     val password: String = ""
 

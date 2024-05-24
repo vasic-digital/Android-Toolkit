@@ -1,9 +1,10 @@
 package com.redelf.commons.phonebook
 
 import android.net.Uri
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.google.gson.annotations.SerializedName
 
-data class PhonebookContact(
+data class PhonebookContact @JsonCreator constructor(
 
     @SerializedName("name")
     val name: String,
