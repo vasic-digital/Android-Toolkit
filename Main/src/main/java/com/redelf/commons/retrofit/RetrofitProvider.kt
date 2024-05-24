@@ -28,6 +28,8 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
     override fun obtain(param: RetrofitApiParameters): Retrofit {
 
+        Timber.v("RetrofitProvider :: obtain: $param")
+
         var interceptor: HttpLoggingInterceptor? = null
 
         if (BuildConfig.DEBUG) {
