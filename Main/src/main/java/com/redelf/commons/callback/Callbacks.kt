@@ -6,6 +6,15 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class Callbacks<T>(private val identifier: String) : Registration<T> {
 
+    companion object {
+
+        /*
+
+            TODO: DEBUG - To be configurable from code
+        */
+        private const val DEBUG = false
+    }
+
     val tag = "Callbacks '${getTagName()}' ::"
 
     private var callbacks = ConcurrentLinkedQueue<T>()
@@ -16,7 +25,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         val tag = "$tag ON  ::"
 
-        Timber.v(
+        if (DEBUG) Timber.v(
 
             "$tag Start :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -42,9 +51,9 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         callbacks.add(subscriber)
 
-        Timber.d("$tag Subscriber registered: ${subscriber.hashCode()}")
+        if (DEBUG) Timber.d("$tag Subscriber registered: ${subscriber.hashCode()}")
 
-        Timber.v(
+        if (DEBUG) Timber.v(
 
             "$tag End :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -54,7 +63,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         val tag = "$tag OFF ::"
 
-        Timber.v(
+        if (DEBUG) Timber.v(
 
             "$tag Start :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -73,14 +82,14 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
                 } else {
 
-                    Timber.d("$tag Subscriber unregistered: ${subscriber.hashCode()}")
+                    if (DEBUG) Timber.d("$tag Subscriber unregistered: ${subscriber.hashCode()}")
                 }
 
                 iterator.remove()
             }
         }
 
-        Timber.v(
+        if (DEBUG) Timber.v(
 
             "$tag End :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -120,7 +129,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
             } else {
 
-                Timber.d("$operationName performing operation for subscriber: ${item.hashCode()}")
+                if (DEBUG) Timber.d("$operationName performing operation for subscriber: ${item.hashCode()}")
                 operation.perform(item)
                 count++
             }
@@ -128,7 +137,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         if (count > 0) {
 
-            Timber.d("$operationName performed for $count subscribers")
+            if (DEBUG) Timber.d("$operationName performed for $count subscribers")
 
         } else {
 

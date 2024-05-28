@@ -119,9 +119,6 @@ internal object DBStorage : Storage<String> {
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-            // db.execSQL(sqlDelete())
-            // onCreate(db)
-
             if (DEBUG) Timber.v("Old version: $oldVersion :: New version: $newVersion")
         }
 
