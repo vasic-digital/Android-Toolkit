@@ -679,9 +679,12 @@ abstract class BaseApplication :
 
         } else {
 
-            val clazz = TOP_ACTIVITY.last()
+            if (TOP_ACTIVITY.isNotEmpty()) {
 
-            Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+                val clazz = TOP_ACTIVITY.last()
+
+                Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+            }
         }
 
         super.onActivityPreDestroyed(activity)
