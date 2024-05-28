@@ -25,9 +25,11 @@ internal object DBStorage : Storage<String> {
 
     /*
         TODO: Implement the mechanism to split data into chunks
-        TODO: MAke possible for data managers to have multiple databases - each manager its own
+        TODO: Make possible for data managers to have multiple databases - each manager its own
+        TODO: DEBUG - To be configurable from code
     */
 
+    private const val DEBUG = false
     private const val DATABASE_VERSION = 1
 
     private const val DATABASE_NAME = "sdb"
@@ -120,7 +122,7 @@ internal object DBStorage : Storage<String> {
             // db.execSQL(sqlDelete())
             // onCreate(db)
 
-            Timber.v("Old version: $oldVersion :: New version: $newVersion")
+            if (DEBUG) Timber.v("Old version: $oldVersion :: New version: $newVersion")
         }
 
         override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -164,7 +166,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Initialize ::"
 
-        Timber.v("$tag START")
+        if (DEBUG) Timber.v("$tag START")
 
         try {
 
@@ -224,11 +226,11 @@ internal object DBStorage : Storage<String> {
             columnKey = columnKey()
             columnValue = columnValue()
 
-            Timber.v("$tag dbName = '$dbName', rawName = '$rawName'")
+            if (DEBUG) Timber.v("$tag dbName = '$dbName', rawName = '$rawName'")
 
             dbHelper = DbHelper(ctx, dbName)
 
-            Timber.v("$tag END")
+            if (DEBUG) Timber.v("$tag END")
 
         } catch (e: SQLException) {
 
@@ -261,7 +263,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Put :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        Timber.v("$tag START")
+        if (DEBUG) Timber.v("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -305,7 +307,7 @@ internal object DBStorage : Storage<String> {
 
                             if (rowsUpdated > 0) {
 
-                                Timber.v(
+                                if (DEBUG) Timber.v(
 
                                     "$tag END: rowsUpdated = $rowsUpdated, " +
                                             "length = ${value.length}"
@@ -318,7 +320,7 @@ internal object DBStorage : Storage<String> {
 
                             if (rowsInserted > 0) {
 
-                                Timber.v(
+                                if (DEBUG) Timber.v(
 
                                     "$tag END: rowsInserted = $rowsInserted, " +
                                             "length = ${value.length}"
@@ -365,7 +367,7 @@ internal object DBStorage : Storage<String> {
         val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
         val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        Timber.v("$tag START")
+        if (DEBUG) Timber.v("$tag START")
 
         withDb { db ->
 
@@ -418,7 +420,7 @@ internal object DBStorage : Storage<String> {
 
             if (isNotEmpty(result)) {
 
-                Timber.v("$tag END")
+                if (DEBUG) Timber.v("$tag END")
 
             } else {
 
@@ -437,7 +439,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Delete :: By key :: $key ::"
 
-        Timber.v("$tag START")
+        if (DEBUG) Timber.v("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -468,7 +470,7 @@ internal object DBStorage : Storage<String> {
 
                             if (res) {
 
-                                Timber.v("$tag END")
+                                if (DEBUG) Timber.v("$tag END")
 
                             } else {
 
@@ -511,7 +513,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Delete :: All ::"
 
-        Timber.v("$tag START")
+        if (DEBUG) Timber.v("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -539,7 +541,7 @@ internal object DBStorage : Storage<String> {
 
                             if (res) {
 
-                                Timber.v("$tag END")
+                                if (DEBUG) Timber.v("$tag END")
 
                             } else {
 
@@ -579,7 +581,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Delete :: Database ::"
 
-        Timber.v("$tag START")
+        if (DEBUG) Timber.v("$tag START")
 
         try {
 
@@ -589,7 +591,7 @@ internal object DBStorage : Storage<String> {
 
             if (result) {
 
-                Timber.v("$tag END: DB '$dbName' has been deleted")
+                if (DEBUG) Timber.v("$tag END: DB '$dbName' has been deleted")
 
                 if (prefs?.delete(DATABASE_NAME_SUFFIX_KEY) != true) {
 
@@ -744,19 +746,19 @@ internal object DBStorage : Storage<String> {
 
             tag = "$tag db = ${db?.hashCode()} ::"
 
-            Timber.v("$tag START")
+            if (DEBUG) Timber.v("$tag START")
 
             db?.let {
 
                 if (db.isOpen) {
 
-                    Timber.v("$tag EXECUTING")
+                    if (DEBUG) Timber.v("$tag EXECUTING")
 
                     executor.execute {
 
                         doWhat(db)
 
-                        Timber.v("$tag EXECUTED")
+                        if (DEBUG) Timber.v("$tag EXECUTED")
                     }
 
                 } else {
