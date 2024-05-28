@@ -1,12 +1,20 @@
 package com.redelf.commons.api
 
-import com.redelf.commons.BuildConfig
 import com.redelf.commons.exception.credentials.CredentialsInvalidException
 import com.redelf.commons.obtain.OnObtain
 import retrofit2.Response
 import java.io.IOException
 
 class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>() {
+
+    companion object {
+
+        /*
+
+            TODO: DEBUG - To be configurable from code
+        */
+        private const val DEBUG = false
+    }
 
     override fun onResponse(
 
@@ -46,7 +54,7 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
         } else {
 
-            val e = if (BuildConfig.DEBUG) {
+            val e = if (DEBUG) {
 
                 val loc = response?.raw()?.request?.url ?: ""
                 val codeStr = response?.code()?.toString() ?: ""
