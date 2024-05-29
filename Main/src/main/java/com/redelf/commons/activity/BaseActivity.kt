@@ -468,6 +468,36 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         )
     }
 
+    open fun showConfirmation(
+
+        message: String,
+        positiveLabel: Int?,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null
+
+    ): AlertDialog? {
+
+        return alert(
+
+            title = android.R.string.dialog_alert_title,
+            messageString = message,
+            action = {
+
+                dismissDialogs()
+                positiveAction?.run()
+            },
+            dismissAction = {
+
+                dismissDialogs()
+                dismissAction?.run()
+            },
+            actionLabel = positiveLabel ?: android.R.string.ok,
+            dismissible = false,
+            cancellable = true
+        )
+    }
+
     fun isNotFinishing() = !isFinishing
 
     override fun onDestroy() {
