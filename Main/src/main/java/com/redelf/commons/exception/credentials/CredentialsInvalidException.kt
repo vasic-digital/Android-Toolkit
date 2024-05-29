@@ -1,3 +1,3 @@
 package com.redelf.commons.exception.credentials
 
-class CredentialsInvalidException : IllegalArgumentException("Credentials are invalid")
+class CredentialsInvalidException : CredentialsException("Credentials are invalid")
