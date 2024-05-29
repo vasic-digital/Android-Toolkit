@@ -73,7 +73,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
-    protected open val detectPhoneCallReceived = BaseApplication.takeContext().detectPhoneCallReceived
+    protected open val detectPhoneCallReceived =
+        BaseApplication.takeContext().detectPhoneCallReceived
 
     private var created = false
     private val paused = AtomicBoolean()
@@ -368,6 +369,105 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         finish()
     }
 
+    open fun showError(
+
+        error: Int,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null
+
+    ): AlertDialog? {
+
+        return showError(error, positiveAction, dismissAction)
+    }
+
+    open fun showError(
+
+        error: Int,
+        title: Int? = null,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null
+
+    ): AlertDialog? {
+
+        return alert(
+
+            title = title ?: android.R.string.dialog_alert_title,
+            message = error,
+            action = {
+
+                dismissDialogs()
+                positiveAction?.run()
+
+            },
+            dismissAction = {
+
+                dismissDialogs()
+                dismissAction?.run()
+            },
+            actionLabel = android.R.string.ok,
+            dismissible = false,
+            cancellable = true
+        )
+    }
+
+    open fun showConfirmation(
+
+        message: Int,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null
+
+    ): AlertDialog? {
+
+        return showConfirmation(message, null, positiveAction, dismissAction)
+    }
+
+    open fun dismissDialogs() {
+
+        runOnUiThread {
+
+            attachmentsDialog?.dismiss()
+            attachmentsDialog = null
+
+            dialogs.forEach {
+
+                it.dismiss()
+            }
+        }
+    }
+
+    open fun showConfirmation(
+
+        message: Int,
+        positiveLabel: Int?,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null
+
+    ): AlertDialog? {
+
+        return alert(
+
+            title = android.R.string.dialog_alert_title,
+            message = message,
+            action = {
+
+                dismissDialogs()
+                positiveAction?.run()
+            },
+            dismissAction = {
+
+                dismissDialogs()
+                dismissAction?.run()
+            },
+            actionLabel = positiveLabel ?: android.R.string.ok,
+            dismissible = false,
+            cancellable = true
+        )
+    }
+
     fun isNotFinishing() = !isFinishing
 
     override fun onDestroy() {
@@ -623,26 +723,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
     }
 
-    protected open fun showError(error: Int) {
-
-        alert(
-
-            title = android.R.string.dialog_alert_title,
-            message = error,
-            action = {
-
-                dismissDialogs()
-            },
-            dismissAction = {
-
-                dismissDialogs()
-            },
-            actionLabel = android.R.string.ok,
-            dismissible = false,
-            cancellable = true
-        )
-    }
-
     protected open fun getTransmissionManager(callback: OnObtain<TransmissionManager<*>>) {
 
         val e = IllegalArgumentException("No transmission manager available")
@@ -810,20 +890,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     }
 
     protected open fun getAddAttachmentDialogStyle(): Int = 0
-
-    protected open fun dismissDialogs() {
-
-        runOnUiThread {
-
-            attachmentsDialog?.dismiss()
-            attachmentsDialog = null
-
-            dialogs.forEach {
-
-                it.dismiss()
-            }
-        }
-    }
 
     protected open fun handleFinishBroadcast(intent: Intent? = null) {
 
