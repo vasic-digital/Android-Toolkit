@@ -1,5 +1,6 @@
 package com.redelf.commons.callback
 
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.registration.Registration
 import timber.log.Timber
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -8,11 +9,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
     companion object {
 
-        /*
-
-            TODO: DEBUG - To be configurable from code
-        */
-        private const val DEBUG = false
+        var DEBUG = BaseApplication.DEBUG.get()
     }
 
     val tag = "Callbacks '${getTagName()}' ::"

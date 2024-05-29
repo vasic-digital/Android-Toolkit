@@ -1,5 +1,6 @@
 package com.redelf.commons.api
 
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.exception.credentials.CredentialsInvalidException
 import com.redelf.commons.obtain.OnObtain
 import retrofit2.Response
@@ -9,11 +10,7 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
     companion object {
 
-        /*
-
-            TODO: DEBUG - To be configurable from code
-        */
-        private const val DEBUG = false
+        var DEBUG = BaseApplication.DEBUG.get()
     }
 
     override fun onResponse(

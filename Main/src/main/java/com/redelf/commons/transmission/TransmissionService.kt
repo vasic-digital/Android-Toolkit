@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
+import com.redelf.commons.application.BaseApplication
 
 import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.scheduling.alarm.AlarmReceiver
@@ -19,11 +20,7 @@ class TransmissionService : BaseService() {
 
     companion object {
 
-        /*
-
-            TODO: DEBUG - To be configurable from code
-        */
-        private const val DEBUG = false
+        var DEBUG = BaseApplication.DEBUG.get()
 
         const val BROADCAST_EXTRA_CODE = 1
     }

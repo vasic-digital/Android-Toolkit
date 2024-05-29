@@ -24,14 +24,14 @@ import java.util.concurrent.atomic.AtomicLong
 internal object DBStorage : Storage<String> {
 
     /*
+
         TODO: Implement the mechanism to split data into chunks
         TODO: Make possible for data managers to have multiple databases - each manager its own
-        TODO: DEBUG - To be configurable from code
     */
 
-    private const val DEBUG = false
-    private const val DATABASE_VERSION = 1
+    var DEBUG = BaseApplication.DEBUG.get()
 
+    private const val DATABASE_VERSION = 1
     private const val DATABASE_NAME = "sdb"
     private const val DATABASE_NAME_SUFFIX_KEY = "DATABASE.NAME.SUFFIX.KEY"
 

@@ -56,11 +56,7 @@ abstract class BaseApplication :
 
     companion object : ContextAvailability<BaseApplication>, ApplicationVersion {
 
-        /*
-
-            TODO: DEBUG - To be configurable from code
-        */
-        const val DEBUG = false
+        lateinit var DEBUG: AtomicBoolean
 
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
@@ -358,8 +354,9 @@ abstract class BaseApplication :
         disableActivityAnimations(applicationContext)
 
         CONTEXT = this
+        DEBUG = AtomicBoolean(CONTEXT.resources.getBoolean(R.bool.debug))
 
-        if (DEBUG) {
+        if (DEBUG.get()) {
 
             Timber.plant(Timber.DebugTree())
 
@@ -716,7 +713,7 @@ abstract class BaseApplication :
 
         Timber.v("Enable Strict Mode, disabled=$STRICT_MODE_DISABLED")
 
-        if (STRICT_MODE_DISABLED) {
+        if (STRICT_MODE_DISABLED.get()) {
 
             return
         }
