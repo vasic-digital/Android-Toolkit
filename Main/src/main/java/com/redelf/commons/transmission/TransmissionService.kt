@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.callback.Callbacks
 
 import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.scheduling.alarm.AlarmReceiver
@@ -20,7 +21,7 @@ class TransmissionService : BaseService() {
 
     companion object {
 
-        var DEBUG = BaseApplication.DEBUG.get()
+        var DEBUG: Boolean? = null
 
         const val BROADCAST_EXTRA_CODE = 1
     }
@@ -145,7 +146,7 @@ class TransmissionService : BaseService() {
 
     private fun getAlarmInterval(): Long {
 
-        if (DEBUG) {
+        if (DEBUG ?: BaseApplication.DEBUG.get()) {
 
             return System.currentTimeMillis() + (60 * 1000)
         }

@@ -10,7 +10,7 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
     companion object {
 
-        var DEBUG = BaseApplication.DEBUG.get()
+        var DEBUG: Boolean? = null
     }
 
     override fun onResponse(
@@ -51,7 +51,7 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
         } else {
 
-            val e = if (DEBUG) {
+            val e = if (DEBUG ?: BaseApplication.DEBUG.get()) {
 
                 val loc = response?.raw()?.request?.url ?: ""
                 val codeStr = response?.code()?.toString() ?: ""

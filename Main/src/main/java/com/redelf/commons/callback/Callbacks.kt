@@ -9,7 +9,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
     companion object {
 
-        var DEBUG = BaseApplication.DEBUG.get()
+        var DEBUG: Boolean? = null
     }
 
     val tag = "Callbacks '${getTagName()}' ::"
@@ -22,7 +22,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         val tag = "$tag ON  ::"
 
-        if (DEBUG) Timber.v(
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
 
             "$tag Start :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -48,9 +48,12 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         callbacks.add(subscriber)
 
-        if (DEBUG) Timber.d("$tag Subscriber registered: ${subscriber.hashCode()}")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.d(
 
-        if (DEBUG) Timber.v(
+            "$tag Subscriber registered: ${subscriber.hashCode()}"
+        )
+
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
 
             "$tag End :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -60,7 +63,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         val tag = "$tag OFF ::"
 
-        if (DEBUG) Timber.v(
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
 
             "$tag Start :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -79,14 +82,17 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
                 } else {
 
-                    if (DEBUG) Timber.d("$tag Subscriber unregistered: ${subscriber.hashCode()}")
+                    if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.d(
+
+                        "$tag Subscriber unregistered: ${subscriber.hashCode()}"
+                    )
                 }
 
                 iterator.remove()
             }
         }
 
-        if (DEBUG) Timber.v(
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
 
             "$tag End :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -126,7 +132,11 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
             } else {
 
-                if (DEBUG) Timber.d("$operationName performing operation for subscriber: ${item.hashCode()}")
+                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.d(
+
+                    "$operationName performing operation for subscriber: ${item.hashCode()}"
+                )
+
                 operation.perform(item)
                 count++
             }
@@ -134,7 +144,10 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         if (count > 0) {
 
-            if (DEBUG) Timber.d("$operationName performed for $count subscribers")
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.d(
+
+                "$operationName performed for $count subscribers"
+            )
 
         } else {
 

@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.redelf.commons.Erasing
 import com.redelf.commons.R
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
@@ -41,7 +42,8 @@ constructor(
 
     companion object {
 
-        var DEBUG = true
+        var DEBUG: Boolean? = null
+
         val logTag = "${Persistence.tag} Encrypted ::"
     }
 
@@ -49,7 +51,10 @@ constructor(
 
     init {
 
-        Timber.v("$logTag :: Initialization :: Storage tag: '$storageTag'")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+
+            "$logTag :: Initialization :: Storage tag: '$storageTag'"
+        )
 
         val tag = "Exclusion strategies ::"
 
@@ -66,7 +71,10 @@ constructor(
 
                         serializationExclusionStrategy?.let {
 
-                            Timber.v("$tag Exclusion Strategies: $serializationExclusionStrategy")
+                            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+
+                                "$tag Exclusion Strategies: $serializationExclusionStrategy"
+                            )
 
                             gsonBuilder.setExclusionStrategies(serializationExclusionStrategy)
                         }
@@ -75,14 +83,20 @@ constructor(
 
                         serializationExclusionStrategy?.let {
 
-                            Timber.v("$tag Ser. Excl. Strategy: $serializationExclusionStrategy")
+                            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+
+                                "$tag Ser. Excl. Strategy: $serializationExclusionStrategy"
+                            )
 
                             gsonBuilder.addSerializationExclusionStrategy(serializationExclusionStrategy)
                         }
 
                         deserializationExclusionStrategy?.let {
 
-                            Timber.v("$tag De-Ser. Excl. Strategy: $serializationExclusionStrategy")
+                            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+
+                                "$tag De-Ser. Excl. Strategy: $serializationExclusionStrategy"
+                            )
 
                             gsonBuilder.addSerializationExclusionStrategy(deserializationExclusionStrategy)
                         }

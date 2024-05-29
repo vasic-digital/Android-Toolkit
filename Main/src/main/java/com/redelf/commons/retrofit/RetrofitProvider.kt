@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
-    var DEBUG = BaseApplication.DEBUG.get()
+    var DEBUG: Boolean? = null
 
     val PINNED_CERTIFICATES = mutableMapOf<String, String>()
 
@@ -34,7 +34,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         var interceptor: HttpLoggingInterceptor? = null
 
-        if (DEBUG) {
+        if (DEBUG ?: BaseApplication.DEBUG.get()) {
 
             if (param.verbose == true) Timber.v("Retrofit :: Debug :: ON")
 
@@ -152,7 +152,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             builder.addInterceptor(it)
         }
 
-        if (DEBUG && verbose) {
+        if (DEBUG ?: BaseApplication.DEBUG.get() && verbose) {
 
             val benchInterceptor = SerializationBenchmarkLoggingInterceptor()
             builder.addInterceptor(benchInterceptor)

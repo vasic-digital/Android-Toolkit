@@ -57,11 +57,10 @@ abstract class BaseApplication :
     companion object : ContextAvailability<BaseApplication>, ApplicationVersion {
 
         lateinit var DEBUG: AtomicBoolean
+        lateinit var STRICT_MODE_DISABLED: AtomicBoolean
 
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
-
-        var STRICT_MODE_DISABLED = DEBUG
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
         var TOP_ACTIVITIES = mutableListOf<Class<out Activity>>()
 
@@ -355,6 +354,7 @@ abstract class BaseApplication :
 
         CONTEXT = this
         DEBUG = AtomicBoolean(CONTEXT.resources.getBoolean(R.bool.debug))
+        STRICT_MODE_DISABLED = AtomicBoolean(!DEBUG.get())
 
         if (DEBUG.get()) {
 
