@@ -98,7 +98,7 @@ dependencies {
     api "com.google.firebase:firebase-analytics-ktx:22.0.0"
     api "com.google.firebase:firebase-messaging:24.0.0"
     api "com.google.firebase:firebase-crashlytics:19.0.0"
-    api "com.google.android.gms:play-services-auth:21.1.1"
+    api "com.google.android.gms:play-services-auth:21.2.0"
 
     api "com.google.android.play:app-update:2.1.0"
     api "com.google.android.play:app-update-ktx:2.1.0"
