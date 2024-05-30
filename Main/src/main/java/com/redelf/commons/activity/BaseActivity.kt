@@ -834,6 +834,26 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         actionLabel: Int = android.R.string.ok,
         dismissActionLabel: Int = android.R.string.cancel,
         style: Int = 0,
+        messageString: String = getString(message)
+
+    ) = alert(
+
+        title, message, action, dismissAction, icon, cancellable, dismissible, actionLabel,
+        dismissActionLabel, style, messageString, false
+    )
+
+    fun alert(
+
+        title: Int = android.R.string.dialog_alert_title,
+        message: Int = 0,
+        action: Runnable,
+        dismissAction: Runnable? = null,
+        icon: Int = android.R.drawable.ic_dialog_alert,
+        cancellable: Boolean = false,
+        dismissible: Boolean = true,
+        actionLabel: Int = android.R.string.ok,
+        dismissActionLabel: Int = android.R.string.cancel,
+        style: Int = 0,
         messageString: String = getString(message),
         disableButtons: Boolean = false
 
