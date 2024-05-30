@@ -1,3 +1,3 @@
 package com.redelf.commons.exception.credentials
 
-class CredentialsUnavailableException : IllegalArgumentException("Credentials are unavailable")
+class CredentialsUnavailableException : CredentialsException("Credentials are unavailable")
