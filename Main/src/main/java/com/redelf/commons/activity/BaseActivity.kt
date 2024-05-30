@@ -834,7 +834,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         actionLabel: Int = android.R.string.ok,
         dismissActionLabel: Int = android.R.string.cancel,
         style: Int = 0,
-        messageString: String = getString(message)
+        messageString: String = getString(message),
+        disableButtons: Boolean = false
 
     ): AlertDialog? {
 
@@ -856,13 +857,18 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
                 .setCancelable(cancellable)
                 .setTitle(title)
                 .setMessage(messageString)
-                .setPositiveButton(actionLabel) { dialog, _ ->
+
+
+            if (!disableButtons) {
+
+                builder.setPositiveButton(actionLabel) { dialog, _ ->
 
                     action.run()
                     dialog.dismiss()
                 }
+            }
 
-            if (dismissible) {
+            if (dismissible && !disableButtons) {
 
                 builder.setNegativeButton(dismissActionLabel) { dialog, _ ->
 
