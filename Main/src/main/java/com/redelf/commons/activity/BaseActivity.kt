@@ -374,11 +374,13 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         error: Int,
 
         positiveAction: Runnable? = null,
-        dismissAction: Runnable? = null
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
 
     ): AlertDialog? {
 
-        return showError(error, positiveAction, dismissAction)
+        return showError(error, positiveAction, dismissAction, style)
     }
 
     open fun showError(
@@ -387,7 +389,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         title: Int? = null,
 
         positiveAction: Runnable? = null,
-        dismissAction: Runnable? = null
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
 
     ): AlertDialog? {
 
@@ -408,7 +412,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
             },
             actionLabel = android.R.string.ok,
             dismissible = false,
-            cancellable = true
+            cancellable = true,
+            style = style ?: 0
         )
     }
 
@@ -417,7 +422,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         message: Int,
 
         positiveAction: Runnable? = null,
-        dismissAction: Runnable? = null
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
 
     ): AlertDialog? {
 
@@ -444,7 +451,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         positiveLabel: Int?,
 
         positiveAction: Runnable? = null,
-        dismissAction: Runnable? = null
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
 
     ): AlertDialog? {
 
@@ -464,7 +473,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
             },
             actionLabel = positiveLabel ?: android.R.string.ok,
             dismissible = false,
-            cancellable = true
+            cancellable = true,
+            style = style ?: 0
         )
     }
 
@@ -474,7 +484,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         positiveLabel: Int?,
 
         positiveAction: Runnable? = null,
-        dismissAction: Runnable? = null
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
 
     ): AlertDialog? {
 
@@ -494,7 +506,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
             },
             actionLabel = positiveLabel ?: android.R.string.ok,
             dismissible = false,
-            cancellable = true
+            cancellable = true,
+            style = style ?: 0
         )
     }
 
