@@ -796,6 +796,10 @@ abstract class BaseApplication :
 
     override fun update() {
 
+        /*
+            TODO: Integrate DataMigration recipes with the updates
+         */
+
         var versionCode = 0
 
         val tag = "Update ::"
