@@ -1,5 +1,6 @@
 package com.redelf.commons.migration
 
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import timber.log.Timber
 
