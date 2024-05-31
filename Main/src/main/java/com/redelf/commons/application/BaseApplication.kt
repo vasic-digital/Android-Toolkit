@@ -817,6 +817,9 @@ abstract class BaseApplication :
 
         getUpdatesCodes().forEach { code ->
 
+            /*
+                TODO: Incorporate until which version code is the update applicable (if needed)
+            */
             if (versionCode >= code && isUpdateApplied(code)) {
 
                 Timber.v("$tag Code :: $versionCode :: START")
