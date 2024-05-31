@@ -877,6 +877,10 @@ abstract class BaseApplication :
         if (updateAvailable) {
 
             Timber.v("Update :: Available :: identifier = '$identifier'")
+
+        } else {
+
+            Timber.v("Update :: Already applied :: identifier = '$identifier'")
         }
 
         return updateAvailable
