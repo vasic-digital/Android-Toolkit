@@ -26,7 +26,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
-import com.redelf.commons.BuildConfig
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
@@ -58,10 +57,16 @@ abstract class BaseApplication :
 
     companion object : ContextAvailability<BaseApplication>, ApplicationVersion {
 
+        /*
+
+            TODO: DEBUG - To be configurable from code
+        */
+        const val DEBUG = false
+
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
 
-        var STRICT_MODE_DISABLED = BuildConfig.DEBUG
+        var STRICT_MODE_DISABLED = DEBUG
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
         var TOP_ACTIVITIES = mutableListOf<Class<out Activity>>()
 
@@ -355,7 +360,7 @@ abstract class BaseApplication :
 
         CONTEXT = this
 
-        if (BuildConfig.DEBUG) {
+        if (DEBUG) {
 
             Timber.plant(Timber.DebugTree())
 
