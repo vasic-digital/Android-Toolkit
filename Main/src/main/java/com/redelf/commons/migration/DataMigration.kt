@@ -5,6 +5,11 @@ import timber.log.Timber
 
 abstract class DataMigration<SOURCE, TARGET> {
 
+    /*
+        TODO: Support multiple migration contained inside the PriorityQueue ordered by the id (version code)
+            - Oldest first
+            - Executed sequentially
+    */
     abstract val id: Long
 
     abstract fun getSource(callback: OnObtain<SOURCE>)
