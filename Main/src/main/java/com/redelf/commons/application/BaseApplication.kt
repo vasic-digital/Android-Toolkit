@@ -380,8 +380,6 @@ abstract class BaseApplication :
         managers.addAll(populateManagers())
         defaultManagerResources.putAll(populateDefaultManagerResources())
 
-        update()
-
         doCreate()
     }
 
@@ -707,6 +705,7 @@ abstract class BaseApplication :
 
         initializeFcm()
         onManagersReady()
+        update()
     }
 
     private fun enableStrictMode() {
@@ -798,7 +797,12 @@ abstract class BaseApplication :
 
     override fun update() {
 
+        /*
+            TODO: Integrate DataMigration recipes with the updates
+         */
+
         var versionCode = 0
+
         val tag = "Update ::"
 
         try {
@@ -814,6 +818,9 @@ abstract class BaseApplication :
 
         getUpdatesCodes().forEach { code ->
 
+            /*
+                TODO: Incorporate until which version code is the update applicable (if needed)
+            */
             if (versionCode >= code && isUpdateApplied(code)) {
 
                 Timber.v("$tag Code :: $versionCode :: START")
@@ -871,6 +878,10 @@ abstract class BaseApplication :
         if (updateAvailable) {
 
             Timber.v("Update :: Available :: identifier = '$identifier'")
+
+        } else {
+
+            Timber.v("Update :: Already applied :: identifier = '$identifier'")
         }
 
         return updateAvailable
