@@ -379,8 +379,6 @@ abstract class BaseApplication :
         managers.addAll(populateManagers())
         defaultManagerResources.putAll(populateDefaultManagerResources())
 
-        update()
-
         doCreate()
     }
 
@@ -706,6 +704,7 @@ abstract class BaseApplication :
 
         initializeFcm()
         onManagersReady()
+        update()
     }
 
     private fun enableStrictMode() {
@@ -798,6 +797,7 @@ abstract class BaseApplication :
     override fun update() {
 
         var versionCode = 0
+
         val tag = "Update ::"
 
         try {
