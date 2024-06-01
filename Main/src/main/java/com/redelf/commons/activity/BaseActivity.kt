@@ -380,7 +380,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     ): AlertDialog? {
 
-        return showError(error, positiveAction, dismissAction, style)
+        return showError(error, null, positiveAction, dismissAction, style)
     }
 
     open fun showError(
