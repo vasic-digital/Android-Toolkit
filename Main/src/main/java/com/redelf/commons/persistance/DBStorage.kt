@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong
 /*
     TODO: Make sure that this is not static object
 */
-internal object DBStorage : Storage<String> {
+object DBStorage : Storage<String> {
 
     /*
 
