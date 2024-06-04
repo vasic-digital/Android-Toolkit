@@ -9,6 +9,7 @@ import com.redelf.commons.retrofit.RetrofitApiParameters
 
 abstract class ApiService<T> (
 
+    endpoint: Int,
     protected val ctx: Context,
     protected val connectivity: ConnectivityCheck = Connectivity(),
 
@@ -17,7 +18,7 @@ abstract class ApiService<T> (
     protected open val retrofitApiParameters: RetrofitApiParameters = retrofitApiParameters(
 
         ctx = ctx,
-        endpoint = R.string.retrofit_endpoint,
+        endpoint = endpoint,
 
         readTimeoutInSeconds = 60,
         connectTimeoutInSeconds = 60,
