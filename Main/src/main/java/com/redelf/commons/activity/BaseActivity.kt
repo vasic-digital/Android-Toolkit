@@ -1038,7 +1038,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 val dir = external.absolutePath +
                         File.separator +
-                        getString(R.string.app_name).replace(" ", "_") +
+                        BaseApplication.getName().replace(" ", "_") +
                         File.separator
 
                 val newDir = File(dir)

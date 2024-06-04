@@ -204,11 +204,7 @@ fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_
     startActivityForResult(intent, requestId)
 }
 
-fun Activity.initRegistrationWithGoogle(
-
-    defaultWebClientId: Int = R.string.default_web_client_id
-
-): Int {
+fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int): Int {
 
     val tag = "Google registration ::"
 

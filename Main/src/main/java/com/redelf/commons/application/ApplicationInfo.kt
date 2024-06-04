@@ -1,8 +1,10 @@
 package com.redelf.commons.application
 
-interface ApplicationVersion {
+interface ApplicationInfo {
 
     fun getVersion(): String
 
     fun getVersionCode(): String
+
+    fun getName(): String
 }

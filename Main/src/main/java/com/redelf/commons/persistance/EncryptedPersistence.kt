@@ -24,7 +24,7 @@ constructor(
 
     private val keySalt: String = "st",
     private val doEncrypt: Boolean = true,
-    private val storageTag: String = ctx.getString(R.string.app_name),
+    private val storageTag: String = BaseApplication.getName(),
 
     private val doLog: Boolean = false,
     private val logRawData: Boolean = false,

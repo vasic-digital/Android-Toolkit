@@ -20,7 +20,7 @@ object Timber {
 
         if (recording) {
 
-            val appName = ctx.getString(R.string.app_name)
+            val appName = BaseApplication.getName()
             val appVersion = BaseApplication.getVersion()
             val appVersionCode = BaseApplication.getVersionCode()
             val recordingFileName = "$appName-$appVersion-$appVersionCode"

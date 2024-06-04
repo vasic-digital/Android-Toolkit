@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Application: -->
-    <string name="app_name" translatable="false">Commons Library</string>
-
     <!-- Default: -->
     <string name="attach_file_from_camera">Attach file from camera</string>
     <string name="attach_file_from_gallery">Attach file from gallery</string>
@@ -11,9 +8,6 @@
 
     <!-- Errors: -->
     <string name="error_attaching_file">There was error attaching the file</string>
-
-    <!-- Google Sign-In: -->
-    <string name="default_web_client_id" translatable="false">Tbd</string>
 
     <!-- FCM: -->
     <string name="default_notification_channel_id">common_channel</string>

@@ -53,7 +53,7 @@ abstract class BaseApplication :
     LifecycleObserver,
     Updatable<Long> {
 
-    companion object : ContextAvailability<BaseApplication>, ApplicationVersion {
+    companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
 
         lateinit var DEBUG: AtomicBoolean
         lateinit var STRICT_MODE_DISABLED: AtomicBoolean
@@ -80,6 +80,25 @@ abstract class BaseApplication :
             val mainIntent = Intent.makeRestartActivityTask(componentName)
             context.startActivity(mainIntent)
             Runtime.getRuntime().exit(0)
+        }
+
+        override fun getName(): String {
+
+            try {
+
+                val context = takeContext()
+                val pm = context.packageManager
+                val packageInfo = pm.getPackageInfo(context.packageName, 0)
+                val ai = packageInfo.applicationInfo
+
+                return if (ai != null) pm.getApplicationLabel(ai) as String else "Unknown"
+
+            } catch (e: NameNotFoundException) {
+
+                recordException(e)
+            }
+
+            return "Unknown"
         }
 
         override fun getVersion(): String {

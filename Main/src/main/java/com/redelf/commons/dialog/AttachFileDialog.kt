@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.FileProvider
 import com.redelf.commons.R
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.logging.Timber
 import java.io.File
@@ -105,7 +106,7 @@ class AttachFileDialog(
 
             val dir = ext.absolutePath +
                     File.separator +
-                    ctx.getString(R.string.app_name).replace(" ", "_") +
+                    BaseApplication.getName().replace(" ", "_") +
                     File.separator
 
             val newDir = File(dir)
