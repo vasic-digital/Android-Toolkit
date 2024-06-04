@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
-import com.redelf.commons.registration.Registration
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.registration.Registration
 
 class AlarmReceiver : BroadcastReceiver() {
 

@@ -1,8 +1,8 @@
 package com.redelf.commons.retrofit
 
 import com.redelf.commons.interruption.Abort
-import okhttp3.Call
 import com.redelf.commons.logging.Timber
+import okhttp3.Call
 import java.util.concurrent.ConcurrentHashMap
 
 object GlobalCallsWrapper : Abort {

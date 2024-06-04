@@ -1,11 +1,11 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.extensions.randomInteger
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.persistance.EncryptedPersistence
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import com.redelf.commons.logging.Timber
 import kotlin.random.Random
 
 class EncryptedPersistenceTest : BaseTest() {
@@ -20,7 +20,8 @@ class EncryptedPersistenceTest : BaseTest() {
     @Before
     fun prepare() {
 
-        Timber.plant(Timber.DebugTree())
+        Timber.initialize(applicationContext)
+
         Timber.v("Timber initialized: $this")
 
         val keySalt = "test.${System.currentTimeMillis()}"

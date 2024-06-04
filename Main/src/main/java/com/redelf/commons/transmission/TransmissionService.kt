@@ -6,14 +6,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
-
 import com.redelf.commons.BuildConfig
 import com.redelf.commons.connectivity.Connectivity
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.scheduling.alarm.AlarmReceiver
 import com.redelf.commons.scheduling.alarm.AlarmScheduler
 import com.redelf.commons.service.BaseService
 import com.redelf.commons.transmission.alarm.TransmissionAlarmCallback
-import com.redelf.commons.logging.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 class TransmissionService : BaseService() {

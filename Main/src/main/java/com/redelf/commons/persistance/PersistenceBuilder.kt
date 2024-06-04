@@ -3,8 +3,8 @@ package com.redelf.commons.persistance
 import android.content.Context
 import android.text.TextUtils
 import com.google.gson.Gson
-import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.CopyOnWriteArrayList
 
 class PersistenceBuilder(

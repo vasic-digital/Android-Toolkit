@@ -4,13 +4,12 @@ import android.text.TextUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.redelf.commons.logging.Timber;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.redelf.commons.logging.Timber;
 
 class DataSerializer implements Serializer {
 

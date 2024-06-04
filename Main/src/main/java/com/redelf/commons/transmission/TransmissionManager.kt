@@ -18,6 +18,7 @@ import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.LifecycleCheck
 import com.redelf.commons.lifecycle.Shutdown
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
@@ -25,7 +26,6 @@ import com.redelf.commons.security.encryption.Encrypt
 import com.redelf.commons.security.encryption.Encryption
 import com.redelf.commons.security.encryption.EncryptionProvider
 import com.redelf.commons.transmission.encryption.TransmissionManagerEncryptionProvider
-import com.redelf.commons.logging.Timber
 import java.lang.reflect.Type
 import java.security.GeneralSecurityException
 import java.util.*

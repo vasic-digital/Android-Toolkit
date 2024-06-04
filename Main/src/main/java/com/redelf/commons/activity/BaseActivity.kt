@@ -38,13 +38,13 @@ import com.redelf.commons.extensions.initRegistrationWithGoogle
 import com.redelf.commons.extensions.isServiceRunning
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.lifecycle.LifecycleCallback
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.util.UriUtil
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.Unregistrar
-import com.redelf.commons.logging.Timber
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File

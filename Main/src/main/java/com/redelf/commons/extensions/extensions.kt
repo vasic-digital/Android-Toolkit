@@ -27,8 +27,8 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.redelf.commons.R
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.persistance.PropertiesHash
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.persistance.PropertiesHash
 import java.io.*
 import java.util.*
 import java.util.concurrent.Callable

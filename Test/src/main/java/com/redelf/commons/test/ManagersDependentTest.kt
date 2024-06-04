@@ -2,11 +2,11 @@ package com.redelf.commons.test
 
 import com.redelf.commons.Credentials
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer
 import org.junit.Assert
 import org.junit.Before
-import com.redelf.commons.logging.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -23,7 +23,8 @@ abstract class ManagersDependentTest : BaseTest() {
 
     protected open fun setup() {
 
-        Timber.plant(Timber.DebugTree())
+        Timber.initialize(applicationContext)
+
         Timber.v("Timber initialized: $this")
 
         // FIXME: Check this cast if valid
@@ -35,7 +36,6 @@ abstract class ManagersDependentTest : BaseTest() {
 
     private fun setupStorage() {
 
-        Timber.plant(Timber.DebugTree())
         Timber.v("Timber initialized: $this")
     }
 
