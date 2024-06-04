@@ -8,6 +8,7 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.util.Date
 import java.util.regex.Pattern
 
 class RecordingTree(private val destination: String) : Timber.Tree() {
@@ -56,10 +57,13 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
     @SuppressLint("LogNotTimber")
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+
         if (message.length < MAX_LOG_LENGTH) {
             if (priority == Log.ASSERT) {
+                writeLog("$tag :: $message")
                 Log.wtf(tag, message)
             } else {
+                writeLog("$tag :: $message")
                 Log.println(priority, tag, message)
             }
             return
@@ -75,8 +79,10 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
                 val end = newline.coerceAtMost(i + MAX_LOG_LENGTH)
                 val part = message.substring(i, end)
                 if (priority == Log.ASSERT) {
+                    writeLog("$tag :: $part")
                     Log.wtf(tag, part)
                 } else {
+                    writeLog("$tag :: $part")
                     Log.println(priority, tag, part)
                 }
                 i = end
@@ -100,7 +106,7 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
                 FileWriter(file).use { writer ->
 
-                    writer.append(logs)
+                    writer.append("${Date()} :: $logs")
                 }
 
             } catch (e: IOException) {
