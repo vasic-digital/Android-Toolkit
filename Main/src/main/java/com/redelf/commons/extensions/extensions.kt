@@ -485,6 +485,27 @@ fun File.init(deleteIfExist: Boolean = true) {
     }
 }
 
+fun File.appendText(text: String): Boolean {
+
+    try {
+
+        val mainWriter = FileWriter(this, true)
+        val writer = BufferedWriter(mainWriter)
+
+        writer.write(text)
+        writer.newLine()
+        writer.close()
+
+    } catch (e: Exception) {
+
+        timber.log.Timber.e(e)
+
+        return false
+    }
+
+    return true
+}
+
 fun Context.isLowEndDevice(): Boolean {
 
     val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager

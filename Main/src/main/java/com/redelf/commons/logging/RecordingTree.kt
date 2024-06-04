@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Environment
 import android.util.Log
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.appendText
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import timber.log.Timber
+import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -19,7 +21,6 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
     private var file: File? = null
     private var session: String? = null
-    private val executor = Executor.SINGLE
     private val cal = Calendar.getInstance()
     private val fmt = SimpleDateFormat("yy-MM-dd-h-m-s-ms", Locale.getDefault())
 
@@ -129,28 +130,18 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
             }
         }
 
-        executor.execute {
+        val tagVal = if (isNotEmpty(tag)) {
 
-            try {
+            "$tag ::"
 
-                FileWriter(file).use { writer ->
+        } else {
 
-                    val tagVal = if (isNotEmpty(tag)) {
+            "--- ::"
+        }
 
-                        "$tag ::"
+        if (file?.appendText("$datetime :: $tagVal $logs") != true) {
 
-                    } else {
-
-                        "--- ::"
-                    }
-
-                    writer.append("$datetime :: $tagVal $logs")
-                }
-
-            } catch (e: IOException) {
-
-                Log.e(e.message, e.toString())
-            }
+            Timber.e("Failed to append text into: ${file?.absolutePath}")
         }
     }
 
