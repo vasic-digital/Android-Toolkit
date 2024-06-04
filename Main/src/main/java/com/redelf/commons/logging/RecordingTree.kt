@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Environment
 import android.util.Log
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import timber.log.Timber
 import java.io.File
@@ -16,6 +17,7 @@ import java.util.regex.Pattern
 
 class RecordingTree(private val destination: String) : Timber.Tree() {
 
+    private var session: String? = null
     private val executor = Executor.SINGLE
 
     private val fqcnIgnore = listOf(
@@ -99,16 +101,25 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
     @SuppressLint("LogNotTimber")
     private fun writeLog(tag: String?, logs: String) {
 
+        val cal = Calendar.getInstance()
+        val fmt = SimpleDateFormat("yy-MM-dd-h-m-s-ms", Locale.getDefault())
+        val datetime = fmt.format(cal.time)
+
+        if (isEmpty(session)) {
+
+            val fmt2 = SimpleDateFormat("h-m-s-ms", Locale.getDefault())
+            session = fmt2.format(cal.time)
+        }
+
         executor.execute {
 
             val calendar = Calendar.getInstance()
             val format = SimpleDateFormat("yy-MM-dd", Locale.getDefault())
             val formattedDate = format.format(calendar.time)
 
-            val fileName = "$formattedDate-$destination.log"
-
             val dir = Environment.DIRECTORY_DOWNLOADS
             val downloadsFolder = Environment.getExternalStoragePublicDirectory(dir)
+            val fileName = "$formattedDate-$destination-$session.log"
             val file = File(downloadsFolder, fileName)
 
             if (!file.exists() && !file.createNewFile()) {
@@ -121,10 +132,6 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
                 FileWriter(file).use { writer ->
 
-                    val cal = Calendar.getInstance()
-                    val fmt = SimpleDateFormat("yy-MM-dd-h-m-s-ms", Locale.getDefault())
-                    val datetime = fmt.format(cal.time)
-
                     val tagVal = if (isNotEmpty(tag)) {
 
                         "$tag ::"
@@ -134,7 +141,10 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
                         ""
                     }
 
-                    writer.append("$datetime :: $tagVal $logs".replace("  ", " "))
+                    val valueToWrite = "$datetime :: $tagVal $logs"
+                        .replace("  ", " ")
+
+                    writer.append(valueToWrite)
                 }
 
             } catch (e: IOException) {
