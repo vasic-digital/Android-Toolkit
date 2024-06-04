@@ -27,8 +27,8 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.redelf.commons.R
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.persistance.PropertiesHash
-import timber.log.Timber
 import java.io.*
 import java.util.*
 import java.util.concurrent.Callable
@@ -483,6 +483,27 @@ fun File.init(deleteIfExist: Boolean = true) {
         Timber.e(e)
         throw IllegalStateException(msg)
     }
+}
+
+fun File.appendText(text: String): Boolean {
+
+    try {
+
+        val mainWriter = FileWriter(this, true)
+        val writer = BufferedWriter(mainWriter)
+
+        writer.write(text)
+        writer.newLine()
+        writer.close()
+
+    } catch (e: Exception) {
+
+        timber.log.Timber.e(e)
+
+        return false
+    }
+
+    return true
 }
 
 fun Context.isLowEndDevice(): Boolean {

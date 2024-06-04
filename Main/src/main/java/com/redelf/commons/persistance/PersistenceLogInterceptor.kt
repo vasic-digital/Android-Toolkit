@@ -1,6 +1,6 @@
 package com.redelf.commons.persistance
 
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 object PersistenceLogInterceptor : LogInterceptor {
 

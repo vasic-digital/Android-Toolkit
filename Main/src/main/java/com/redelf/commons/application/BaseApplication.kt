@@ -27,6 +27,7 @@ import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.redelf.commons.R
+import com.redelf.commons.BuildConfig
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.extensions.detectAllExpect
@@ -36,7 +37,7 @@ import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
-import com.redelf.commons.logging.LogsGathering
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.persistance.SharedPreferencesStorage
@@ -358,21 +359,14 @@ abstract class BaseApplication :
 
         if (DEBUG.get()) {
 
-            Timber.plant(Timber.DebugTree())
+            Timber.initialize(applicationContext)
 
-            Timber.i("Application: Initializing")
+            Timber.i("Application :: Initializing")
 
             enableStrictMode()
         }
 
         DataManagement.initialize(applicationContext)
-
-        LogsGathering.ENABLED = isLogsGatheringEnabled()
-
-        if (LogsGathering.ENABLED) {
-
-            Timber.i("Logs gathering is enabled")
-        }
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerActivityLifecycleCallbacks(this)
@@ -410,11 +404,6 @@ abstract class BaseApplication :
 
             throw e
         }
-    }
-
-    protected open fun isLogsGatheringEnabled(): Boolean {
-
-        return applicationContext.resources.getBoolean(R.bool.logs_gathering_enabled)
     }
 
     protected open fun onScreenOn() {

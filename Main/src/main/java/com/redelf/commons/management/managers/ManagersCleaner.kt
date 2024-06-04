@@ -1,9 +1,9 @@
 package com.redelf.commons.management.managers
 
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
-import timber.log.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean

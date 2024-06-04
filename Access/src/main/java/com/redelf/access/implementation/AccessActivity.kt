@@ -6,7 +6,7 @@ import com.redelf.access.installation.InstallationCheckCallback
 import com.redelf.commons.activity.BaseActivity
 import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.lifecycle.LifecycleCallback
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 abstract class AccessActivity : BaseActivity() {
 

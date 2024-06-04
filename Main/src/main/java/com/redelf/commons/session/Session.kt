@@ -1,8 +1,8 @@
 package com.redelf.commons.session
 
 import com.redelf.commons.execution.ExecuteWithResult
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.reset.Resettable
-import timber.log.Timber
 import java.util.UUID
 
 class Session(

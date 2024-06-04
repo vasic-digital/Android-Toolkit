@@ -18,7 +18,7 @@ import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 

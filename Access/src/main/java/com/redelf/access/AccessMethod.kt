@@ -12,7 +12,7 @@ import com.redelf.commons.execution.Cancellation
 import com.redelf.commons.execution.CommonExecution
 import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.execution.Executor
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class AccessMethod(private val priority: Int, protected val ctx: AppCompatActivity) :

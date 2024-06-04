@@ -1,8 +1,8 @@
 package com.redelf.commons.callback
 
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.registration.Registration
-import timber.log.Timber
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class Callbacks<T>(private val identifier: String) : Registration<T> {

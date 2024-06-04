@@ -4,13 +4,13 @@ import android.text.TextUtils
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.security.encryption.AES
 import com.redelf.commons.security.encryption.Encryption
 import com.redelf.commons.security.encryption.EncryptionProvider
 import com.redelf.commons.security.encryption.salt.SaltProvider
 import com.redelf.commons.transmission.TransmissionManager
-import timber.log.Timber
 import java.util.*
 
 class TransmissionManagerEncryptionProvider(

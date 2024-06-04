@@ -10,8 +10,8 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.Obtain
-import timber.log.Timber
 
 class EncryptedPersistence
 

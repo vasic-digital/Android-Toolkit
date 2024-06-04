@@ -4,10 +4,10 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.instantiation.SingleInstance
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
-import timber.log.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean

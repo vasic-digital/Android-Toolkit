@@ -2,7 +2,7 @@ package com.redelf.commons.lifecycle
 
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.lifecycle.exception.NotInitializedException
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 

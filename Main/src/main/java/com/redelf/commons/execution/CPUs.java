@@ -2,11 +2,11 @@ package com.redelf.commons.execution;
 
 import android.os.Build;
 
+import com.redelf.commons.logging.Timber;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.regex.Pattern;
-
-import timber.log.Timber;
 
 public class CPUs {
 

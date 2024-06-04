@@ -8,7 +8,7 @@ import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 
