@@ -8,7 +8,10 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import java.util.regex.Pattern
 
 class RecordingTree(private val destination: String) : Timber.Tree() {
@@ -96,7 +99,11 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
         Executor.SINGLE.execute {
 
-            val fileName = "$destination.txt"
+            val calendar = Calendar.getInstance()
+            val format = SimpleDateFormat("yy-MM-dd", Locale.getDefault())
+            val formattedDate = format.format(calendar.time)
+
+            val fileName = "$formattedDate-$destination.txt"
 
             val dir = Environment.DIRECTORY_DOWNLOADS
             val downloadsFolder = Environment.getExternalStoragePublicDirectory(dir)
