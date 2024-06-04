@@ -42,7 +42,6 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.updating.Updatable
-import timber.log.Timber
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
