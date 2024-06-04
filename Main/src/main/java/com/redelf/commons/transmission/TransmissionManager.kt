@@ -25,7 +25,7 @@ import com.redelf.commons.security.encryption.Encrypt
 import com.redelf.commons.security.encryption.Encryption
 import com.redelf.commons.security.encryption.EncryptionProvider
 import com.redelf.commons.transmission.encryption.TransmissionManagerEncryptionProvider
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.lang.reflect.Type
 import java.security.GeneralSecurityException
 import java.util.*

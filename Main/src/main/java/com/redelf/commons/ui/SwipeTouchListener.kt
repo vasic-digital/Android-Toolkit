@@ -6,7 +6,7 @@ import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
 

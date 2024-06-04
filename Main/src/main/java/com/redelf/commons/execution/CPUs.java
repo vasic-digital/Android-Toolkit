@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.regex.Pattern;
 
-import timber.log.Timber;
+import com.redelf.commons.logging.Timber;
 
 public class CPUs {
 

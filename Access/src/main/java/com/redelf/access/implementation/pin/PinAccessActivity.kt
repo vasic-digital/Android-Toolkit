@@ -6,7 +6,7 @@ import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.registration.Registration
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 abstract class PinAccessActivity : AccessActivity(), Registration<CommonExecutionCallback> {
 

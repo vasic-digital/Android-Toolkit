@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import timber.log.Timber;
+import com.redelf.commons.logging.Timber;
 
 class DataSerializer implements Serializer {
 

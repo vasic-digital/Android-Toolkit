@@ -10,7 +10,7 @@ import com.redelf.commons.security.encryption.Encryption
 import com.redelf.commons.security.encryption.EncryptionProvider
 import com.redelf.commons.security.encryption.salt.SaltProvider
 import com.redelf.commons.transmission.TransmissionManager
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.*
 
 class TransmissionManagerEncryptionProvider(

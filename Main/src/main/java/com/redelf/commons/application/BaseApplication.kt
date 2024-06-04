@@ -42,7 +42,7 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.updating.Updatable
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.lang.NumberFormatException
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -357,9 +357,9 @@ abstract class BaseApplication :
 
         if (BuildConfig.DEBUG) {
 
-            Timber.plant(Timber.DebugTree())
+            Timber.initialize(applicationContext)
 
-            Timber.i("Application: Initializing")
+            Timber.i("Application :: Initializing")
 
             enableStrictMode()
         }

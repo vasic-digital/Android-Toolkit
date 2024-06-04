@@ -7,7 +7,7 @@ import com.facebook.crypto.Crypto
 import com.facebook.crypto.CryptoConfig
 import com.facebook.crypto.Entity
 import com.facebook.crypto.keychain.KeyChain
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 class ConcealEncryption constructor(
 

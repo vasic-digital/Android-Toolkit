@@ -28,7 +28,7 @@ import com.redelf.commons.R
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.persistance.PropertiesHash
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.io.*
 import java.util.*
 import java.util.concurrent.Callable

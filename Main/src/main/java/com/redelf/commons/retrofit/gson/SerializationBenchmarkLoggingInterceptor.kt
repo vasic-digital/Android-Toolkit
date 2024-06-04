@@ -2,7 +2,7 @@ package com.redelf.commons.retrofit.gson
 
 import okhttp3.Interceptor
 import okhttp3.Response
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 class SerializationBenchmarkLoggingInterceptor : Interceptor {
 

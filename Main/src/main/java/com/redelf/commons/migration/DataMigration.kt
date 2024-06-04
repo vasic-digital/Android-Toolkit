@@ -1,7 +1,7 @@
 package com.redelf.commons.migration
 
 import com.redelf.commons.obtain.OnObtain
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 abstract class DataMigration<SOURCE, TARGET> {
 

@@ -12,7 +12,7 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.extensions.randomString
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.sql.SQLException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean

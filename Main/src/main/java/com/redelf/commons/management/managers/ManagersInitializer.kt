@@ -6,7 +6,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.LazyDataManagement
 import com.redelf.commons.management.Management
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean

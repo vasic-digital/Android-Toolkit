@@ -19,7 +19,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.TimeUnit
 
 object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {

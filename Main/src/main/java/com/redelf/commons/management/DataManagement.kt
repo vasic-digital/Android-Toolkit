@@ -19,7 +19,7 @@ import com.redelf.commons.reset.Resettable
 import com.redelf.commons.session.Session
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.RejectedExecutionException

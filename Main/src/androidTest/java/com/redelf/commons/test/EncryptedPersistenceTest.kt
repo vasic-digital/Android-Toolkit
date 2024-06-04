@@ -5,7 +5,7 @@ import com.redelf.commons.persistance.EncryptedPersistence
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import kotlin.random.Random
 
 class EncryptedPersistenceTest : BaseTest() {

@@ -5,7 +5,7 @@ import android.content.Intent
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.scheduling.alarm.AlarmCallback
 import com.redelf.commons.transmission.TransmissionService
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 class TransmissionAlarmCallback(private val ctx: Context) : AlarmCallback {
 

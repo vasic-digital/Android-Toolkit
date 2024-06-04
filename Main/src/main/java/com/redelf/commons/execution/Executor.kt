@@ -2,7 +2,7 @@ package com.redelf.commons.execution
 
 import android.os.Handler
 import android.os.Looper
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask

@@ -44,7 +44,7 @@ import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.util.UriUtil
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.Unregistrar
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File

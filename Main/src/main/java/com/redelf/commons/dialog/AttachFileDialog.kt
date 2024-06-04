@@ -12,7 +12,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.FileProvider
 import com.redelf.commons.R
 import com.redelf.commons.extensions.randomInteger
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.io.File
 
 class AttachFileDialog(

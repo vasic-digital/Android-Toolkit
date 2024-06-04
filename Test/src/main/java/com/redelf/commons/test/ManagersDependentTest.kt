@@ -6,7 +6,7 @@ import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer
 import org.junit.Assert
 import org.junit.Before
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger

@@ -8,7 +8,7 @@ import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.reset.Resettable
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 abstract class SingleInstance<T> :
 

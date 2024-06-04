@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.TaskExecutor
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream

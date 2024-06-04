@@ -8,7 +8,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 open class FcmService : FirebaseMessagingService() {
 

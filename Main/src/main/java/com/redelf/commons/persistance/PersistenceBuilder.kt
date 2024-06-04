@@ -4,7 +4,7 @@ import android.content.Context
 import android.text.TextUtils
 import com.google.gson.Gson
 import com.redelf.commons.obtain.Obtain
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import java.util.concurrent.CopyOnWriteArrayList
 
 class PersistenceBuilder(

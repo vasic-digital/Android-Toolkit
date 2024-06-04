@@ -8,7 +8,7 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.redelf.access.installation.InstallationCheckCallback
 import com.redelf.commons.capability.CapabilityCheckCallback
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 
 abstract class BiometricAccessMethod(priority: Int, ctx: AppCompatActivity) :
     AccessMethod(priority, ctx) {

@@ -9,7 +9,7 @@ import com.redelf.access.R
 import com.redelf.access.implementation.AccessActivity
 import com.redelf.access.installation.InstallationCheckCallback
 import com.redelf.commons.capability.CapabilityCheckCallback
-import timber.log.Timber
+import com.redelf.commons.logging.Timber
 import kotlin.random.Random
 
 
