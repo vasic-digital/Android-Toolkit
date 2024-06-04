@@ -27,7 +27,6 @@ import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.redelf.commons.R
-import com.redelf.commons.BuildConfig
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.extensions.detectAllExpect

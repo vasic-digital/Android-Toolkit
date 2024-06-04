@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.BuildConfig
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.retrofit.gson.SerializationBenchmarkLoggingInterceptor

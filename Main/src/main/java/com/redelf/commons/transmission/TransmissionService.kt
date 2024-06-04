@@ -7,9 +7,7 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.callback.Callbacks
 
-import com.redelf.commons.BuildConfig
 import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.scheduling.alarm.AlarmReceiver
