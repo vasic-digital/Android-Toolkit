@@ -3,15 +3,11 @@ package com.redelf.commons.logging
 import android.annotation.SuppressLint
 import android.os.Environment
 import android.util.Log
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.appendText
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import timber.log.Timber
-import java.io.BufferedWriter
 import java.io.File
-import java.io.FileWriter
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -22,7 +18,7 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
     private var file: File? = null
     private var session: String? = null
     private val cal = Calendar.getInstance()
-    private val fmt = SimpleDateFormat("yy-MM-dd-h-m-s-ms", Locale.getDefault())
+    private val fmt = SimpleDateFormat("yy-MM-dd-h-m-s-S", Locale.getDefault())
 
     private val fqcnIgnore = listOf(
 
@@ -109,7 +105,7 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
         if (isEmpty(session)) {
 
-            val fmt2 = SimpleDateFormat("h-m-s-ms", Locale.getDefault())
+            val fmt2 = SimpleDateFormat("h-m-s-S", Locale.getDefault())
             session = fmt2.format(cal.time)
         }
 
@@ -132,14 +128,14 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
         val tagVal = if (isNotEmpty(tag)) {
 
-            "$tag ::"
+            "$tag :: "
 
         } else {
 
-            "--- ::"
+            ""
         }
 
-        if (file?.appendText("$datetime :: $tagVal $logs") != true) {
+        if (file?.appendText("$datetime :: $tagVal$logs") != true) {
 
             Timber.e("Failed to append text into: ${file?.absolutePath}")
         }
