@@ -344,6 +344,8 @@ abstract class BaseApplication :
 
     override fun takeContext() = CONTEXT
 
+    protected open fun isStrictModeDisabled() = !DEBUG.get()
+
     override fun onCreate() {
         super.onCreate()
 
@@ -353,7 +355,7 @@ abstract class BaseApplication :
 
         CONTEXT = this
         DEBUG = AtomicBoolean(CONTEXT.resources.getBoolean(R.bool.debug))
-        STRICT_MODE_DISABLED = AtomicBoolean(!DEBUG.get())
+        STRICT_MODE_DISABLED = AtomicBoolean(isStrictModeDisabled())
 
         if (DEBUG.get()) {
 
