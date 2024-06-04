@@ -17,8 +17,7 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
     private var file: File? = null
     private var session: String? = null
-    private val cal = Calendar.getInstance()
-    private val fmt = SimpleDateFormat("yy-MM-dd-h-m-s-S", Locale.getDefault())
+    private val fmt = SimpleDateFormat("yy-MM-dd-h-m-s-SSS", Locale.getDefault())
 
     private val fqcnIgnore = listOf(
 
@@ -101,11 +100,12 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
     @SuppressLint("LogNotTimber")
     private fun writeLog(tag: String?, logs: String) {
 
+        val cal = Calendar.getInstance()
         val datetime = fmt.format(cal.time)
 
         if (isEmpty(session)) {
 
-            val fmt2 = SimpleDateFormat("h-m-s-S", Locale.getDefault())
+            val fmt2 = SimpleDateFormat("h-m-s", Locale.getDefault())
             session = fmt2.format(cal.time)
         }
 
