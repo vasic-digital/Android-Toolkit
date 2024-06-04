@@ -1,13 +1,9 @@
 package com.redelf.commons.logging
 
 import android.content.Context
-import android.os.Environment
 import com.redelf.commons.R
-import com.redelf.commons.extensions.exec
+import com.redelf.commons.application.BaseApplication
 import timber.log.Timber
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
 object Timber {
@@ -26,7 +22,12 @@ object Timber {
 
         if (recording) {
 
-            Timber.plant(RecordingTree())
+            val appName = ctx.getString(R.string.app_name)
+            val appVersion = BaseApplication.getVersion()
+            val appVersionCode = BaseApplication.getVersionCode()
+            val recordingFileName = "$appName-$appVersion-$appVersionCode.txt"
+
+            Timber.plant(RecordingTree(recordingFileName))
 
         } else {
 
@@ -160,32 +161,6 @@ object Timber {
     fun log(priority: Int, t: Throwable?) {
 
         Timber.log(priority, t)
-    }
-
-    private fun writeLog(key: String, logs: String) {
-
-        exec {
-
-            val fileName = "$key.${System.currentTimeMillis()}.txt"
-
-            val dir = Environment.DIRECTORY_DOWNLOADS
-            val downloadsFolder = Environment.getExternalStoragePublicDirectory(dir)
-            val file = File(downloadsFolder, fileName)
-
-            try {
-
-                FileWriter(file).use { writer ->
-
-                    writer.append(logs)
-                }
-
-                Timber.v("File written into: ${file.absolutePath}")
-
-            } catch (e: IOException) {
-
-                Timber.e(e)
-            }
-        }
     }
 
     private fun setLogsRecording(enabled: Boolean) {
