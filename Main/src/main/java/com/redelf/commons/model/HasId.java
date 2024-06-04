@@ -2,13 +2,17 @@ package com.redelf.commons.model;
 
 import androidx.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 
 public abstract class HasId {
 
+    @JsonProperty("id")
     @SerializedName("id")
     private Long id;
 
+    @JsonCreator
     public HasId() {
 
         setId(initializeId());

@@ -42,7 +42,6 @@ import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.updating.Updatable
 import timber.log.Timber
-import java.lang.NumberFormatException
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -57,16 +56,11 @@ abstract class BaseApplication :
 
     companion object : ContextAvailability<BaseApplication>, ApplicationVersion {
 
-        /*
-
-            TODO: DEBUG - To be configurable from code
-        */
-        const val DEBUG = false
+        lateinit var DEBUG: AtomicBoolean
+        lateinit var STRICT_MODE_DISABLED: AtomicBoolean
 
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
-
-        var STRICT_MODE_DISABLED = DEBUG
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
         var TOP_ACTIVITIES = mutableListOf<Class<out Activity>>()
 
@@ -359,8 +353,10 @@ abstract class BaseApplication :
         disableActivityAnimations(applicationContext)
 
         CONTEXT = this
+        DEBUG = AtomicBoolean(CONTEXT.resources.getBoolean(R.bool.debug))
+        STRICT_MODE_DISABLED = AtomicBoolean(!DEBUG.get())
 
-        if (DEBUG) {
+        if (DEBUG.get()) {
 
             Timber.plant(Timber.DebugTree())
 
@@ -383,8 +379,6 @@ abstract class BaseApplication :
 
         managers.addAll(populateManagers())
         defaultManagerResources.putAll(populateDefaultManagerResources())
-
-        update()
 
         doCreate()
     }
@@ -711,13 +705,14 @@ abstract class BaseApplication :
 
         initializeFcm()
         onManagersReady()
+        update()
     }
 
     private fun enableStrictMode() {
 
         Timber.v("Enable Strict Mode, disabled=$STRICT_MODE_DISABLED")
 
-        if (STRICT_MODE_DISABLED) {
+        if (STRICT_MODE_DISABLED.get()) {
 
             return
         }
@@ -802,7 +797,12 @@ abstract class BaseApplication :
 
     override fun update() {
 
+        /*
+            TODO: Integrate DataMigration recipes with the updates
+         */
+
         var versionCode = 0
+
         val tag = "Update ::"
 
         try {
@@ -818,6 +818,9 @@ abstract class BaseApplication :
 
         getUpdatesCodes().forEach { code ->
 
+            /*
+                TODO: Incorporate until which version code is the update applicable (if needed)
+            */
             if (versionCode >= code && isUpdateApplied(code)) {
 
                 Timber.v("$tag Code :: $versionCode :: START")
@@ -875,6 +878,10 @@ abstract class BaseApplication :
         if (updateAvailable) {
 
             Timber.v("Update :: Available :: identifier = '$identifier'")
+
+        } else {
+
+            Timber.v("Update :: Already applied :: identifier = '$identifier'")
         }
 
         return updateAvailable

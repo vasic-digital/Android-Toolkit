@@ -2,6 +2,7 @@ package com.redelf.commons.execution
 
 import android.os.Handler
 import android.os.Looper
+import com.redelf.commons.application.BaseApplication
 import timber.log.Timber
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
@@ -12,7 +13,7 @@ enum class Executor : Execution {
 
     MAIN {
 
-        var debug = false
+        var debug: Boolean? = null
 
         private val cpus = CPUs()
         private val cores = cpus.numberOfCores
@@ -51,7 +52,7 @@ enum class Executor : Execution {
 
         private fun logCapacity() {
 
-            if (!debug) {
+            if (!(debug ?: BaseApplication.DEBUG.get())) {
 
                 return
             }

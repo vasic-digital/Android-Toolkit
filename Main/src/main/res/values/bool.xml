@@ -13,4 +13,7 @@
     <bool name="retrofit_full_log">false</bool>
     <bool name="retrofit_verbose_log">false</bool>
 
+    <!-- Debugging -->
+    <bool name="debug">false</bool>
+
 </resources>

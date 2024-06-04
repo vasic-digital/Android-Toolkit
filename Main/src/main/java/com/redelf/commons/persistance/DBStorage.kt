@@ -21,17 +21,17 @@ import java.util.concurrent.atomic.AtomicLong
 /*
     TODO: Make sure that this is not static object
 */
-internal object DBStorage : Storage<String> {
+object DBStorage : Storage<String> {
 
     /*
+
         TODO: Implement the mechanism to split data into chunks
         TODO: Make possible for data managers to have multiple databases - each manager its own
-        TODO: DEBUG - To be configurable from code
     */
 
-    private const val DEBUG = false
-    private const val DATABASE_VERSION = 1
+    var DEBUG: Boolean? = null
 
+    private const val DATABASE_VERSION = 1
     private const val DATABASE_NAME = "sdb"
     private const val DATABASE_NAME_SUFFIX_KEY = "DATABASE.NAME.SUFFIX.KEY"
 
@@ -119,7 +119,10 @@ internal object DBStorage : Storage<String> {
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-            if (DEBUG) Timber.v("Old version: $oldVersion :: New version: $newVersion")
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+
+                "Old version: $oldVersion :: New version: $newVersion"
+            )
         }
 
         override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -163,7 +166,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Initialize ::"
 
-        if (DEBUG) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
 
         try {
 
@@ -223,11 +226,14 @@ internal object DBStorage : Storage<String> {
             columnKey = columnKey()
             columnValue = columnValue()
 
-            if (DEBUG) Timber.v("$tag dbName = '$dbName', rawName = '$rawName'")
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+
+                "$tag dbName = '$dbName', rawName = '$rawName'"
+            )
 
             dbHelper = DbHelper(ctx, dbName)
 
-            if (DEBUG) Timber.v("$tag END")
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END")
 
         } catch (e: SQLException) {
 
@@ -260,7 +266,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Put :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        if (DEBUG) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -304,7 +310,7 @@ internal object DBStorage : Storage<String> {
 
                             if (rowsUpdated > 0) {
 
-                                if (DEBUG) Timber.v(
+                                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
 
                                     "$tag END: rowsUpdated = $rowsUpdated, " +
                                             "length = ${value.length}"
@@ -317,7 +323,7 @@ internal object DBStorage : Storage<String> {
 
                             if (rowsInserted > 0) {
 
-                                if (DEBUG) Timber.v(
+                                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
 
                                     "$tag END: rowsInserted = $rowsInserted, " +
                                             "length = ${value.length}"
@@ -364,7 +370,7 @@ internal object DBStorage : Storage<String> {
         val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
         val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        if (DEBUG) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
 
         withDb { db ->
 
@@ -417,7 +423,7 @@ internal object DBStorage : Storage<String> {
 
             if (isNotEmpty(result)) {
 
-                if (DEBUG) Timber.v("$tag END")
+                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END")
 
             } else {
 
@@ -436,7 +442,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Delete :: By key :: $key ::"
 
-        if (DEBUG) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -467,7 +473,7 @@ internal object DBStorage : Storage<String> {
 
                             if (res) {
 
-                                if (DEBUG) Timber.v("$tag END")
+                                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END")
 
                             } else {
 
@@ -510,7 +516,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Delete :: All ::"
 
-        if (DEBUG) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -538,7 +544,7 @@ internal object DBStorage : Storage<String> {
 
                             if (res) {
 
-                                if (DEBUG) Timber.v("$tag END")
+                                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END")
 
                             } else {
 
@@ -578,7 +584,7 @@ internal object DBStorage : Storage<String> {
 
         val tag = "Delete :: Database ::"
 
-        if (DEBUG) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
 
         try {
 
@@ -588,7 +594,10 @@ internal object DBStorage : Storage<String> {
 
             if (result) {
 
-                if (DEBUG) Timber.v("$tag END: DB '$dbName' has been deleted")
+                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+
+                    "$tag END: DB '$dbName' has been deleted"
+                )
 
                 if (prefs?.delete(DATABASE_NAME_SUFFIX_KEY) != true) {
 
@@ -743,19 +752,19 @@ internal object DBStorage : Storage<String> {
 
             tag = "$tag db = ${db?.hashCode()} ::"
 
-            if (DEBUG) Timber.v("$tag START")
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
 
             db?.let {
 
                 if (db.isOpen) {
 
-                    if (DEBUG) Timber.v("$tag EXECUTING")
+                    if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag EXECUTING")
 
                     executor.execute {
 
                         doWhat(db)
 
-                        if (DEBUG) Timber.v("$tag EXECUTED")
+                        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag EXECUTED")
                     }
 
                 } else {

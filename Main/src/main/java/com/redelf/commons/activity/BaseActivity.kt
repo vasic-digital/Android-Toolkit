@@ -73,7 +73,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
-    protected open val detectPhoneCallReceived = BaseApplication.takeContext().detectPhoneCallReceived
+    protected open val detectPhoneCallReceived =
+        BaseApplication.takeContext().detectPhoneCallReceived
 
     private var created = false
     private val paused = AtomicBoolean()
@@ -368,6 +369,148 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         finish()
     }
 
+    open fun showError(
+
+        error: Int,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return showError(error, null, positiveAction, dismissAction, style)
+    }
+
+    open fun showError(
+
+        error: Int,
+        title: Int? = null,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return alert(
+
+            title = title ?: android.R.string.dialog_alert_title,
+            message = error,
+            action = {
+
+                dismissDialogs()
+                positiveAction?.run()
+
+            },
+            dismissAction = {
+
+                dismissDialogs()
+                dismissAction?.run()
+            },
+            actionLabel = android.R.string.ok,
+            dismissible = false,
+            cancellable = true,
+            style = style ?: 0
+        )
+    }
+
+    open fun showConfirmation(
+
+        message: Int,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return showConfirmation(message, null, positiveAction, dismissAction)
+    }
+
+    open fun dismissDialogs() {
+
+        runOnUiThread {
+
+            attachmentsDialog?.dismiss()
+            attachmentsDialog = null
+
+            dialogs.forEach {
+
+                it.dismiss()
+            }
+        }
+    }
+
+    open fun showConfirmation(
+
+        message: Int,
+        positiveLabel: Int?,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return alert(
+
+            title = android.R.string.dialog_alert_title,
+            message = message,
+            action = {
+
+                dismissDialogs()
+                positiveAction?.run()
+            },
+            dismissAction = {
+
+                dismissDialogs()
+                dismissAction?.run()
+            },
+            actionLabel = positiveLabel ?: android.R.string.ok,
+            dismissible = false,
+            cancellable = true,
+            style = style ?: 0
+        )
+    }
+
+    open fun showConfirmation(
+
+        message: String,
+        positiveLabel: Int?,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return alert(
+
+            title = android.R.string.dialog_alert_title,
+            messageString = message,
+            action = {
+
+                dismissDialogs()
+                positiveAction?.run()
+            },
+            dismissAction = {
+
+                dismissDialogs()
+                dismissAction?.run()
+            },
+            actionLabel = positiveLabel ?: android.R.string.ok,
+            dismissible = false,
+            cancellable = true,
+            style = style ?: 0
+        )
+    }
+
     fun isNotFinishing() = !isFinishing
 
     override fun onDestroy() {
@@ -623,26 +766,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
     }
 
-    protected open fun showError(error: Int) {
-
-        alert(
-
-            title = android.R.string.dialog_alert_title,
-            message = error,
-            action = {
-
-                dismissDialogs()
-            },
-            dismissAction = {
-
-                dismissDialogs()
-            },
-            actionLabel = android.R.string.ok,
-            dismissible = false,
-            cancellable = true
-        )
-    }
-
     protected open fun getTransmissionManager(callback: OnObtain<TransmissionManager<*>>) {
 
         val e = IllegalArgumentException("No transmission manager available")
@@ -713,6 +836,27 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         style: Int = 0,
         messageString: String = getString(message)
 
+    ) = alert(
+
+        title, message, action, dismissAction, icon, cancellable, dismissible, actionLabel,
+        dismissActionLabel, style, messageString, false
+    )
+
+    fun alert(
+
+        title: Int = android.R.string.dialog_alert_title,
+        message: Int = 0,
+        action: Runnable,
+        dismissAction: Runnable? = null,
+        icon: Int = android.R.drawable.ic_dialog_alert,
+        cancellable: Boolean = false,
+        dismissible: Boolean = true,
+        actionLabel: Int = android.R.string.ok,
+        dismissActionLabel: Int = android.R.string.cancel,
+        style: Int = 0,
+        messageString: String = getString(message),
+        disableButtons: Boolean = false
+
     ): AlertDialog? {
 
         var thisDialog: AlertDialog? = null
@@ -733,13 +877,18 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
                 .setCancelable(cancellable)
                 .setTitle(title)
                 .setMessage(messageString)
-                .setPositiveButton(actionLabel) { dialog, _ ->
+
+
+            if (!disableButtons) {
+
+                builder.setPositiveButton(actionLabel) { dialog, _ ->
 
                     action.run()
                     dialog.dismiss()
                 }
+            }
 
-            if (dismissible) {
+            if (dismissible && !disableButtons) {
 
                 builder.setNegativeButton(dismissActionLabel) { dialog, _ ->
 
@@ -810,20 +959,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     }
 
     protected open fun getAddAttachmentDialogStyle(): Int = 0
-
-    protected open fun dismissDialogs() {
-
-        runOnUiThread {
-
-            attachmentsDialog?.dismiss()
-            attachmentsDialog = null
-
-            dialogs.forEach {
-
-                it.dismiss()
-            }
-        }
-    }
 
     protected open fun handleFinishBroadcast(intent: Intent? = null) {
 

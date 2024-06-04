@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.retrofit.gson.SerializationBenchmarkLoggingInterceptor
 import okhttp3.Call
@@ -23,11 +24,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
-    /*
-
-        TODO: DEBUG - To be configurable from code
-    */
-    private const val DEBUG = false
+    var DEBUG: Boolean? = null
 
     val PINNED_CERTIFICATES = mutableMapOf<String, String>()
 
@@ -37,7 +34,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         var interceptor: HttpLoggingInterceptor? = null
 
-        if (DEBUG) {
+        if (DEBUG ?: BaseApplication.DEBUG.get()) {
 
             if (param.verbose == true) Timber.v("Retrofit :: Debug :: ON")
 
@@ -155,7 +152,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             builder.addInterceptor(it)
         }
 
-        if (DEBUG && verbose) {
+        if (DEBUG ?: BaseApplication.DEBUG.get() && verbose) {
 
             val benchInterceptor = SerializationBenchmarkLoggingInterceptor()
             builder.addInterceptor(benchInterceptor)
