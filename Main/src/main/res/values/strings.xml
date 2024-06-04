@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Rest API -->
-    <string name="retrofit_endpoint" translatable="false">https://127.0.0.1/</string>
-
     <!-- Application: -->
     <string name="app_name" translatable="false">Commons Library</string>
 

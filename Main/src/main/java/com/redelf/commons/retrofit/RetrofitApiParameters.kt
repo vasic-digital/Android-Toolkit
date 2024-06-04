@@ -31,7 +31,7 @@ data class RetrofitApiParameters @JsonCreator constructor(
 
     @JsonProperty("endpoint")
     @SerializedName("endpoint")
-    val endpoint: Int? = R.string.retrofit_endpoint,
+    val endpoint: Int,
 
     @JsonProperty("scalar")
     @SerializedName("scalar")
