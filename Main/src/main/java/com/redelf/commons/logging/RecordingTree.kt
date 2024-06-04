@@ -15,9 +15,11 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
     private val fqcnIgnore = listOf(
 
         Timber::class.java.name,
+        com.redelf.commons.logging.Timber::class.java.name,
         Timber.Forest::class.java.name,
         Timber.Tree::class.java.name,
-        Timber.DebugTree::class.java.name
+        Timber.DebugTree::class.java.name,
+        RecordingTree::class.java.name
     )
 
     @get:JvmSynthetic // Hide from public API.
@@ -33,7 +35,7 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
             return tag
         }
 
-    val tag: String?
+    val tag: String
         get() = initTag ?: Throwable().stackTrace
             .first { it.className !in fqcnIgnore }
             .let(::createStackElementTag)
@@ -70,7 +72,7 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
             var newline = message.indexOf('\n', i)
             newline = if (newline != -1) newline else length
             do {
-                val end = Math.min(newline, i + MAX_LOG_LENGTH)
+                val end = newline.coerceAtMost(i + MAX_LOG_LENGTH)
                 val part = message.substring(i, end)
                 if (priority == Log.ASSERT) {
                     Log.wtf(tag, part)
