@@ -4,17 +4,19 @@ import android.annotation.SuppressLint
 import android.os.Environment
 import android.util.Log
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.isNotEmpty
 import timber.log.Timber
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import java.util.regex.Pattern
 
 class RecordingTree(private val destination: String) : Timber.Tree() {
+
+    private val executor = Executor.SINGLE
 
     private val fqcnIgnore = listOf(
 
@@ -63,10 +65,10 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
         if (message.length < MAX_LOG_LENGTH) {
             if (priority == Log.ASSERT) {
-                writeLog("$tag :: $message")
+                writeLog(tag, message)
                 Log.wtf(tag, message)
             } else {
-                writeLog("$tag :: $message")
+                writeLog(tag, message)
                 Log.println(priority, tag, message)
             }
             return
@@ -82,10 +84,10 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
                 val end = newline.coerceAtMost(i + MAX_LOG_LENGTH)
                 val part = message.substring(i, end)
                 if (priority == Log.ASSERT) {
-                    writeLog("$tag :: $part")
+                    writeLog(tag, part)
                     Log.wtf(tag, part)
                 } else {
-                    writeLog("$tag :: $part")
+                    writeLog(tag, part)
                     Log.println(priority, tag, part)
                 }
                 i = end
@@ -95,25 +97,44 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
     }
 
     @SuppressLint("LogNotTimber")
-    private fun writeLog(logs: String) {
+    private fun writeLog(tag: String?, logs: String) {
 
-        Executor.SINGLE.execute {
+        executor.execute {
 
             val calendar = Calendar.getInstance()
             val format = SimpleDateFormat("yy-MM-dd", Locale.getDefault())
             val formattedDate = format.format(calendar.time)
 
-            val fileName = "$formattedDate-$destination.txt"
+            val fileName = "$formattedDate-$destination.log"
 
             val dir = Environment.DIRECTORY_DOWNLOADS
             val downloadsFolder = Environment.getExternalStoragePublicDirectory(dir)
             val file = File(downloadsFolder, fileName)
 
+            if (!file.exists() && !file.createNewFile()) {
+
+                Timber.e("No logs gathering file crated at: ${file.absolutePath}")
+                return@execute
+            }
+
             try {
 
                 FileWriter(file).use { writer ->
 
-                    writer.append("${Date()} :: $logs")
+                    val cal = Calendar.getInstance()
+                    val fmt = SimpleDateFormat("yy-MM-dd-h-m-s-ms", Locale.getDefault())
+                    val datetime = fmt.format(cal.time)
+
+                    val tagVal = if (isNotEmpty(tag)) {
+
+                        "$tag ::"
+
+                    } else {
+
+                        ""
+                    }
+
+                    writer.append("$datetime :: $tagVal $logs".replace("  ", " "))
                 }
 
             } catch (e: IOException) {

@@ -13,8 +13,6 @@ object Timber {
     @JvmStatic
     fun initialize(ctx: Context) {
 
-        val tag = "Timber :: Init ::"
-
         val resources = ctx.resources
         val recording = resources.getBoolean(R.bool.logs_gathering_enabled)
 
@@ -25,7 +23,7 @@ object Timber {
             val appName = ctx.getString(R.string.app_name)
             val appVersion = BaseApplication.getVersion()
             val appVersionCode = BaseApplication.getVersionCode()
-            val recordingFileName = "$appName-$appVersion-$appVersionCode.txt"
+            val recordingFileName = "$appName-$appVersion-$appVersionCode"
 
             Timber.plant(RecordingTree(recordingFileName))
 
@@ -33,8 +31,6 @@ object Timber {
 
             Timber.plant(Timber.DebugTree())
         }
-
-        Timber.v("$tag Recording: $recording")
     }
 
     @JvmStatic
