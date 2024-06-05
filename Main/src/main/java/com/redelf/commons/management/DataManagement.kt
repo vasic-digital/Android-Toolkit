@@ -42,8 +42,8 @@ abstract class DataManagement<T> :
         /*
             TODO: Refactor - Move away from the static context access
         */
-        val DO_LOG = AtomicBoolean()
-        val DO_ENCRYPT = AtomicBoolean()
+        val DEBUG = AtomicBoolean()
+        val ENCRYPT = AtomicBoolean()
         val LOG_RAW_DATA = AtomicBoolean()
         val LOGGABLE_MANAGERS: CopyOnWriteArrayList<Class<*>> = CopyOnWriteArrayList()
         val LOGGABLE_STORAGE_KEYS: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
@@ -55,9 +55,9 @@ abstract class DataManagement<T> :
             STORAGE = EncryptedPersistence(
 
                 ctx = ctx,
-                doLog = DO_LOG.get(),
+                doLog = DEBUG.get(),
                 storageTag = "dt_mgmt",
-                doEncrypt = DO_ENCRYPT.get(),
+                doEncrypt = ENCRYPT.get(),
                 logRawData = LOG_RAW_DATA.get(),
                 logStorageKeys = LOGGABLE_STORAGE_KEYS
             )
@@ -72,13 +72,23 @@ abstract class DataManagement<T> :
 
     ) : Transaction {
 
+        companion object {
+
+            /*
+                TODO: Refactor - Move away from the static context access
+            */
+            val DEBUG = AtomicBoolean()
+        }
+
+        private val tag = "Transaction ::"
         private var session: UUID? = parent.session.takeIdentifier()
+        private val canLog = DataManagement.DEBUG.get() && DEBUG.get()
 
         init {
 
-            Timber.v(
+            if (canLog) Timber.v(
 
-                "Transaction :: Session: $session :: INIT :: $name :: " +
+                "$tag Session: $session :: INIT :: $name :: " +
                     "With operation = ${operation != null}"
             )
 
@@ -92,14 +102,14 @@ abstract class DataManagement<T> :
 
             session = parent.session.takeIdentifier()
 
-            Timber.v("Transaction :: Session: $session :: START :: $name")
+            if (canLog) Timber.v("$tag Session: $session :: START :: $name")
 
             return true
         }
 
         override fun perform(): Boolean {
 
-            Timber.v("Transaction :: Session: $session :: PERFORM :: $name")
+            if (canLog) Timber.v("$tag Session: $session :: PERFORM :: $name")
 
             operation?.let {
 
@@ -107,28 +117,28 @@ abstract class DataManagement<T> :
 
                 if (result) {
 
-                    Timber.v("Transaction :: Session: $session :: PERFORMED :: $name")
+                    if (canLog) Timber.v("$tag Session: $session :: PERFORMED :: $name")
 
                 } else {
 
-                    Timber.e("Transaction :: Session: $session :: FAILED :: $name")
+                    Timber.e("$tag Session: $session :: FAILED :: $name")
                 }
 
                 return result
             }
 
-            Timber.v("Transaction :: Session: $session :: PERFORMED :: $name")
+            if (canLog) Timber.v("$tag Session: $session :: PERFORMED :: $name")
 
             return true
         }
 
         override fun end(): Boolean {
 
-            Timber.v("Transaction :: Session: $session :: ENDING :: $name")
+            if (canLog) Timber.v("$tag Session: $session :: ENDING :: $name")
 
             if (session != parent.session.takeIdentifier()) {
 
-                Timber.w("Transaction :: Session: $session :: SKIPPED :: $name")
+                if (canLog) Timber.w("$tag Session: $session :: SKIPPED :: $name")
 
                 return false
             }
@@ -145,7 +155,7 @@ abstract class DataManagement<T> :
 
                     result = true
 
-                    Timber.v("Transaction :: Session: $session :: ENDED :: $name")
+                    if (canLog) Timber.v("$tag Session: $session :: ENDED :: $name")
                 }
 
             } catch (e: IllegalStateException) {
@@ -155,7 +165,7 @@ abstract class DataManagement<T> :
 
             if (!result) {
 
-                Timber.v("Transaction :: Session: $session :: ENDING :: Failed: $name")
+                if (canLog) Timber.v("$tag Session: $session :: ENDING :: Failed: $name")
             }
 
             return result

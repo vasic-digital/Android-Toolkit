@@ -20,7 +20,7 @@ class EncryptedPersistenceTest : BaseTest() {
     @Before
     fun prepare() {
 
-        Timber.initialize(applicationContext)
+        Timber.initialize()
 
         Timber.v("Timber initialized: $this")
 

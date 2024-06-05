@@ -37,7 +37,6 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.initRegistrationWithGoogle
 import com.redelf.commons.extensions.isServiceRunning
 import com.redelf.commons.extensions.randomInteger
-import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.transmission.TransmissionManager
@@ -735,7 +734,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open fun isTransmissionServiceSupported(): Boolean {
 
-        return resources.getBoolean(R.bool.transmission_service_supported)
+        return false
     }
 
     protected open fun onTransmissionServiceConnected() {
@@ -780,37 +779,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
             override fun onCompleted(data: TransmissionManager<*>) {
 
-                if (data.isInitialized()) {
+                Timber.v("Sending manager :: Ready: $data")
 
-                    Timber.v("Sending manager :: Ready: $data")
-
-                    successCallback.onCompleted(true)
-
-                } else {
-
-                    val sendingManagerInitCallback = object : LifecycleCallback<Unit> {
-
-                        override fun onInitialization(success: Boolean, vararg args: Unit) {
-
-                            successCallback.onCompleted(success)
-                        }
-
-                        override fun onShutdown(success: Boolean, vararg args: Unit) {
-
-                            val e = IllegalStateException("Shut down unexpectedly")
-                            successCallback.onFailure(e)
-                        }
-                    }
-
-                    try {
-
-                        data.initialize(sendingManagerInitCallback)
-
-                    } catch (e: IllegalStateException) {
-
-                        successCallback.onFailure(e)
-                    }
-                }
+                successCallback.onCompleted(true)
             }
 
             override fun onFailure(error: Throwable) {

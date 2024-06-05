@@ -23,7 +23,7 @@ abstract class ManagersDependentTest : BaseTest() {
 
     protected open fun setup() {
 
-        Timber.initialize(applicationContext)
+        Timber.initialize()
 
         Timber.v("Timber initialized: $this")
 

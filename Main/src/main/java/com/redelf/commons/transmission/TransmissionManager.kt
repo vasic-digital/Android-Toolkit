@@ -30,14 +30,10 @@ import java.lang.reflect.Type
 import java.security.GeneralSecurityException
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: String) :
-
-    Management,
-    Initialization<Unit>, Shutdown<Unit>
-
-{
+abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: String) : Management {
 
     companion object {
 
@@ -53,16 +49,12 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     private var lastSendingTime: Long = 0
     private val sequentialExecutor = TaskExecutor.instantiateSingle()
 
-    private val initializationCallbacks =
-        Callbacks<LifecycleCallback<Unit>>(identifier = "Transmission initialization")
-
     private val sendingCallbacks =
         Callbacks<TransmissionSendingCallback<T>>(identifier = "Transmission sending")
 
     private val persistCallbacks =
         Callbacks<TransmissionManagerPersistCallback>(identifier = "Transmission persistence")
 
-    protected val check = LifecycleCheck()
     protected val data = LinkedBlockingQueue<String>(capacity)
 
     protected open val minSendIntervalInSeconds = 0
@@ -115,19 +107,13 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     fun getSendingStrategy() = currentSendingStrategy
 
+    init {
+
+        initialize()
+    }
+
     @Throws(IllegalStateException::class)
-    override fun initialize(callback: LifecycleCallback<Unit>) {
-
-        check.failOnInitialized()
-        initializationCallbacks.register(callback)
-
-        if (check.isInitializing()) {
-
-            Timber.w("Already initializing: %s", this)
-            return
-        }
-
-        check.setInitializing(true)
+    private fun initialize() {
 
         val intentFilter = IntentFilter(BROADCAST_ACTION_SEND)
         registerReceiver(sendRequestReceiver, intentFilter)
@@ -176,29 +162,24 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
             }
         }
 
-        Executor.MAIN.execute(action)
+        try {
+
+            Executor.MAIN.execute(action)
+
+        } catch (e: RejectedExecutionException) {
+
+            recordException(e)
+        }
     }
 
-    @Throws(IllegalStateException::class)
-    override fun shutdown(callback: LifecycleCallback<Unit>) {
+    private fun shutdown() {
 
-        initializationCallbacks.register(callback)
-
-        if (check.isShuttingDown()) {
-
-            Timber.w("Already shutting down: %s", this)
-            return
-        }
-
-        check.setShuttingDown(true)
         val terminated = terminate()
         onShutdown(terminated)
     }
 
     @Throws(IllegalStateException::class)
     fun send(data: T, async: Boolean = true) {
-
-        check.readyCheck()
 
         val action = Runnable {
 
@@ -209,7 +190,14 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         if (async) {
 
-            sequentialExecutor.execute(action)
+            try {
+
+                sequentialExecutor.execute(action)
+
+            } catch (e: RejectedExecutionException) {
+
+                recordException(e)
+            }
 
         } else {
 
@@ -252,8 +240,6 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     @Throws(IllegalStateException::class)
     fun send(executedFrom: String = "") {
 
-        check.readyCheck()
-
         Timber.v("Send (manager) :: executedFrom='$executedFrom'")
 
         val action = Runnable { executeSending("send") }
@@ -262,8 +248,6 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     @Throws(IllegalStateException::class)
     fun deleteAll() {
-
-        check.readyCheck()
 
         if (isSending()) {
 
@@ -282,8 +266,6 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     @Throws(IllegalStateException::class)
     fun delete(item: T, callback: OnObtain<Boolean>) {
-
-        check.readyCheck()
 
         if (isSending()) {
 
@@ -315,7 +297,6 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     @Throws(IllegalStateException::class)
     fun getScheduledCount(): Int {
 
-        check.readyCheck()
         return data.size
     }
 
@@ -384,12 +365,6 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         currentEncryptionProvider = new
 
     }
-
-    override fun isInitialized() = check.isInitialized()
-
-    override fun isInitializing() = check.isInitializing()
-
-    fun isShuttingDown() = check.isShuttingDown()
 
     @Throws(
 
@@ -588,34 +563,24 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     private fun onInit(success: Boolean) {
 
-        val operation = object : CallbackOperation<LifecycleCallback<Unit>> {
-            override fun perform(callback: LifecycleCallback<Unit>) {
+        if (success) {
 
-                callback.onInitialization(success)
-                initializationCallbacks.unregister(callback)
-            }
+            Timber.v("Init success")
+            return
         }
 
-        val operationName = "Transmission manager initialization operation"
-
-        check.setInitialized(success)
-        initializationCallbacks.doOnAll(operation, operationName)
+        Timber.e("Init failed")
     }
 
     private fun onShutdown(success: Boolean) {
 
-        val operation = object : CallbackOperation<LifecycleCallback<Unit>> {
-            override fun perform(callback: LifecycleCallback<Unit>) {
+        if (success) {
 
-                check.setShuttingDown(false)
-                callback.onShutdown(success)
-            }
+            Timber.v("Shutdown success")
+            return
         }
 
-        val operationName = "Transmission manager shutdown operation"
-
-        check.setInitialized(false)
-        initializationCallbacks.doOnAll(operation, operationName)
+        Timber.e("Shutdown failed")
     }
 
     private fun onSent(data: T, success: Boolean) {

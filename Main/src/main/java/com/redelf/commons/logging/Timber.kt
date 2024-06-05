@@ -1,24 +1,19 @@
 package com.redelf.commons.logging
 
-import android.content.Context
-import com.redelf.commons.R
-import com.redelf.commons.application.BaseApplication
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
+import com.redelf.commons.application.BaseApplication
 
 object Timber {
 
     private val recordLogs = AtomicBoolean(false)
 
     @JvmStatic
-    fun initialize(ctx: Context) {
+    fun initialize(logsRecording: Boolean = false) {
 
-        val resources = ctx.resources
-        val recording = resources.getBoolean(R.bool.logs_gathering_enabled)
+        setLogsRecording(logsRecording)
 
-        setLogsRecording(recording)
-
-        if (recording) {
+        if (logsRecording) {
 
             val appName = BaseApplication.getName()
             val appVersion = BaseApplication.getVersion()

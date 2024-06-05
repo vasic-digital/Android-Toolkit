@@ -60,6 +60,7 @@ abstract class BaseApplication :
 
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
+
         var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
         var TOP_ACTIVITIES = mutableListOf<Class<out Activity>>()
 
@@ -160,6 +161,8 @@ abstract class BaseApplication :
 
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
+
+    open fun canRecordApplicationLogs() = false
 
     protected abstract fun onDoCreate()
     protected abstract fun takeSalt(): String
@@ -378,7 +381,7 @@ abstract class BaseApplication :
 
         if (DEBUG.get()) {
 
-            Timber.initialize(applicationContext)
+            Timber.initialize(canRecordApplicationLogs())
 
             Timber.i("Application :: Initializing")
 

@@ -5,13 +5,13 @@ import com.google.gson.ExclusionStrategy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.redelf.commons.Erasing
-import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.Obtain
+import java.util.concurrent.atomic.AtomicBoolean
 
 class EncryptedPersistence
 
@@ -42,18 +42,21 @@ constructor(
 
     companion object {
 
-        var DEBUG: Boolean? = null
+        /*
+            TODO: Refactor
+        */
+        val DEBUG = AtomicBoolean()
 
-        val logTag = "${Persistence.tag} Encrypted ::"
+        const val LOG_TAG = "${Persistence.TAG} Encrypted ::"
     }
 
     private var data: Data? = null
 
     init {
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+        if (DEBUG.get()) Timber.v(
 
-            "$logTag :: Initialization :: Storage tag: '$storageTag'"
+            "$LOG_TAG :: Initialization :: Storage tag: '$storageTag'"
         )
 
         val tag = "Exclusion strategies ::"
@@ -71,7 +74,7 @@ constructor(
 
                         serializationExclusionStrategy?.let {
 
-                            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+                            if (DEBUG.get()) Timber.v(
 
                                 "$tag Exclusion Strategies: $serializationExclusionStrategy"
                             )
@@ -83,7 +86,7 @@ constructor(
 
                         serializationExclusionStrategy?.let {
 
-                            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+                            if (DEBUG.get()) Timber.v(
 
                                 "$tag Ser. Excl. Strategy: $serializationExclusionStrategy"
                             )
@@ -93,7 +96,7 @@ constructor(
 
                         deserializationExclusionStrategy?.let {
 
-                            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+                            if (DEBUG.get()) Timber.v(
 
                                 "$tag De-Ser. Excl. Strategy: $serializationExclusionStrategy"
                             )

@@ -1,21 +1,27 @@
 package com.redelf.commons.persistance
 
 import com.redelf.commons.logging.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 
 object PersistenceLogInterceptor : LogInterceptor {
 
+    /*
+        TODO: Refactor - Move away from the static context access
+    */
+    val DEBUG = AtomicBoolean()
+
     override fun onLog(message: String?) {
 
-        Timber.v("${Persistence.tag} $message")
+        if (DEBUG.get()) Timber.v("${Persistence.TAG} $message")
     }
 
     override fun onDebug(message: String?) {
 
-        Timber.d("${Persistence.tag} $message")
+        if (DEBUG.get()) Timber.d("${Persistence.TAG} $message")
     }
 
     override fun onError(message: String?) {
 
-        Timber.e("${Persistence.tag} $message")
+        Timber.e("${Persistence.TAG} $message")
     }
 }

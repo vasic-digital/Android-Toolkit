@@ -10,6 +10,9 @@ import com.redelf.commons.retrofit.RetrofitApiParameters
 abstract class ApiService<T> (
 
     endpoint: Int,
+    logApiCalls: Boolean = false,
+    logApiCallsVerbose: Boolean = false,
+
     protected val ctx: Context,
     protected val connectivity: ConnectivityCheck = Connectivity(),
 
@@ -19,6 +22,9 @@ abstract class ApiService<T> (
 
         ctx = ctx,
         endpoint = endpoint,
+
+        bodyLog = logApiCalls,
+        verbose = logApiCallsVerbose,
 
         readTimeoutInSeconds = 60,
         connectTimeoutInSeconds = 60,

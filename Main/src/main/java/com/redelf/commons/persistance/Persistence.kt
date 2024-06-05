@@ -9,6 +9,6 @@ interface Persistence<K> : Pull<K>, Push<K>, Deletion<K>, Contain<K> {
 
     companion object {
 
-        val tag = "PERSISTENCE ::"
+        const val TAG = "PERSISTENCE ::"
     }
 }
