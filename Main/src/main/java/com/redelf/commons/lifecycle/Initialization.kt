@@ -14,7 +14,7 @@ interface Initialization<T> : InitializationCondition {
         fun waitForInitialization(
 
             who: Initialization<*>,
-            timeoutInSeconds: Long = 30L,
+            timeoutInSeconds: Long = 60L,
             initLogTag: String = "${who::class.simpleName} initialization ::"
 
         ) {

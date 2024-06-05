@@ -706,7 +706,7 @@ fun exec(what: Runnable, delayInMilliseconds: Long) {
 fun exec(
 
     callable: Callable<Boolean>,
-    timeout: Long = 30L,
+    timeout: Long = 60L,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Bool exec ::",
     executor: Execution? = null,
@@ -735,7 +735,7 @@ fun exec(
 fun <T> doExec(
 
     callable: Callable<T>,
-    timeout: Long = 30L,
+    timeout: Long = 60L,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Do exec ::",
     executor: Execution? = null,
