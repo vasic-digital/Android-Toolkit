@@ -2,6 +2,7 @@ package com.redelf.commons.persistance;
 
 import android.text.TextUtils;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.redelf.commons.logging.Timber;
@@ -85,6 +86,12 @@ class DataSerializer implements Serializer {
         try {
 
             return gsn.toJson(dataInfo);
+
+        } catch (OutOfMemoryError e) {
+
+            Timber.e(e);
+
+            FirebaseCrashlytics.getInstance().recordException(e);
 
         } catch (Exception e) {
 
