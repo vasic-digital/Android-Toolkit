@@ -26,6 +26,10 @@ class Data private constructor(private val facade: Facade) :
      * TODO: If object is Partitional, each partition if is list or map, split in chunks
      */
 
+    /*
+    *   TODO: Connect the Partitional getPartitionType method with obtaining
+    */
+
     companion object {
 
         val DEBUG = AtomicBoolean()
@@ -60,7 +64,7 @@ class Data private constructor(private val facade: Facade) :
             return false
         }
 
-        if (value is Partitional) {
+        if (value is Partitional && value.isPartitioningEnabled()) {
 
             val tag = "Partitional :: Put ::"
 
@@ -137,13 +141,15 @@ class Data private constructor(private val facade: Facade) :
             return defaultValue
         }
 
-        val count = getPartitionsCount(key)
+        val partitionsCount = getPartitionsCount(key)
 
-        if (count > 0) {
+        if (partitionsCount > 0) {
+
+            val count = partitionsCount - 1
 
             val tag = "Partitional :: Get ::"
 
-            if (DEBUG.get()) Timber.v("$tag START, Partitions = ${count + 1}")
+            if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
 
             try {
 
@@ -167,7 +173,7 @@ class Data private constructor(private val facade: Facade) :
 
                                 if (DEBUG.get()) Timber.v("$tag Obtained: $i")
 
-                                val set = pInstance.setPartitionData(i, partition)
+                                val set = pInstance.setPartitionData(i, part)
 
                                 if (set) {
 
@@ -216,7 +222,7 @@ class Data private constructor(private val facade: Facade) :
 
         if (DEBUG.get()) Timber.v("$tag START, Partitions = ${count + 1}")
 
-        if (count > 0) {
+        if (partitionsCount > 0) {
 
             val markRemoved = facade.delete(keyMarkPartitionalData(key))
 
