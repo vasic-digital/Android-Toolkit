@@ -1,11 +1,21 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.logging.Timber
+import com.redelf.commons.partition.Partitional
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.reflect.KType
+import kotlin.reflect.full.createType
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.javaType
 
-class Data private constructor(private val facade: Facade):
+
+class Data private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
@@ -13,7 +23,13 @@ class Data private constructor(private val facade: Facade):
 
 {
 
+    /*
+     * TODO: If object is Partitional, each partition if is list or map, split in chunks
+     */
+
     companion object {
+
+        val DEBUG = AtomicBoolean()
 
         fun instantiate(persistenceBuilder: PersistenceBuilder): Data {
 
@@ -38,20 +54,159 @@ class Data private constructor(private val facade: Facade):
         return facade.initialize(ctx)
     }
 
-    fun <T> put(key: String?, value: T): Boolean = facade.put(key, value)
+    fun <T> put(key: String?, value: T): Boolean {
 
-    operator fun <T> get(key: String?): T? = facade.get(key)
+        if (key == null || isEmpty(key)) {
 
+            return false
+        }
+
+        if (value is Partitional) {
+
+            val tag = "Partitional :: Put ::"
+
+            val count = value.getPartitionCount() - 1
+
+            if (DEBUG.get()) Timber.v("$tag START, Partitions = ${count + 1}")
+
+            if (count > 0) {
+
+                val marked = facade.put(keyMarkPartitionalData(key), count)
+
+                if (!marked) {
+
+                    Timber.e("$tag ERROR: Could not mark partitional data")
+
+                    return false
+                }
+
+                for (i in 0..count) {
+
+                    val partition = value.getPartitionData(i)
+
+                    partition?.let {
+
+                        val written = facade.put(keyPartition(key, i), it)
+
+                        if (written) {
+
+                            if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
+
+                        } else {
+
+                            Timber.e("$tag FAILURE: Partition no. $i")
+
+                            return false
+                        }
+                    }
+                }
+
+            } else {
+
+                Timber.e("$tag END: No partitions reported")
+
+                return false
+            }
+        }
+
+        return facade.put(key, value)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    operator fun <T> get(key: String?): T? {
+
+        T::class.primaryConstructor?.call()?.let {
+
+            val partitional = (it as T) is Partitional
+
+            if (partitional) {
+
+                // TODO:
+            }
+        }
+
+        return facade.get(key)
+    }
+
+
+    @Suppress("UNCHECKED_CAST")
     operator fun <T> get(key: String?, defaultValue: T): T {
+
+        T::class.primaryConstructor?.call()?.let {
+
+            val partitional = (it as T) is Partitional
+
+            if (partitional) {
+
+                // TODO:
+            }
+        }
 
         return facade.get(key, defaultValue) ?: defaultValue
     }
 
     fun count(): Long = facade.count()
 
-    fun delete(key: String?): Boolean = facade.delete(key)
+    fun delete(key: String?): Boolean {
 
-    operator fun contains(key: String?): Boolean = facade.contains(key)
+        if (key == null || isEmpty(key)) {
+
+            return false
+        }
+
+        val partitionsCount = getPartitionsCount(key)
+
+        val tag = "Partitional :: Delete ::"
+
+        val count = partitionsCount - 1
+
+        if (DEBUG.get()) Timber.v("$tag START, Partitions = ${count + 1}")
+
+        if (count > 0) {
+
+            val markRemoved = facade.delete(keyMarkPartitionalData(key))
+
+            if (!markRemoved) {
+
+                Timber.e("$tag ERROR: Could not un-mark partitional data")
+
+                return false
+            }
+
+            for (i in 0..count) {
+
+                val removed = facade.delete(keyPartition(key, i))
+
+                if (removed) {
+
+                    if (DEBUG.get()) Timber.v("$tag REMOVED: Partition no. $i")
+
+                } else {
+
+                    Timber.e("$tag FAILURE: Partition no. $i")
+                }
+            }
+        }
+
+        return facade.delete(key)
+    }
+
+    operator fun contains(key: String?): Boolean {
+
+        if (key == null || isEmpty(key)) {
+
+            return false
+        }
+
+        val partitionsCount = getPartitionsCount(key)
+
+        if (partitionsCount > 0) {
+
+            return true
+        }
+
+        return facade.contains(key)
+    }
 
     /*
          DANGER ZONE:
@@ -65,5 +220,14 @@ class Data private constructor(private val facade: Facade):
 
         return facade.deleteAll()
     }
+
+    private fun getPartitionsCount(key: String) : Int {
+
+        return facade.get(keyMarkPartitionalData(key), 0)
+    }
+
+    private fun keyPartition(key: String, index: Int) = "$key.$index"
+
+    private fun keyMarkPartitionalData(key: String) = "$key.partitions"
 }
 
