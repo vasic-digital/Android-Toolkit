@@ -115,6 +115,11 @@ class Data private constructor(private val facade: Facade) :
     @Suppress("UNCHECKED_CAST")
     operator fun <T> get(key: String?): T? {
 
+        if (key == null || isEmpty(key)) {
+
+            return null
+        }
+
         T::class.primaryConstructor?.call()?.let {
 
             val partitional = (it as T) is Partitional
@@ -122,6 +127,10 @@ class Data private constructor(private val facade: Facade) :
             if (partitional) {
 
                 // TODO:
+
+            } else {
+
+                return null
             }
         }
 
@@ -132,13 +141,43 @@ class Data private constructor(private val facade: Facade) :
     @Suppress("UNCHECKED_CAST")
     operator fun <T> get(key: String?, defaultValue: T): T {
 
-        T::class.primaryConstructor?.call()?.let {
+        if (key == null || isEmpty(key)) {
 
-            val partitional = (it as T) is Partitional
+            return defaultValue
+        }
 
-            if (partitional) {
+        val partitionsCount = getPartitionsCount(key)
 
-                // TODO:
+        if (partitionsCount > 0) {
+
+            T::class.primaryConstructor?.call()?.let {
+
+                val pInstance = (it as T)
+
+                if (pInstance is Partitional) {
+
+                    val count = facade.get(keyMarkPartitionalData(key), 0)
+
+                    for (i in 0..count) {
+
+                        val partition = facade.get<Any?>(keyPartition(key, i))
+
+                        val set = pInstance.setPartitionData(i, partition)
+
+                        if (!set) {
+
+                            // TODO: Error
+
+                            return defaultValue
+                        }
+                    }
+
+                } else {
+
+                    // TODO: Error
+
+                    return defaultValue
+                }
             }
         }
 
