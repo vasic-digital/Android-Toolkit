@@ -3,6 +3,7 @@ package com.redelf.commons.persistance
 import android.content.Context
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
@@ -19,9 +20,7 @@ class Data private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
-    InitializationWithContext
-
-{
+    InitializationWithContext {
 
     /*
      * TODO: If object is Partitional, each partition if is list or map, split in chunks
@@ -112,7 +111,6 @@ class Data private constructor(private val facade: Facade) :
         return facade.put(key, value)
     }
 
-    @Suppress("UNCHECKED_CAST")
     operator fun <T> get(key: String?): T? {
 
         if (key == null || isEmpty(key)) {
@@ -120,18 +118,11 @@ class Data private constructor(private val facade: Facade) :
             return null
         }
 
-        T::class.primaryConstructor?.call()?.let {
+        val count = getPartitionsCount(key)
 
-            val partitional = (it as T) is Partitional
+        if (count > 0) {
 
-            if (partitional) {
-
-                // TODO:
-
-            } else {
-
-                return null
-            }
+            return get(key, null)
         }
 
         return facade.get(key)
@@ -146,38 +137,62 @@ class Data private constructor(private val facade: Facade) :
             return defaultValue
         }
 
-        val partitionsCount = getPartitionsCount(key)
+        val count = getPartitionsCount(key)
 
-        if (partitionsCount > 0) {
+        if (count > 0) {
 
-            T::class.primaryConstructor?.call()?.let {
+            val tag = "Partitional :: Get ::"
 
-                val pInstance = (it as T)
+            if (DEBUG.get()) Timber.v("$tag START, Partitions = ${count + 1}")
 
-                if (pInstance is Partitional) {
+            try {
 
-                    val count = facade.get(keyMarkPartitionalData(key), 0)
+                T::class.primaryConstructor?.call()?.let {
 
-                    for (i in 0..count) {
+                    if (DEBUG.get()) Timber.v("$tag INSTANTIATED")
 
-                        val partition = facade.get<Any?>(keyPartition(key, i))
+                    val pInstance = (it as T)
 
-                        val set = pInstance.setPartitionData(i, partition)
+                    if (DEBUG.get()) Timber.v("$tag CONVERTED TO: ${T::class.simpleName}")
 
-                        if (!set) {
+                    if (pInstance is Partitional) {
 
-                            // TODO: Error
+                        if (DEBUG.get()) Timber.v("$tag Partitional")
 
-                            return defaultValue
+                        for (i in 0..count) {
+
+                            val partition = facade.get<Any?>(keyPartition(key, i))
+
+                            partition?.let { part ->
+
+                                if (DEBUG.get()) Timber.v("$tag Obtained: $i")
+
+                                val set = pInstance.setPartitionData(i, partition)
+
+                                if (set) {
+
+                                    if (DEBUG.get()) Timber.v("$tag Set: $i")
+
+                                } else {
+
+                                    Timber.e("$tag FAILURE: Not set: $i")
+
+                                    return defaultValue
+                                }
+                            }
                         }
+
+                    } else {
+
+                        Timber.e("$tag END: No partitions reported")
+
+                        return defaultValue
                     }
-
-                } else {
-
-                    // TODO: Error
-
-                    return defaultValue
                 }
+
+            } catch (e: Exception) {
+
+                recordException(e)
             }
         }
 
@@ -260,7 +275,7 @@ class Data private constructor(private val facade: Facade) :
         return facade.deleteAll()
     }
 
-    private fun getPartitionsCount(key: String) : Int {
+    private fun getPartitionsCount(key: String): Int {
 
         return facade.get(keyMarkPartitionalData(key), 0)
     }
