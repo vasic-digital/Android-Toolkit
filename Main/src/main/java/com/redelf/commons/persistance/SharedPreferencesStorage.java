@@ -6,6 +6,8 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.redelf.commons.persistance.base.Storage;
+
 public final class SharedPreferencesStorage implements Storage<String> {
 
     private final SharedPreferences preferences;

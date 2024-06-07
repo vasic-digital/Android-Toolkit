@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance
+package com.redelf.commons.persistance.base
 
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
@@ -20,7 +20,6 @@ interface Facade : ShutdownSynchronized, TerminationSynchronized, Initialization
     fun deleteAll(): Boolean
 
     fun delete(key: String?): Boolean
-
 
     fun contains(key: String?): Boolean
 

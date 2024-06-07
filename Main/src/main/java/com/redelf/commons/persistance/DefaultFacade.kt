@@ -3,6 +3,11 @@ package com.redelf.commons.persistance
 import android.content.Context
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.persistance.base.Converter
+import com.redelf.commons.persistance.base.Encryption
+import com.redelf.commons.persistance.base.Facade
+import com.redelf.commons.persistance.base.Serializer
+import com.redelf.commons.persistance.base.Storage
 import java.lang.reflect.Type
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
@@ -249,7 +254,7 @@ object DefaultFacade : Facade {
 
     override fun getByType(key: String?, type: Type): Any? {
 
-        TODO("Not yet implemented")
+        return storage?.getByType(key, type)
     }
 
     override fun count(): Long {

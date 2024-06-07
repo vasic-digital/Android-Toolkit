@@ -1,5 +1,7 @@
 package com.redelf.commons.persistance
 
+import com.redelf.commons.persistance.base.Encryption
+
 class NoEncryption : Encryption {
     override fun init(): Boolean {
 

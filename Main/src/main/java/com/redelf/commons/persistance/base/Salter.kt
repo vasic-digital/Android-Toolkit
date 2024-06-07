@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance
+package com.redelf.commons.persistance.base
 
 interface Salter {
 

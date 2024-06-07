@@ -8,6 +8,8 @@ import com.facebook.crypto.CryptoConfig
 import com.facebook.crypto.Entity
 import com.facebook.crypto.keychain.KeyChain
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.persistance.base.Encryption
+import com.redelf.commons.persistance.base.Salter
 
 class ConcealEncryption constructor(
 

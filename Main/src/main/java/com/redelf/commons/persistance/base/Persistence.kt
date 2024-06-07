@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance
+package com.redelf.commons.persistance.base
 
 import com.redelf.commons.contain.Contain
 import com.redelf.commons.delete.Deletion

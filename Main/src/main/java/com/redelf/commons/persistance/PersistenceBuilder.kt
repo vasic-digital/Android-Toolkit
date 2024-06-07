@@ -5,6 +5,12 @@ import android.text.TextUtils
 import com.google.gson.Gson
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.persistance.base.Converter
+import com.redelf.commons.persistance.base.Encryption
+import com.redelf.commons.persistance.base.Parser
+import com.redelf.commons.persistance.base.Salter
+import com.redelf.commons.persistance.base.Serializer
+import com.redelf.commons.persistance.base.Storage
 import java.util.concurrent.CopyOnWriteArrayList
 
 class PersistenceBuilder(

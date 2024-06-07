@@ -11,6 +11,9 @@ import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.persistance.base.Parser
+import com.redelf.commons.persistance.base.Persistence
+import com.redelf.commons.persistance.base.Salter
 import java.util.concurrent.atomic.AtomicBoolean
 
 class EncryptedPersistence

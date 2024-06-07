@@ -6,6 +6,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.redelf.commons.logging.Timber;
+import com.redelf.commons.persistance.base.Serializer;
 
 import java.util.Iterator;
 import java.util.List;
@@ -53,7 +54,7 @@ class DataSerializer implements Serializer {
         } else if (Map.class.isAssignableFrom(originalGivenValue.getClass())) {
 
             dataType = DataInfo.TYPE_MAP;
-            Map<?, ?> map = (Map) originalGivenValue;
+            Map<?, ?> map = (Map<?, ?>) originalGivenValue;
 
             if (!map.isEmpty()) {
                 for (Map.Entry<?, ?> entry : map.entrySet()) {

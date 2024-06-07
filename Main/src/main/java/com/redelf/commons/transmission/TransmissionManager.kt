@@ -42,6 +42,9 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         const val BROADCAST_ACTION_RESULT = "TransmissionManager.Action.RESULT"
     }
 
+    /*
+    * TODO: Support Jackson as well and stream read & write
+    */
     private val gson = Gson()
     private val capacity = 100
     private val maxRetries = 10

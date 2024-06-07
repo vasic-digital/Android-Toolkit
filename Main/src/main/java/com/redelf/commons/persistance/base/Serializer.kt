@@ -1,4 +1,6 @@
-package com.redelf.commons.persistance
+package com.redelf.commons.persistance.base
+
+import com.redelf.commons.persistance.DataInfo
 
 interface Serializer {
 

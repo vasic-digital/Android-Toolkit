@@ -2,6 +2,8 @@ package com.redelf.commons.persistance;
 
 import com.google.gson.reflect.TypeToken;
 import com.redelf.commons.obtain.Obtain;
+import com.redelf.commons.persistance.base.Converter;
+import com.redelf.commons.persistance.base.Parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;

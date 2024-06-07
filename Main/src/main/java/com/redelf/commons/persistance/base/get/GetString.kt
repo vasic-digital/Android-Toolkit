@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance.get
+package com.redelf.commons.persistance.base.get
 
 interface GetString {
 

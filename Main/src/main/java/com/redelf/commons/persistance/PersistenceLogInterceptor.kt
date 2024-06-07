@@ -1,6 +1,7 @@
 package com.redelf.commons.persistance
 
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.persistance.base.Persistence
 import java.util.concurrent.atomic.AtomicBoolean
 
 object PersistenceLogInterceptor : LogInterceptor {

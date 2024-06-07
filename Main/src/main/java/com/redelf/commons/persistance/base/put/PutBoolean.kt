@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance.put
+package com.redelf.commons.persistance.base.put
 
 interface PutBoolean {
 

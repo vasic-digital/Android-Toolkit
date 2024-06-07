@@ -13,6 +13,9 @@ import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.extensions.randomString
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.persistance.base.Encryption
+import com.redelf.commons.persistance.base.Storage
+import java.lang.reflect.Type
 import java.sql.SQLException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -260,7 +263,8 @@ object DBStorage : Storage<String> {
         return false
     }
 
-    override fun put(key: String, value: String): Boolean {
+
+    override fun put(key: String?, value: String): Boolean {
 
         if (isEmpty(key)) {
 
@@ -364,7 +368,12 @@ object DBStorage : Storage<String> {
         return result.get()
     }
 
-    override fun get(key: String): String {
+    override fun get(key: String?): String {
+
+        if (isEmpty(key)) {
+
+            return ""
+        }
 
         var result = ""
         val selectionArgs = arrayOf(key)
@@ -441,9 +450,21 @@ object DBStorage : Storage<String> {
         return result
     }
 
-    override fun delete(key: String): Boolean {
+    override fun getByType(key: String?, type: Type): Any? {
+
+        TODO("Not yet implemented")
+    }
+
+    override fun delete(key: String?): Boolean {
 
         val tag = "Delete :: By key :: $key ::"
+
+        if (isEmpty(key)) {
+
+            Timber.e("$tag Empty key")
+
+            return false
+        }
 
         if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
 
@@ -650,7 +671,7 @@ object DBStorage : Storage<String> {
         return false
     }
 
-    override fun contains(key: String): Boolean {
+    override fun contains(key: String?): Boolean {
 
         return isNotEmpty(get(key))
     }

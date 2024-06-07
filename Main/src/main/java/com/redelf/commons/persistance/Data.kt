@@ -9,11 +9,9 @@ import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
+import com.redelf.commons.persistance.base.Facade
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.reflect.KType
-import kotlin.reflect.full.createType
 import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.javaType
 
 
 class Data private constructor(private val facade: Facade) :
