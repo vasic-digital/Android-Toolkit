@@ -12,5 +12,8 @@ interface Partitional {
 
     fun setPartitionData(number: Int, data: Any?): Boolean
 
+    /*
+        TODO: To be fully-automatic, with possibility of override
+    */
     fun getPartitionType(number: Int): Type?
 }
