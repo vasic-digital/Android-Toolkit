@@ -254,7 +254,9 @@ object DefaultFacade : Facade {
 
     override fun getByType(key: String?, type: Type): Any? {
 
-        return storage?.getByType(key, type)
+        TODO("!!!")
+
+        return null
     }
 
     override fun count(): Long {

@@ -10,11 +10,10 @@ import java.lang.reflect.Type
        Check other the files as well!
 * */
 interface Storage<T> : ShutdownSynchronized, TerminationSynchronized, InitializationWithContext {
+
     fun put(key: String?, value: T): Boolean
 
     fun get(key: String?): T
-
-    fun getByType(key: String?, type: Type): Any?
 
     fun delete(key: String?): Boolean
 

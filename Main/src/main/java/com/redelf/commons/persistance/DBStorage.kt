@@ -450,11 +450,6 @@ object DBStorage : Storage<String> {
         return result
     }
 
-    override fun getByType(key: String?, type: Type): Any? {
-
-        TODO("Not yet implemented")
-    }
-
     override fun delete(key: String?): Boolean {
 
         val tag = "Delete :: By key :: $key ::"
