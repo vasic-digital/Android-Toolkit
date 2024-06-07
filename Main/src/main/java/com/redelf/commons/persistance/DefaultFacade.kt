@@ -194,9 +194,38 @@ object DefaultFacade : Facade {
 
     override fun getByType(key: String?, type: Type): Any? {
 
-        TODO("!!!")
+        val tag = "get -> by type '" + type.typeName + "' -> "
 
-        return null
+        if (key == null) {
+
+            return null
+        }
+
+        val plainText = getRaw(key)
+
+        // 4. Convert the text to original data along with original type
+        var result: Any? = null
+
+        try {
+
+            result = converter?.fromString(plainText, type)
+
+            if (canLogKeyRaw(key)) {
+
+                dbg("$tag key: $key -> Converted: $result")
+
+            } else {
+
+                if (canLogKey(key)) log("$tag key: $key -> Converted: ${result != null}")
+            }
+
+        } catch (e: Exception) {
+
+            val message = e.message
+            err("$tag key: $key -> Converter failed, error='$message'")
+        }
+
+        return result
     }
 
     override fun count(): Long {

@@ -58,7 +58,7 @@ class PersistenceBuilder(
         }
     }
 
-    private var parser: Obtain<Parser?> = object : Obtain<Parser?> {
+    private var parser: Obtain<Parser> = object : Obtain<Parser> {
 
         override fun obtain() = GsonParser(
 
@@ -66,6 +66,9 @@ class PersistenceBuilder(
 
                 override fun obtain(): Gson {
 
+                    /*
+                        TODO: Bring the Jackson support
+                    */
                     return Gson()
                 }
             }
@@ -129,7 +132,7 @@ class PersistenceBuilder(
         return this
     }
 
-    fun setParser(parser: Obtain<Parser?>): PersistenceBuilder {
+    fun setParser(parser: Obtain<Parser>): PersistenceBuilder {
 
         this.parser = parser
         return this

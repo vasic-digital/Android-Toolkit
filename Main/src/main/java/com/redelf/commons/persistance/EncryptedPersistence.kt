@@ -66,7 +66,7 @@ constructor(
 
         ctx.let {
 
-            val getParser = object : Obtain<Parser?> {
+            val getParser = object : Obtain<Parser> {
 
                 override fun obtain(): Parser {
 
