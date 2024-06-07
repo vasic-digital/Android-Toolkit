@@ -439,7 +439,7 @@ object DBStorage : Storage<String> {
 
             } else {
 
-                Timber.w("$tag END: Nothing found")
+                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END: Nothing found")
             }
 
             latch.countDown()
