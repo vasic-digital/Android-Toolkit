@@ -2,6 +2,7 @@ package com.redelf.commons.persistance;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -40,7 +41,11 @@ public final class SharedPreferencesStorage implements Storage<String> {
     @Override
     public boolean put(String key, String value) {
 
-        PersistenceUtils.checkNull("key", key);
+        if (TextUtils.isEmpty(key)) {
+
+            return false;
+        }
+
         return getEditor().putString(key, String.valueOf(value)).commit();
     }
 

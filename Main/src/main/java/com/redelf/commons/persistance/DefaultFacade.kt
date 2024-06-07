@@ -3,6 +3,7 @@ package com.redelf.commons.persistance
 import android.content.Context
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Timber
+import java.lang.reflect.Type
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -12,15 +13,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 object DefaultFacade : Facade {
 
     private val doLog = AtomicBoolean()
-    private val logRawData = AtomicBoolean()
-    private val keysFilter = CopyOnWriteArrayList<String>()
-
     private var converter: Converter? = null
+    private val logRawData = AtomicBoolean()
     private var encryption: Encryption? = null
     private var serializer: Serializer? = null
     private var storage: Storage<String>? = null
     private const val LOG_TAG = "Default facade ::"
     private var logInterceptor: LogInterceptor? = null
+    private val keysFilter = CopyOnWriteArrayList<String>()
 
     fun initialize(builder: PersistenceBuilder): Facade {
 
@@ -60,10 +60,12 @@ object DefaultFacade : Facade {
         storage?.initialize(ctx)
     }
 
-    override fun <T> put(key: String, value: T): Boolean {
+    override fun <T> put(key: String?, value: T): Boolean {
 
-        // Validate
-        PersistenceUtils.checkNull("Key", key)
+        if (key == null) {
+
+            return false
+        }
 
         if (canLogKey(key)) log("put -> key: $key -> has value: ${value != null}")
 
@@ -140,7 +142,12 @@ object DefaultFacade : Facade {
         }
     }
 
-    override fun <T> get(key: String): T? {
+    override fun <T> get(key: String?): T? {
+
+        if (key == null) {
+
+            return null
+        }
 
         if (canLogKey(key)) log("get -> key: $key -> key: $key")
 
@@ -230,9 +237,19 @@ object DefaultFacade : Facade {
         return result
     }
 
-    override fun <T> get(key: String, defaultValue: T): T {
+    override fun <T> get(key: String?, defaultValue: T): T {
+
+        if (key == null) {
+
+            return defaultValue
+        }
 
         return get<T>(key) ?: return defaultValue
+    }
+
+    override fun getByType(key: String?, type: Type): Any? {
+
+        TODO("Not yet implemented")
     }
 
     override fun count(): Long {
@@ -245,19 +262,14 @@ object DefaultFacade : Facade {
         return storage?.deleteAll() ?: false
     }
 
-    override fun delete(key: String): Boolean {
+    override fun delete(key: String?): Boolean {
 
         return storage?.delete(key) ?: false
     }
 
-    override fun contains(key: String): Boolean {
+    override fun contains(key: String?): Boolean {
 
         return storage?.contains(key) ?: false
-    }
-
-    override fun isBuilt(): Boolean {
-
-        return true
     }
 
     override fun destroy() {}

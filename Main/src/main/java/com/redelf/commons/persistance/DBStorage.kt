@@ -262,7 +262,10 @@ object DBStorage : Storage<String> {
 
     override fun put(key: String, value: String): Boolean {
 
-        PersistenceUtils.checkNull("key", key)
+        if (isEmpty(key)) {
+
+            return false
+        }
 
         val tag = "Put :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 

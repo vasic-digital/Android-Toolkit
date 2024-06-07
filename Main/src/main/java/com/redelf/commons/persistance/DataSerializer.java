@@ -27,8 +27,15 @@ class DataSerializer implements Serializer {
     @Override
     public <T> String serialize(byte[] cipherText, T originalGivenValue) {
 
-        PersistenceUtils.checkNullOrEmpty("Cipher text", cipherText);
-        PersistenceUtils.checkNull("Value", originalGivenValue);
+        if (cipherText == null || cipherText.length == 0) {
+
+            return null;
+        }
+
+        if (originalGivenValue == null) {
+
+            return null;
+        }
 
         Class<?> keyClassName = null;
         Class<?> valueClassName = null;

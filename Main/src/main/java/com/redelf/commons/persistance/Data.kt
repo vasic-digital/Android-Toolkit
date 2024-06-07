@@ -26,10 +26,6 @@ class Data private constructor(private val facade: Facade) :
      * TODO: If object is Partitional, each partition if is list or map, split in chunks
      */
 
-    /*
-    *   TODO: Connect the Partitional getPartitionType method with obtaining
-    */
-
     companion object {
 
         val DEBUG = AtomicBoolean()
@@ -132,7 +128,6 @@ class Data private constructor(private val facade: Facade) :
         return facade.get(key)
     }
 
-
     @Suppress("UNCHECKED_CAST")
     operator fun <T> get(key: String?, defaultValue: T): T {
 
@@ -167,24 +162,40 @@ class Data private constructor(private val facade: Facade) :
 
                         for (i in 0..count) {
 
-                            val partition = facade.get<Any?>(keyPartition(key, i))
+                            val type = pInstance.getPartitionType(i)
 
-                            partition?.let { part ->
+                            type?.let { t ->
 
-                                if (DEBUG.get()) Timber.v("$tag Obtained: $i")
+                                val partition = facade.getByType(keyPartition(key, i), t)
 
-                                val set = pInstance.setPartitionData(i, part)
+                                partition?.let { part ->
 
-                                if (set) {
+                                    if (DEBUG.get()) Timber.v("$tag Obtained: $i")
 
-                                    if (DEBUG.get()) Timber.v("$tag Set: $i")
+                                    val set = pInstance.setPartitionData(i, part)
 
-                                } else {
+                                    if (set) {
 
-                                    Timber.e("$tag FAILURE: Not set: $i")
+                                        if (DEBUG.get()) Timber.v("$tag Set: $i")
 
-                                    return defaultValue
+                                    } else {
+
+                                        Timber.e("$tag FAILURE: Not set: $i")
+
+                                        return defaultValue
+                                    }
                                 }
+                            }
+
+                            if (type == null) {
+
+                                Timber.e(
+
+                                    "$tag FAILURE: No partition type " +
+                                            "defined for partition: $i"
+                                )
+
+                                return defaultValue
                             }
                         }
 
