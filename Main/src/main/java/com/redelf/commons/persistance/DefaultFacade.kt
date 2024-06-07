@@ -154,72 +154,12 @@ object DefaultFacade : Facade {
             return null
         }
 
-        if (canLogKey(key)) log("get -> key: $key -> key: $key")
-
-        // 1. Get serialized text from the storage
-        val serializedText: String?
-
-        try {
-
-            serializedText = storage?.get(key)
-
-        } catch (e: Exception) {
-
-            Timber.e(LOG_TAG, e)
-
-            return null
-        }
-
-        val empty = isEmpty(serializedText)
-
-        if (empty) {
-
-            if (canLogKey(key)) log("get -> key: $key -> Nothing fetched from the storage for key: $key")
-            return null
-        }
-
-        if (canLogKey(key)) log("get -> key: $key -> Fetched from storage for key: $key")
-
-        // 2. Deserialize
-        val dataInfo = serializer?.deserialize(serializedText)
-
-        if (dataInfo == null) {
-
-            err("get -> key: $key -> Deserialization failed for key: $key")
-            return null
-        }
-
-        if (canLogKey(key)) log("get -> key: $key -> Deserialized")
-
-        // 3. Decrypt
-        var plainText: String? = null
-
-        try {
-
-            plainText = encryption?.decrypt(key, dataInfo.cipherText)
-
-            if (canLogKeyRaw(key)) {
-
-                dbg("get -> key: $key -> Decrypted: $plainText")
-
-            } else {
-
-                if (canLogKey(key)) log("get -> key: $key -> Decrypted: ${plainText != null}")
-            }
-
-        } catch (e: Exception) {
-
-            err("get -> key: $key -> Decrypt failed: " + e.message)
-        }
-
-        if (plainText == null) {
-
-            err("get -> key: $key -> Decrypt failed")
-            return null
-        }
+        val dataInfo = getDataInfo(key)
+        val plainText = getRaw(key)
 
         // 4. Convert the text to original data along with original type
         var result: T? = null
+
         try {
 
             result = converter?.fromString(plainText, dataInfo)
@@ -310,5 +250,85 @@ object DefaultFacade : Facade {
     private fun canLogKey(key: String): Boolean {
 
         return doLog.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
+    }
+
+    private fun getDataInfo(key: String): DataInfo? {
+
+        val tag = "get -> data info ->"
+
+        if (canLogKey(key)) log("$tag key: $key -> key: $key")
+
+        // 1. Get serialized text from the storage
+        val serializedText: String?
+
+        try {
+
+            serializedText = storage?.get(key)
+
+        } catch (e: Exception) {
+
+            Timber.e(LOG_TAG, e)
+
+            return null
+        }
+
+        val empty = isEmpty(serializedText)
+
+        if (empty) {
+
+            if (canLogKey(key)) log("$tag key: $key -> Nothing fetched from the storage for key: $key")
+
+            return null
+        }
+
+        if (canLogKey(key)) log("$tag key: $key -> Fetched from storage for key: $key")
+
+        // 2. Deserialize
+        return serializer?.deserialize(serializedText)
+    }
+
+    private fun getRaw(key: String): String? {
+
+        val tag = "get -> raw ->"
+
+        // 2. Deserialize
+        val dataInfo = getDataInfo(key)
+
+        if (dataInfo == null) {
+
+            err("$tag key: $key -> Deserialization failed for key: $key")
+
+            return null
+        }
+
+        if (canLogKey(key)) log("$tag key: $key -> Deserialized")
+
+        // 3. Decrypt
+        var plainText: String? = null
+
+        try {
+
+            plainText = encryption?.decrypt(key, dataInfo.cipherText)
+
+            if (canLogKeyRaw(key)) {
+
+                dbg("$tag key: $key -> Decrypted: $plainText")
+
+            } else {
+
+                if (canLogKey(key)) log("$tag key: $key -> Decrypted: ${plainText != null}")
+            }
+
+        } catch (e: Exception) {
+
+            err("$tag key: $key -> Decrypt failed: " + e.message)
+        }
+
+        if (plainText == null) {
+
+            err("$tag key: $key -> Decrypt failed")
+        }
+
+        return plainText
     }
 }
