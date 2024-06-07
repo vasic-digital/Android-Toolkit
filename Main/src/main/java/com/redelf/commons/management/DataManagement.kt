@@ -316,7 +316,11 @@ abstract class DataManagement<T> :
         if (data == null && persist) {
 
             val pulled = STORAGE.pull<T?>(storageKey)
-            overwriteData(pulled)
+
+            pulled?.let {
+
+                overwriteData(pulled)
+            }
 
             if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 

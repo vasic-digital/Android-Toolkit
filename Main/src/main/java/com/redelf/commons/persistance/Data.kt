@@ -63,13 +63,13 @@ class Data private constructor(private val facade: Facade) :
 
             val tag = "Partitional :: Put ::"
 
-            val count = value.getPartitionCount() - 1
+            val partitionsCount = value.getPartitionCount()
 
-            if (DEBUG.get()) Timber.v("$tag START, Partitions = ${count + 1}")
+            if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
 
-            if (count > 0) {
+            if (partitionsCount > 0) {
 
-                val marked = facade.put(keyMarkPartitionalData(key), count)
+                val marked = facade.put(keyMarkPartitionalData(key), partitionsCount)
 
                 if (!marked) {
 
@@ -77,6 +77,8 @@ class Data private constructor(private val facade: Facade) :
 
                     return false
                 }
+
+                val count = partitionsCount - 1;
 
                 for (i in 0..count) {
 
