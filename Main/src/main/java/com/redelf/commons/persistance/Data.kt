@@ -18,7 +18,8 @@ class Data private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
-    InitializationWithContext {
+    InitializationWithContext
+{
 
     /*
      * TODO: If object is Partitional, each partition if is list or map, split in chunks
