@@ -8,12 +8,13 @@ import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
 import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.atomic.AtomicBoolean
 
 enum class Executor : Execution {
 
     MAIN {
 
-        var debug: Boolean? = null
+        val DEBUG = AtomicBoolean()
 
         private val cpus = CPUs()
         private val cores = cpus.numberOfCores
@@ -52,7 +53,7 @@ enum class Executor : Execution {
 
         private fun logCapacity() {
 
-            if (!(debug ?: BaseApplication.DEBUG.get())) {
+            if (!DEBUG.get()) {
 
                 return
             }
