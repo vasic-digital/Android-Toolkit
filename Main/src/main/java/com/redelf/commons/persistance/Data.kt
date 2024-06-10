@@ -74,7 +74,7 @@ class Data private constructor(private val facade: Facade) :
             if (partitionsCount > 0) {
 
                 val marked = facade.put(keyMarkPartitionalData(key), partitionsCount) &&
-                        facade.put(keyType(key), type)
+                        facade.put(keyType(key), type.canonicalName)
 
                 if (!marked) {
 
@@ -132,6 +132,9 @@ class Data private constructor(private val facade: Facade) :
 
             if (DEBUG.get()) Timber.v("$tag Partitional :: START")
 
+            /*
+            * FIXME: Investigate this warning
+            */
             return get(key, null)
         }
 
@@ -146,7 +149,7 @@ class Data private constructor(private val facade: Facade) :
             return defaultValue
         }
 
-        val clazz = getType<T>(key)
+        val clazz = getType(key)
         val partitionsCount = getPartitionsCount(key)
 
         if (partitionsCount > 0) {
@@ -163,17 +166,13 @@ class Data private constructor(private val facade: Facade) :
 
                     if (DEBUG.get()) Timber.v("$tag INSTANTIATED")
 
-                    val pInstance = (it as T)
+                    if (it is Partitional<*>) {
 
-                    if (DEBUG.get()) Timber.v("$tag CONVERTED TO: ${T::class.simpleName}")
-
-                    if (pInstance is Partitional<*>) {
-
-                        if (DEBUG.get()) Timber.v("$tag Partitional")
+                        if (DEBUG.get()) Timber.v("$tag IS PARTITIONAL")
 
                         for (i in 0..count) {
 
-                            val type = pInstance.getPartitionType(i)
+                            val type = it.getPartitionType(i)
 
                             type?.let { t ->
 
@@ -183,7 +182,7 @@ class Data private constructor(private val facade: Facade) :
 
                                     if (DEBUG.get()) Timber.v("$tag Obtained: $i")
 
-                                    val set = pInstance.setPartitionData(i, part)
+                                    val set = it.setPartitionData(i, part)
 
                                     if (set) {
 
@@ -316,9 +315,20 @@ class Data private constructor(private val facade: Facade) :
         return facade.get(keyMarkPartitionalData(key), 0)
     }
 
-    private fun <T> getType(key: String): Class<T>? {
+    private fun getType(key: String): Class<*>? {
 
-        return facade.get(keyType(key), null)
+        val value = facade.get(keyType(key), "")
+
+        try {
+
+            return Class.forName(value)
+
+        } catch (e: ClassNotFoundException) {
+
+            Timber.e(e)
+        }
+
+        return null
     }
 
     private fun keyType(key: String) = "$key.type"
