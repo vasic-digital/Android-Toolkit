@@ -3,7 +3,6 @@ package com.redelf.commons.persistance.base
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
-import java.lang.reflect.Type
 
 /*
     FIXME: We do not need both ShutdownSynchronized and TerminationSynchronized.

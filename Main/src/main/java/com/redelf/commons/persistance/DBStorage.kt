@@ -15,7 +15,6 @@ import com.redelf.commons.extensions.randomString
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Storage
-import java.lang.reflect.Type
 import java.sql.SQLException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean

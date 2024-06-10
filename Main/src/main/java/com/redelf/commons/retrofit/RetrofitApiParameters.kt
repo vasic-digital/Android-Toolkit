@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
-import com.redelf.commons.R
 import okhttp3.Call
 import java.util.concurrent.ConcurrentHashMap
 

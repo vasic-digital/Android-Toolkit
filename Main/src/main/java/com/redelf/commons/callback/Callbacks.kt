@@ -1,6 +1,5 @@
 package com.redelf.commons.callback
 
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.registration.Registration
 import java.util.concurrent.ConcurrentLinkedQueue

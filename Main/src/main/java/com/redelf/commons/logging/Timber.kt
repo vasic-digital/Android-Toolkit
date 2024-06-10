@@ -1,8 +1,8 @@
 package com.redelf.commons.logging
 
+import com.redelf.commons.application.BaseApplication
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
-import com.redelf.commons.application.BaseApplication
 
 object Timber {
 

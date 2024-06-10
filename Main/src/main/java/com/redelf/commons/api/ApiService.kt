@@ -1,7 +1,6 @@
 package com.redelf.commons.api
 
 import android.content.Context
-import com.redelf.commons.R
 import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.connectivity.ConnectivityCheck
 import com.redelf.commons.extensions.retrofitApiParameters

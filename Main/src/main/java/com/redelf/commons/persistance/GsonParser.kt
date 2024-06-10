@@ -1,7 +1,6 @@
 package com.redelf.commons.persistance
 
 import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Timber
