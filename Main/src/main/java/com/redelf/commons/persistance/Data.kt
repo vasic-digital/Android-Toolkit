@@ -10,10 +10,8 @@ import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
-import java.util.Deque
+import java.lang.reflect.ParameterizedType
 import java.util.Queue
-import java.util.Stack
-import java.util.Vector
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -159,8 +157,9 @@ class Data private constructor(private val facade: Facade) :
 
                             } else {
 
-                                Timber.e("$tag FAILURE: Partition no. $i, Row no. $row, " +
-                                        "Pair hash ${rowValue.hashCode()}"
+                                Timber.e(
+                                    "$tag FAILURE: Partition no. $i, Row no. $row, " +
+                                            "Pair hash ${rowValue.hashCode()}"
                                 )
                             }
 
@@ -177,7 +176,8 @@ class Data private constructor(private val facade: Facade) :
 
                                     partition.forEachIndexed {
 
-                                        index, value -> rowWrite(i, index, value)
+                                            index, value ->
+                                        rowWrite(i, index, value)
                                     }
                                 }
 
@@ -187,7 +187,8 @@ class Data private constructor(private val facade: Facade) :
 
                                     partition.forEach {
 
-                                        key, value -> rowWrite(i, index, key, value)
+                                            key, value ->
+                                        rowWrite(i, index, key, value)
                                         index++
                                     }
                                 }
@@ -196,7 +197,8 @@ class Data private constructor(private val facade: Facade) :
 
                                     partition.forEachIndexed {
 
-                                        index, value -> rowWrite(i, index, value)
+                                            index, value ->
+                                        rowWrite(i, index, value)
                                     }
                                 }
 
@@ -204,7 +206,8 @@ class Data private constructor(private val facade: Facade) :
 
                                     partition.forEachIndexed {
 
-                                        index, value -> rowWrite(i, index, value)
+                                            index, value ->
+                                        rowWrite(i, index, value)
                                     }
                                 }
 
@@ -256,7 +259,7 @@ class Data private constructor(private val facade: Facade) :
         return facade.get(key)
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "UNCHECKED_CAST")
     operator fun <T> get(key: String?, defaultValue: T?): T? {
 
         if (key == null || isEmpty(key)) {
@@ -269,25 +272,23 @@ class Data private constructor(private val facade: Facade) :
 
         if (partitionsCount > 0) {
 
-            val count = partitionsCount - 1
-
             val tag = "Get :: key = $key, T = '${clazz?.simpleName}' :: Partitional ::"
 
             if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
 
             try {
 
-                clazz?.newInstance()?.let {
+                clazz?.newInstance()?.let { instance ->
 
                     if (DEBUG.get()) Timber.v("$tag INSTANTIATED")
 
-                    if (it is Partitional<*>) {
+                    if (instance is Partitional<*>) {
 
                         if (DEBUG.get()) Timber.v("$tag IS PARTITIONAL")
 
-                        for (i in 0..count) {
+                        for (i in 0..<partitionsCount) {
 
-                            val type = it.getPartitionType(i)
+                            val type = instance.getPartitionType(i)
 
                             type?.let { t ->
 
@@ -296,7 +297,31 @@ class Data private constructor(private val facade: Facade) :
 
                                 if (rowsCount > 0) {
 
-                                    // TODO: Obtain and set rows data
+                                    val pt = t as ParameterizedType
+                                    val inT = pt.actualTypeArguments[0] as Class<*>
+                                    val partition = inT.newInstance()
+
+                                    for (j in 0..<rowsCount) {
+
+                                        // TODO: Continue - Populate partition rows
+                                    }
+
+                                    val set = instance.setPartitionData(i, partition)
+
+                                    if (set) {
+
+                                        if (DEBUG.get()) {
+
+                                            Timber.v("$tag Set: $i")
+
+                                        } else {}
+
+                                    } else {
+
+                                        Timber.e("$tag FAILURE: Not set: $i")
+
+                                        return defaultValue
+                                    }
 
                                 } else {
 
@@ -306,7 +331,7 @@ class Data private constructor(private val facade: Facade) :
 
                                         if (DEBUG.get()) Timber.v("$tag Obtained: $i")
 
-                                        val set = it.setPartitionData(i, part)
+                                        val set = instance.setPartitionData(i, part)
 
                                         if (set) {
 
@@ -333,6 +358,8 @@ class Data private constructor(private val facade: Facade) :
                                 return defaultValue
                             }
                         }
+
+                        return instance as T
 
                     } else {
 
