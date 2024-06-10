@@ -59,17 +59,22 @@ class Data private constructor(private val facade: Facade) :
             return false
         }
 
-        if (value is Partitional && value.isPartitioningEnabled()) {
+        if (value is Partitional<*> && value.isPartitioningEnabled()) {
 
             val tag = "Partitional :: Put ::"
 
+            val type = value.getClazz()
             val partitionsCount = value.getPartitionCount()
 
-            if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
+            if (DEBUG.get()) Timber.v(
+
+                "$tag START, Partitions count = $partitionsCount, T = '${type.simpleName}'"
+            )
 
             if (partitionsCount > 0) {
 
-                val marked = facade.put(keyMarkPartitionalData(key), partitionsCount)
+                val marked = facade.put(keyMarkPartitionalData(key), partitionsCount) &&
+                        facade.put(keyType(key), type)
 
                 if (!marked) {
 
@@ -133,27 +138,28 @@ class Data private constructor(private val facade: Facade) :
         return facade.get(key)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(key: String?, defaultValue: T): T {
+    @Suppress("DEPRECATION")
+    operator fun <T> get(key: String?, defaultValue: T?): T? {
 
         if (key == null || isEmpty(key)) {
 
             return defaultValue
         }
 
+        val clazz = getType<T>(key)
         val partitionsCount = getPartitionsCount(key)
 
         if (partitionsCount > 0) {
 
             val count = partitionsCount - 1
 
-            val tag = "Get :: key = $key, T = '${T::class.simpleName}' :: Partitional ::"
+            val tag = "Get :: key = $key, T = '${clazz?.simpleName}' :: Partitional ::"
 
             if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
 
             try {
 
-                T::class.primaryConstructor?.call()?.let {
+                clazz?.newInstance()?.let {
 
                     if (DEBUG.get()) Timber.v("$tag INSTANTIATED")
 
@@ -161,7 +167,7 @@ class Data private constructor(private val facade: Facade) :
 
                     if (DEBUG.get()) Timber.v("$tag CONVERTED TO: ${T::class.simpleName}")
 
-                    if (pInstance is Partitional) {
+                    if (pInstance is Partitional<*>) {
 
                         if (DEBUG.get()) Timber.v("$tag Partitional")
 
@@ -241,10 +247,18 @@ class Data private constructor(private val facade: Facade) :
         if (partitionsCount > 0) {
 
             val markRemoved = facade.delete(keyMarkPartitionalData(key))
+            val typeRemoved = facade.delete(keyType(key))
 
             if (!markRemoved) {
 
                 Timber.e("$tag ERROR: Could not un-mark partitional data")
+
+                return false
+            }
+
+            if (!typeRemoved) {
+
+                Timber.e("$tag ERROR: Could not un-mark type data")
 
                 return false
             }
@@ -301,6 +315,13 @@ class Data private constructor(private val facade: Facade) :
 
         return facade.get(keyMarkPartitionalData(key), 0)
     }
+
+    private fun <T> getType(key: String): Class<T>? {
+
+        return facade.get(keyType(key), null)
+    }
+
+    private fun keyType(key: String) = "$key.type"
 
     private fun keyPartition(key: String, index: Int) = "$key.$index"
 

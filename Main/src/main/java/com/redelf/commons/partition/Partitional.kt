@@ -1,8 +1,9 @@
 package com.redelf.commons.partition
 
+import com.redelf.commons.Typed
 import java.lang.reflect.Type
 
-interface Partitional {
+interface Partitional<T> : Typed<T> {
 
     fun isPartitioningEnabled(): Boolean
 
