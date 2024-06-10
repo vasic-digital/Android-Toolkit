@@ -291,26 +291,33 @@ class Data private constructor(private val facade: Facade) :
 
                             type?.let { t ->
 
-                                /*
-                                * TODO: Instantiate rows
-                                */
-                                val partition = facade.getByType(keyPartition(key, i), t)
+                                val keyRows = keyRows(key, i)
+                                val rowsCount = facade.get(keyRows, 0)
 
-                                partition?.let { part ->
+                                if (rowsCount > 0) {
 
-                                    if (DEBUG.get()) Timber.v("$tag Obtained: $i")
+                                    // TODO: Obtain and set rows data
 
-                                    val set = it.setPartitionData(i, part)
+                                } else {
 
-                                    if (set) {
+                                    val partition = facade.getByType(keyPartition(key, i), t)
 
-                                        if (DEBUG.get()) Timber.v("$tag Set: $i")
+                                    partition?.let { part ->
 
-                                    } else {
+                                        if (DEBUG.get()) Timber.v("$tag Obtained: $i")
 
-                                        Timber.e("$tag FAILURE: Not set: $i")
+                                        val set = it.setPartitionData(i, part)
 
-                                        return defaultValue
+                                        if (set) {
+
+                                            if (DEBUG.get()) Timber.v("$tag Set: $i")
+
+                                        } else {
+
+                                            Timber.e("$tag FAILURE: Not set: $i")
+
+                                            return defaultValue
+                                        }
                                     }
                                 }
                             }
