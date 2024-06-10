@@ -107,6 +107,61 @@ class Data private constructor(private val facade: Facade) :
                             return written
                         }
 
+                        fun rowWrite(row: Int, value: Any?): Boolean {
+
+                            if (value == null) {
+
+                                return true
+                            }
+
+                            // TODO: Write
+
+//                            val written = facade.put(keyPartition(key, i), it)
+//
+//                            if (written) {
+//
+//                                if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
+//
+//                            } else {
+//
+//                                Timber.e("$tag FAILURE: Partition no. $i")
+//                            }
+//
+//                            return written
+
+                            return false
+                        }
+
+                        fun rowWrite(key: Any?, value: Any?): Boolean {
+
+                            if (key == null) {
+
+                                return true
+                            }
+
+                            if (value == null) {
+
+                                return true
+                            }
+
+                            // TODO: Write
+
+//                            val written = facade.put(keyPartition(key, i), it)
+//
+//                            if (written) {
+//
+//                                if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
+//
+//                            } else {
+//
+//                                Timber.e("$tag FAILURE: Partition no. $i")
+//                            }
+//
+//                            return written
+
+                            return false
+                        }
+
                         val collection = partition is Collection<*> || partition is Map<*, *>
 
                         if (collection) {
@@ -115,22 +170,34 @@ class Data private constructor(private val facade: Facade) :
 
                                 is List<*> -> {
 
+                                    partition.forEachIndexed {
 
+                                        index, value -> rowWrite(index, value)
+                                    }
                                 }
 
                                 is Map<*, *> -> {
 
+                                    partition.forEach {
 
+                                        key, value -> rowWrite(key, value)
+                                    }
                                 }
 
                                 is Set<*> -> {
 
+                                    partition.forEachIndexed {
 
+                                        index, value -> rowWrite(index, value)
+                                    }
                                 }
 
                                 is Queue<*> -> {
 
+                                    partition.forEachIndexed {
 
+                                        index, value -> rowWrite(index, value)
+                                    }
                                 }
 
                                 else -> {
