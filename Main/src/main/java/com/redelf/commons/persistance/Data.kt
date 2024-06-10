@@ -21,7 +21,7 @@ class Data private constructor(private val facade: Facade) :
 {
 
     /*
-     * TODO: If object is Partitional, each partition if is list or map, split in chunks
+     * TODO: Recursively partitioning - Each map or list member -> children
      */
 
     companion object {
@@ -75,6 +75,10 @@ class Data private constructor(private val facade: Facade) :
                 val marked = facade.put(keyPartitions(key), partitionsCount) &&
                         facade.put(keyType(key), type.canonicalName)
 
+                /*
+                    TODO:
+                */
+
                 if (!marked) {
 
                     Timber.e("$tag ERROR: Could not mark partitional data")
@@ -82,9 +86,7 @@ class Data private constructor(private val facade: Facade) :
                     return false
                 }
 
-                val count = partitionsCount - 1;
-
-                for (i in 0..count) {
+                for (i in 0..<partitionsCount) {
 
                     val partition = value.getPartitionData(i)
 
@@ -175,6 +177,9 @@ class Data private constructor(private val facade: Facade) :
 
                             type?.let { t ->
 
+                                /*
+                                * TODO: Instantiate rows
+                                */
                                 val partition = facade.getByType(keyPartition(key, i), t)
 
                                 partition?.let { part ->
@@ -238,14 +243,12 @@ class Data private constructor(private val facade: Facade) :
 
         val tag = "Partitional :: Delete ::"
 
-        val count = partitionsCount - 1
-
-        if (DEBUG.get()) Timber.v("$tag START, Partitions = ${count + 1}")
+        if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
 
         if (partitionsCount > 0) {
 
-            val markRemoved = facade.delete(keyPartitions(key))
             val typeRemoved = facade.delete(keyType(key))
+            val markRemoved = facade.delete(keyPartitions(key))
 
             if (!markRemoved) {
 
@@ -261,17 +264,40 @@ class Data private constructor(private val facade: Facade) :
                 return false
             }
 
-            for (i in 0..count) {
+            for (i in 0..<partitionsCount) {
 
+                val rowsCount = getRowsCount(key, i)
                 val removed = facade.delete(keyPartition(key, i))
 
-                if (removed) {
+                if (rowsCount <= 0) {
 
-                    if (DEBUG.get()) Timber.v("$tag REMOVED: Partition no. $i")
+                    if (removed) {
+
+                        if (DEBUG.get()) Timber.v("$tag REMOVED: Partition no. $i")
+
+                    } else {
+
+                        Timber.e("$tag FAILURE: Partition no. $i")
+                    }
 
                 } else {
 
-                    Timber.e("$tag FAILURE: Partition no. $i")
+                    for (j in 0..<rowsCount) {
+
+                        val rRemoved = facade.delete(keyRow(key, i, j))
+
+                        if (rRemoved) {
+
+                            if (DEBUG.get()) Timber.v(
+
+                                "$tag REMOVED: Partition no. $i, Row no. $j"
+                            )
+
+                        } else {
+
+                            Timber.e("$tag FAILURE: Partition no. $i, Row no. $j")
+                        }
+                    }
                 }
             }
         }
@@ -312,6 +338,11 @@ class Data private constructor(private val facade: Facade) :
     private fun getPartitionsCount(key: String): Int {
 
         return facade.get(keyPartitions(key), 0)
+    }
+
+    private fun getRowsCount(key: String, partition: Int): Int {
+
+        return facade.get(keyRows(key, partition), 0)
     }
 
     private fun getType(key: String): Class<*>? {
