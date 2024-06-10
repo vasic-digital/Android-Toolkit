@@ -10,6 +10,10 @@ import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
+import java.util.Deque
+import java.util.Queue
+import java.util.Stack
+import java.util.Vector
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -17,8 +21,7 @@ class Data private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
-    InitializationWithContext
-{
+    InitializationWithContext {
 
     /*
      * TODO: Recursively partitioning - Each map or list member -> children
@@ -75,10 +78,6 @@ class Data private constructor(private val facade: Facade) :
                 val marked = facade.put(keyPartitions(key), partitionsCount) &&
                         facade.put(keyType(key), type.canonicalName)
 
-                /*
-                    TODO:
-                */
-
                 if (!marked) {
 
                     Timber.e("$tag ERROR: Could not mark partitional data")
@@ -92,17 +91,57 @@ class Data private constructor(private val facade: Facade) :
 
                     partition?.let {
 
-                        val written = facade.put(keyPartition(key, i), it)
+                        fun simpleWrite(): Boolean {
 
-                        if (written) {
+                            val written = facade.put(keyPartition(key, i), it)
 
-                            if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
+                            if (written) {
+
+                                if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
+
+                            } else {
+
+                                Timber.e("$tag FAILURE: Partition no. $i")
+                            }
+
+                            return written
+                        }
+
+                        val collection = partition is Collection<*> || partition is Map<*, *>
+
+                        if (collection) {
+
+                            when (partition) {
+
+                                is List<*> -> {
+
+
+                                }
+
+                                is Map<*, *> -> {
+
+
+                                }
+
+                                is Set<*> -> {
+
+
+                                }
+
+                                is Queue<*> -> {
+
+
+                                }
+
+                                else -> {
+
+                                    return simpleWrite()
+                                }
+                            }
 
                         } else {
 
-                            Timber.e("$tag FAILURE: Partition no. $i")
-
-                            return false
+                            return simpleWrite()
                         }
                     }
                 }
