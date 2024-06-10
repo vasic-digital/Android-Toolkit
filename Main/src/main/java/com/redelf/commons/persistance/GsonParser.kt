@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import java.lang.reflect.Type
@@ -20,9 +21,11 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
 
             return provider.obtain().fromJson(content, type)
 
-        } catch (e: JsonSyntaxException) {
+        } catch (e: Exception) {
 
             recordException(e)
+
+            Timber.e("Tried to deserialize into '${type?.typeName}' from '$content'")
         }
 
         return null

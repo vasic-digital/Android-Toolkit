@@ -2,6 +2,7 @@ package com.redelf.commons.persistance
 
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.logging.Timber
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Converter
 import com.redelf.commons.persistance.base.Parser
@@ -70,7 +71,18 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
         val p = parser.obtain()
 
-        return p.fromJson(value, type)
+        try {
+
+            return p.fromJson(value, type)
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+
+            Timber.e("Tried to deserialize into '${type.typeName}' from '$value'")
+        }
+
+        return null
     }
 
     @Throws(Exception::class)
