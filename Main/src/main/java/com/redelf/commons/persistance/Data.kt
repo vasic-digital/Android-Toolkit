@@ -107,34 +107,34 @@ class Data private constructor(private val facade: Facade) :
                             return written
                         }
 
-                        fun rowWrite(row: Int, value: Any?): Boolean {
+                        fun rowWrite(partition: Int, row: Int, value: Any?): Boolean {
 
                             if (value == null) {
 
                                 return true
                             }
 
-                            // TODO: Write
+                            val keyRow = keyRow(key, partition, row)
+                            val written = facade.put(keyRow, value)
 
-//                            val written = facade.put(keyPartition(key, i), it)
-//
-//                            if (written) {
-//
-//                                if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
-//
-//                            } else {
-//
-//                                Timber.e("$tag FAILURE: Partition no. $i")
-//                            }
-//
-//                            return written
+                            if (written) {
 
-                            return false
+                                if (DEBUG.get()) Timber.v(
+
+                                    "$tag WRITTEN: Partition no. $partition, Row no. $row"
+                                )
+
+                            } else {
+
+                                Timber.e("$tag FAILURE: Partition no. $i, Row no. $row")
+                            }
+
+                            return written
                         }
 
-                        fun rowWrite(key: Any?, value: Any?): Boolean {
+                        fun rowWrite(partition: Int, row: Int, mapKey: Any?, value: Any?): Boolean {
 
-                            if (key == null) {
+                            if (mapKey == null) {
 
                                 return true
                             }
@@ -144,20 +144,25 @@ class Data private constructor(private val facade: Facade) :
                                 return true
                             }
 
-                            // TODO: Write
+                            val keyRow = keyRow(key, partition, row)
+                            val rowValue = Pair(mapKey, value)
 
-//                            val written = facade.put(keyPartition(key, i), it)
-//
-//                            if (written) {
-//
-//                                if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
-//
-//                            } else {
-//
-//                                Timber.e("$tag FAILURE: Partition no. $i")
-//                            }
-//
-//                            return written
+                            val written = facade.put(keyRow, rowValue)
+
+                            if (written) {
+
+                                if (DEBUG.get()) Timber.v(
+
+                                    "$tag WRITTEN: Partition no. $partition, Row no. $row, " +
+                                            "Pair hash ${rowValue.hashCode()}"
+                                )
+
+                            } else {
+
+                                Timber.e("$tag FAILURE: Partition no. $i, Row no. $row, " +
+                                        "Pair hash ${rowValue.hashCode()}"
+                                )
+                            }
 
                             return false
                         }
@@ -172,15 +177,18 @@ class Data private constructor(private val facade: Facade) :
 
                                     partition.forEachIndexed {
 
-                                        index, value -> rowWrite(index, value)
+                                        index, value -> rowWrite(i, index, value)
                                     }
                                 }
 
                                 is Map<*, *> -> {
 
+                                    var index = 0
+
                                     partition.forEach {
 
-                                        key, value -> rowWrite(key, value)
+                                        key, value -> rowWrite(i, index, key, value)
+                                        index++
                                     }
                                 }
 
@@ -188,7 +196,7 @@ class Data private constructor(private val facade: Facade) :
 
                                     partition.forEachIndexed {
 
-                                        index, value -> rowWrite(index, value)
+                                        index, value -> rowWrite(i, index, value)
                                     }
                                 }
 
@@ -196,7 +204,7 @@ class Data private constructor(private val facade: Facade) :
 
                                     partition.forEachIndexed {
 
-                                        index, value -> rowWrite(index, value)
+                                        index, value -> rowWrite(i, index, value)
                                     }
                                 }
 
