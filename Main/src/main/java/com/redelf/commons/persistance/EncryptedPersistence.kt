@@ -17,7 +17,6 @@ import com.redelf.commons.persistance.base.Salter
 import java.util.concurrent.atomic.AtomicBoolean
 
 class EncryptedPersistence
-
 @Throws(IllegalArgumentException::class)
 constructor(
 
@@ -35,8 +34,8 @@ constructor(
 
 ) :
 
-    Persistence<String>,
     Erasing,
+    Persistence<String>,
     ShutdownSynchronized,
     TerminationSynchronized,
     InitializationWithContext
@@ -94,7 +93,9 @@ constructor(
                                 "$tag Ser. Excl. Strategy: $serializationExclusionStrategy"
                             )
 
-                            gsonBuilder.addSerializationExclusionStrategy(serializationExclusionStrategy)
+                            gsonBuilder.addSerializationExclusionStrategy(
+                                serializationExclusionStrategy
+                            )
                         }
 
                         deserializationExclusionStrategy?.let {
@@ -104,7 +105,9 @@ constructor(
                                 "$tag De-Ser. Excl. Strategy: $serializationExclusionStrategy"
                             )
 
-                            gsonBuilder.addSerializationExclusionStrategy(deserializationExclusionStrategy)
+                            gsonBuilder.addSerializationExclusionStrategy(
+                                deserializationExclusionStrategy
+                            )
                         }
                     }
 
@@ -156,6 +159,11 @@ constructor(
     }
 
     override fun <T> pull(key: String): T? {
+
+        if (DEBUG.get()) {
+
+            Timber.v("$LOG_TAG :: Pull: key = '$key' ::")
+        }
 
         return data?.get(key)
     }

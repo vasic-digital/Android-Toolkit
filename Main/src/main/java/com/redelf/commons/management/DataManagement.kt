@@ -1,6 +1,7 @@
 package com.redelf.commons.management
 
 import android.content.Context
+import com.redelf.commons.Typed
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
@@ -175,6 +176,8 @@ abstract class DataManagement<T> :
     }
 
     protected abstract val storageKey: String
+
+    protected open val typed: Typed<T>? = null
     protected open val persist: Boolean = true
     protected open val instantiateDataObject: Boolean = false
 
@@ -285,7 +288,8 @@ abstract class DataManagement<T> :
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(): T? {
 
-        val tag = "${getLogTag()} Obtain ::"
+        val clazz = typed?.getClazz()
+        val tag = "${getLogTag()} Obtain :: T = '${clazz?.simpleName}' ::"
 
         if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 

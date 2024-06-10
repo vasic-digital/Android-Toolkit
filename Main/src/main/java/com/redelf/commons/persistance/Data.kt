@@ -114,6 +114,8 @@ class Data private constructor(private val facade: Facade) :
 
     operator fun <T> get(key: String?): T? {
 
+        val tag = "Get :: key = $key, T = '${T::class.simpleName}' ::"
+
         if (key == null || isEmpty(key)) {
 
             return null
@@ -122,6 +124,8 @@ class Data private constructor(private val facade: Facade) :
         val count = getPartitionsCount(key)
 
         if (count > 0) {
+
+            if (DEBUG.get()) Timber.v("$tag Partitional :: START")
 
             return get(key, null)
         }
@@ -143,7 +147,7 @@ class Data private constructor(private val facade: Facade) :
 
             val count = partitionsCount - 1
 
-            val tag = "Partitional :: Get ::"
+            val tag = "Get :: key = $key, T = '${T::class.simpleName}' :: Partitional ::"
 
             if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
 
