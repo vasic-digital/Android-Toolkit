@@ -72,7 +72,7 @@ class Data private constructor(private val facade: Facade) :
 
             if (partitionsCount > 0) {
 
-                val marked = facade.put(keyMarkPartitionalData(key), partitionsCount) &&
+                val marked = facade.put(keyPartitions(key), partitionsCount) &&
                         facade.put(keyType(key), type.canonicalName)
 
                 if (!marked) {
@@ -244,7 +244,7 @@ class Data private constructor(private val facade: Facade) :
 
         if (partitionsCount > 0) {
 
-            val markRemoved = facade.delete(keyMarkPartitionalData(key))
+            val markRemoved = facade.delete(keyPartitions(key))
             val typeRemoved = facade.delete(keyType(key))
 
             if (!markRemoved) {
@@ -311,7 +311,7 @@ class Data private constructor(private val facade: Facade) :
 
     private fun getPartitionsCount(key: String): Int {
 
-        return facade.get(keyMarkPartitionalData(key), 0)
+        return facade.get(keyPartitions(key), 0)
     }
 
     private fun getType(key: String): Class<*>? {
@@ -334,6 +334,10 @@ class Data private constructor(private val facade: Facade) :
 
     private fun keyPartition(key: String, index: Int) = "$key.$index"
 
-    private fun keyMarkPartitionalData(key: String) = "$key.partitions"
+    private fun keyPartitions(key: String) = "$key.partitions"
+
+    private fun keyRow(key: String, partition: Int, row: Int) = "$key.$partition.$row"
+
+    private fun keyRows(key: String, partition: Int) = "$key.$partition.rows"
 }
 
