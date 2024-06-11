@@ -5,10 +5,13 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.management.DataManagement
+import com.redelf.commons.persistance.EncryptedPersistence
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.UUID
 
 abstract class BaseTest {
 
@@ -17,6 +20,7 @@ abstract class BaseTest {
     protected val testEnd = "TEST END"
     protected val testStart = "TEST START"
     protected val testPrepare = "TEST PREPARE"
+    protected val testSession = UUID.randomUUID()
     protected val executor = TaskExecutor.instantiate(5)
     protected val testContext: Context = instrumentation.context
     protected val applicationContext = instrumentation.targetContext
@@ -98,5 +102,26 @@ abstract class BaseTest {
             return assets
         }
         throw exception
+    }
+
+    protected fun instantiatePersistence(
+
+        doEncrypt: Boolean = true,
+
+        keySalt: String? = null,
+        storageTag: String? = null
+
+    ): EncryptedPersistence {
+
+        return EncryptedPersistence(
+
+            ctx = applicationContext,
+            doLog = true,
+            logRawData = true,
+            doEncrypt = doEncrypt,
+            keySalt = keySalt ?: testSession.toString(),
+            storageTag = storageTag ?: testSession.toString(),
+            logStorageKeys = DataManagement.LOGGABLE_STORAGE_KEYS
+        )
     }
 }

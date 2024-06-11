@@ -31,9 +31,9 @@ class EncryptedPersistenceTest : BaseTest() {
         val keySalt = "test.${System.currentTimeMillis()}"
         val storageTag = "test.${System.currentTimeMillis()}"
 
-        persistence = EncryptedPersistence(
+        persistence = instantiatePersistence(
 
-            ctx = applicationContext,
+            doEncrypt = true,
             keySalt = keySalt,
             storageTag = storageTag
         )
