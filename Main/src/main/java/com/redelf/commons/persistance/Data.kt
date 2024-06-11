@@ -161,24 +161,40 @@ class Data private constructor(private val facade: Facade) :
                             }
 
                             val keyRow = keyRow(key, partition, row)
+                            val keyRowType = keyRowType(key, partition, row)
+
                             val rowValue = Pair(mapKey, value)
 
-                            val written = facade.put(keyRow, rowValue)
+                            val fqName = rowValue::class.qualifiedName
+                            val savedValue = facade.put(keyRow, rowValue)
+                            val savedFqName = facade.put(keyRowType, fqName)
+
+                            val written = savedValue && savedFqName
 
                             if (written) {
 
                                 if (DEBUG.get()) Timber.v(
 
-                                    "$tag WRITTEN: Partition no. $partition, Row no. $row, " +
+                                    "$tag WRITTEN: Partition no. $partition, " +
+                                            "Row no. $row, Qualified name: $fqName, " +
                                             "Pair hash ${rowValue.hashCode()}"
                                 )
 
                             } else {
 
-                                Timber.e(
-                                    "$tag FAILURE: Partition no. $i, Row no. $row, " +
-                                            "Pair hash ${rowValue.hashCode()}"
-                                )
+                                Timber.e("$tag FAILURE: Partition no. $i, " +
+                                        "Row no. $row, Qualified name: $fqName, " +
+                                        "Pair hash ${rowValue.hashCode()}")
+
+                                if (!savedValue) {
+
+                                    Timber.e("$tag Value has not been persisted")
+                                }
+
+                                if (!savedFqName) {
+
+                                    Timber.e("$tag Qualified name has not been persisted")
+                                }
                             }
 
                             return false
