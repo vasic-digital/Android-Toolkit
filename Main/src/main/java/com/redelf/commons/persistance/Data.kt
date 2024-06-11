@@ -331,6 +331,8 @@ class Data private constructor(private val facade: Facade) :
 
                                     val pt = t as ParameterizedType
                                     val inT = pt.actualTypeArguments[0] as Class<*>
+
+                                    var pVal : Any? = null
                                     val partition = inT.newInstance()
 
                                     for (j in 0..<rowsCount) {
@@ -355,33 +357,78 @@ class Data private constructor(private val facade: Facade) :
 
                                             obtained?.let { obt ->
 
-                                                // TODO: Set it
-
                                                 when (partition) {
 
                                                     is List<*> -> {
 
+                                                        if (pVal == null) {
 
+                                                            pVal = partition.toMutableList()
+                                                        }
+
+                                                        (pVal as MutableList<Any>).add(obt)
                                                     }
 
                                                     is Map<*, *> -> {
 
+                                                        if (pVal == null) {
 
+                                                            pVal = partition.toMutableMap()
+                                                        }
+
+                                                        if (obt is Pair<*, *>) {
+
+                                                            obt.first?.let { first ->
+                                                                obt.second?.let { second ->
+
+                                                                    (pVal as MutableMap<Any, Any>)
+                                                                        .put(first, second)
+                                                                }
+                                                            }
+
+                                                        } else {
+
+                                                            Timber.e(
+
+                                                                "$tag FAILURE: " +
+                                                                        "Unsupported map child " +
+                                                                        "type " +
+                                                                        "'${obt::class.simpleName}'"
+                                                            )
+
+                                                            return defaultValue
+                                                        }
                                                     }
 
                                                     is Set<*> -> {
 
+                                                        if (pVal == null) {
 
+                                                            pVal = partition.toMutableSet()
+                                                        }
+
+                                                        (pVal as MutableSet<Any>).add(obt)
                                                     }
 
                                                     is Queue<*> -> {
 
+                                                        if (pVal == null) {
 
+                                                            pVal = partition.toMutableList()
+                                                        }
+
+                                                        (pVal as MutableList<Any>).add(obt)
                                                     }
 
                                                     else -> {
 
+                                                        Timber.e(
 
+                                                            "$tag FAILURE: Unsupported " +
+                                                                    "partition type '${t.typeName}'"
+                                                        )
+
+                                                        return defaultValue
                                                     }
                                                 }
                                             }
