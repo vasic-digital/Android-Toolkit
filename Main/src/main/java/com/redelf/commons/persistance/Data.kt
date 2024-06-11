@@ -300,7 +300,33 @@ class Data private constructor(private val facade: Facade) :
 
                                     for (j in 0..<rowsCount) {
 
-                                        // TODO: Continue - Populate partition rows
+                                        when (partition) {
+
+                                            is List<*> -> {
+
+
+                                            }
+
+                                            is Map<*, *> -> {
+
+
+                                            }
+
+                                            is Set<*> -> {
+
+
+                                            }
+
+                                            is Queue<*> -> {
+
+
+                                            }
+
+                                            else -> {
+
+
+                                            }
+                                        }
                                     }
 
                                     val set = instance.setPartitionData(i, partition)
