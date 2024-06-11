@@ -39,7 +39,6 @@ constructor(
     ShutdownSynchronized,
     TerminationSynchronized,
     InitializationWithContext
-
 {
 
     companion object {
@@ -142,6 +141,10 @@ constructor(
                 .build()
         }
     }
+
+    fun isEncryptionEnabled() = doEncrypt
+
+    fun isEncryptionDisabled() = !doEncrypt
 
     override fun shutdown(): Boolean {
 

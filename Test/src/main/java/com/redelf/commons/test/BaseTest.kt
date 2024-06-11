@@ -104,6 +104,28 @@ abstract class BaseTest {
         throw exception
     }
 
+    protected fun instantiatePersistenceAndInitialize(
+
+        ctx: Context = applicationContext,
+        doEncrypt: Boolean = true,
+
+        keySalt: String? = null,
+        storageTag: String? = null
+
+    ): EncryptedPersistence {
+
+        val instance = instantiatePersistence(
+
+            doEncrypt = doEncrypt,
+            keySalt = keySalt,
+            storageTag = storageTag
+        )
+
+        instance.initialize(ctx)
+
+        return instance
+    }
+
     protected fun instantiatePersistence(
 
         doEncrypt: Boolean = true,

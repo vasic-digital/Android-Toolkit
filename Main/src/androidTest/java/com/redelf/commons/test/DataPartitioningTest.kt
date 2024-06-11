@@ -4,6 +4,7 @@ import com.redelf.commons.logging.Timber
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.base.Persistence
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -20,7 +21,9 @@ class DataPartitioningTest : BaseTest() {
     @Test
     fun testPartitioningWithNoEncryption() {
 
-        val persistence = instantiatePersistence(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
 
         // TODO: Implement proper test
 
@@ -30,7 +33,9 @@ class DataPartitioningTest : BaseTest() {
     @Test
     fun testPartitioningWithEncryption() {
 
-        val persistence = instantiatePersistence(doEncrypt = true)
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
+
+        Assert.assertTrue(persistence.isEncryptionEnabled())
 
         // TODO: Implement proper test
 
@@ -38,9 +43,26 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
-    fun testNoPartitioning() {
+    fun testNoPartitioningWithNoEncryption() {
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionEnabled())
 
         // TODO: Implement proper test
+
+        assert(5 == 5)
+    }
+
+    @Test
+    fun testNoPartitioningWithEncryption() {
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        // TODO: Implement proper test
+
         assert(5 == 5)
     }
 }
