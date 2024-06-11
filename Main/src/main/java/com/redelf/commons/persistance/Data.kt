@@ -113,18 +113,36 @@ class Data private constructor(private val facade: Facade) :
                             }
 
                             val keyRow = keyRow(key, partition, row)
-                            val written = facade.put(keyRow, value)
+                            val keyRowType = keyRowType(key, partition, row)
+
+                            val fqName = value::class.qualifiedName
+                            val savedValue = facade.put(keyRow, value)
+                            val savedFqName = facade.put(keyRowType, fqName)
+
+                            val written = savedValue && savedFqName
 
                             if (written) {
 
                                 if (DEBUG.get()) Timber.v(
 
-                                    "$tag WRITTEN: Partition no. $partition, Row no. $row"
+                                    "$tag WRITTEN: Partition no. $partition, " +
+                                            "Row no. $row, Qualified name: $fqName"
                                 )
 
                             } else {
 
-                                Timber.e("$tag FAILURE: Partition no. $i, Row no. $row")
+                                Timber.e("$tag FAILURE: Partition no. $i, " +
+                                        "Row no. $row, Qualified name: $fqName")
+
+                                if (!savedValue) {
+
+                                    Timber.e("$tag Value has not been persisted")
+                                }
+
+                                if (!savedFqName) {
+
+                                    Timber.e("$tag Qualified name has not been persisted")
+                                }
                             }
 
                             return written
@@ -298,6 +316,8 @@ class Data private constructor(private val facade: Facade) :
                                     val inT = pt.actualTypeArguments[0] as Class<*>
                                     val partition = inT.newInstance()
 
+                                    val keyPartition = keyPartition(key, i)
+
                                     for (j in 0..<rowsCount) {
 
                                         when (partition) {
@@ -455,7 +475,8 @@ class Data private constructor(private val facade: Facade) :
 
                     for (j in 0..<rowsCount) {
 
-                        val rRemoved = facade.delete(keyRow(key, i, j))
+                        val rRemoved = facade.delete(keyRow(key, i, j)) &&
+                                facade.delete(keyRowType(key, i, j))
 
                         if (rRemoved) {
 
@@ -538,8 +559,10 @@ class Data private constructor(private val facade: Facade) :
 
     private fun keyPartitions(key: String) = "$key.partitions"
 
+    private fun keyRows(key: String, partition: Int) = "$key.$partition.rows"
+
     private fun keyRow(key: String, partition: Int, row: Int) = "$key.$partition.$row"
 
-    private fun keyRows(key: String, partition: Int) = "$key.$partition.rows"
+    private fun keyRowType(key: String, partition: Int, row: Int) = "$key.$partition.$row.type"
 }
 
