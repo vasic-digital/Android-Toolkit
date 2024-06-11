@@ -250,10 +250,7 @@ class Data private constructor(private val facade: Facade) :
 
             if (DEBUG.get()) Timber.v("$tag Partitional :: START")
 
-            /*
-            * FIXME: Investigate this warning
-            */
-            return get(key, null)
+            return get<T?>(key = key, defaultValue = null)
         }
 
         return facade.get(key)
