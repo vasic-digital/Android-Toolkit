@@ -19,9 +19,7 @@ abstract class BaseTest {
     protected val testPrepare = "TEST PREPARE"
     protected val executor = TaskExecutor.instantiate(5)
     protected val testContext: Context = instrumentation.context
-
-    // WARNING: Check if this is valid casting
-    protected val applicationContext: BaseApplication = instrumentation.targetContext as BaseApplication
+    protected val applicationContext = instrumentation.targetContext
 
     protected fun log(what: String) = Timber.d(what)
 

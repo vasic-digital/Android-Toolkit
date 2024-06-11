@@ -51,12 +51,13 @@ abstract class BaseApplication :
     ActivityLifecycleCallbacks,
     ActivityCount,
     LifecycleObserver,
-    Updatable<Long> {
+    Updatable<Long>
+{
 
     companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
 
-        lateinit var DEBUG: AtomicBoolean
-        lateinit var STRICT_MODE_DISABLED: AtomicBoolean
+        val DEBUG = AtomicBoolean()
+        val STRICT_MODE_DISABLED = AtomicBoolean()
 
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
@@ -376,8 +377,8 @@ abstract class BaseApplication :
         disableActivityAnimations(applicationContext)
 
         CONTEXT = this
-        DEBUG = AtomicBoolean(CONTEXT.resources.getBoolean(R.bool.debug))
-        STRICT_MODE_DISABLED = AtomicBoolean(isStrictModeDisabled())
+        DEBUG.set(CONTEXT.resources.getBoolean(R.bool.debug))
+        STRICT_MODE_DISABLED.set(isStrictModeDisabled())
 
         if (DEBUG.get()) {
 

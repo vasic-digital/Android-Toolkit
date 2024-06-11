@@ -10,6 +10,10 @@ import kotlin.random.Random
 
 class EncryptedPersistenceTest : BaseTest() {
 
+    /*
+    * FIXME: Executes too long or it does not complete
+    */
+
     private lateinit var persistence: EncryptedPersistence
 
     private class Dummy(private val value: Int) {

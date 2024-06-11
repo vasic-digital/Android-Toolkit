@@ -27,9 +27,10 @@ abstract class ManagersDependentTest : BaseTest() {
 
         Timber.v("Timber initialized: $this")
 
-        // WARNING: Check this cast if valid
-        BaseApplication.CONTEXT = applicationContext
-        BaseApplication.DEBUG = AtomicBoolean(true)
+        Assert.assertTrue(applicationContext is BaseApplication)
+
+        BaseApplication.CONTEXT = applicationContext as BaseApplication
+        BaseApplication.DEBUG.set(true)
 
         setupStorage()
         setupManagers()
@@ -80,7 +81,7 @@ abstract class ManagersDependentTest : BaseTest() {
 
             managers,
             managersInitializerCallback,
-            context = applicationContext
+            context = applicationContext as BaseApplication
         )
 
         latch.await()
