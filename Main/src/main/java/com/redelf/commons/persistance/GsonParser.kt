@@ -9,6 +9,7 @@ import com.redelf.commons.persistance.base.Parser
 import java.lang.reflect.Type
 
 class GsonParser(private val provider: Obtain<Gson>) : Parser {
+
     override fun <T> fromJson(content: String?, type: Type?): T? {
 
         try {
@@ -25,6 +26,27 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
             recordException(e)
 
             Timber.e("Tried to deserialize into '${type?.typeName}' from '$content'")
+        }
+
+        return null
+    }
+
+    override fun <T> fromJson(content: String?, clazz: Class<T>?): T? {
+
+        try {
+
+            if (isEmpty(content)) {
+
+                return null
+            }
+
+            return provider.obtain().fromJson(content, clazz)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+
+            Timber.e("Tried to deserialize into '${clazz?.simpleName}' from '$content'")
         }
 
         return null

@@ -15,6 +15,8 @@ interface Facade : ShutdownSynchronized, TerminationSynchronized, Initialization
 
     fun getByType(key: String?, type: Type): Any?
 
+    fun getByClass(key: String?, clazz: Class<*>): Any?
+
     fun count(): Long
 
     fun deleteAll(): Boolean

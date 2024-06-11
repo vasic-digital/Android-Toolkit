@@ -11,6 +11,7 @@ import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
 import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
 import java.util.Queue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -332,36 +333,75 @@ class Data private constructor(private val facade: Facade) :
                                     val inT = pt.actualTypeArguments[0] as Class<*>
                                     val partition = inT.newInstance()
 
-                                    val keyPartition = keyPartition(key, i)
-
                                     for (j in 0..<rowsCount) {
 
-                                        when (partition) {
+                                        val keyRow = keyRow(key, i, j)
+                                        val keyRowType = keyRowType(key, i, j)
 
-                                            is List<*> -> {
+                                        var rowClazz: Class<*>? = null
+
+                                        try {
+
+                                            rowClazz = Class.forName(keyRowType)
+
+                                        } catch (e: ClassNotFoundException) {
+
+                                            Timber.e(e)
+                                        }
+
+                                        rowClazz?.let { clz ->
+
+                                            val obtained = facade.getByClass(keyRow, clz)
+
+                                            obtained?.let { obt ->
+
+                                                // TODO: Set it
+
+                                                when (partition) {
+
+                                                    is List<*> -> {
 
 
+                                                    }
+
+                                                    is Map<*, *> -> {
+
+
+                                                    }
+
+                                                    is Set<*> -> {
+
+
+                                                    }
+
+                                                    is Queue<*> -> {
+
+
+                                                    }
+
+                                                    else -> {
+
+
+                                                    }
+                                                }
                                             }
 
-                                            is Map<*, *> -> {
+                                            if (obtained == null) {
 
+                                                Timber.e(
 
+                                                    "$tag FAILURE: Obtained row is null"
+                                                )
+
+                                                return defaultValue
                                             }
+                                        }
 
-                                            is Set<*> -> {
+                                        if (rowClazz == null) {
 
+                                            Timber.e("$tag FAILURE: Row class is null")
 
-                                            }
-
-                                            is Queue<*> -> {
-
-
-                                            }
-
-                                            else -> {
-
-
-                                            }
+                                            return defaultValue
                                         }
                                     }
 

@@ -228,6 +228,42 @@ object DefaultFacade : Facade {
         return result
     }
 
+    override fun getByClass(key: String?, clazz: Class<*>): Any? {
+
+        val tag = "get -> by class '" + clazz.simpleName + "' -> "
+
+        if (key == null) {
+
+            return null
+        }
+
+        val plainText = getRaw(key)
+
+        // 4. Convert the text to original data along with original type
+        var result: Any? = null
+
+        try {
+
+            result = converter?.fromString(plainText, clazz)
+
+            if (canLogKeyRaw(key)) {
+
+                dbg("$tag key: $key -> Converted: $result")
+
+            } else {
+
+                if (canLogKey(key)) log("$tag key: $key -> Converted: ${result != null}")
+            }
+
+        } catch (e: Exception) {
+
+            val message = e.message
+            err("$tag key: $key -> Converter failed, error='$message'")
+        }
+
+        return result
+    }
+
     override fun count(): Long {
 
         return storage?.count() ?: -1

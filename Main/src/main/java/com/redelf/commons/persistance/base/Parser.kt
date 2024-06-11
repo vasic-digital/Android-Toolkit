@@ -6,5 +6,7 @@ interface Parser {
 
     fun <T> fromJson(content: String?, type: Type?): T?
 
+    fun <T> fromJson(content: String?, clazz: Class<T>?): T?
+
     fun toJson(body: Any?): String?
 }

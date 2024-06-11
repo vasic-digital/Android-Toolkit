@@ -9,5 +9,7 @@ interface Converter {
 
     fun <T> fromString(value: String?, type: Type?): T?
 
+    fun <T> fromString(value: String?, clazz: Class<T>?): T?
+
     fun <T> fromString(value: String?, info: DataInfo?): T?
 }

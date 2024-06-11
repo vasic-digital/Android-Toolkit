@@ -85,6 +85,34 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
         return null
     }
 
+    override fun <T> fromString(value: String?, clazz: Class<T>?): T? {
+
+        if (value == null) {
+
+            return null
+        }
+
+        if (clazz == null) {
+
+            return null
+        }
+
+        val p = parser.obtain()
+
+        try {
+
+            return p.fromJson(value, clazz)
+
+        } catch (e: Exception) {
+
+            Timber.e(e)
+
+            Timber.e("Tried to deserialize into '${clazz.simpleName}' from '$value'")
+        }
+
+        return null
+    }
+
     @Throws(Exception::class)
     private fun <T> toObject(json: String, type: Class<*>?): T? {
 
