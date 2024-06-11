@@ -47,7 +47,7 @@ class DataPartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionEnabled())
+        Assert.assertTrue(persistence.isEncryptionDisabled())
 
         // TODO: Implement proper test
 
@@ -59,7 +59,7 @@ class DataPartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertTrue(persistence.isEncryptionEnabled())
 
         // TODO: Implement proper test
 
