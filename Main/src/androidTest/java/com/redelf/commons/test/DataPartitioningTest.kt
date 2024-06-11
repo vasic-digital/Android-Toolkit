@@ -20,4 +20,11 @@ class DataPartitioningTest : BaseTest() {
         // TODO: Implement proper test
         assert(5 == 5)
     }
+
+    @Test
+    fun testNoPartitioning() {
+
+        // TODO: Implement proper test
+        assert(5 == 5)
+    }
 }
