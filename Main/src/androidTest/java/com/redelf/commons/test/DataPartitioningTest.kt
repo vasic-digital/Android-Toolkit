@@ -11,6 +11,7 @@ import com.redelf.commons.test.data.SampleData3
 import com.redelf.commons.test.data.SampleData
 import com.redelf.commons.test.data.SampleDataOnlyP2
 import com.redelf.commons.test.data.SampleDataOnlyP3
+import com.redelf.commons.test.data.SampleDataOnlyP4
 import com.redelf.commons.test.data.wrapper.BoolListWrapper
 import com.redelf.commons.test.data.wrapper.BoolWrapper
 import com.redelf.commons.test.data.wrapper.StringListWrapper
@@ -408,6 +409,30 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
+    fun testPartition4() {
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val data = instantiateTestDataP4()
+
+        Assert.assertTrue(data.isPartitioningEnabled())
+
+        val key = "Test.Part.P4.No_Enc"
+
+        val saved = persistence.push(key, data)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<SampleDataOnlyP4?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        Assert.assertEquals(data, comparable)
+    }
+
+    @Test
     fun testPartitioningWithNoEncryption() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
@@ -431,7 +456,7 @@ class DataPartitioningTest : BaseTest() {
         Assert.assertEquals(data.partition1, comparable?.partition1)
         Assert.assertEquals(data.partition2, comparable?.partition2)
         Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4) // FIXME: <--
+        Assert.assertEquals(data.partition4, comparable?.partition4)
         Assert.assertEquals(data.partition5, comparable?.partition5) // FIXME: <--
         Assert.assertEquals(data.partition6, comparable?.partition6) // FIXME: <--
 
@@ -515,6 +540,15 @@ class DataPartitioningTest : BaseTest() {
 
             partitioningOn = true,
             partition3 = createPartition3()
+        )
+    }
+
+    private fun instantiateTestDataP4(): SampleDataOnlyP4 {
+
+        return SampleDataOnlyP4(
+
+            partitioningOn = true,
+            partition4 = createPartition4()
         )
     }
 
