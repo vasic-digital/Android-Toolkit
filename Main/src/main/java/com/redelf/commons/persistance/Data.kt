@@ -23,9 +23,7 @@ class Data private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
-    InitializationWithContext
-
-{
+    InitializationWithContext {
 
     /*
      * TODO: Recursively partitioning - Each map or list member -> children
@@ -550,10 +548,19 @@ class Data private constructor(private val facade: Facade) :
                                                                                 "Row value type: '${clz2.simpleName}'"
                                                                     )
 
-                                                                    val kts = instantiate(what = clz1, arg = first)
-                                                                    val vts = instantiate(what = clz2, arg = second)
+                                                                    val kts = instantiate(
+                                                                        what = clz1,
+                                                                        arg = first
+                                                                    )
+                                                                    val vts = instantiate(
+                                                                        what = clz2,
+                                                                        arg = second
+                                                                    )
 
-                                                                    (partition as MutableMap<Any, Any>).put(kts, vts)
+                                                                    (partition as MutableMap<Any, Any>).put(
+                                                                        kts,
+                                                                        vts
+                                                                    )
                                                                 }
                                                             }
 
@@ -886,20 +893,24 @@ class Data private constructor(private val facade: Facade) :
                     return UUID.fromString(arg.toString())
                 }
 
-                else -> return what.constructors.forEach { constructor ->
+                else -> {
 
-                    if (constructor.parameterCount == 1) {
+                    what.constructors.forEach { constructor ->
 
-                        return constructor.newInstance(argument)
+                        val constructorIsValid = constructor.parameterCount == 1 &&
+                                constructor.parameterTypes[0].canonicalName == argument::class.java.canonicalName
 
-                    } else {
+                        if (constructorIsValid) {
 
-                        val msg = "Constructor for the argument " +
-                                "'${argument::class.qualifiedName}' not found to instantiate " +
-                                "'${what.canonicalName}'"
-
-                        throw IllegalArgumentException(msg)
+                            return constructor.newInstance(argument)
+                        }
                     }
+
+                    val msg = "Constructor for the argument " +
+                            "'${argument::class.qualifiedName}' not found to instantiate " +
+                            "'${what.canonicalName}'"
+
+                    throw IllegalArgumentException(msg)
                 }
             }
         }
