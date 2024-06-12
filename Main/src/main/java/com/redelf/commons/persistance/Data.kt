@@ -209,44 +209,80 @@ class Data private constructor(private val facade: Facade) :
 
                                 is List<*> -> {
 
-                                    partition.forEachIndexed {
+                                    if (setRowsCount(key, i, partition.size)) {
 
-                                            index, value ->
+                                        partition.forEachIndexed {
 
-                                        rowWrite(i, index, value)
+                                                index, value ->
+
+                                            rowWrite(i, index, value)
+                                        }
+
+                                    } else {
+
+                                        Timber.e("$tag FAILURE: Writing rows count")
+
+                                        return false
                                     }
                                 }
 
                                 is Map<*, *> -> {
 
-                                    var index = 0
+                                    if (setRowsCount(key, i, partition.size)) {
 
-                                    partition.forEach {
+                                        var index = 0
 
-                                            key, value ->
+                                        partition.forEach {
 
-                                        rowWrite(i, index, key, value)
-                                        index++
+                                                key, value ->
+
+                                            rowWrite(i, index, key, value)
+                                            index++
+                                        }
+
+                                    } else {
+
+                                        Timber.e("$tag FAILURE: Writing rows count")
+
+                                        return false
                                     }
                                 }
 
                                 is Set<*> -> {
 
-                                    partition.forEachIndexed {
+                                    if (setRowsCount(key, i, partition.size)) {
 
-                                            index, value ->
+                                        partition.forEachIndexed {
 
-                                        rowWrite(i, index, value)
+                                                index, value ->
+
+                                            rowWrite(i, index, value)
+                                        }
+
+                                    } else {
+
+                                        Timber.e("$tag FAILURE: Writing rows count")
+
+                                        return false
                                     }
                                 }
 
                                 is Queue<*> -> {
 
-                                    partition.forEachIndexed {
+                                    if (setRowsCount(key, i, partition.size)) {
 
-                                            index, value ->
+                                        partition.forEachIndexed {
 
-                                        rowWrite(i, index, value)
+                                                index, value ->
+
+                                            rowWrite(i, index, value)
+                                        }
+
+                                    } else {
+
+                                        Timber.e("$tag FAILURE: Writing rows count")
+
+                                        return false
                                     }
                                 }
 
@@ -337,8 +373,6 @@ class Data private constructor(private val facade: Facade) :
 
                                     var pVal : Any? = null
                                     val partition = inT.newInstance()
-
-                                    setRowsCount(key, i, rowsCount)
 
                                     for (j in 0..<rowsCount) {
 
