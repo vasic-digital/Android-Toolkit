@@ -10,10 +10,9 @@ import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
+import com.redelf.commons.type.PairDataInfo
 import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
 import java.util.Queue
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -165,7 +164,7 @@ class Data private constructor(private val facade: Facade) :
                             val keyRow = keyRow(key, partition, row)
                             val keyRowType = keyRowType(key, partition, row)
 
-                            val rowValue = Pair(mapKey, value)
+                            val rowValue = PairDataInfo(mapKey, value)
 
                             val fqName = rowValue::class.qualifiedName
                             val savedValue = facade.put(keyRow, rowValue)
@@ -179,14 +178,14 @@ class Data private constructor(private val facade: Facade) :
 
                                     "$tag WRITTEN: Partition no. $partition, " +
                                             "Row no. $row, Qualified name: $fqName, " +
-                                            "Pair hash ${rowValue.hashCode()}"
+                                            "Pair data info: $rowValue"
                                 )
 
                             } else {
 
                                 Timber.e("$tag FAILURE: Partition no. $i, " +
                                         "Row no. $row, Qualified name: $fqName, " +
-                                        "Pair hash ${rowValue.hashCode()}")
+                                        "Pair data info: $rowValue")
 
                                 if (!savedValue) {
 
@@ -453,10 +452,15 @@ class Data private constructor(private val facade: Facade) :
 
                                                     is MutableMap<*, *> -> {
 
-                                                        if (obt is Pair<*, *>) {
+                                                        if (obt is PairDataInfo) {
 
-                                                            obt.first?.let { first ->
-                                                                obt.second?.let { second ->
+                                                            obt.first.let { first ->
+                                                                obt.second.let { second ->
+
+                                                                    // TODO:
+                                                                    //  - Take data type form the obt as PairDataInfo
+                                                                    //  - Instantiate and pass the existing values
+                                                                    //  - Put into the map
 
                                                                     (partition as MutableMap<Any, Any>)
                                                                         .put(first, second)

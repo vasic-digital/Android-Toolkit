@@ -1,4 +1,4 @@
-package com.redelf.commons
+package com.redelf.commons.type
 
 
 interface Typed<T> {

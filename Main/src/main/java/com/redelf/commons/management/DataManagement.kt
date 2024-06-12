@@ -1,7 +1,7 @@
 package com.redelf.commons.management
 
 import android.content.Context
-import com.redelf.commons.Typed
+import com.redelf.commons.type.Typed
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
