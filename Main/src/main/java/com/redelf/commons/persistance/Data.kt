@@ -13,6 +13,7 @@ import com.redelf.commons.persistance.base.Facade
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.Queue
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -369,7 +370,7 @@ class Data private constructor(private val facade: Facade) :
                                 if (rowsCount > 0) {
 
                                     val pt = t as ParameterizedType
-                                    val inT = pt.actualTypeArguments[0] as Class<*>
+                                    val inT =  Class.forName(pt.rawType.typeName)
 
                                     var pVal : Any? = null
                                     val partition = inT.newInstance()
