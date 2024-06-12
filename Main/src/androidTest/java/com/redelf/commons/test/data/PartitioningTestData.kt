@@ -55,6 +55,8 @@ data class PartitioningTestData @JsonCreator constructor(
 
     override fun isPartitioningEnabled() = partitioningOn
 
+    fun isPartitioningDisabled() = !partitioningOn
+
     override fun getPartitionCount() = 11
 
     override fun getPartitionData(number: Int): Any? {
