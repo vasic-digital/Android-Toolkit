@@ -69,7 +69,7 @@ class DataPartitioningTest : BaseTest() {
 
         val comparable = persistence.pull<PartitioningTestData?>(key)
 
-        Assert.assertNull(comparable)
+        Assert.assertNotNull(comparable)
 
         Assert.assertEquals(data, comparable)
     }
