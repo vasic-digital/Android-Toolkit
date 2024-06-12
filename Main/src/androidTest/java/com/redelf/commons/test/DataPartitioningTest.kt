@@ -491,6 +491,11 @@ class DataPartitioningTest : BaseTest() {
 
                 Assert.assertEquals(m1.size, m2.size)
 
+                val k1 = m1.keys.toList().sortedBy { it.toString() }
+                val k2 = m2.keys.toList().sortedBy { it.toString() }
+
+                Assert.assertEquals(k1, k2)
+
                 m1.forEach { (key, value) ->
 
                     Assert.assertNotNull(key)
