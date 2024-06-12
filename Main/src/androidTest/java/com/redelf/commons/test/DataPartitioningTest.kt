@@ -7,6 +7,7 @@ import com.redelf.commons.test.data.ObjectListWrapper
 import com.redelf.commons.test.data.SampleData2
 import com.redelf.commons.test.data.SampleData3
 import com.redelf.commons.test.data.SampleData
+import com.redelf.commons.test.data.SampleDataOnlyP2
 import com.redelf.commons.test.data.StringListWrapper
 import org.junit.Assert
 import org.junit.Before
@@ -145,6 +146,32 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
+    fun testPartition2() {
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val data = instantiateTestDataP2()
+
+        Assert.assertTrue(data.isPartitioningEnabled())
+
+        val key = "Test.Part.P2.No_Enc"
+
+        val saved = persistence.push(key, data)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<SampleDataOnlyP2?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        Assert.assertEquals(data.partition2, comparable?.partition2)
+
+        Assert.assertEquals(data, comparable)
+    }
+
+    @Test
     fun testPartitioningWithNoEncryption() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
@@ -234,6 +261,15 @@ class DataPartitioningTest : BaseTest() {
             partition4 = createPartition4(),
             partition5 = createPartition5(),
             partition6 = createPartition6(),
+        )
+    }
+
+    private fun instantiateTestDataP2(): SampleDataOnlyP2 {
+
+        return SampleDataOnlyP2(
+
+            partitioningOn = true,
+            partition2 = createPartition2()
         )
     }
 
