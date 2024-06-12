@@ -37,11 +37,13 @@ import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
-var GLOBAL_RECORD_EXCEPTIONS = true
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
+var GLOBAL_RECORD_EXCEPTIONS = AtomicBoolean(true)
+var GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK = AtomicBoolean()
 
 fun randomInteger(max: Int = 1000, min: Int = 300) =
     Random().nextInt((max - min) + 1) + min
@@ -94,9 +96,16 @@ fun recordException(e: Throwable) {
 
     Timber.e(e)
 
-    if (GLOBAL_RECORD_EXCEPTIONS) {
+    if (GLOBAL_RECORD_EXCEPTIONS.get()) {
 
-        FirebaseCrashlytics.getInstance().recordException(e)
+        if (GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK.get()) {
+
+            throw e
+
+        } else {
+
+            FirebaseCrashlytics.getInstance().recordException(e)
+        }
     }
 }
 

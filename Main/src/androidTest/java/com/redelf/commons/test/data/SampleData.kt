@@ -11,7 +11,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-data class PartitioningTestData @JsonCreator constructor(
+data class SampleData @JsonCreator constructor(
 
     @JsonProperty("partitioningOn")
     @SerializedName("partitioningOn")
@@ -19,19 +19,19 @@ data class PartitioningTestData @JsonCreator constructor(
 
     @JsonProperty("partition1")
     @SerializedName("partition1")
-    var partition1: CopyOnWriteArrayList<NestedData> = CopyOnWriteArrayList(),
+    var partition1: CopyOnWriteArrayList<SampleData2> = CopyOnWriteArrayList(),
 
     @JsonProperty("partition2")
     @SerializedName("partition2")
-    var partition2: ConcurrentHashMap<UUID, NestedData> = ConcurrentHashMap(),
+    var partition2: ConcurrentHashMap<UUID, SampleData2> = ConcurrentHashMap(),
 
     @JsonProperty("partition3")
     @SerializedName("partition3")
-    var partition3: ConcurrentHashMap<String, List<NestedDataSecondLevel>> = ConcurrentHashMap(),
+    var partition3: ConcurrentHashMap<String, List<SampleData3>> = ConcurrentHashMap(),
 
     @JsonProperty("partition4")
     @SerializedName("partition4")
-    var partition4: NestedDataSecondLevel? = null,
+    var partition4: SampleData3? = null,
 
     @JsonProperty("partition5")
     @SerializedName("partition5")
@@ -41,16 +41,16 @@ data class PartitioningTestData @JsonCreator constructor(
     @SerializedName("partition6")
     var partition6: CopyOnWriteArrayList<Long> = CopyOnWriteArrayList()
 
-) : Partitional<PartitioningTestData> {
+) : Partitional<SampleData> {
 
     constructor() : this(
 
         partitioningOn = true
     )
 
-    override fun getClazz(): Class<PartitioningTestData> {
+    override fun getClazz(): Class<SampleData> {
 
-        return PartitioningTestData::class.java
+        return SampleData::class.java
     }
 
     override fun isPartitioningEnabled() = partitioningOn
@@ -88,7 +88,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    partition1 = data as CopyOnWriteArrayList<NestedData>
+                    partition1 = data as CopyOnWriteArrayList<SampleData2>
 
                 } catch (e: Exception) {
 
@@ -104,7 +104,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    partition2 = data as ConcurrentHashMap<UUID, NestedData>
+                    partition2 = data as ConcurrentHashMap<UUID, SampleData2>
 
                 } catch (e: Exception) {
 
@@ -120,7 +120,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    partition3 = data as ConcurrentHashMap<String, List<NestedDataSecondLevel>>
+                    partition3 = data as ConcurrentHashMap<String, List<SampleData3>>
 
                 } catch (e: Exception) {
 
@@ -136,7 +136,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    partition4 = data as NestedDataSecondLevel
+                    partition4 = data as SampleData3
 
                 } catch (e: Exception) {
 
@@ -188,13 +188,13 @@ data class PartitioningTestData @JsonCreator constructor(
 
         when (number) {
 
-            0 -> return object : TypeToken<CopyOnWriteArrayList<NestedData>>() {}.type
+            0 -> return object : TypeToken<CopyOnWriteArrayList<SampleData2>>() {}.type
 
-            1 -> return object : TypeToken<ConcurrentHashMap<UUID, NestedData>>() {}.type
+            1 -> return object : TypeToken<ConcurrentHashMap<UUID, SampleData2>>() {}.type
 
-            2 -> return object : TypeToken<ConcurrentHashMap<String, List<NestedDataSecondLevel>>>() {}.type
+            2 -> return object : TypeToken<ConcurrentHashMap<String, List<SampleData3>>>() {}.type
 
-            3 -> return object : TypeToken<NestedDataSecondLevel>() {}.type
+            3 -> return object : TypeToken<SampleData3>() {}.type
 
             4 -> return object : TypeToken<String>() {}.type
 

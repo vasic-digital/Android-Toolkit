@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.util.UUID
 
-data class NestedDataSecondLevel @JsonCreator constructor(
+data class SampleData3 @JsonCreator constructor(
 
     @JsonProperty("id")
     @SerializedName("id")

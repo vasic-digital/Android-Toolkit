@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 
-data class NestedData @JsonCreator constructor(
+data class SampleData2 @JsonCreator constructor(
 
     @JsonProperty("id")
     @SerializedName("id")
@@ -26,5 +26,5 @@ data class NestedData @JsonCreator constructor(
 
     @JsonProperty("nested")
     @SerializedName("nested")
-    var nested: CopyOnWriteArrayList<NestedDataSecondLevel>? = CopyOnWriteArrayList()
+    var nested: CopyOnWriteArrayList<SampleData3>? = CopyOnWriteArrayList()
 )

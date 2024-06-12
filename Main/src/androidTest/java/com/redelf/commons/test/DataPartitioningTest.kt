@@ -1,82 +1,24 @@
 package com.redelf.commons.test
 
+import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS
+import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Timber
-import com.redelf.commons.model.Wrapper
-import com.redelf.commons.partition.Partitional
-import com.redelf.commons.test.data.NestedData
-import com.redelf.commons.test.data.NestedDataSecondLevel
-import com.redelf.commons.test.data.PartitioningTestData
+import com.redelf.commons.test.data.ListWrapper
+import com.redelf.commons.test.data.ObjectListWrapper
+import com.redelf.commons.test.data.SampleData2
+import com.redelf.commons.test.data.SampleData3
+import com.redelf.commons.test.data.SampleData
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.lang.reflect.Type
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
-
-import com.google.gson.reflect.TypeToken
 
 class DataPartitioningTest : BaseTest() {
 
     private val samplesCount = 5
     private val sampleUUID = UUID.randomUUID()
-
-    private class ListWrapper(list: CopyOnWriteArrayList<Long>) :
-
-        Wrapper<CopyOnWriteArrayList<Long>>(list),
-        Partitional<ListWrapper> {
-
-        override fun isPartitioningEnabled() = true
-
-        override fun getPartitionCount() = 1
-
-        override fun getPartitionData(number: Int): Any {
-
-            if (number > 0) {
-
-                Assert.fail("Unexpected partition number: $number")
-            }
-
-            return takeData()
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun setPartitionData(number: Int, data: Any?): Boolean {
-
-            if (number > 0) {
-
-                Assert.fail("Unexpected partition number: $number")
-            }
-
-            try {
-
-                this.data = data as CopyOnWriteArrayList<Long>
-
-            } catch (e: Exception) {
-
-                Timber.e(e)
-
-                return false
-            }
-
-            return true
-        }
-
-        override fun getPartitionType(number: Int): Type? {
-
-            if (number > 0) {
-
-                Assert.fail("Unexpected partition number: $number")
-            }
-
-            return object : TypeToken<CopyOnWriteArrayList<Long>>() {}.type
-        }
-
-        override fun getClazz(): Class<ListWrapper> {
-
-            return ListWrapper::class.java
-        }
-    }
 
     @Before
     fun prepare() {
@@ -84,6 +26,8 @@ class DataPartitioningTest : BaseTest() {
         Timber.initialize()
 
         Timber.v("Timber initialized: $this")
+
+        GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK.set(true)
     }
 
     @Test
@@ -141,6 +85,36 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
+    fun testComplexList() {
+
+        val list = CopyOnWriteArrayList<SampleData3>()
+        val wrapper = ObjectListWrapper(list)
+
+        for (x in 0..samplesCount) {
+
+            list.add(instantiateTestNestedDataSecondLevel(x))
+        }
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.List.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<ObjectListWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+//        val wrappedList = wrapper.takeData()
+//        val comparableList = comparable?.takeData()
+
+//        Assert.assertEquals(wrappedList, comparableList)
+    }
+
+    @Test
     fun testPartitioningWithNoEncryption() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
@@ -157,7 +131,7 @@ class DataPartitioningTest : BaseTest() {
 
         Assert.assertTrue(saved)
 
-        val comparable = persistence.pull<PartitioningTestData?>(key)
+        val comparable = persistence.pull<SampleData?>(key)
 
         Assert.assertNotNull(comparable)
 
@@ -214,9 +188,9 @@ class DataPartitioningTest : BaseTest() {
         assert(5 == 5)
     }
 
-    private fun instantiateTestData(partitioning: Boolean): PartitioningTestData {
+    private fun instantiateTestData(partitioning: Boolean): SampleData {
 
-        return PartitioningTestData(
+        return SampleData(
 
             partitioningOn = partitioning,
             partition1 = createPartition1(),
@@ -228,16 +202,16 @@ class DataPartitioningTest : BaseTest() {
         )
     }
 
-    private fun assertTestData(partitioning: Boolean, source: PartitioningTestData) {
+    private fun assertTestData(partitioning: Boolean, source: SampleData) {
 
         val comparable = instantiateTestData(partitioning = partitioning)
 
         Assert.assertEquals(comparable, source)
     }
 
-    private fun createPartition1(): CopyOnWriteArrayList<NestedData> {
+    private fun createPartition1(): CopyOnWriteArrayList<SampleData2> {
 
-        val list = CopyOnWriteArrayList<NestedData>()
+        val list = CopyOnWriteArrayList<SampleData2>()
 
         for (x in 0..samplesCount) {
 
@@ -247,9 +221,9 @@ class DataPartitioningTest : BaseTest() {
         return list
     }
 
-    private fun createPartition2(): ConcurrentHashMap<UUID, NestedData> {
+    private fun createPartition2(): ConcurrentHashMap<UUID, SampleData2> {
 
-        val map = ConcurrentHashMap<UUID, NestedData>()
+        val map = ConcurrentHashMap<UUID, SampleData2>()
 
         for (x in 0..samplesCount) {
 
@@ -259,13 +233,13 @@ class DataPartitioningTest : BaseTest() {
         return map
     }
 
-    private fun createPartition3(): ConcurrentHashMap<String, List<NestedDataSecondLevel>> {
+    private fun createPartition3(): ConcurrentHashMap<String, List<SampleData3>> {
 
-        val map = ConcurrentHashMap<String, List<NestedDataSecondLevel>>()
+        val map = ConcurrentHashMap<String, List<SampleData3>>()
 
         for (x in 0..samplesCount) {
 
-            val list = mutableListOf<NestedDataSecondLevel>()
+            val list = mutableListOf<SampleData3>()
 
             for (y in 0..samplesCount) {
 
@@ -278,7 +252,7 @@ class DataPartitioningTest : BaseTest() {
         return map
     }
 
-    private fun createPartition4(): NestedDataSecondLevel {
+    private fun createPartition4(): SampleData3 {
 
         return instantiateTestNestedDataSecondLevel(0)
     }
@@ -297,16 +271,16 @@ class DataPartitioningTest : BaseTest() {
         return list
     }
 
-    private fun instantiateTestNestedData(sample: Int = 0): NestedData {
+    private fun instantiateTestNestedData(sample: Int = 0): SampleData2 {
 
-        val list = CopyOnWriteArrayList<NestedDataSecondLevel>()
+        val list = CopyOnWriteArrayList<SampleData3>()
 
         for (x in 0..samplesCount) {
 
             list.add(instantiateTestNestedDataSecondLevel(x))
         }
 
-        return NestedData(
+        return SampleData2(
 
             id = sampleUUID,
             isEnabled = sample % 2 == 0,
@@ -316,14 +290,14 @@ class DataPartitioningTest : BaseTest() {
         )
     }
 
-    private fun assertNestedData(source: NestedData, sample: Int) {
+    private fun assertNestedData(source: SampleData2, sample: Int) {
 
         val comparable = instantiateTestNestedData(sample)
 
         Assert.assertEquals(comparable, source)
     }
 
-    private fun instantiateTestNestedDataSecondLevel(sample: Int = 0): NestedDataSecondLevel {
+    private fun instantiateTestNestedDataSecondLevel(sample: Int = 0): SampleData3 {
 
         val list = mutableListOf<String>()
 
@@ -332,7 +306,7 @@ class DataPartitioningTest : BaseTest() {
             list.add(x.toString())
         }
 
-        return NestedDataSecondLevel(
+        return SampleData3(
 
             id = sampleUUID,
             title = sample.toString(),
@@ -341,7 +315,7 @@ class DataPartitioningTest : BaseTest() {
         )
     }
 
-    private fun assertNestedDataSecondLevel(source: NestedDataSecondLevel, sample: Int) {
+    private fun assertNestedDataSecondLevel(source: SampleData3, sample: Int) {
 
         val comparable = instantiateTestNestedDataSecondLevel(sample)
 
