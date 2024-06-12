@@ -39,6 +39,7 @@ abstract class BaseTest {
         val workingDir = context.cacheDir
         val eMsg = "No test assets available for the directory: $directory"
         val exception = IllegalStateException(eMsg)
+
         testContext.assets.list(directory)?.let {
 
             if (it.isEmpty()) {
@@ -58,16 +59,21 @@ abstract class BaseTest {
 
                 val outputFile = File(workingDir.absolutePath, assetName)
                 val inputStream = testContext.assets.open("$directory/$assetName")
+
                 try {
+
                     if (outputFile.exists()) {
 
                         Timber.w("Tmp. file already exists: ${outputFile.absolutePath}")
+
                         if (outputFile.delete()) {
 
                             Timber.v("Tmp. file deleted: ${outputFile.absolutePath}")
+
                         } else {
 
                             val msg = "Tmp. file could not be deleted: ${outputFile.absolutePath}"
+
                             throw IllegalStateException(msg)
                         }
                     }
@@ -75,9 +81,11 @@ abstract class BaseTest {
                     if (outputFile.createNewFile() && outputFile.exists()) {
 
                         Timber.v("Tmp. file created: ${outputFile.absolutePath}")
+
                     } else {
 
                         val msg = "Tmp. file could not be created: ${outputFile.absolutePath}"
+
                         throw IllegalStateException(msg)
                     }
 
@@ -88,19 +96,25 @@ abstract class BaseTest {
 
                     bufferedOutputStream.close()
                     outputStream.close()
+
                 } catch (e: IOException) {
 
                     Timber.e(e)
                 }
+
                 inputStream.close()
+
                 if (!outputFile.exists() || outputFile.length() == 0L) {
 
                     throw IllegalStateException("Couldn't upload asset: $assetName")
                 }
+
                 assets.add(outputFile)
             }
+
             return assets
         }
+
         throw exception
     }
 
