@@ -431,9 +431,9 @@ class DataPartitioningTest : BaseTest() {
         Assert.assertEquals(data.partition1, comparable?.partition1)
         Assert.assertEquals(data.partition2, comparable?.partition2)
         Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+        Assert.assertEquals(data.partition4, comparable?.partition4) // FIXME: <--
+        Assert.assertEquals(data.partition5, comparable?.partition5) // FIXME: <--
+        Assert.assertEquals(data.partition6, comparable?.partition6) // FIXME: <--
 
         Assert.assertEquals(data, comparable)
     }
