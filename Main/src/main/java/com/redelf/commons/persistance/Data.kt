@@ -356,16 +356,18 @@ class Data private constructor(private val facade: Facade) :
 
                                 else -> {
 
-                                    return simpleWrite()
+                                    simpleWrite()
                                 }
                             }
 
                         } else {
 
-                            return simpleWrite()
+                            simpleWrite()
                         }
                     }
                 }
+
+                return true
 
             } else {
 
@@ -427,6 +429,8 @@ class Data private constructor(private val facade: Facade) :
                         if (DEBUG.get()) Timber.v("$tag IS PARTITIONAL")
 
                         for (i in 0..<partitionsCount) {
+
+                            if (DEBUG.get()) Timber.v("$tag Partition = $i")
 
                             val type = instance.getPartitionType(i)
 
@@ -633,6 +637,11 @@ class Data private constructor(private val facade: Facade) :
 
                                             return defaultValue
                                         }
+                                    }
+
+                                    if (partition == null) {
+
+                                        Timber.e("$tag FAILURE: Null partition: $i")
                                     }
                                 }
                             }
