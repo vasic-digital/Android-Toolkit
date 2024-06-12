@@ -33,11 +33,16 @@ data class SampleData2 @JsonCreator constructor(
 
     companion object {
 
-        private fun convert(what: ArrayList<SampleData3>) : CopyOnWriteArrayList<SampleData3> {
+        private fun convert(what: ArrayList<LinkedTreeMap<String, Any>>) : CopyOnWriteArrayList<SampleData3> {
 
             val list = CopyOnWriteArrayList<SampleData3>()
 
-            list.addAll(what)
+            what.forEach {
+
+                val instance = SampleData3(it)
+
+                list.add(instance)
+            }
 
             return list
         }
@@ -53,6 +58,6 @@ data class SampleData2 @JsonCreator constructor(
         isEnabled = treeMap["isEnabled"] as Boolean,
         order = (treeMap["order"] as Double).toLong(),
         title = treeMap["title"].toString(),
-        nested = convert(treeMap["nested"] as ArrayList<SampleData3>)
+        nested = convert(treeMap["nested"] as ArrayList<LinkedTreeMap<String, Any>>)
     )
 }
