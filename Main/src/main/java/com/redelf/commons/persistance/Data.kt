@@ -338,6 +338,8 @@ class Data private constructor(private val facade: Facade) :
                                     var pVal : Any? = null
                                     val partition = inT.newInstance()
 
+                                    setRowsCount(key, i, rowsCount)
+
                                     for (j in 0..<rowsCount) {
 
                                         val keyRow = keyRow(key, i, j)
