@@ -61,9 +61,17 @@ class DataPartitioningTest : BaseTest() {
 
         Assert.assertTrue(data.isPartitioningEnabled())
 
-        // TODO: Implement proper test
+        val key = "Test.Part.No_Enc"
 
-        assert(5 == 5)
+        val saved = persistence.push(key, data)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<PartitioningTestData?>(key)
+
+        Assert.assertNull(comparable)
+
+        Assert.assertEquals(data, comparable)
     }
 
     @Test
