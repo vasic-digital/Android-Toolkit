@@ -88,7 +88,8 @@ data class SampleData @JsonCreator constructor(
 
                 try {
 
-                    partition1 = data as CopyOnWriteArrayList<SampleData2>
+                    partition1 = CopyOnWriteArrayList()
+                    partition1.addAll(data as CopyOnWriteArrayList<SampleData2>)
 
                 } catch (e: Exception) {
 
@@ -104,7 +105,8 @@ data class SampleData @JsonCreator constructor(
 
                 try {
 
-                    partition2 = data as ConcurrentHashMap<UUID, SampleData2>
+                    partition2 = ConcurrentHashMap()
+                    partition2.putAll(data as ConcurrentHashMap<UUID, SampleData2>)
 
                 } catch (e: Exception) {
 
@@ -120,7 +122,8 @@ data class SampleData @JsonCreator constructor(
 
                 try {
 
-                    partition3 = data as ConcurrentHashMap<String, List<SampleData3>>
+                    partition3 = ConcurrentHashMap()
+                    partition3.putAll(data as ConcurrentHashMap<String, List<SampleData3>>)
 
                 } catch (e: Exception) {
 
@@ -136,7 +139,17 @@ data class SampleData @JsonCreator constructor(
 
                 try {
 
-                    partition4 = data as SampleData3
+                    val casted = data as SampleData3
+
+                    partition4 = SampleData3(
+
+                        id = casted.id,
+                        title = casted.title,
+                        order = casted.order,
+                        points = mutableListOf()
+                    )
+
+                    partition4?.points?.addAll(casted.points ?: emptyList())
 
                 } catch (e: Exception) {
 
@@ -168,7 +181,8 @@ data class SampleData @JsonCreator constructor(
 
                 try {
 
-                    partition6 = data as CopyOnWriteArrayList<Long>
+                    partition6 = CopyOnWriteArrayList()
+                    partition6.addAll(data as CopyOnWriteArrayList<Long>)
 
                 } catch (e: Exception) {
 

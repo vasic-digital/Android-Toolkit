@@ -55,7 +55,6 @@ class DataPartitioningTest : BaseTest() {
         }
     }
 
-
     @Test
     fun testLongList() {
 

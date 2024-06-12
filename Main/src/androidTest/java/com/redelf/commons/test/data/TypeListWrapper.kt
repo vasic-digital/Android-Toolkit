@@ -40,7 +40,8 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
 
         try {
 
-            this.data = data as CopyOnWriteArrayList<T>
+            this.data = CopyOnWriteArrayList()
+            this.data.addAll(data as CopyOnWriteArrayList<T>)
 
         } catch (e: Exception) {
 

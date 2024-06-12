@@ -63,7 +63,8 @@ data class SampleDataOnlyP2 @JsonCreator constructor(
 
                 try {
 
-                    partition2 = data as ConcurrentHashMap<UUID, SampleData2>
+                    partition2 = ConcurrentHashMap()
+                    partition2.putAll(data as ConcurrentHashMap<UUID, SampleData2>)
 
                 } catch (e: Exception) {
 

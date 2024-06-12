@@ -21,7 +21,7 @@ data class SampleData3 @JsonCreator constructor(
 
     @JsonProperty("points")
     @SerializedName("points")
-    var points: List<String>? = emptyList()
+    var points: MutableList<String>? = mutableListOf()
 
 ) {
 

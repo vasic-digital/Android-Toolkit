@@ -40,7 +40,8 @@ abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
 
         try {
 
-            this.data = data as ConcurrentHashMap<K, T>
+            this.data = ConcurrentHashMap()
+            this.data.putAll(data as ConcurrentHashMap<K, T>)
 
         } catch (e: Exception) {
 
