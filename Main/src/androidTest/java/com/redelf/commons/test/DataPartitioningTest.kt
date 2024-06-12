@@ -28,6 +28,22 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
+    fun testAssert() {
+
+        for (x in 0..samplesCount) {
+
+            val sample = instantiateTestNestedDataSecondLevel(x)
+            assertNestedDataSecondLevel(sample, x)
+        }
+
+        for (x in 0..samplesCount) {
+
+            val sample = instantiateTestNestedData(x)
+            assertNestedData(sample, x)
+        }
+    }
+
+    @Test
     fun testPartitioningWithNoEncryption() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
@@ -186,6 +202,13 @@ class DataPartitioningTest : BaseTest() {
         )
     }
 
+    private fun assertNestedData(source: NestedData, sample: Int) {
+
+        val comparable = instantiateTestNestedData(sample)
+
+        Assert.assertEquals(comparable, source)
+    }
+
     private fun instantiateTestNestedDataSecondLevel(sample: Int = 0): NestedDataSecondLevel {
 
         val list = mutableListOf<String>()
@@ -202,5 +225,12 @@ class DataPartitioningTest : BaseTest() {
             order = sample.toLong(),
             points = list
         )
+    }
+
+    private fun assertNestedDataSecondLevel(source: NestedDataSecondLevel, sample: Int) {
+
+        val comparable = instantiateTestNestedDataSecondLevel(sample)
+
+        Assert.assertEquals(comparable, source)
     }
 }
