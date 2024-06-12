@@ -8,7 +8,7 @@ open class Wrapper<T> @JsonCreator constructor(
 
     @SerializedName("data")
     @JsonProperty("data")
-    protected var data: T
+    protected var data: T?
 
 ) {
 

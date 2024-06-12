@@ -3,6 +3,7 @@ package com.redelf.commons.test
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.test.data.LongListWrapper
+import com.redelf.commons.test.data.LongWrapper
 import com.redelf.commons.test.data.ObjectListWrapper
 import com.redelf.commons.test.data.ObjectMapWrapper
 import com.redelf.commons.test.data.SampleData2
@@ -53,6 +54,33 @@ class DataPartitioningTest : BaseTest() {
             val sample = instantiateTestData(partitioning = partitioning)
             assertTestData(partitioning, sample)
         }
+    }
+
+    @Test
+    fun testLong() {
+
+        val long = System.currentTimeMillis()
+        val wrapper = LongWrapper(long)
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.Long.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<LongWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedItem = wrapper.takeData()
+        val comparableItem = comparable?.takeData()
+
+        Assert.assertNotNull(wrappedItem)
+
+        Assert.assertEquals(wrappedItem, comparableItem)
     }
 
     @Test

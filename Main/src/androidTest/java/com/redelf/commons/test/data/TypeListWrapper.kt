@@ -20,7 +20,7 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
 
     override fun getPartitionCount() = 1
 
-    override fun getPartitionData(number: Int): Any {
+    override fun getPartitionData(number: Int): Any? {
 
         if (number > 0) {
 
@@ -41,7 +41,7 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
         try {
 
             this.data = CopyOnWriteArrayList()
-            this.data.addAll(data as CopyOnWriteArrayList<T>)
+            this.data?.addAll(data as CopyOnWriteArrayList<T>)
 
         } catch (e: Exception) {
 

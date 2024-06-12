@@ -6,15 +6,15 @@ import com.redelf.commons.model.Wrapper
 import com.redelf.commons.partition.Partitional
 import org.junit.Assert
 import java.lang.reflect.Type
-import java.util.concurrent.ConcurrentHashMap
 
-abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
+abstract class TypeWrapper<T>(list: T?) :
 
-    Wrapper<ConcurrentHashMap<K, T>>(map),
-    Partitional<TypeMapWrapper<K, T>>
+    Wrapper<T?>(list),
+    Partitional<TypeWrapper<T?>>
+
 {
 
-    constructor() : this(ConcurrentHashMap())
+    constructor() : this(null)
 
     override fun isPartitioningEnabled() = true
 
@@ -40,8 +40,7 @@ abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
 
         try {
 
-            this.data = ConcurrentHashMap()
-            this.data?.putAll(data as ConcurrentHashMap<K, T>)
+            this.data = data as T?
 
         } catch (e: Exception) {
 
@@ -60,6 +59,6 @@ abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
             Assert.fail("Unexpected partition number: $number")
         }
 
-        return object : TypeToken<ConcurrentHashMap<K, T>>() {}.type
+        return object : TypeToken<T?>() {}.type
     }
 }
