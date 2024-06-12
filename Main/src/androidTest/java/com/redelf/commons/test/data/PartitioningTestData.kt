@@ -61,16 +61,16 @@ data class PartitioningTestData @JsonCreator constructor(
 
     override fun getPartitionData(number: Int): Any? {
 
-        when (number) {
+        return when (number) {
 
-            0 -> return partition1
-            1 -> return partition2
-            2 -> return partition3
-            3 -> return partition4
-            4 -> return partition5
-            5 -> return partition6
+            0 -> partition1
+            1 -> partition2
+            2 -> partition3
+            3 -> partition4
+            4 -> partition5
+            5 -> partition6
 
-            else -> return null
+            else -> null
         }
     }
 
