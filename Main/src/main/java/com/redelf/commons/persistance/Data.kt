@@ -40,6 +40,20 @@ class Data private constructor(private val facade: Facade) :
 
             return Data(facade)
         }
+
+        @Throws(IllegalArgumentException::class)
+        fun convert(what: ArrayList<String>) : List<UUID> {
+
+            val list = mutableListOf<UUID>()
+
+            what.forEach {
+
+                val uuid = UUID.fromString(it)
+                list.add(uuid)
+            }
+
+            return list
+        }
     }
 
     override fun shutdown(): Boolean {
