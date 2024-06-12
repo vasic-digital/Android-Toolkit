@@ -41,6 +41,13 @@ class DataPartitioningTest : BaseTest() {
             val sample = instantiateTestNestedData(x)
             assertNestedData(sample, x)
         }
+
+        for (x in 0..samplesCount) {
+
+            val partitioning = x % 2 == 0
+            val sample = instantiateTestData(partitioning = partitioning)
+            assertTestData(partitioning, sample)
+        }
     }
 
     @Test
@@ -119,6 +126,13 @@ class DataPartitioningTest : BaseTest() {
             partition5 = createPartition5(),
             partition6 = createPartition6(),
         )
+    }
+
+    private fun assertTestData(partitioning: Boolean, source: PartitioningTestData) {
+
+        val comparable = instantiateTestData(partitioning = partitioning)
+
+        Assert.assertEquals(comparable, source)
     }
 
     private fun createPartition1(): CopyOnWriteArrayList<NestedData> {
