@@ -27,4 +27,8 @@ data class SampleData2 @JsonCreator constructor(
     @JsonProperty("nested")
     @SerializedName("nested")
     var nested: CopyOnWriteArrayList<SampleData3>? = CopyOnWriteArrayList()
-)
+
+) {
+
+    constructor() : this(id = UUID.randomUUID())
+}
