@@ -30,29 +30,6 @@ abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
         return takeData()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun setPartitionData(number: Int, data: Any?): Boolean {
-
-        if (number > 0) {
-
-            Assert.fail("Unexpected partition number: $number")
-        }
-
-        try {
-
-            this.data = ConcurrentHashMap()
-            this.data?.putAll(data as ConcurrentHashMap<K, T>)
-
-        } catch (e: Exception) {
-
-            Timber.e(e)
-
-            return false
-        }
-
-        return true
-    }
-
     override fun getPartitionType(number: Int): Type? {
 
         if (number > 0) {

@@ -10,6 +10,8 @@ import com.redelf.commons.test.data.SampleData2
 import com.redelf.commons.test.data.SampleData3
 import com.redelf.commons.test.data.SampleData
 import com.redelf.commons.test.data.SampleDataOnlyP2
+import com.redelf.commons.test.data.wrapper.BoolListWrapper
+import com.redelf.commons.test.data.wrapper.BoolWrapper
 import com.redelf.commons.test.data.wrapper.StringListWrapper
 import com.redelf.commons.test.data.wrapper.StringWrapper
 import org.junit.Assert
@@ -85,6 +87,33 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
+    fun testBoolean() {
+
+        val bool: Boolean = System.currentTimeMillis() % 2L == 0L
+        val wrapper = BoolWrapper(bool)
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.Bool.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<BoolWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedItem = wrapper.takeData()
+        val comparableItem = comparable?.takeData()
+
+        Assert.assertNotNull(wrappedItem)
+
+        Assert.assertEquals(wrappedItem, comparableItem)
+    }
+
+    @Test
     fun testString() {
 
         val str = sampleUUID.toString()
@@ -132,6 +161,66 @@ class DataPartitioningTest : BaseTest() {
         Assert.assertTrue(saved)
 
         val comparable = persistence.pull<LongListWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedList = wrapper.takeData()
+        val comparableList = comparable?.takeData()
+
+        Assert.assertEquals(wrappedList, comparableList)
+    }
+
+    @Test
+    fun testBoolList() {
+
+        val list = CopyOnWriteArrayList<Boolean>()
+        val wrapper = BoolListWrapper(list)
+
+        for (x in 0..samplesCount) {
+
+            list.add(x % 2 == 0)
+        }
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.List.Bool.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<BoolListWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedList = wrapper.takeData()
+        val comparableList = comparable?.takeData()
+
+        Assert.assertEquals(wrappedList, comparableList)
+    }
+
+    @Test
+    fun testStringsList() {
+
+        val list = CopyOnWriteArrayList<String>()
+        val wrapper = StringListWrapper(list)
+
+        for (x in 0..samplesCount) {
+
+            list.add(UUID(x.toLong(), x.toLong()).toString())
+        }
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.List.String.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<StringListWrapper?>(key)
 
         Assert.assertNotNull(comparable)
 
@@ -201,36 +290,6 @@ class DataPartitioningTest : BaseTest() {
         val comparableMap = comparable?.takeData()
 
         assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
-    }
-
-    @Test
-    fun testStringsList() {
-
-        val list = CopyOnWriteArrayList<String>()
-        val wrapper = StringListWrapper(list)
-
-        for (x in 0..samplesCount) {
-
-            list.add(x.toString())
-        }
-
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
-
-        Assert.assertTrue(persistence.isEncryptionDisabled())
-
-        val key = "Test.List.String.No_Enc"
-        val saved = persistence.push(key, wrapper)
-
-        Assert.assertTrue(saved)
-
-        val comparable = persistence.pull<StringListWrapper?>(key)
-
-        Assert.assertNotNull(comparable)
-
-        val wrappedList = wrapper.takeData()
-        val comparableList = comparable?.takeData()
-
-        Assert.assertEquals(wrappedList, comparableList)
     }
 
     @Test

@@ -11,6 +11,9 @@ interface Partitional<T> : Typed<T> {
 
     fun getPartitionData(number: Int): Any?
 
+    /*
+        TODO: To be fully-automatic, with possibility of override and automatic data conversion
+    */
     fun setPartitionData(number: Int, data: Any?): Boolean
 
     /*
