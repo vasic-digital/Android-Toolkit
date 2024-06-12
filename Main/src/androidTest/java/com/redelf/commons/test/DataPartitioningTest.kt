@@ -1,6 +1,5 @@
 package com.redelf.commons.test
 
-import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.test.data.ListWrapper
@@ -23,7 +22,7 @@ class DataPartitioningTest : BaseTest() {
     @Before
     fun prepare() {
 
-        Timber.initialize()
+        Timber.initialize(failOnError = true)
 
         Timber.v("Timber initialized: $this")
 

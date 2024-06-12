@@ -7,10 +7,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 object Timber {
 
     private val recordLogs = AtomicBoolean(false)
+    private val failOnError = AtomicBoolean(false)
 
     @JvmStatic
-    fun initialize(logsRecording: Boolean = false) {
+    fun initialize(logsRecording: Boolean = false, failOnError: Boolean = false) {
 
+        setFailOnError(failOnError)
         setLogsRecording(logsRecording)
 
         if (logsRecording) {
@@ -104,18 +106,33 @@ object Timber {
     fun e(message: String?, vararg args: Any?) {
 
         Timber.e(message, *args)
+
+        if (failOnError.get()) {
+
+            throw RuntimeException(message)
+        }
     }
 
     @JvmStatic
     fun e(t: Throwable?, message: String?, vararg args: Any?) {
 
         Timber.e(t, message, *args)
+
+        if (failOnError.get()) {
+
+            throw RuntimeException(t)
+        }
     }
 
     @JvmStatic
     fun e(t: Throwable?) {
 
         Timber.e(t)
+
+        if (failOnError.get()) {
+
+            throw RuntimeException(t)
+        }
     }
 
     @JvmStatic
@@ -159,5 +176,12 @@ object Timber {
         Timber.i("Set logs recording: $enabled")
 
         recordLogs.set(enabled)
+    }
+
+    private fun setFailOnError(enabled: Boolean) {
+
+        Timber.i("Set fail on error: $enabled")
+
+        failOnError.set(enabled)
     }
 }
