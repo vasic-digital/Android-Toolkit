@@ -197,10 +197,10 @@ class DataPartitioningTest : BaseTest() {
 
         Assert.assertNotNull(comparable)
 
-        val wrappedList = wrapper.takeData()
-        val comparableList = comparable?.takeData()
+        val wrappedMap = wrapper.takeData()
+        val comparableMap = comparable?.takeData()
 
-        Assert.assertEquals(wrappedList, comparableList)
+        assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
     }
 
     @Test
@@ -479,5 +479,29 @@ class DataPartitioningTest : BaseTest() {
         val comparable = instantiateTestNestedDataSecondLevel(sample)
 
         Assert.assertEquals(comparable, source)
+    }
+
+    private fun assertMaps(map1: Map<*, *>?, map2: Map<*, *>?) {
+
+        Assert.assertNotNull(map1)
+        Assert.assertNotNull(map2)
+
+        map1?.let { m1 ->
+            map2?.let { m2 ->
+
+                Assert.assertEquals(m1.size, m2.size)
+
+                m1.forEach { (key, value) ->
+
+                    Assert.assertNotNull(key)
+                    Assert.assertNotNull(value)
+
+                    val comparable = m2[key]
+
+                    Assert.assertNotNull(comparable)
+                    Assert.assertEquals(value, comparable)
+                }
+            }
+        }
     }
 }
