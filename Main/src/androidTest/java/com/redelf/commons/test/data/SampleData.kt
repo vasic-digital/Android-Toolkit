@@ -3,6 +3,7 @@ package com.redelf.commons.test.data
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
+import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
@@ -123,7 +124,26 @@ data class SampleData @JsonCreator constructor(
                 try {
 
                     partition3 = ConcurrentHashMap()
-                    partition3.putAll(data as ConcurrentHashMap<String, List<SampleData3>>)
+
+                    (data as ConcurrentHashMap<String, List<Any>>).forEach {
+
+                        val key = it.key
+                        val value = it.value
+
+                        val children = ArrayList<SampleData3>()
+
+                        value.forEach { item ->
+
+                            if (item is LinkedTreeMap<*, *>) {
+
+                                val instance = SampleData3(item as LinkedTreeMap<String, Any>)
+
+                                children.add(instance)
+                            }
+                        }
+
+                        partition3[key] = children
+                    }
 
                 } catch (e: Exception) {
 
@@ -139,17 +159,7 @@ data class SampleData @JsonCreator constructor(
 
                 try {
 
-                    val casted = data as SampleData3
-
-                    partition4 = SampleData3(
-
-                        id = casted.id,
-                        title = casted.title,
-                        order = casted.order,
-                        points = mutableListOf()
-                    )
-
-                    partition4?.points?.addAll(casted.points ?: emptyList())
+                    partition4 = data as SampleData3
 
                 } catch (e: Exception) {
 
