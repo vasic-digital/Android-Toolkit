@@ -372,14 +372,12 @@ class Data private constructor(private val facade: Facade) :
                                     val pt = t as ParameterizedType
                                     val inT =  Class.forName(pt.rawType.typeName)
 
-                                    var pVal : Any? = null
                                     val partition = inT.newInstance()
 
                                     for (j in 0..<rowsCount) {
 
                                         val keyRow = keyRow(key, i, j)
                                         val keyRowType = keyRowType(key, i, j)
-
                                         val rowType = facade.get(keyRowType, "")
 
                                         if (isEmpty(rowType)) {
@@ -419,29 +417,19 @@ class Data private constructor(private val facade: Facade) :
 
                                                 when (partition) {
 
-                                                    is List<*> -> {
+                                                    is MutableList<*> -> {
 
-                                                        if (pVal == null) {
-
-                                                            pVal = partition.toMutableList()
-                                                        }
-
-                                                        (pVal as MutableList<Any>).add(obt)
+                                                        (partition as MutableList<Any>).add(obt)
                                                     }
 
-                                                    is Map<*, *> -> {
-
-                                                        if (pVal == null) {
-
-                                                            pVal = partition.toMutableMap()
-                                                        }
+                                                    is MutableMap<*, *> -> {
 
                                                         if (obt is Pair<*, *>) {
 
                                                             obt.first?.let { first ->
                                                                 obt.second?.let { second ->
 
-                                                                    (pVal as MutableMap<Any, Any>)
+                                                                    (partition as MutableMap<Any, Any>)
                                                                         .put(first, second)
                                                                 }
                                                             }
@@ -460,24 +448,9 @@ class Data private constructor(private val facade: Facade) :
                                                         }
                                                     }
 
-                                                    is Set<*> -> {
+                                                    is MutableSet<*> -> {
 
-                                                        if (pVal == null) {
-
-                                                            pVal = partition.toMutableSet()
-                                                        }
-
-                                                        (pVal as MutableSet<Any>).add(obt)
-                                                    }
-
-                                                    is Queue<*> -> {
-
-                                                        if (pVal == null) {
-
-                                                            pVal = partition.toMutableList()
-                                                        }
-
-                                                        (pVal as MutableList<Any>).add(obt)
+                                                        (partition as MutableSet<Any>).add(obt)
                                                     }
 
                                                     else -> {
