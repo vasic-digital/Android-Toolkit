@@ -13,7 +13,9 @@ import com.redelf.commons.test.data.SampleDataOnlyP2
 import com.redelf.commons.test.data.wrapper.BoolListWrapper
 import com.redelf.commons.test.data.wrapper.BoolWrapper
 import com.redelf.commons.test.data.wrapper.StringListWrapper
+import com.redelf.commons.test.data.wrapper.StringToLongMapWrapper
 import com.redelf.commons.test.data.wrapper.StringWrapper
+import com.redelf.commons.test.data.wrapper.UUIDtoStringMapWrapper
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -258,6 +260,70 @@ class DataPartitioningTest : BaseTest() {
         val comparableList = comparable?.takeData()
 
         Assert.assertEquals(wrappedList, comparableList)
+    }
+
+    @Test
+    fun testUUIDtoStringMap() {
+
+        val map = ConcurrentHashMap<UUID, String>()
+        val wrapper = UUIDtoStringMapWrapper(map)
+
+        for (x in 0..samplesCount) {
+
+            val uuid = UUID(x.toLong(), x.toLong())
+
+            map[uuid] = x.toString()
+        }
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.Map.UUIDtoString.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<UUIDtoStringMapWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedMap = wrapper.takeData()
+        val comparableMap = comparable?.takeData()
+
+        assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
+    }
+
+    @Test
+    fun testStringToLongMap() {
+
+        val map = ConcurrentHashMap<String, Long>()
+        val wrapper = StringToLongMapWrapper(map)
+
+        for (x in 0..samplesCount) {
+
+            val uuid = UUID(x.toLong(), x.toLong())
+
+            map[uuid.toString()] = System.currentTimeMillis()
+        }
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.Map.StringToLong.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<StringToLongMapWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedMap = wrapper.takeData()
+        val comparableMap = comparable?.takeData()
+
+        assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
     }
 
     @Test

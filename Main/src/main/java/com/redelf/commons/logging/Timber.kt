@@ -139,18 +139,33 @@ object Timber {
     fun wtf(message: String?, vararg args: Any?) {
 
         Timber.wtf(message, *args)
+
+        if (failOnError.get()) {
+
+            throw RuntimeException(message)
+        }
     }
 
     @JvmStatic
     fun wtf(t: Throwable?, message: String?, vararg args: Any?) {
 
         Timber.wtf(t, message, *args)
+
+        if (failOnError.get()) {
+
+            throw RuntimeException(t)
+        }
     }
 
     @JvmStatic
     fun wtf(t: Throwable?) {
 
         Timber.wtf(t)
+
+        if (failOnError.get()) {
+
+            throw RuntimeException(t)
+        }
     }
 
     @JvmStatic

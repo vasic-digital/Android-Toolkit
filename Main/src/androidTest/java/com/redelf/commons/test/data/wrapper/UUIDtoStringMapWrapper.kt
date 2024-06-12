@@ -1,21 +1,20 @@
 package com.redelf.commons.test.data.wrapper
 
 import com.redelf.commons.logging.Timber
-import com.redelf.commons.test.data.SampleData3
 import org.junit.Assert
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-class ObjectMapWrapper(map: ConcurrentHashMap<UUID, SampleData3>) :
+class UUIDtoStringMapWrapper(map: ConcurrentHashMap<UUID, String>) :
 
-    TypeMapWrapper<UUID, SampleData3>(map)
+    TypeMapWrapper<UUID, String>(map)
 {
 
     constructor() : this(ConcurrentHashMap())
 
-    override fun getClazz(): Class<ObjectMapWrapper> {
+    override fun getClazz(): Class<UUIDtoStringMapWrapper> {
 
-        return ObjectMapWrapper::class.java
+        return UUIDtoStringMapWrapper::class.java
     }
 
     override fun setPartitionData(number: Int, data: Any?): Boolean {
@@ -27,11 +26,11 @@ class ObjectMapWrapper(map: ConcurrentHashMap<UUID, SampleData3>) :
 
         try {
 
-            this.data = ConcurrentHashMap<UUID, SampleData3>()
+            this.data = ConcurrentHashMap<UUID, String>()
 
             (data as ConcurrentHashMap<*, *>).forEach { (key, value) ->
 
-                this.data?.put(UUID.fromString(key.toString()), value as SampleData3)
+                this.data?.put(UUID.fromString(key.toString()), value as String)
             }
 
             Timber.v("Data set: ${this.data}")
