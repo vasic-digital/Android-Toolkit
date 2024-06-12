@@ -13,9 +13,12 @@ import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.type.PairDataInfo
 import java.lang.reflect.ParameterizedType
 import java.util.Queue
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.jvm.Throws
 
 
+@Suppress("DEPRECATION")
 class Data private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
@@ -532,13 +535,32 @@ class Data private constructor(private val facade: Facade) :
                                                             obt.first.let { first ->
                                                                 obt.second.let { second ->
 
-                                                                    // TODO:
-                                                                    //  - Take data type form the obt as PairDataInfo
-                                                                    //  - Instantiate and pass the existing values
-                                                                    //  - Put into the map
+                                                                    val clz1 = Class.forName(
+                                                                        obt.firstType ?: ""
+                                                                    )
+                                                                    val clz2 = Class.forName(
+                                                                        obt.secondType ?: ""
+                                                                    )
 
-                                                                    (partition as MutableMap<Any, Any>)
-                                                                        .put(first, second)
+                                                                    if (DEBUG.get()) Timber.v(
+
+                                                                        "$tag Row key type: '${clz1.simpleName}', " +
+                                                                                "Row value type: '${clz2.simpleName}'"
+                                                                    )
+
+                                                                    val kts = instantiate(
+                                                                        what = clz1,
+                                                                        arg = first
+                                                                    )
+                                                                    val vts = instantiate(
+                                                                        what = clz1,
+                                                                        arg = first
+                                                                    )
+
+                                                                    (partition as MutableMap<Any, Any>).put(
+                                                                        kts,
+                                                                        vts
+                                                                    )
                                                                 }
                                                             }
 
@@ -837,5 +859,58 @@ class Data private constructor(private val facade: Facade) :
     private fun keyRow(key: String, partition: Int, row: Int) = "$key.$partition.$row"
 
     private fun keyRowType(key: String, partition: Int, row: Int) = "$key.$partition.$row.type"
+
+//    instantiate(what = clz1, arg = first)
+
+    @Throws(
+
+        IllegalArgumentException::class,
+        SecurityException::class,
+        IllegalAccessException::class,
+        InstantiationException::class
+
+    )
+    private fun instantiate(what: Class<*>?, arg: Any?): Any {
+
+        if (what == null) {
+
+            throw IllegalArgumentException("The 'what' Class parameter is mandatory!")
+        }
+
+        val tag = "Instantiate ::"
+
+        if (DEBUG.get()) {
+
+            Timber.v("$tag '${what::class.qualifiedName}' from '${arg ?: "nothing"}'")
+        }
+
+        arg?.let { argument ->
+
+            when (what) {
+
+                UUID::class.java -> {
+
+                    return UUID.fromString(arg.toString())
+                }
+
+                else -> return what.constructors.forEach { constructor ->
+
+                    if (constructor.parameterCount == 1) {
+
+                        return constructor.newInstance(argument)
+
+                    } else {
+
+                        val msg = "Constructor for the argument " +
+                                "'${argument::class.qualifiedName}' not found"
+
+                        throw IllegalArgumentException(msg)
+                    }
+                }
+            }
+        }
+
+        return what.newInstance()
+    }
 }
 
