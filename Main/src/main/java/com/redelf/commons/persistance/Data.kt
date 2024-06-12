@@ -400,9 +400,38 @@ class Data private constructor(private val facade: Facade) :
 
                                         var rowClazz: Class<*>? = null
 
+                                        fun getSimple(rType: String): Class<*>? {
+
+                                            return when(rType) {
+
+                                                Int::class.qualifiedName -> Int::class.java
+                                                Long::class.qualifiedName -> Long::class.java
+                                                Short::class.qualifiedName -> Short::class.java
+                                                Double::class.qualifiedName -> Double::class.java
+                                                Float::class.qualifiedName -> Float::class.java
+                                                Boolean::class.qualifiedName -> Boolean::class.java
+                                                Char::class.qualifiedName -> Char::class.java
+                                                String::class.qualifiedName -> String::class.java
+                                                Byte::class.qualifiedName -> Byte::class.java
+                                                Array::class.qualifiedName -> Array::class.java
+
+                                                else -> null
+                                            }
+                                        }
+
                                         try {
 
-                                            rowClazz = Class.forName(rowType)
+                                            val simpleClass = getSimple(rowType)
+
+                                            simpleClass?.let {
+
+                                                rowClazz = it
+                                            }
+
+                                            if (simpleClass == null) {
+
+                                                rowClazz = Class.forName(rowType)
+                                            }
 
                                         } catch (e: ClassNotFoundException) {
 

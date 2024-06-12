@@ -134,9 +134,7 @@ class DataPartitioningTest : BaseTest() {
 
         Assert.assertNotNull(comparable)
 
-        // FIXME:
-        //
-        //        Assert.assertEquals(data, comparable)
+        Assert.assertEquals(data, comparable)
     }
 
     @Test
