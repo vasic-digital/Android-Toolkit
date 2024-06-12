@@ -12,6 +12,7 @@ import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.type.PairDataInfo
 import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
 import java.util.Queue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -149,7 +150,16 @@ class Data private constructor(private val facade: Facade) :
                             return written
                         }
 
-                        fun rowWrite(partition: Int, row: Int, mapKey: Any?, value: Any?): Boolean {
+                        fun rowWrite(
+
+                            partition: Int,
+                            row: Int,
+                            mapKey: Any?,
+                            value: Any?,
+                            mapKeyType: Class<*>?,
+                            valueType: Class<*>?
+
+                        ): Boolean {
 
                             if (mapKey == null) {
 
@@ -161,10 +171,32 @@ class Data private constructor(private val facade: Facade) :
                                 return true
                             }
 
+                            if (mapKeyType == null) {
+
+                                Timber.e("$tag FAILURE: Partition no. $i, " +
+                                        "Row no. $row, No map key type provided")
+
+                                return false
+                            }
+
+                            if (valueType == null) {
+
+                                Timber.e("$tag FAILURE: Partition no. $i, " +
+                                        "Row no. $row, No value type provided")
+
+                                return false
+                            }
+
                             val keyRow = keyRow(key, partition, row)
                             val keyRowType = keyRowType(key, partition, row)
 
-                            val rowValue = PairDataInfo(mapKey, value)
+                            val rowValue = PairDataInfo(
+
+                                mapKey,
+                                value,
+                                mapKeyType.canonicalName,
+                                valueType.canonicalName
+                            )
 
                             val fqName = rowValue::class.qualifiedName
                             val savedValue = facade.put(keyRow, rowValue)
@@ -232,11 +264,23 @@ class Data private constructor(private val facade: Facade) :
 
                                         var index = 0
 
-                                        partition.forEach {
+                                        partition.forEach { key, value ->
 
-                                                key, value ->
+                                            key?.let { k ->
+                                                value?.let { v ->
 
-                                            rowWrite(i, index, key, value)
+                                                    rowWrite(
+
+                                                        partition = i,
+                                                        row  = index,
+                                                        mapKey = k,
+                                                        value = v,
+                                                        mapKeyType = k::class.java,
+                                                        valueType = v::class.java
+                                                    )
+                                                }
+                                            }
+
                                             index++
                                         }
 
