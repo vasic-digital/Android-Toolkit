@@ -893,7 +893,8 @@ class Data private constructor(private val facade: Facade) :
                     } else {
 
                         val msg = "Constructor for the argument " +
-                                "'${argument::class.qualifiedName}' not found"
+                                "'${argument::class.qualifiedName}' not found to instantiate " +
+                                "'${what::class.qualifiedName}'"
 
                         throw IllegalArgumentException(msg)
                     }
