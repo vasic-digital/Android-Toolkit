@@ -212,6 +212,7 @@ class Data private constructor(private val facade: Facade) :
                                     partition.forEachIndexed {
 
                                             index, value ->
+
                                         rowWrite(i, index, value)
                                     }
                                 }
@@ -223,6 +224,7 @@ class Data private constructor(private val facade: Facade) :
                                     partition.forEach {
 
                                             key, value ->
+
                                         rowWrite(i, index, key, value)
                                         index++
                                     }
@@ -233,6 +235,7 @@ class Data private constructor(private val facade: Facade) :
                                     partition.forEachIndexed {
 
                                             index, value ->
+
                                         rowWrite(i, index, value)
                                     }
                                 }
@@ -242,6 +245,7 @@ class Data private constructor(private val facade: Facade) :
                                     partition.forEachIndexed {
 
                                             index, value ->
+
                                         rowWrite(i, index, value)
                                     }
                                 }
@@ -324,8 +328,7 @@ class Data private constructor(private val facade: Facade) :
 
                             type?.let { t ->
 
-                                val keyRows = keyRows(key, i)
-                                val rowsCount = facade.get(keyRows, 0)
+                                val rowsCount = getRowsCount(key, i)
 
                                 if (rowsCount > 0) {
 
@@ -593,6 +596,18 @@ class Data private constructor(private val facade: Facade) :
                             Timber.e("$tag FAILURE: Partition no. $i, Row no. $j")
                         }
                     }
+
+                    if (deleteRowsCount(key, i)) {
+
+                        if (DEBUG.get()) Timber.v(
+
+                            "$tag REMOVED: Partition no. $i, Rows count"
+                        )
+
+                    } else {
+
+                        Timber.e("$tag FAILURE: Partition no. $i, Rows count")
+                    }
                 }
             }
         }
@@ -637,7 +652,23 @@ class Data private constructor(private val facade: Facade) :
 
     private fun getRowsCount(key: String, partition: Int): Int {
 
-        return facade.get(keyRows(key, partition), 0)
+        val rowsKey = keyRows(key, partition)
+
+        return facade.get(rowsKey, 0)
+    }
+
+    private fun setRowsCount(key: String, partition: Int, rows: Int): Boolean {
+
+        val rowsKey = keyRows(key, partition)
+
+        return facade.put(rowsKey, rows)
+    }
+
+    private fun deleteRowsCount(key: String, partition: Int): Boolean {
+
+        val rowsKey = keyRows(key, partition)
+
+        return facade.delete(rowsKey)
     }
 
     private fun getType(key: String): Class<*>? {
