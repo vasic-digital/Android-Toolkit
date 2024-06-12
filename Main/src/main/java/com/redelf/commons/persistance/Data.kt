@@ -466,36 +466,6 @@ class Data private constructor(private val facade: Facade) :
 
                                         var rowClazz: Class<*>? = null
 
-                                        fun getSimple(rType: String): Class<*>? {
-
-                                            return when (rType) {
-
-                                                Float::class.qualifiedName,
-                                                Int::class.qualifiedName,
-                                                Long::class.qualifiedName,
-                                                Short::class.qualifiedName -> {
-
-                                                    throw IllegalArgumentException(
-
-                                                        "Not supported serialization type " +
-                                                                "'$rType', please use " +
-                                                                "the " +
-                                                                "'${Double::class.qualifiedName}'" +
-                                                                " instead"
-                                                    )
-                                                }
-
-                                                Double::class.qualifiedName -> Double::class.java
-                                                Boolean::class.qualifiedName -> Boolean::class.java
-                                                Char::class.qualifiedName -> Char::class.java
-                                                String::class.qualifiedName -> String::class.java
-                                                Byte::class.qualifiedName -> Byte::class.java
-                                                Array::class.qualifiedName -> Array::class.java
-
-                                                else -> null
-                                            }
-                                        }
-
                                         try {
 
                                             val simpleClass = getSimple(rowType)
@@ -525,7 +495,22 @@ class Data private constructor(private val facade: Facade) :
 
                                                     is MutableList<*> -> {
 
-                                                        (partition as MutableList<Any>).add(obt)
+                                                        val simple = getSimple(rowType)
+
+                                                        if (simple != null) {
+
+                                                            (partition as MutableList<Any>).add(obt)
+
+                                                        } else {
+
+                                                            val vts = instantiate(
+
+                                                                what = rowClazz,
+                                                                arg = obt
+                                                            )
+
+                                                            (partition as MutableList<Any>).add(vts)
+                                                        }
                                                     }
 
                                                     is MutableMap<*, *> -> {
@@ -549,10 +534,13 @@ class Data private constructor(private val facade: Facade) :
                                                                     )
 
                                                                     val kts = instantiate(
+
                                                                         what = clz1,
                                                                         arg = first
                                                                     )
+
                                                                     val vts = instantiate(
+
                                                                         what = clz2,
                                                                         arg = second
                                                                     )
@@ -860,8 +848,6 @@ class Data private constructor(private val facade: Facade) :
 
     private fun keyRowType(key: String, partition: Int, row: Int) = "$key.$partition.$row.type"
 
-//    instantiate(what = clz1, arg = first)
-
     @Throws(
 
         IllegalArgumentException::class,
@@ -871,6 +857,14 @@ class Data private constructor(private val facade: Facade) :
 
     )
     private fun instantiate(what: Class<*>?, arg: Any?): Any {
+
+        arg?.let {
+
+            if (it::class.java.canonicalName == what?.canonicalName) {
+
+                return arg
+            }
+        }
 
         if (what == null) {
 
@@ -916,6 +910,36 @@ class Data private constructor(private val facade: Facade) :
         }
 
         return what.newInstance()
+    }
+
+    private fun getSimple(type: String): Class<*>? {
+
+        return when (type) {
+
+            Float::class.qualifiedName,
+            Int::class.qualifiedName,
+            Long::class.qualifiedName,
+            Short::class.qualifiedName -> {
+
+                throw IllegalArgumentException(
+
+                    "Not supported serialization type " +
+                            "'$type', please use " +
+                            "the " +
+                            "'${Double::class.qualifiedName}'" +
+                            " instead"
+                )
+            }
+
+            Double::class.qualifiedName -> Double::class.java
+            Boolean::class.qualifiedName -> Boolean::class.java
+            Char::class.qualifiedName -> Char::class.java
+            String::class.qualifiedName -> String::class.java
+            Byte::class.qualifiedName -> Byte::class.java
+            Array::class.qualifiedName -> Array::class.java
+
+            else -> null
+        }
     }
 }
 

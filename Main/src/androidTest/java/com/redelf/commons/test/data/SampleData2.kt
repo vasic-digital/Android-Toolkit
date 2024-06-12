@@ -3,6 +3,7 @@ package com.redelf.commons.test.data
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
+import com.google.gson.internal.LinkedTreeMap
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -30,5 +31,28 @@ data class SampleData2 @JsonCreator constructor(
 
 ) {
 
+    companion object {
+
+        private fun convert(what: ArrayList<SampleData3>) : CopyOnWriteArrayList<SampleData3> {
+
+            val list = CopyOnWriteArrayList<SampleData3>()
+
+            list.addAll(what)
+
+            return list
+        }
+    }
+
     constructor() : this(id = UUID.randomUUID())
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(ClassCastException::class)
+    constructor(treeMap: LinkedTreeMap<String, Any>) : this(
+
+        id = UUID.fromString(treeMap["id"].toString()),
+        isEnabled = treeMap["isEnabled"] as Boolean,
+        order = (treeMap["order"] as Double).toLong(),
+        title = treeMap["title"].toString(),
+        nested = convert(treeMap["nested"] as ArrayList<SampleData3>)
+    )
 }
