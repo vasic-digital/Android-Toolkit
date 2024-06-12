@@ -475,8 +475,10 @@ class Data private constructor(private val facade: Facade) :
                                                     throw IllegalArgumentException(
 
                                                         "Not supported serialization type " +
-                                                                "'${Short::class.simpleName}', " +
-                                                                "please use Double instead"
+                                                                "'$rType', please use " +
+                                                                "the " +
+                                                                "'${Double::class.qualifiedName}'" +
+                                                                " instead"
                                                     )
                                                 }
 

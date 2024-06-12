@@ -2,7 +2,7 @@ package com.redelf.commons.test.data.wrapper
 
 import java.util.concurrent.CopyOnWriteArrayList
 
-class LongListWrapper(list: CopyOnWriteArrayList<Long>) : TypeListWrapper<Long>(list) {
+class LongListWrapper(list: CopyOnWriteArrayList<Double>) : TypeListWrapper<Double>(list) {
 
     constructor() : this(CopyOnWriteArrayList())
 

@@ -145,12 +145,12 @@ class DataPartitioningTest : BaseTest() {
     @Test
     fun testLongList() {
 
-        val list = CopyOnWriteArrayList<Long>()
+        val list = CopyOnWriteArrayList<Double>()
         val wrapper = LongListWrapper(list)
 
         for (x in 0..samplesCount) {
 
-            list.add(x.toLong())
+            list.add(System.currentTimeMillis().toDouble())
         }
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
