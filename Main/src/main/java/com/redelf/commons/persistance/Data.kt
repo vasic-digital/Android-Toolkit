@@ -11,6 +11,7 @@ import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.type.PairDataInfo
+import org.checkerframework.checker.signature.qual.CanonicalName
 import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
@@ -495,22 +496,13 @@ class Data private constructor(private val facade: Facade) :
 
                                                     is MutableList<*> -> {
 
-                                                        val simple = getSimple(rowType)
+                                                        val vts = instantiate(
 
-                                                        if (simple != null) {
+                                                            what = rowClazz,
+                                                            arg = obt
+                                                        )
 
-                                                            (partition as MutableList<Any>).add(obt)
-
-                                                        } else {
-
-                                                            val vts = instantiate(
-
-                                                                what = rowClazz,
-                                                                arg = obt
-                                                            )
-
-                                                            (partition as MutableList<Any>).add(vts)
-                                                        }
+                                                        (partition as MutableList<Any>).add(vts)
                                                     }
 
                                                     is MutableMap<*, *> -> {
@@ -871,6 +863,14 @@ class Data private constructor(private val facade: Facade) :
             throw IllegalArgumentException("The 'what' Class parameter is mandatory!")
         }
 
+        if (isSimple(what)) {
+
+            arg?.let {
+
+                return it
+            }
+        }
+
         val tag = "Instantiate ::"
 
         if (DEBUG.get()) {
@@ -939,6 +939,34 @@ class Data private constructor(private val facade: Facade) :
             Array::class.qualifiedName -> Array::class.java
 
             else -> null
+        }
+    }
+
+    private fun isSimple(clazz: Class<*>): Boolean {
+
+        return when (clazz.canonicalName) {
+
+            java.lang.Long::class.java.canonicalName,
+            java.lang.Float::class.java.canonicalName,
+            java.lang.Integer::class.java.canonicalName,
+            java.lang.Short::class.java.canonicalName,
+            java.lang.Double::class.java.canonicalName,
+            java.lang.Boolean::class.java.canonicalName,
+            java.lang.Character::class.java.canonicalName,
+            java.lang.String::class.java.canonicalName,
+
+            Float::class.java.canonicalName,
+            Int::class.java.canonicalName,
+            Long::class.java.canonicalName,
+            Short::class.java.canonicalName,
+            Double::class.java.canonicalName,
+            Boolean::class.java.canonicalName,
+            Char::class.java.canonicalName,
+            String::class.java.canonicalName,
+            Byte::class.java.canonicalName,
+            Array::class.java.canonicalName -> true
+
+            else -> false
         }
     }
 }
