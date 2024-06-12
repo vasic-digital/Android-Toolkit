@@ -165,6 +165,13 @@ class DataPartitioningTest : BaseTest() {
 
         Assert.assertNotNull(comparable)
 
+        Assert.assertEquals(data.partition1, comparable?.partition1)
+        Assert.assertEquals(data.partition2, comparable?.partition2)
+        Assert.assertEquals(data.partition3, comparable?.partition3)
+        Assert.assertEquals(data.partition4, comparable?.partition4)
+        Assert.assertEquals(data.partition5, comparable?.partition5)
+        Assert.assertEquals(data.partition6, comparable?.partition6)
+
         Assert.assertEquals(data, comparable)
     }
 
@@ -299,7 +306,7 @@ class DataPartitioningTest : BaseTest() {
         return list
     }
 
-    private fun instantiateTestNestedData(sample: Int = 0): SampleData2 {
+    private fun instantiateTestNestedData(sample: Int): SampleData2 {
 
         val list = CopyOnWriteArrayList<SampleData3>()
 
@@ -325,7 +332,7 @@ class DataPartitioningTest : BaseTest() {
         Assert.assertEquals(comparable, source)
     }
 
-    private fun instantiateTestNestedDataSecondLevel(sample: Int = 0): SampleData3 {
+    private fun instantiateTestNestedDataSecondLevel(sample: Int): SampleData3 {
 
         val list = mutableListOf<String>()
 
