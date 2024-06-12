@@ -1,15 +1,13 @@
 package com.redelf.commons.test.data
 
-import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.model.Wrapper
 import com.redelf.commons.partition.Partitional
 import org.junit.Assert
-import java.lang.reflect.Type
 
-abstract class TypeWrapper<T>(list: T?) :
+abstract class TypeWrapper<T>(wrapped: T?) :
 
-    Wrapper<T?>(list),
+    Wrapper<T?>(wrapped),
     Partitional<TypeWrapper<T?>>
 
 {
@@ -50,15 +48,5 @@ abstract class TypeWrapper<T>(list: T?) :
         }
 
         return true
-    }
-
-    override fun getPartitionType(number: Int): Type? {
-
-        if (number > 0) {
-
-            Assert.fail("Unexpected partition number: $number")
-        }
-
-        return object : TypeToken<T?>() {}.type
     }
 }

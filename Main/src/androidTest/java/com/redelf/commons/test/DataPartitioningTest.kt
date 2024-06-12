@@ -11,6 +11,7 @@ import com.redelf.commons.test.data.SampleData3
 import com.redelf.commons.test.data.SampleData
 import com.redelf.commons.test.data.SampleDataOnlyP2
 import com.redelf.commons.test.data.StringListWrapper
+import com.redelf.commons.test.data.StringWrapper
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -72,6 +73,33 @@ class DataPartitioningTest : BaseTest() {
         Assert.assertTrue(saved)
 
         val comparable = persistence.pull<LongWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedItem = wrapper.takeData()
+        val comparableItem = comparable?.takeData()
+
+        Assert.assertNotNull(wrappedItem)
+
+        Assert.assertEquals(wrappedItem, comparableItem)
+    }
+
+    @Test
+    fun testString() {
+
+        val str = sampleUUID.toString()
+        val wrapper = StringWrapper(str)
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.String.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<StringWrapper?>(key)
 
         Assert.assertNotNull(comparable)
 
