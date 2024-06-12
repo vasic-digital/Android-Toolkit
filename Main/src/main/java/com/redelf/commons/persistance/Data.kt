@@ -379,11 +379,31 @@ class Data private constructor(private val facade: Facade) :
                                         val keyRow = keyRow(key, i, j)
                                         val keyRowType = keyRowType(key, i, j)
 
+                                        val rowType = facade.get(keyRowType, "")
+
+                                        if (isEmpty(rowType)) {
+
+                                            Timber.e(
+
+                                                "$tag FAILURE: No row type for the key:" +
+                                                        " '$keyRowType'"
+                                            )
+
+                                            return defaultValue
+
+                                        } else {
+
+                                            if (DEBUG.get()) Timber.v(
+
+                                                "$tag Row type: '$rowType'"
+                                            )
+                                        }
+
                                         var rowClazz: Class<*>? = null
 
                                         try {
 
-                                            rowClazz = Class.forName(keyRowType)
+                                            rowClazz = Class.forName(rowType)
 
                                         } catch (e: ClassNotFoundException) {
 
