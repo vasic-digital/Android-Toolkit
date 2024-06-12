@@ -11,7 +11,11 @@ import java.util.concurrent.CopyOnWriteArrayList
 class ObjectListWrapper(list: CopyOnWriteArrayList<SampleData3>) :
 
     Wrapper<CopyOnWriteArrayList<SampleData3>>(list),
-    Partitional<ObjectListWrapper> {
+    Partitional<ObjectListWrapper>
+
+{
+
+    constructor() : this(CopyOnWriteArrayList())
 
     override fun isPartitioningEnabled() = true
 

@@ -108,10 +108,10 @@ class DataPartitioningTest : BaseTest() {
 
         Assert.assertNotNull(comparable)
 
-//        val wrappedList = wrapper.takeData()
-//        val comparableList = comparable?.takeData()
+        val wrappedList = wrapper.takeData()
+        val comparableList = comparable?.takeData()
 
-//        Assert.assertEquals(wrappedList, comparableList)
+        Assert.assertEquals(wrappedList, comparableList)
     }
 
     @Test
