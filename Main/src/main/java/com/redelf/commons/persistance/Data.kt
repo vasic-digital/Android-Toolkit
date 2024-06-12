@@ -12,7 +12,6 @@ import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.type.PairDataInfo
 import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
 import java.util.Queue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -133,8 +132,10 @@ class Data private constructor(private val facade: Facade) :
 
                             } else {
 
-                                Timber.e("$tag FAILURE: Partition no. $i, " +
-                                        "Row no. $row, Qualified name: $fqName")
+                                Timber.e(
+                                    "$tag FAILURE: Partition no. $i, " +
+                                            "Row no. $row, Qualified name: $fqName"
+                                )
 
                                 if (!savedValue) {
 
@@ -173,16 +174,20 @@ class Data private constructor(private val facade: Facade) :
 
                             if (mapKeyType == null) {
 
-                                Timber.e("$tag FAILURE: Partition no. $i, " +
-                                        "Row no. $row, No map key type provided")
+                                Timber.e(
+                                    "$tag FAILURE: Partition no. $i, " +
+                                            "Row no. $row, No map key type provided"
+                                )
 
                                 return false
                             }
 
                             if (valueType == null) {
 
-                                Timber.e("$tag FAILURE: Partition no. $i, " +
-                                        "Row no. $row, No value type provided")
+                                Timber.e(
+                                    "$tag FAILURE: Partition no. $i, " +
+                                            "Row no. $row, No value type provided"
+                                )
 
                                 return false
                             }
@@ -190,10 +195,23 @@ class Data private constructor(private val facade: Facade) :
                             val keyRow = keyRow(key, partition, row)
                             val keyRowType = keyRowType(key, partition, row)
 
+                            var mapKeyValue: Any = mapKey
+                            var valueValue: Any = value
+
+                            if (mapKey is Number) {
+
+                                mapKeyValue = mapKey.toDouble()
+                            }
+
+                            if (value is Number) {
+
+                                valueValue = value.toLong()
+                            }
+
                             val rowValue = PairDataInfo(
 
-                                mapKey,
-                                value,
+                                mapKeyValue,
+                                valueValue,
                                 mapKeyType.canonicalName,
                                 valueType.canonicalName
                             )
@@ -215,9 +233,11 @@ class Data private constructor(private val facade: Facade) :
 
                             } else {
 
-                                Timber.e("$tag FAILURE: Partition no. $i, " +
-                                        "Row no. $row, Qualified name: $fqName, " +
-                                        "Pair data info: $rowValue")
+                                Timber.e(
+                                    "$tag FAILURE: Partition no. $i, " +
+                                            "Row no. $row, Qualified name: $fqName, " +
+                                            "Pair data info: $rowValue"
+                                )
 
                                 if (!savedValue) {
 
@@ -272,7 +292,7 @@ class Data private constructor(private val facade: Facade) :
                                                     rowWrite(
 
                                                         partition = i,
-                                                        row  = index,
+                                                        row = index,
                                                         mapKey = k,
                                                         value = v,
                                                         mapKeyType = k::class.java,
@@ -413,7 +433,7 @@ class Data private constructor(private val facade: Facade) :
                                 if (rowsCount > 0) {
 
                                     val pt = t as ParameterizedType
-                                    val inT =  Class.forName(pt.rawType.typeName)
+                                    val inT = Class.forName(pt.rawType.typeName)
 
                                     val partition = inT.newInstance()
 
@@ -445,13 +465,22 @@ class Data private constructor(private val facade: Facade) :
 
                                         fun getSimple(rType: String): Class<*>? {
 
-                                            return when(rType) {
+                                            return when (rType) {
 
-                                                Int::class.qualifiedName -> Int::class.java
-                                                Long::class.qualifiedName -> Long::class.java
-                                                Short::class.qualifiedName -> Short::class.java
+                                                Float::class.qualifiedName,
+                                                Int::class.qualifiedName,
+                                                Long::class.qualifiedName,
+                                                Short::class.qualifiedName -> {
+
+                                                    throw IllegalArgumentException(
+
+                                                        "Not supported serialization type " +
+                                                                "'${Short::class.simpleName}', " +
+                                                                "please use Double instead"
+                                                    )
+                                                }
+
                                                 Double::class.qualifiedName -> Double::class.java
-                                                Float::class.qualifiedName -> Float::class.java
                                                 Boolean::class.qualifiedName -> Boolean::class.java
                                                 Char::class.qualifiedName -> Char::class.java
                                                 String::class.qualifiedName -> String::class.java
@@ -570,7 +599,8 @@ class Data private constructor(private val facade: Facade) :
 
                                             Timber.v("$tag Set: $i")
 
-                                        } else {}
+                                        } else {
+                                        }
 
                                     } else {
 

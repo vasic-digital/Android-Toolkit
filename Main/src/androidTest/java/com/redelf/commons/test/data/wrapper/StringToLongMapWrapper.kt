@@ -29,7 +29,14 @@ class StringToLongMapWrapper(map: ConcurrentHashMap<String, Long>) :
 
             (data as ConcurrentHashMap<*, *>).forEach { (key, value) ->
 
-                this.data?.put(key.toString(), value as Long)
+                if (value is Number) {
+
+                    this.data?.put(key.toString(), value.toLong())
+
+                } else {
+
+                    Assert.fail("Number was expected for the value: '$value'")
+                }
             }
 
             Timber.v("Data set: ${this.data}")
