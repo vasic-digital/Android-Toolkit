@@ -2,11 +2,12 @@ package com.redelf.commons.test
 
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Timber
-import com.redelf.commons.test.data.ListWrapper
+import com.redelf.commons.test.data.LongListWrapper
 import com.redelf.commons.test.data.ObjectListWrapper
 import com.redelf.commons.test.data.SampleData2
 import com.redelf.commons.test.data.SampleData3
 import com.redelf.commons.test.data.SampleData
+import com.redelf.commons.test.data.StringListWrapper
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -54,10 +55,10 @@ class DataPartitioningTest : BaseTest() {
 
 
     @Test
-    fun testList() {
+    fun testLongList() {
 
         val list = CopyOnWriteArrayList<Long>()
-        val wrapper = ListWrapper(list)
+        val wrapper = LongListWrapper(list)
 
         for (x in 0..samplesCount) {
 
@@ -68,12 +69,12 @@ class DataPartitioningTest : BaseTest() {
 
         Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.List.No_Enc"
+        val key = "Test.List.Long.No_Enc"
         val saved = persistence.push(key, wrapper)
 
         Assert.assertTrue(saved)
 
-        val comparable = persistence.pull<ListWrapper?>(key)
+        val comparable = persistence.pull<LongListWrapper?>(key)
 
         Assert.assertNotNull(comparable)
 
@@ -98,12 +99,42 @@ class DataPartitioningTest : BaseTest() {
 
         Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.List.No_Enc"
+        val key = "Test.List.Complex.No_Enc"
         val saved = persistence.push(key, wrapper)
 
         Assert.assertTrue(saved)
 
         val comparable = persistence.pull<ObjectListWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedList = wrapper.takeData()
+        val comparableList = comparable?.takeData()
+
+        Assert.assertEquals(wrappedList, comparableList)
+    }
+
+    @Test
+    fun testStringsList() {
+
+        val list = CopyOnWriteArrayList<String>()
+        val wrapper = StringListWrapper(list)
+
+        for (x in 0..samplesCount) {
+
+            list.add(x.toString())
+        }
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.List.String.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<StringListWrapper?>(key)
 
         Assert.assertNotNull(comparable)
 

@@ -8,10 +8,10 @@ import org.junit.Assert
 import java.lang.reflect.Type
 import java.util.concurrent.CopyOnWriteArrayList
 
-class ListWrapper(list: CopyOnWriteArrayList<Long>) :
+abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
 
-    Wrapper<CopyOnWriteArrayList<Long>>(list),
-    Partitional<ListWrapper>
+    Wrapper<CopyOnWriteArrayList<T>>(list),
+    Partitional<TypeListWrapper<T>>
 {
 
     constructor() : this(CopyOnWriteArrayList())
@@ -40,7 +40,7 @@ class ListWrapper(list: CopyOnWriteArrayList<Long>) :
 
         try {
 
-            this.data = data as CopyOnWriteArrayList<Long>
+            this.data = data as CopyOnWriteArrayList<T>
 
         } catch (e: Exception) {
 
@@ -60,10 +60,5 @@ class ListWrapper(list: CopyOnWriteArrayList<Long>) :
         }
 
         return object : TypeToken<CopyOnWriteArrayList<Long>>() {}.type
-    }
-
-    override fun getClazz(): Class<ListWrapper> {
-
-        return ListWrapper::class.java
     }
 }
