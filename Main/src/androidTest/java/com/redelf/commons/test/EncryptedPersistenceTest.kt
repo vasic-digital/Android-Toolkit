@@ -12,6 +12,7 @@ class EncryptedPersistenceTest : BaseTest() {
 
     /*
     * FIXME: Executes too long or it does not complete
+    *   Test to be updated
     */
 
     private lateinit var persistence: EncryptedPersistence

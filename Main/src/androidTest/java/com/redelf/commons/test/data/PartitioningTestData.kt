@@ -23,43 +23,23 @@ data class PartitioningTestData @JsonCreator constructor(
 
     @JsonProperty("partition2")
     @SerializedName("partition2")
-    var partition2: ConcurrentHashMap<String, List<NestedDataSecondLevel>> = ConcurrentHashMap(),
+    var partition2: ConcurrentHashMap<UUID, NestedData> = ConcurrentHashMap(),
 
     @JsonProperty("partition3")
     @SerializedName("partition3")
-    var storyStatuses: ConcurrentHashMap<UUID, NestedData> = ConcurrentHashMap(),
+    var partition3: ConcurrentHashMap<String, List<NestedDataSecondLevel>> = ConcurrentHashMap(),
 
     @JsonProperty("partition4")
-    @SerializedName("quizStates")
-    var quizStatuses: ConcurrentHashMap<UUID, NestedData> = ConcurrentHashMap(),
+    @SerializedName("partition4")
+    var partition4: NestedDataSecondLevel? = null,
 
     @JsonProperty("partition5")
     @SerializedName("partition5")
-    var partition5: ConcurrentHashMap<UUID, NestedData> = ConcurrentHashMap(),
+    var partition5: String = "",
 
     @JsonProperty("partition6")
     @SerializedName("partition6")
-    var partition6: NestedDataSecondLevel? = null,
-
-    @JsonProperty("partition7")
-    @SerializedName("partition7")
-    var partition7: String = "",
-
-    @JsonProperty("partition8")
-    @SerializedName("partition8")
-    var partition8: String = "",
-
-    @JsonProperty("partition9")
-    @SerializedName("partition9")
-    var partition9: String = "",
-
-    @JsonProperty("partition10")
-    @SerializedName("partition10")
-    var partition10: String = "",
-
-    @JsonProperty("partition11")
-    @SerializedName("partition11")
-    var partition11: CopyOnWriteArrayList<Long> = CopyOnWriteArrayList()
+    var partition6: CopyOnWriteArrayList<Long> = CopyOnWriteArrayList()
 
 ) : Partitional<PartitioningTestData> {
 
@@ -83,15 +63,10 @@ data class PartitioningTestData @JsonCreator constructor(
 
             0 -> return partition1
             1 -> return partition2
-            2 -> return storyStatuses
-            3 -> return quizStatuses
+            2 -> return partition3
+            3 -> return partition4
             4 -> return partition5
             5 -> return partition6
-            6 -> return partition7
-            7 -> return partition8
-            8 -> return partition9
-            9 -> return partition10
-            10 -> return partition11
 
             else -> return null
         }
@@ -127,7 +102,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    partition2 = data as ConcurrentHashMap<String, List<NestedDataSecondLevel>>
+                    partition2 = data as ConcurrentHashMap<UUID, NestedData>
 
                 } catch (e: Exception) {
 
@@ -143,7 +118,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    storyStatuses = data as ConcurrentHashMap<UUID, NestedData>
+                    partition3 = data as ConcurrentHashMap<String, List<NestedDataSecondLevel>>
 
                 } catch (e: Exception) {
 
@@ -159,7 +134,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    quizStatuses = data as ConcurrentHashMap<UUID, NestedData>
+                    partition4 = data as NestedDataSecondLevel
 
                 } catch (e: Exception) {
 
@@ -175,7 +150,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    partition5 = data as ConcurrentHashMap<UUID, NestedData>
+                    partition5 = data as String
 
                 } catch (e: Exception) {
 
@@ -191,87 +166,7 @@ data class PartitioningTestData @JsonCreator constructor(
 
                 try {
 
-                    partition6 = data as NestedDataSecondLevel
-
-                } catch (e: Exception) {
-
-                    Timber.e(e)
-
-                    return false
-                }
-
-                return true
-            }
-
-            6 -> {
-
-                try {
-
-                    partition7 = data as String
-
-                } catch (e: Exception) {
-
-                    Timber.e(e)
-
-                    return false
-                }
-
-                return true
-            }
-
-            7 -> {
-
-                try {
-
-                    partition8 = data as String
-
-                } catch (e: Exception) {
-
-                    Timber.e(e)
-
-                    return false
-                }
-
-                return true
-            }
-
-            8 -> {
-
-                try {
-
-                    partition9 = data as String
-
-                } catch (e: Exception) {
-
-                    Timber.e(e)
-
-                    return false
-                }
-
-                return true
-            }
-
-            9 -> {
-
-                try {
-
-                    partition10 = data as String
-
-                } catch (e: Exception) {
-
-                    Timber.e(e)
-
-                    return false
-                }
-
-                return true
-            }
-
-            10 -> {
-
-                try {
-
-                    partition11 = data as CopyOnWriteArrayList<Long>
+                    partition6 = data as CopyOnWriteArrayList<Long>
 
                 } catch (e: Exception) {
 
@@ -293,25 +188,15 @@ data class PartitioningTestData @JsonCreator constructor(
 
             0 -> return object : TypeToken<CopyOnWriteArrayList<NestedData>>() {}.type
 
-            1 -> return object : TypeToken<ConcurrentHashMap<String, List<NestedDataSecondLevel>>>() {}.type
+            1 -> return object : TypeToken<ConcurrentHashMap<UUID, NestedData>>() {}.type
 
-            2 -> return object : TypeToken<ConcurrentHashMap<UUID, NestedData>>() {}.type
+            2 -> return object : TypeToken<ConcurrentHashMap<String, List<NestedDataSecondLevel>>>() {}.type
 
-            3 -> return object : TypeToken<ConcurrentHashMap<UUID, NestedData>>() {}.type
+            3 -> return object : TypeToken<NestedDataSecondLevel>() {}.type
 
-            4 -> return object : TypeToken<ConcurrentHashMap<UUID, NestedData>>() {}.type
+            4 -> return object : TypeToken<String>() {}.type
 
-            5 -> return object : TypeToken<NestedDataSecondLevel>() {}.type
-
-            6 -> return object : TypeToken<String>() {}.type
-
-            7 -> return object : TypeToken<String>() {}.type
-
-            8 -> return object : TypeToken<String>() {}.type
-
-            9 -> return object : TypeToken<String>() {}.type
-
-            10 -> return object : TypeToken<CopyOnWriteArrayList<Long>>() {}.type
+            5 -> return object : TypeToken<CopyOnWriteArrayList<Long>>() {}.type
 
             else -> return null
         }
