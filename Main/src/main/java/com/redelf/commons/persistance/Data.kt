@@ -23,7 +23,9 @@ class Data private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
-    InitializationWithContext {
+    InitializationWithContext
+
+{
 
     /*
      * TODO: Recursively partitioning - Each map or list member -> children
@@ -894,7 +896,7 @@ class Data private constructor(private val facade: Facade) :
 
                         val msg = "Constructor for the argument " +
                                 "'${argument::class.qualifiedName}' not found to instantiate " +
-                                "'${what::class.qualifiedName}'"
+                                "'${what.canonicalName}'"
 
                         throw IllegalArgumentException(msg)
                     }
