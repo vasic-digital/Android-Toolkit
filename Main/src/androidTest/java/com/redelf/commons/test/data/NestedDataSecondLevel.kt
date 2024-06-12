@@ -19,15 +19,7 @@ data class NestedDataSecondLevel @JsonCreator constructor(
     @SerializedName("order")
     var order: Long? = 0,
 
-    @JsonProperty("mainTitle")
-    @SerializedName("mainTitle")
-    var mainTitle: String? = null,
-
     @JsonProperty("points")
     @SerializedName("points")
     var points: List<String>? = emptyList(),
-
-    @JsonProperty("mainId")
-    @SerializedName("mainId")
-    var mainId: UUID? = null
 )
