@@ -4,6 +4,7 @@ import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.test.data.LongListWrapper
 import com.redelf.commons.test.data.ObjectListWrapper
+import com.redelf.commons.test.data.ObjectMapWrapper
 import com.redelf.commons.test.data.SampleData2
 import com.redelf.commons.test.data.SampleData3
 import com.redelf.commons.test.data.SampleData
@@ -116,6 +117,38 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
+    fun testComplexMap() {
+
+        val map = ConcurrentHashMap<UUID, SampleData3>()
+        val wrapper = ObjectMapWrapper(map)
+
+        for (x in 0..samplesCount) {
+
+            val uuid = UUID(x.toLong(), x.toLong())
+
+            map[uuid] = instantiateTestNestedDataSecondLevel(x)
+        }
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val key = "Test.Map.Complex.No_Enc"
+        val saved = persistence.push(key, wrapper)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<ObjectMapWrapper?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        val wrappedList = wrapper.takeData()
+        val comparableList = comparable?.takeData()
+
+        Assert.assertEquals(wrappedList, comparableList)
+    }
+
+    @Test
     fun testStringsList() {
 
         val list = CopyOnWriteArrayList<String>()
@@ -165,7 +198,7 @@ class DataPartitioningTest : BaseTest() {
         val comparable = persistence.pull<SampleDataOnlyP2?>(key)
 
         Assert.assertNotNull(comparable)
-        
+
         Assert.assertEquals(data, comparable)
     }
 
@@ -296,7 +329,9 @@ class DataPartitioningTest : BaseTest() {
 
         for (x in 0..samplesCount) {
 
-            map[UUID(x.toLong(), x.toLong())] = instantiateTestNestedData(x)
+            val uuid = UUID(x.toLong(), x.toLong())
+
+            map[uuid] = instantiateTestNestedData(x)
         }
 
         return map

@@ -6,15 +6,15 @@ import com.redelf.commons.model.Wrapper
 import com.redelf.commons.partition.Partitional
 import org.junit.Assert
 import java.lang.reflect.Type
-import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.ConcurrentHashMap
 
-abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
+abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
 
-    Wrapper<CopyOnWriteArrayList<T>>(list),
-    Partitional<TypeListWrapper<T>>
+    Wrapper<ConcurrentHashMap<K, T>>(map),
+    Partitional<TypeMapWrapper<K, T>>
 {
 
-    constructor() : this(CopyOnWriteArrayList())
+    constructor() : this(ConcurrentHashMap())
 
     override fun isPartitioningEnabled() = true
 
@@ -40,7 +40,7 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
 
         try {
 
-            this.data = data as CopyOnWriteArrayList<T>
+            this.data = data as ConcurrentHashMap<K, T>
 
         } catch (e: Exception) {
 
@@ -59,6 +59,6 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
             Assert.fail("Unexpected partition number: $number")
         }
 
-        return object : TypeToken<CopyOnWriteArrayList<T>>() {}.type
+        return object : TypeToken<ConcurrentHashMap<K, T>>() {}.type
     }
 }
