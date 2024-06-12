@@ -40,7 +40,7 @@ data class SampleData @JsonCreator constructor(
 
     @JsonProperty("partition6")
     @SerializedName("partition6")
-    var partition6: CopyOnWriteArrayList<Long> = CopyOnWriteArrayList()
+    var partition6: CopyOnWriteArrayList<Double> = CopyOnWriteArrayList()
 
 ) : Partitional<SampleData> {
 
@@ -192,7 +192,7 @@ data class SampleData @JsonCreator constructor(
                 try {
 
                     partition6 = CopyOnWriteArrayList()
-                    partition6.addAll(data as CopyOnWriteArrayList<Long>)
+                    partition6.addAll(data as CopyOnWriteArrayList<Double>)
 
                 } catch (e: Exception) {
 

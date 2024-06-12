@@ -483,7 +483,7 @@ class DataPartitioningTest : BaseTest() {
         Assert.assertEquals(data.partition3, comparable?.partition3)
         Assert.assertEquals(data.partition4, comparable?.partition4)
         Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6) // FIXME: <--
+        Assert.assertEquals(data.partition6, comparable?.partition6)
 
         Assert.assertEquals(data, comparable)
     }
@@ -645,13 +645,13 @@ class DataPartitioningTest : BaseTest() {
 
     private fun createPartition5(): String = sampleUUID.toString()
 
-    private fun createPartition6(): CopyOnWriteArrayList<Long> {
+    private fun createPartition6(): CopyOnWriteArrayList<Double> {
 
-        val list = CopyOnWriteArrayList<Long>()
+        val list = CopyOnWriteArrayList<Double>()
 
         for (x in 0..samplesCount) {
 
-            list.add(x.toLong())
+            list.add(x.toDouble())
         }
 
         return list
