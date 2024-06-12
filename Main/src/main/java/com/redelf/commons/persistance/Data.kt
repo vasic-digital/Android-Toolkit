@@ -548,19 +548,10 @@ class Data private constructor(private val facade: Facade) :
                                                                                 "Row value type: '${clz2.simpleName}'"
                                                                     )
 
-                                                                    val kts = instantiate(
-                                                                        what = clz1,
-                                                                        arg = first
-                                                                    )
-                                                                    val vts = instantiate(
-                                                                        what = clz1,
-                                                                        arg = first
-                                                                    )
+                                                                    val kts = instantiate(what = clz1, arg = first)
+                                                                    val vts = instantiate(what = clz2, arg = second)
 
-                                                                    (partition as MutableMap<Any, Any>).put(
-                                                                        kts,
-                                                                        vts
-                                                                    )
+                                                                    (partition as MutableMap<Any, Any>).put(kts, vts)
                                                                 }
                                                             }
 
