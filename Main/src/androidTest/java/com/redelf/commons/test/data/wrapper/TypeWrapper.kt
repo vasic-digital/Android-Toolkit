@@ -1,20 +1,18 @@
-package com.redelf.commons.test.data
+package com.redelf.commons.test.data.wrapper
 
-import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.model.Wrapper
 import com.redelf.commons.partition.Partitional
 import org.junit.Assert
-import java.lang.reflect.Type
-import java.util.concurrent.CopyOnWriteArrayList
 
-abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
+abstract class TypeWrapper<T>(wrapped: T?) :
 
-    Wrapper<CopyOnWriteArrayList<T>>(list),
-    Partitional<TypeListWrapper<T>>
+    Wrapper<T?>(wrapped),
+    Partitional<TypeWrapper<T?>>
+
 {
 
-    constructor() : this(CopyOnWriteArrayList())
+    constructor() : this(null)
 
     override fun isPartitioningEnabled() = true
 
@@ -40,8 +38,7 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
 
         try {
 
-            this.data = CopyOnWriteArrayList()
-            this.data?.addAll(data as CopyOnWriteArrayList<T>)
+            this.data = data as T?
 
         } catch (e: Exception) {
 
@@ -51,15 +48,5 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
         }
 
         return true
-    }
-
-    override fun getPartitionType(number: Int): Type? {
-
-        if (number > 0) {
-
-            Assert.fail("Unexpected partition number: $number")
-        }
-
-        return object : TypeToken<CopyOnWriteArrayList<T>>() {}.type
     }
 }

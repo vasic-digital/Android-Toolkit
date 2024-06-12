@@ -2,16 +2,16 @@ package com.redelf.commons.test
 
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Timber
-import com.redelf.commons.test.data.LongListWrapper
-import com.redelf.commons.test.data.LongWrapper
-import com.redelf.commons.test.data.ObjectListWrapper
-import com.redelf.commons.test.data.ObjectMapWrapper
+import com.redelf.commons.test.data.wrapper.LongListWrapper
+import com.redelf.commons.test.data.wrapper.LongWrapper
+import com.redelf.commons.test.data.wrapper.ObjectListWrapper
+import com.redelf.commons.test.data.wrapper.ObjectMapWrapper
 import com.redelf.commons.test.data.SampleData2
 import com.redelf.commons.test.data.SampleData3
 import com.redelf.commons.test.data.SampleData
 import com.redelf.commons.test.data.SampleDataOnlyP2
-import com.redelf.commons.test.data.StringListWrapper
-import com.redelf.commons.test.data.StringWrapper
+import com.redelf.commons.test.data.wrapper.StringListWrapper
+import com.redelf.commons.test.data.wrapper.StringWrapper
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test

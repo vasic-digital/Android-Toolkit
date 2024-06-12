@@ -1,4 +1,4 @@
-package com.redelf.commons.test.data
+package com.redelf.commons.test.data.wrapper
 
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Timber
