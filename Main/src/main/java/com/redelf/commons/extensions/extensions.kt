@@ -263,7 +263,7 @@ fun Activity.onUI(doWhat: () -> Unit) {
 
     } else {
 
-        Timber.w("Context is finishing")
+        Timber.v("Context is finishing")
     }
 }
 
