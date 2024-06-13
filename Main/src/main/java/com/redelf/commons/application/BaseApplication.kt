@@ -881,7 +881,9 @@ abstract class BaseApplication :
         }
     }
 
-    private fun isUpdateAvailable(identifier: Long): Boolean {
+    override fun isUpdateApplied(identifier: Long) = !isUpdateAvailable(identifier)
+
+    protected fun isUpdateAvailable(identifier: Long): Boolean {
 
         val key = "$prefsKeyUpdate.$identifier"
         val value = prefs[key]
