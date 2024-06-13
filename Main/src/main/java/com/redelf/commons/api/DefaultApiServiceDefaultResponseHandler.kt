@@ -5,12 +5,13 @@ import com.redelf.commons.exception.credentials.CredentialsInvalidException
 import com.redelf.commons.obtain.OnObtain
 import retrofit2.Response
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 
 class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>() {
 
     companion object {
 
-        var DEBUG: Boolean? = null
+        val DEBUG = AtomicBoolean()
     }
 
     override fun onResponse(
@@ -51,18 +52,25 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
         } else {
 
-            val e = if (DEBUG ?: BaseApplication.DEBUG.get()) {
+            if (additionalExpectedCodes.contains(code)) {
 
-                val loc = response?.raw()?.request?.url ?: ""
-                val codeStr = response?.code()?.toString() ?: ""
-                IOException("Response is not successful $codeStr $loc".trim())
+                callback.onCompleted(null)
 
             } else {
 
-                IOException("Response is not successful")
-            }
+                val e = if (DEBUG.get()) {
 
-            callback.onFailure(e)
+                    val loc = response?.raw()?.request?.url ?: ""
+                    val codeStr = code?.toString() ?: ""
+                    IOException("Response is not successful $codeStr $loc".trim())
+
+                } else {
+
+                    IOException("Response is not successful")
+                }
+
+                callback.onFailure(e)
+            }
         }
     }
 }
