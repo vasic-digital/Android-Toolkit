@@ -489,6 +489,39 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
+    fun testPartitioningWithNoEncryptionSync() {
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val data = instantiateTestData(partitioning = true, async = false)
+
+        Assert.assertTrue(data.isPartitioningEnabled())
+
+        val key = "Test.Part.No_Enc.Sync"
+
+        val saved = persistence.push(key, data)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<SampleData?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        comparable?.setPartitioningParallelized(false)
+
+        Assert.assertEquals(data.partition1, comparable?.partition1)
+        Assert.assertEquals(data.partition2, comparable?.partition2)
+        Assert.assertEquals(data.partition3, comparable?.partition3)
+        Assert.assertEquals(data.partition4, comparable?.partition4)
+        Assert.assertEquals(data.partition5, comparable?.partition5)
+        Assert.assertEquals(data.partition6, comparable?.partition6)
+
+        Assert.assertEquals(data, comparable)
+    }
+
+    @Test
     fun testPartitioningWithEncryption() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
@@ -508,6 +541,39 @@ class DataPartitioningTest : BaseTest() {
         val comparable = persistence.pull<SampleData?>(key)
 
         Assert.assertNotNull(comparable)
+
+        Assert.assertEquals(data.partition1, comparable?.partition1)
+        Assert.assertEquals(data.partition2, comparable?.partition2)
+        Assert.assertEquals(data.partition3, comparable?.partition3)
+        Assert.assertEquals(data.partition4, comparable?.partition4)
+        Assert.assertEquals(data.partition5, comparable?.partition5)
+        Assert.assertEquals(data.partition6, comparable?.partition6)
+
+        Assert.assertEquals(data, comparable)
+    }
+
+    @Test
+    fun testPartitioningWithEncryptionSync() {
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
+
+        Assert.assertTrue(persistence.isEncryptionEnabled())
+
+        val data = instantiateTestData(partitioning = true, async = false)
+
+        Assert.assertTrue(data.isPartitioningEnabled())
+
+        val key = "Test.Part.Enc.Sync"
+
+        val saved = persistence.push(key, data)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<SampleData?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        comparable?.setPartitioningParallelized(false)
 
         Assert.assertEquals(data.partition1, comparable?.partition1)
         Assert.assertEquals(data.partition2, comparable?.partition2)
@@ -551,6 +617,39 @@ class DataPartitioningTest : BaseTest() {
     }
 
     @Test
+    fun testNoPartitioningWithNoEncryptionSync() {
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+
+        Assert.assertTrue(persistence.isEncryptionDisabled())
+
+        val data = instantiateTestData(partitioning = false, async = false)
+
+        Assert.assertTrue(data.isPartitioningDisabled())
+
+        val key = "Test.No_Part.No_Enc.Sync"
+
+        val saved = persistence.push(key, data)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<SampleData?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        comparable?.setPartitioningParallelized(false)
+
+        Assert.assertEquals(data.partition1, comparable?.partition1)
+        Assert.assertEquals(data.partition2, comparable?.partition2)
+        Assert.assertEquals(data.partition3, comparable?.partition3)
+        Assert.assertEquals(data.partition4, comparable?.partition4)
+        Assert.assertEquals(data.partition5, comparable?.partition5)
+        Assert.assertEquals(data.partition6, comparable?.partition6)
+
+        Assert.assertEquals(data, comparable)
+    }
+
+    @Test
     fun testNoPartitioningWithEncryption() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
@@ -581,11 +680,46 @@ class DataPartitioningTest : BaseTest() {
         Assert.assertEquals(data, comparable)
     }
 
-    private fun instantiateTestData(partitioning: Boolean): SampleData {
+    @Test
+    fun testNoPartitioningWithEncryptionSync() {
+
+        val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
+
+        Assert.assertTrue(persistence.isEncryptionEnabled())
+
+        val data = instantiateTestData(partitioning = false, async = false)
+
+        Assert.assertTrue(data.isPartitioningDisabled())
+
+        val key = "Test.No_Part.Enc.Sync"
+
+        val saved = persistence.push(key, data)
+
+        Assert.assertTrue(saved)
+
+        val comparable = persistence.pull<SampleData?>(key)
+
+        Assert.assertNotNull(comparable)
+
+        comparable?.setPartitioningParallelized(false)
+
+        Assert.assertEquals(data.partition1, comparable?.partition1)
+        Assert.assertEquals(data.partition2, comparable?.partition2)
+        Assert.assertEquals(data.partition3, comparable?.partition3)
+        Assert.assertEquals(data.partition4, comparable?.partition4)
+        Assert.assertEquals(data.partition5, comparable?.partition5)
+        Assert.assertEquals(data.partition6, comparable?.partition6)
+
+        Assert.assertEquals(data, comparable)
+    }
+
+    private fun instantiateTestData(partitioning: Boolean, async: Boolean = true): SampleData {
 
         return SampleData(
 
             partitioningOn = partitioning,
+            partitioningParallelized = async,
+
             partition1 = createPartition1(),
             partition2 = createPartition2(),
             partition3 = createPartition3(),

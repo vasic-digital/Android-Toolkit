@@ -20,7 +20,7 @@ data class SampleData @JsonCreator constructor(
 
     @JsonProperty("partitioningParallelized")
     @SerializedName("partitioningParallelized")
-    private val partitioningParallelized: Boolean = true,
+    private var partitioningParallelized: Boolean = true,
 
     @JsonProperty("partition1")
     @SerializedName("partition1")
@@ -64,6 +64,11 @@ data class SampleData @JsonCreator constructor(
     fun isPartitioningDisabled() = !partitioningOn
 
     override fun isPartitioningParallelized() = partitioningParallelized
+
+    fun setPartitioningParallelized(async: Boolean) {
+
+        partitioningParallelized = async
+    }
 
     override fun getPartitionCount() = 6
 
