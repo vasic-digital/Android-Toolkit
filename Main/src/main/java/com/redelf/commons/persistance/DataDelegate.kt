@@ -590,7 +590,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         if (partitionsCount > 0) {
 
-            val tag = "Get :: key = $key, T = '${clazz?.simpleName}' :: Partitional ::"
+            val tag = "Partitional :: Get :: key = $key, T = '${clazz?.simpleName}' :: "
 
             if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
 
