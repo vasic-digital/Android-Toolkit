@@ -1029,3 +1029,5 @@ fun String.decompress(): String? {
         return null
     }
 }
+
+fun isOnMainThread(): Boolean = Looper.getMainLooper().thread == Thread.currentThread()
