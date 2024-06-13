@@ -34,7 +34,9 @@ class Data private constructor(private val facade: Facade) :
     InitializationWithContext {
 
     /*
-     * TODO: Recursively partitioning - Each map or list member -> children
+     * TODO:
+     *  - Recursively partitioning - Each map or list member -> children
+     *  - Parallelize reading
      */
 
     companion object {
