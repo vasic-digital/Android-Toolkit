@@ -15,20 +15,23 @@ git submodule add "GIT_REPO_URL" ./Toolkit
 ```groovy
 include ':Toolkit:Main'
 include ':Toolkit:Test'
-include ':Toolkit:Access'
 include ':Toolkit:RootTools'
 include ':Toolkit:RootShell'
+include ':Toolkit:CircleImageView'
+include ':Toolkit:FastscrollerAlphabet'
 ```
 
 - Add the following to your `build.gradle`:
 
 ```groovy
 dependencies {
-    implementation project(':Toolkit:Main')
-    implementation project(':Toolkit:Test')
-    implementation project(':Toolkit:Access')
-    implementation project(':Toolkit:RootTools')
-    implementation project(':Toolkit:RootShell')
+
+    api project(":Toolkit:Main")
+    api project(":Toolkit:Access")
+    api project(":Toolkit:RootShell")
+    api project(":Toolkit:RootTools")
+    api project(":Toolkit:CircleImageView")
+    api project(":Toolkit:FastscrollerAlphabet")
 }
 ```
 
