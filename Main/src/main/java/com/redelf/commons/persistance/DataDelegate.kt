@@ -815,7 +815,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                     if (partition == null) {
 
-                                        Timber.e("$tag FAILURE: Null partition: $i")
+                                        Timber.w("$tag WARNING: Null partition: $i")
                                     }
                                 }
                             }
