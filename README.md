@@ -15,6 +15,7 @@ git submodule add "GIT_REPO_URL" ./Toolkit
 ```groovy
 include ':Toolkit:Main'
 include ':Toolkit:Test'
+include ':Toolkit:Access'
 include ':Toolkit:RootTools'
 include ':Toolkit:RootShell'
 include ':Toolkit:CircleImageView'
@@ -35,4 +36,4 @@ dependencies {
 }
 ```
 
-That is all. You are ready to use the Toolkit!
+That is all. You are ready to use the `Android Toolkit`!
