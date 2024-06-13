@@ -698,17 +698,7 @@ fun safeRemoteDouble(provider: () -> Double, default: Double = 0.0): Double {
     return safeRemoteValue(provider, default)
 }
 
-@Throws(
-
-    RejectedExecutionException::class,
-    NullPointerException::class
-)
-fun exec(what: Runnable) {
-
-    Executor.MAIN.execute(what)
-}
-
-fun exec(what: Runnable, onError: ((Throwable) -> Unit)? = null) {
+fun exec(onError: ((Throwable) -> Unit)? = null, what: Runnable) {
 
     try {
 
@@ -719,6 +709,11 @@ fun exec(what: Runnable, onError: ((Throwable) -> Unit)? = null) {
         onError?.let {
 
             it(e)
+        }
+
+        if (onError == null) {
+
+            recordException(e)
         }
     }
 }
@@ -731,6 +726,16 @@ fun exec(what: Runnable, onError: ((Throwable) -> Unit)? = null) {
 fun exec(what: Runnable, delayInMilliseconds: Long) {
 
     Executor.MAIN.execute(what, delayInMilliseconds)
+}
+
+@Throws(
+
+    RejectedExecutionException::class,
+    NullPointerException::class
+)
+fun exec(what: Runnable) {
+
+    Executor.MAIN.execute(what)
 }
 
 fun exec(

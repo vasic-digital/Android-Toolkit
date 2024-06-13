@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.redelf.commons.activity
 
 import android.Manifest

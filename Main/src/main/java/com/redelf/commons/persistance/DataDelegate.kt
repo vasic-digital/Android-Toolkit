@@ -813,7 +813,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                         }
                                     }
 
-                                    if (partition == null) {
+                                    if (partition == null && DEBUG.get()) {
 
                                         Timber.w("$tag WARNING: Null partition: $i")
                                     }
