@@ -7,6 +7,8 @@ interface Partitional<T> : Typed<T> {
 
     fun isPartitioningEnabled(): Boolean
 
+    fun isPartitioningParallelized(): Boolean
+
     fun getPartitionCount(): Int
 
     fun getPartitionData(number: Int): Any?

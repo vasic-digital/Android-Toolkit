@@ -2,19 +2,26 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Timber
+import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.type.PairDataInfo
 import org.checkerframework.checker.signature.qual.CanonicalName
+import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.jvm.Throws
 
@@ -42,7 +49,7 @@ class Data private constructor(private val facade: Facade) :
         }
 
         @Throws(IllegalArgumentException::class)
-        fun convert(what: ArrayList<String>) : List<UUID> {
+        fun convert(what: ArrayList<String>): List<UUID> {
 
             val list = mutableListOf<UUID>()
 
@@ -102,286 +109,440 @@ class Data private constructor(private val facade: Facade) :
                     return false
                 }
 
+                val success = AtomicBoolean(true)
+                val parallelized = value.isPartitioningParallelized()
+                val latchCount = if (parallelized) partitionsCount else 0
+                val partitioningLatch = CountDownLatch(latchCount)
+
                 for (i in 0..<partitionsCount) {
 
                     val partition = value.getPartitionData(i)
 
-                    partition?.let {
+                    fun doPartition(
 
-                        fun simpleWrite(): Boolean {
+                        async: Boolean,
+                        partition: Any?,
+                        callback: OnObtain<Boolean>? = null
 
-                            val written = facade.put(keyPartition(key, i), it)
+                    ) : Boolean {
 
-                            if (written) {
+                        try {
 
-                                if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
+                            val action = object : Obtain<Boolean> {
+
+                                override fun obtain(): Boolean {
+
+                                    try {
+
+                                        if (partition == null) {
+
+                                            callback?.onCompleted(true)
+
+                                            return true
+                                        }
+
+                                        partition.let {
+
+                                            fun simpleWrite(): Boolean {
+
+                                                val written = facade.put(keyPartition(key, i), it)
+
+                                                if (written) {
+
+                                                    if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
+
+                                                } else {
+
+                                                    Timber.e("$tag FAILURE: Partition no. $i")
+                                                }
+
+                                                return written
+                                            }
+
+                                            fun rowWrite(
+
+                                                partition: Int,
+                                                row: Int,
+                                                value: Any?
+
+                                            ): Boolean {
+
+                                                if (value == null) {
+
+                                                    return true
+                                                }
+
+                                                val keyRow = keyRow(key, partition, row)
+                                                val keyRowType = keyRowType(key, partition, row)
+
+                                                val fqName = value::class.qualifiedName
+                                                val savedValue = facade.put(keyRow, value)
+                                                val savedFqName = facade.put(keyRowType, fqName)
+
+                                                val written = savedValue && savedFqName
+
+                                                if (written) {
+
+                                                    if (DEBUG.get()) Timber.v(
+
+                                                        "$tag WRITTEN: Partition no. $partition, " +
+                                                                "Row no. $row, Qualified name: $fqName"
+                                                    )
+
+                                                } else {
+
+                                                    Timber.e(
+                                                        "$tag FAILURE: Partition no. $i, " +
+                                                                "Row no. $row, Qualified name: $fqName"
+                                                    )
+
+                                                    if (!savedValue) {
+
+                                                        Timber.e("$tag Value has not been persisted")
+                                                    }
+
+                                                    if (!savedFqName) {
+
+                                                        Timber.e("$tag Qualified name has not been persisted")
+                                                    }
+                                                }
+
+                                                return written
+                                            }
+
+                                            fun rowWrite(
+
+                                                partition: Int,
+                                                row: Int,
+                                                mapKey: Any?,
+                                                value: Any?,
+                                                mapKeyType: Class<*>?,
+                                                valueType: Class<*>?
+
+                                            ): Boolean {
+
+                                                if (mapKey == null) {
+
+                                                    return true
+                                                }
+
+                                                if (value == null) {
+
+                                                    return true
+                                                }
+
+                                                if (mapKeyType == null) {
+
+                                                    Timber.e(
+                                                        "$tag FAILURE: Partition no. $i, " +
+                                                                "Row no. $row, No map key type provided"
+                                                    )
+
+                                                    return false
+                                                }
+
+                                                if (valueType == null) {
+
+                                                    Timber.e(
+                                                        "$tag FAILURE: Partition no. $i, " +
+                                                                "Row no. $row, No value type provided"
+                                                    )
+
+                                                    return false
+                                                }
+
+                                                val keyRow = keyRow(key, partition, row)
+                                                val keyRowType = keyRowType(key, partition, row)
+
+                                                var mapKeyValue: Any = mapKey
+                                                var valueValue: Any = value
+
+                                                if (mapKey is Number) {
+
+                                                    mapKeyValue = mapKey.toDouble()
+                                                }
+
+                                                if (value is Number) {
+
+                                                    valueValue = value.toLong()
+                                                }
+
+                                                val rowValue = PairDataInfo(
+
+                                                    mapKeyValue,
+                                                    valueValue,
+                                                    mapKeyType.canonicalName,
+                                                    valueType.canonicalName
+                                                )
+
+                                                val fqName = rowValue::class.qualifiedName
+                                                val savedValue = facade.put(keyRow, rowValue)
+                                                val savedFqName = facade.put(keyRowType, fqName)
+
+                                                val written = savedValue && savedFqName
+
+                                                if (written) {
+
+                                                    if (DEBUG.get()) Timber.v(
+
+                                                        "$tag WRITTEN: Partition no. $partition, " +
+                                                                "Row no. $row, Qualified name: $fqName, " +
+                                                                "Pair data info: $rowValue"
+                                                    )
+
+                                                } else {
+
+                                                    Timber.e(
+                                                        "$tag FAILURE: Partition no. $i, " +
+                                                                "Row no. $row, Qualified name: $fqName, " +
+                                                                "Pair data info: $rowValue"
+                                                    )
+
+                                                    if (!savedValue) {
+
+                                                        Timber.e("$tag Value has not been persisted")
+                                                    }
+
+                                                    if (!savedFqName) {
+
+                                                        Timber.e("$tag Qualified name has not been persisted")
+                                                    }
+                                                }
+
+                                                return false
+                                            }
+
+                                            val collection =
+                                                partition is Collection<*> || partition is Map<*, *>
+
+                                            if (collection) {
+
+                                                when (partition) {
+
+                                                    is List<*> -> {
+
+                                                        if (setRowsCount(key, i, partition.size)) {
+
+                                                            partition.forEachIndexed {
+
+                                                                    index, value ->
+
+                                                                rowWrite(i, index, value)
+                                                            }
+
+                                                        } else {
+
+                                                            val msg = "FAILURE: Writing rows count"
+                                                            Timber.e("$tag $msg")
+                                                            val e = IOException(msg)
+                                                            callback?.onFailure(e)
+                                                            return false
+                                                        }
+                                                    }
+
+                                                    is Map<*, *> -> {
+
+                                                        if (setRowsCount(key, i, partition.size)) {
+
+                                                            var index = 0
+
+                                                            partition.forEach { key, value ->
+
+                                                                key?.let { k ->
+                                                                    value?.let { v ->
+
+                                                                        rowWrite(
+
+                                                                            partition = i,
+                                                                            row = index,
+                                                                            mapKey = k,
+                                                                            value = v,
+                                                                            mapKeyType = k::class.java,
+                                                                            valueType = v::class.java
+                                                                        )
+                                                                    }
+                                                                }
+
+                                                                index++
+                                                            }
+
+                                                        } else {
+
+                                                            val msg = "FAILURE: Writing rows count"
+                                                            Timber.e("$tag $msg")
+                                                            val e = IOException(msg)
+                                                            callback?.onFailure(e)
+                                                            return false
+                                                        }
+                                                    }
+
+                                                    is Set<*> -> {
+
+                                                        if (setRowsCount(key, i, partition.size)) {
+
+                                                            partition.forEachIndexed {
+
+                                                                    index, value ->
+
+                                                                rowWrite(i, index, value)
+                                                            }
+
+                                                        } else {
+
+                                                            val msg = "FAILURE: Writing rows count"
+                                                            Timber.e("$tag $msg")
+                                                            val e = IOException(msg)
+                                                            callback?.onFailure(e)
+                                                            return false
+                                                        }
+                                                    }
+
+                                                    is Queue<*> -> {
+
+                                                        if (setRowsCount(key, i, partition.size)) {
+
+                                                            partition.forEachIndexed {
+
+                                                                    index, value ->
+
+                                                                rowWrite(i, index, value)
+                                                            }
+
+                                                        } else {
+
+                                                            val msg = "FAILURE: Writing rows count"
+                                                            Timber.e("$tag $msg")
+                                                            val e = IOException(msg)
+                                                            callback?.onFailure(e)
+                                                            return false
+                                                        }
+                                                    }
+
+                                                    else -> {
+
+                                                        if (simpleWrite()) {
+
+                                                            if (DEBUG.get()) {
+
+                                                                Timber.v("$tag Simple write OK")
+                                                            }
+
+                                                        } else {
+
+                                                            val msg = "FAILURE: Simple write failed"
+                                                            Timber.e("$tag $msg")
+                                                            val e = IOException(msg)
+                                                            callback?.onFailure(e)
+                                                            return false
+                                                        }
+                                                    }
+                                                }
+
+                                            } else {
+
+                                                if (simpleWrite()) {
+
+                                                    if (DEBUG.get()) {
+
+                                                        Timber.v("$tag Simple write OK")
+                                                    }
+
+                                                } else {
+
+                                                    val msg = "FAILURE: Simple write failed"
+                                                    Timber.e("$tag $msg")
+                                                    val e = IOException(msg)
+                                                    callback?.onFailure(e)
+                                                    return false
+                                                }
+                                            }
+                                        }
+
+                                        callback?.onCompleted(true)
+                                        return true
+
+                                    } catch (e: Exception) {
+
+                                        callback?.onFailure(e)
+                                        return false
+                                    }
+                                }
+                            }
+
+                            if (async) {
+
+                                Executor.MAIN.execute {
+
+                                    action.obtain()
+                                }
 
                             } else {
 
-                                Timber.e("$tag FAILURE: Partition no. $i")
+                                return action.obtain()
                             }
 
-                            return written
-                        }
+                        } catch (e: RejectedExecutionException) {
 
-                        fun rowWrite(partition: Int, row: Int, value: Any?): Boolean {
-
-                            if (value == null) {
-
-                                return true
-                            }
-
-                            val keyRow = keyRow(key, partition, row)
-                            val keyRowType = keyRowType(key, partition, row)
-
-                            val fqName = value::class.qualifiedName
-                            val savedValue = facade.put(keyRow, value)
-                            val savedFqName = facade.put(keyRowType, fqName)
-
-                            val written = savedValue && savedFqName
-
-                            if (written) {
-
-                                if (DEBUG.get()) Timber.v(
-
-                                    "$tag WRITTEN: Partition no. $partition, " +
-                                            "Row no. $row, Qualified name: $fqName"
-                                )
-
-                            } else {
-
-                                Timber.e(
-                                    "$tag FAILURE: Partition no. $i, " +
-                                            "Row no. $row, Qualified name: $fqName"
-                                )
-
-                                if (!savedValue) {
-
-                                    Timber.e("$tag Value has not been persisted")
-                                }
-
-                                if (!savedFqName) {
-
-                                    Timber.e("$tag Qualified name has not been persisted")
-                                }
-                            }
-
-                            return written
-                        }
-
-                        fun rowWrite(
-
-                            partition: Int,
-                            row: Int,
-                            mapKey: Any?,
-                            value: Any?,
-                            mapKeyType: Class<*>?,
-                            valueType: Class<*>?
-
-                        ): Boolean {
-
-                            if (mapKey == null) {
-
-                                return true
-                            }
-
-                            if (value == null) {
-
-                                return true
-                            }
-
-                            if (mapKeyType == null) {
-
-                                Timber.e(
-                                    "$tag FAILURE: Partition no. $i, " +
-                                            "Row no. $row, No map key type provided"
-                                )
-
-                                return false
-                            }
-
-                            if (valueType == null) {
-
-                                Timber.e(
-                                    "$tag FAILURE: Partition no. $i, " +
-                                            "Row no. $row, No value type provided"
-                                )
-
-                                return false
-                            }
-
-                            val keyRow = keyRow(key, partition, row)
-                            val keyRowType = keyRowType(key, partition, row)
-
-                            var mapKeyValue: Any = mapKey
-                            var valueValue: Any = value
-
-                            if (mapKey is Number) {
-
-                                mapKeyValue = mapKey.toDouble()
-                            }
-
-                            if (value is Number) {
-
-                                valueValue = value.toLong()
-                            }
-
-                            val rowValue = PairDataInfo(
-
-                                mapKeyValue,
-                                valueValue,
-                                mapKeyType.canonicalName,
-                                valueType.canonicalName
-                            )
-
-                            val fqName = rowValue::class.qualifiedName
-                            val savedValue = facade.put(keyRow, rowValue)
-                            val savedFqName = facade.put(keyRowType, fqName)
-
-                            val written = savedValue && savedFqName
-
-                            if (written) {
-
-                                if (DEBUG.get()) Timber.v(
-
-                                    "$tag WRITTEN: Partition no. $partition, " +
-                                            "Row no. $row, Qualified name: $fqName, " +
-                                            "Pair data info: $rowValue"
-                                )
-
-                            } else {
-
-                                Timber.e(
-                                    "$tag FAILURE: Partition no. $i, " +
-                                            "Row no. $row, Qualified name: $fqName, " +
-                                            "Pair data info: $rowValue"
-                                )
-
-                                if (!savedValue) {
-
-                                    Timber.e("$tag Value has not been persisted")
-                                }
-
-                                if (!savedFqName) {
-
-                                    Timber.e("$tag Qualified name has not been persisted")
-                                }
-                            }
+                            callback?.onFailure(e)
 
                             return false
                         }
 
-                        val collection = partition is Collection<*> || partition is Map<*, *>
+                        return true
+                    }
 
-                        if (collection) {
+                    val partitionCallback = object : OnObtain<Boolean> {
 
-                            when (partition) {
+                        override fun onCompleted(data: Boolean) {
 
-                                is List<*> -> {
+                            if (!data) {
 
-                                    if (setRowsCount(key, i, partition.size)) {
-
-                                        partition.forEachIndexed {
-
-                                                index, value ->
-
-                                            rowWrite(i, index, value)
-                                        }
-
-                                    } else {
-
-                                        Timber.e("$tag FAILURE: Writing rows count")
-
-                                        return false
-                                    }
-                                }
-
-                                is Map<*, *> -> {
-
-                                    if (setRowsCount(key, i, partition.size)) {
-
-                                        var index = 0
-
-                                        partition.forEach { key, value ->
-
-                                            key?.let { k ->
-                                                value?.let { v ->
-
-                                                    rowWrite(
-
-                                                        partition = i,
-                                                        row = index,
-                                                        mapKey = k,
-                                                        value = v,
-                                                        mapKeyType = k::class.java,
-                                                        valueType = v::class.java
-                                                    )
-                                                }
-                                            }
-
-                                            index++
-                                        }
-
-                                    } else {
-
-                                        Timber.e("$tag FAILURE: Writing rows count")
-
-                                        return false
-                                    }
-                                }
-
-                                is Set<*> -> {
-
-                                    if (setRowsCount(key, i, partition.size)) {
-
-                                        partition.forEachIndexed {
-
-                                                index, value ->
-
-                                            rowWrite(i, index, value)
-                                        }
-
-                                    } else {
-
-                                        Timber.e("$tag FAILURE: Writing rows count")
-
-                                        return false
-                                    }
-                                }
-
-                                is Queue<*> -> {
-
-                                    if (setRowsCount(key, i, partition.size)) {
-
-                                        partition.forEachIndexed {
-
-                                                index, value ->
-
-                                            rowWrite(i, index, value)
-                                        }
-
-                                    } else {
-
-                                        Timber.e("$tag FAILURE: Writing rows count")
-
-                                        return false
-                                    }
-                                }
-
-                                else -> {
-
-                                    simpleWrite()
-                                }
+                                success.set(false)
                             }
 
-                        } else {
+                            partitioningLatch.countDown()
+                        }
 
-                            simpleWrite()
+                        override fun onFailure(error: Throwable) {
+
+                            Timber.e(error)
+
+                            success.set(false)
+
+                            partitioningLatch.countDown()
+                        }
+                    }
+
+                    if (parallelized) {
+
+                        doPartition(true, partition, partitionCallback)
+
+                    } else {
+
+                        if (!doPartition(false, partition)) {
+
+                            success.set(false)
                         }
                     }
                 }
 
-                return true
+                if (parallelized) {
+
+                    try {
+
+                        return partitioningLatch.await(30, TimeUnit.SECONDS) && success.get()
+
+                    } catch (e: InterruptedException) {
+
+                        Timber.e("$tag ERROR: ${e.message}")
+
+                        return false
+                    }
+
+                } else {
+
+                    return success.get()
+                }
 
             } else {
 
@@ -620,8 +781,6 @@ class Data private constructor(private val facade: Facade) :
                                         if (DEBUG.get()) {
 
                                             Timber.v("$tag Set: $i")
-
-                                        } else {
                                         }
 
                                     } else {

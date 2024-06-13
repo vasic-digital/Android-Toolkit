@@ -18,6 +18,10 @@ data class SampleData @JsonCreator constructor(
     @SerializedName("partitioningOn")
     private val partitioningOn: Boolean = true,
 
+    @JsonProperty("partitioningParallelized")
+    @SerializedName("partitioningParallelized")
+    private val partitioningParallelized: Boolean = true,
+
     @JsonProperty("partition1")
     @SerializedName("partition1")
     var partition1: CopyOnWriteArrayList<SampleData2> = CopyOnWriteArrayList(),
@@ -46,7 +50,8 @@ data class SampleData @JsonCreator constructor(
 
     constructor() : this(
 
-        partitioningOn = true
+        partitioningOn = true,
+        partitioningParallelized = true
     )
 
     override fun getClazz(): Class<SampleData> {
@@ -57,6 +62,8 @@ data class SampleData @JsonCreator constructor(
     override fun isPartitioningEnabled() = partitioningOn
 
     fun isPartitioningDisabled() = !partitioningOn
+
+    override fun isPartitioningParallelized() = partitioningParallelized
 
     override fun getPartitionCount() = 6
 

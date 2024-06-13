@@ -16,6 +16,8 @@ abstract class TypeWrapper<T>(wrapped: T?) :
 
     override fun isPartitioningEnabled() = true
 
+    override fun isPartitioningParallelized() = true
+
     override fun getPartitionCount() = 1
 
     override fun getPartitionData(number: Int): Any? {

@@ -12,11 +12,14 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
 
     Wrapper<CopyOnWriteArrayList<T>>(list),
     Partitional<TypeListWrapper<T>>
+
 {
 
     constructor() : this(CopyOnWriteArrayList())
 
     override fun isPartitioningEnabled() = true
+
+    override fun isPartitioningParallelized() = true
 
     override fun getPartitionCount() = 1
 

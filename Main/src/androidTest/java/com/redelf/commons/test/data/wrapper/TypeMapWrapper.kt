@@ -18,6 +18,8 @@ abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
 
     override fun isPartitioningEnabled() = true
 
+    override fun isPartitioningParallelized() = true
+
     override fun getPartitionCount() = 1
 
     override fun getPartitionData(number: Int): Any? {

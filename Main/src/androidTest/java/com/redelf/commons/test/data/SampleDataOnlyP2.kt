@@ -37,6 +37,8 @@ data class SampleDataOnlyP2 @JsonCreator constructor(
 
     fun isPartitioningDisabled() = !partitioningOn
 
+    override fun isPartitioningParallelized() = true
+
     override fun getPartitionCount() = 1
 
     override fun getPartitionData(number: Int): Any? {
