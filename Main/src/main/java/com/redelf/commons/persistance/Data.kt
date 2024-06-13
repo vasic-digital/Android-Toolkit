@@ -33,6 +33,7 @@ class Data private constructor(private val facade: Facade) :
 
     /*
      * TODO:
+     *  - Rename to DataDelegate perhaps? Give him abstractions so we multiple data delegates could support when needed.
      *  - Recursively partitioning - Each map or list member -> children
      *  - Parallelize reading
      */
