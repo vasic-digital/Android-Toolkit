@@ -531,7 +531,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                     try {
 
-                        return partitioningLatch.await(30, TimeUnit.SECONDS) && success.get()
+                        return partitioningLatch.await(60, TimeUnit.SECONDS) && success.get()
 
                     } catch (e: InterruptedException) {
 
