@@ -269,7 +269,14 @@ fun Activity.onUI(doWhat: () -> Unit) {
 
 fun onUiThread(doWhat: () -> Unit) {
 
-    Handler(Looper.getMainLooper()).post(doWhat)
+    try {
+
+        Executor.UI.execute { doWhat() }
+
+    } catch (e: RejectedExecutionException) {
+
+        recordException(e)
+    }
 }
 
 @Throws(IllegalArgumentException::class)
@@ -699,6 +706,21 @@ fun safeRemoteDouble(provider: () -> Double, default: Double = 0.0): Double {
 fun exec(what: Runnable) {
 
     Executor.MAIN.execute(what)
+}
+
+fun exec(what: Runnable, onError: ((Throwable) -> Unit)? = null) {
+
+    try {
+
+        Executor.MAIN.execute(what)
+
+    } catch (e: RejectedExecutionException) {
+
+        onError?.let {
+
+            it(e)
+        }
+    }
 }
 
 @Throws(
