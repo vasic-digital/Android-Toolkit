@@ -833,7 +833,7 @@ abstract class BaseApplication :
             /*
                 TODO: Incorporate until which version code is the update applicable (if needed)
             */
-            if (versionCode >= code && isUpdateApplied(code)) {
+            if (versionCode >= code && isUpdateAvailable(code)) {
 
                 Timber.v("$tag Code :: $versionCode :: START")
 
@@ -881,7 +881,7 @@ abstract class BaseApplication :
         }
     }
 
-    override fun isUpdateApplied(identifier: Long): Boolean {
+    private fun isUpdateAvailable(identifier: Long): Boolean {
 
         val key = "$prefsKeyUpdate.$identifier"
         val value = prefs[key]
