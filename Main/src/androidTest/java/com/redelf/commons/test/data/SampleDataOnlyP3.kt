@@ -8,9 +8,7 @@ import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
 import java.lang.reflect.Type
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 
 data class SampleDataOnlyP3 @JsonCreator constructor(
 

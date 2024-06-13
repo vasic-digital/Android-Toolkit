@@ -1,7 +1,6 @@
 package com.redelf.commons.test.data.wrapper
 
 import com.google.gson.reflect.TypeToken
-import com.redelf.commons.logging.Timber
 import com.redelf.commons.model.Wrapper
 import com.redelf.commons.partition.Partitional
 import org.junit.Assert

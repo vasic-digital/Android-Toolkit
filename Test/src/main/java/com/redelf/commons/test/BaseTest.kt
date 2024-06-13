@@ -2,7 +2,6 @@ package com.redelf.commons.test
 
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.management.DataManagement

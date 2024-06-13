@@ -3,14 +3,10 @@ package com.redelf.commons.test.data
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
-import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Timber
 import com.redelf.commons.partition.Partitional
 import java.lang.reflect.Type
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 
 data class SampleDataOnlyP5 @JsonCreator constructor(
 

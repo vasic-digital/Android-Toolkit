@@ -14,7 +14,6 @@ import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.type.PairDataInfo
-import org.checkerframework.checker.signature.qual.CanonicalName
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.util.Queue
@@ -23,7 +22,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.jvm.Throws
 
 
 @Suppress("DEPRECATION")
