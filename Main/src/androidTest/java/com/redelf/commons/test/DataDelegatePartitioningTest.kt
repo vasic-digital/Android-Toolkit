@@ -26,7 +26,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
-class DataPartitioningTest : BaseTest() {
+class DataDelegatePartitioningTest : BaseTest() {
 
     private val samplesCount = 5
     private val sampleUUID = UUID.randomUUID()

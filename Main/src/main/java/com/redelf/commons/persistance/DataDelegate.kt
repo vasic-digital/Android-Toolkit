@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 
 @Suppress("DEPRECATION")
-class Data private constructor(private val facade: Facade) :
+class DataDelegate private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
@@ -33,7 +33,7 @@ class Data private constructor(private val facade: Facade) :
 
     /*
      * TODO:
-     *  - Rename to DataDelegate perhaps? Give him abstractions so we multiple data delegates could support when needed.
+     *  - Give to delegate abstractions so we multiple data delegates could support when needed.
      *  - Recursively partitioning - Each map or list member -> children
      *  - Parallelize reading
      */
@@ -42,11 +42,11 @@ class Data private constructor(private val facade: Facade) :
 
         val DEBUG = AtomicBoolean()
 
-        fun instantiate(persistenceBuilder: PersistenceBuilder): Data {
+        fun instantiate(persistenceBuilder: PersistenceBuilder): DataDelegate {
 
             val facade = DefaultFacade.initialize(persistenceBuilder)
 
-            return Data(facade)
+            return DataDelegate(facade)
         }
 
         @Throws(IllegalArgumentException::class)

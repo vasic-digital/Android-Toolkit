@@ -162,8 +162,8 @@ class PersistenceBuilder(
         return this
     }
 
-    fun build(): Data {
+    fun build(): DataDelegate {
 
-        return Data.instantiate(this)
+        return DataDelegate.instantiate(this)
     }
 }

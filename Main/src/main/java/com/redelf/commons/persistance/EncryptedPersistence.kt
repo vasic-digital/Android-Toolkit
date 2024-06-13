@@ -51,7 +51,7 @@ constructor(
         const val LOG_TAG = "${Persistence.TAG} Encrypted ::"
     }
 
-    private var data: Data? = null
+    private var dataDelegate: DataDelegate? = null
 
     init {
 
@@ -131,7 +131,7 @@ constructor(
                 override fun getSalt() = keySalt
             }
 
-            data = PersistenceBuilder.instantiate(it, salter = salter, storageTag = storageTag)
+            dataDelegate = PersistenceBuilder.instantiate(it, salter = salter, storageTag = storageTag)
                 .setParser(getParser)
                 .setLogInterceptor(logger)
                 .setDoLog(doLog)
@@ -148,17 +148,17 @@ constructor(
 
     override fun shutdown(): Boolean {
 
-        return data?.shutdown() ?: false
+        return dataDelegate?.shutdown() ?: false
     }
 
     override fun terminate(): Boolean {
 
-        return data?.terminate() ?: false
+        return dataDelegate?.terminate() ?: false
     }
 
     override fun initialize(ctx: Context) {
 
-        data?.initialize(ctx)
+        dataDelegate?.initialize(ctx)
     }
 
     override fun <T> pull(key: String): T? {
@@ -168,22 +168,22 @@ constructor(
             Timber.v("$LOG_TAG :: Pull: key = '$key' ::")
         }
 
-        return data?.get(key)
+        return dataDelegate?.get(key)
     }
 
     override fun <T> push(key: String, what: T): Boolean {
 
-        return data?.put(key, what) ?: false
+        return dataDelegate?.put(key, what) ?: false
     }
 
     override fun delete(what: String): Boolean {
 
-        return data?.delete(what) ?: false
+        return dataDelegate?.delete(what) ?: false
     }
 
     override fun contains(key: String): Boolean {
 
-        return data?.contains(key) ?: false
+        return dataDelegate?.contains(key) ?: false
     }
 
     /*
@@ -191,6 +191,6 @@ constructor(
     */
     override fun erase(): Boolean {
 
-        return data?.deleteAll() ?: false
+        return dataDelegate?.deleteAll() ?: false
     }
 }
