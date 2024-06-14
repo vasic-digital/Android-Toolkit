@@ -1,7 +1,7 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.test.data.SampleData
 import com.redelf.commons.test.data.SampleData2
 import com.redelf.commons.test.data.SampleData3
@@ -34,9 +34,9 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Before
     fun prepare() {
 
-        Timber.initialize(failOnError = true)
+        Console.initialize(failOnError = true)
 
-        Timber.v("Timber initialized: $this")
+        Console.log("Timber initialized: $this")
 
         GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK.set(true)
     }

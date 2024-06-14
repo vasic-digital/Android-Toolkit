@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.partition.Partitional
 import java.lang.reflect.Type
 
@@ -65,7 +65,7 @@ data class SampleDataOnlyP5 @JsonCreator constructor(
 
                 } catch (e: Exception) {
 
-                    Timber.e(e)
+                    Console.error(e)
 
                     return false
                 }

@@ -1,7 +1,7 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.extensions.randomInteger
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.EncryptedPersistence
 import org.junit.Assert
 import org.junit.Before
@@ -25,9 +25,9 @@ class EncryptedPersistenceTest : BaseTest() {
     @Before
     fun prepare() {
 
-        Timber.initialize()
+        Console.initialize()
 
-        Timber.v("Timber initialized: $this")
+        Console.log("Timber initialized: $this")
 
         val keySalt = "test.${System.currentTimeMillis()}"
         val storageTag = "test.${System.currentTimeMillis()}"

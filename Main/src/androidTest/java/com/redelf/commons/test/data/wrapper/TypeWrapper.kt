@@ -1,6 +1,6 @@
 package com.redelf.commons.test.data.wrapper
 
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.model.Wrapper
 import com.redelf.commons.partition.Partitional
 import org.junit.Assert
@@ -44,7 +44,7 @@ abstract class TypeWrapper<T>(wrapped: T?) :
 
         } catch (e: Exception) {
 
-            Timber.e(e)
+            Console.error(e)
 
             return false
         }

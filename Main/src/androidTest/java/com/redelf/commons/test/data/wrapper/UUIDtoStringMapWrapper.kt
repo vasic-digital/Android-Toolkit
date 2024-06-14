@@ -1,6 +1,6 @@
 package com.redelf.commons.test.data.wrapper
 
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import org.junit.Assert
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -33,11 +33,11 @@ class UUIDtoStringMapWrapper(map: ConcurrentHashMap<UUID, String>) :
                 this.data?.put(UUID.fromString(key.toString()), value as String)
             }
 
-            Timber.v("Data set: ${this.data}")
+            Console.log("Data set: ${this.data}")
 
         } catch (e: Exception) {
 
-            Timber.e(e)
+            Console.error(e)
 
             return false
         }
