@@ -4,7 +4,7 @@ import android.text.TextUtils
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.security.encryption.AES
 import com.redelf.commons.security.encryption.Encryption
@@ -67,9 +67,9 @@ class TransmissionManagerEncryptionProvider(
 
             val encryptionKey = getEncryptionKey()
             val salt = saltProvider.obtain()
-            Timber.v("AES: key: $encryptionKey, salt: $salt")
+            Console.log("AES: key: $encryptionKey, salt: $salt")
             val enc = AES(encryptionKey, salt)
-            Timber.i("Encryption: $enc")
+            Console.info("Encryption: $enc")
             return enc
 
         } catch (e: IllegalStateException) {
@@ -100,7 +100,7 @@ class TransmissionManagerEncryptionProvider(
         val count = manager.getScheduledCount()
         if (count == 0) {
 
-            Timber.v("We are about to generate new signing key")
+            Console.log("We are about to generate new signing key")
 
             var retryCount = 0
             val maxRetries = 10
@@ -110,7 +110,7 @@ class TransmissionManagerEncryptionProvider(
             while (!persisted && retryCount < maxRetries) {
 
                 Thread.sleep(500)
-                Timber.w("Persisting encryption key, retry no: %d", ++retryCount)
+                Console.warning("Persisting encryption key, retry no: %d", ++retryCount)
                 persisted = DataManagement.STORAGE.push(encryptionKey, key)
             }
 
@@ -127,7 +127,7 @@ class TransmissionManagerEncryptionProvider(
 
         } else {
 
-            Timber.v("We are about to obtain existing signing key")
+            Console.log("We are about to obtain existing signing key")
 
             val key: String = DataManagement.STORAGE.pull(encryptionKey) ?: ""
             val success = !TextUtils.isEmpty(key)

@@ -26,7 +26,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.PropertiesHash
 import java.io.*
 import java.util.*
@@ -94,7 +94,7 @@ fun yieldWhile(condition: () -> Boolean) {
 
 fun recordException(e: Throwable) {
 
-    Timber.e(e)
+    Console.error(e)
 
     if (GLOBAL_RECORD_EXCEPTIONS.get()) {
 
@@ -192,7 +192,7 @@ fun Context.clearAllSharedPreferences(): Boolean {
 
     } catch (e: SecurityException) {
 
-        Timber.e(e)
+        Console.error(e)
 
         result = false
     }
@@ -219,7 +219,7 @@ fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int): Int {
     val requestCode = randomInteger()
     val clientId = getString(defaultWebClientId)
 
-    Timber.v("$tag START: $clientId")
+    Console.log("$tag START: $clientId")
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken(clientId)
@@ -231,12 +231,12 @@ fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int): Int {
 
     if (account != null) {
 
-        Timber.v("$tag Account already available: ${account.email}")
+        Console.log("$tag Account already available: ${account.email}")
 
         client.signOut()
     }
 
-    Timber.v("$tag No account available")
+    Console.log("$tag No account available")
 
     try {
 
@@ -247,7 +247,7 @@ fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int): Int {
         recordException(e)
     }
 
-    Timber.v("$tag END :: Req. code: $requestCode")
+    Console.log("$tag END :: Req. code: $requestCode")
 
     return requestCode
 }
@@ -263,7 +263,7 @@ fun Activity.onUI(doWhat: () -> Unit) {
 
     } else {
 
-        Timber.v("Context is finishing")
+        Console.log("Context is finishing")
     }
 }
 
@@ -345,14 +345,14 @@ fun Context.getCachedMediaFile(
 
             throw IllegalStateException("No bytes stored into: ${outputFile.absolutePath}")
         }
-        Timber.v("$stored bytes written into ${outputFile.absolutePath}")
+        Console.log("$stored bytes written into ${outputFile.absolutePath}")
 
         bufferedOutputStream.flush()
         bufferedOutputStream.close()
         outputStream.close()
         bufferedInputStream.close()
         inputStream.close()
-        Timber.v("File length ${outputFile.name}: ${outputFile.length()}")
+        Console.log("File length ${outputFile.name}: ${outputFile.length()}")
 
         return outputFile
     }
@@ -392,7 +392,7 @@ fun Context.writeIntoFileBuffered(
         throw IllegalStateException("No bytes stored into: ${where.absolutePath}")
     }
 
-    Timber.v("$stored bytes written into ${where.absolutePath}")
+    Console.log("$stored bytes written into ${where.absolutePath}")
 
     bufferedOutputStream.flush()
     bufferedOutputStream.close()
@@ -403,7 +403,7 @@ fun Context.writeIntoFileBuffered(
     bufferedInputStream.close()
     inputStream.close()
 
-    Timber.v("File length ${where.name}: ${where.length()}")
+    Console.log("File length ${where.name}: ${where.length()}")
 
     return true
 }
@@ -440,7 +440,7 @@ fun Context.writeIntoFile(
         throw IllegalStateException("No bytes stored into: ${where.absolutePath}")
     }
 
-    Timber.v("$stored bytes written into ${where.absolutePath}")
+    Console.log("$stored bytes written into ${where.absolutePath}")
 
     bufferedOutputStream.flush()
     bufferedOutputStream.close()
@@ -448,7 +448,7 @@ fun Context.writeIntoFile(
     bufferedInputStream.close()
     what.close()
 
-    Timber.v("File length ${where.name}: ${where.length()}")
+    Console.log("File length ${where.name}: ${where.length()}")
 
     return true
 }
@@ -456,15 +456,15 @@ fun Context.writeIntoFile(
 @Throws(IllegalStateException::class)
 fun File.init(deleteIfExist: Boolean = true) {
 
-    Timber.v("Initializing file: $absolutePath")
+    Console.log("Initializing file: $absolutePath")
 
     if (deleteIfExist && exists()) {
 
-        Timber.w("File already exists: $absolutePath")
+        Console.warning("File already exists: $absolutePath")
 
         if (delete()) {
 
-            Timber.v("File deleted: $absolutePath")
+            Console.log("File deleted: $absolutePath")
 
         } else {
 
@@ -482,7 +482,7 @@ fun File.init(deleteIfExist: Boolean = true) {
 
         if (created && exists) {
 
-            Timber.v("File created: $absolutePath")
+            Console.log("File created: $absolutePath")
 
         } else {
 
@@ -491,7 +491,7 @@ fun File.init(deleteIfExist: Boolean = true) {
 
     } catch (e: IOException) {
 
-        Timber.e(e)
+        Console.error(e)
         throw IllegalStateException(msg)
     }
 }
@@ -556,7 +556,7 @@ fun Activity.toast(error: Throwable) {
 
 fun Activity.toast(error: Throwable, short: Boolean = false, localised: Boolean = false) {
 
-    Timber.e(error)
+    Console.error(error)
 
     val msg = if (localised) {
 
@@ -599,7 +599,7 @@ fun Context.playNotificationSound() {
 
     } catch (e: Exception) {
 
-        Timber.e(e)
+        Console.error(e)
     }
 }
 
@@ -632,7 +632,7 @@ fun <T> safeRemoteValue(provider: () -> T, default: T): T {
 
     } catch (e: Exception) {
 
-        Timber.e(e)
+        Console.error(e)
     }
 
     return default
@@ -795,7 +795,7 @@ fun <T> doExec(
 
         if (debug) {
 
-            Timber.v("$logTag Callable: PRE-START")
+            Console.log("$logTag Callable: PRE-START")
         }
 
         success = future?.get(timeout, timeUnit)
@@ -804,33 +804,33 @@ fun <T> doExec(
 
             if (success != null) {
 
-                Timber.v("$logTag Callable: RETURNED: $success")
+                Console.log("$logTag Callable: RETURNED: $success")
 
             } else {
 
-                Timber.v("$logTag Callable: RETURNED NOTHING")
+                Console.log("$logTag Callable: RETURNED NOTHING")
             }
 
-            Timber.v("$logTag Callable: POST-END")
+            Console.log("$logTag Callable: POST-END")
         }
 
         return success
 
     } catch (e: RejectedExecutionException) {
 
-        Timber.e(e)
+        Console.error(e)
 
     } catch (e: InterruptedException) {
 
-        Timber.e(e)
+        Console.error(e)
 
     } catch (e: ExecutionException) {
 
-        Timber.e(e)
+        Console.error(e)
 
     } catch (e: TimeoutException) {
 
-        Timber.e(e)
+        Console.error(e)
 
         future?.cancel(true)
     }
@@ -843,12 +843,12 @@ fun encodeBytes(bytes: ByteArray): String {
 
     val tag = "Encode bytes ::"
 
-    Timber.v("$tag START")
+    Console.log("$tag START")
 
     @Throws(IOException::class)
     fun doEncodeBytes(bytes: ByteArray): ByteArray? {
 
-        Timber.v("$tag DO ENCODE :: START")
+        Console.log("$tag DO ENCODE :: START")
 
         var inputStream: InputStream? = null
         var outputStream: OutputStream? = null
@@ -866,13 +866,13 @@ fun encodeBytes(bytes: ByteArray): String {
 
             val resultBytes = outputStream.toByteArray()
 
-            Timber.v("$tag DO ENCODE :: END")
+            Console.log("$tag DO ENCODE :: END")
 
             return resultBytes
 
         } catch (e: IOException) {
 
-            Timber.e(e)
+            Console.error(e)
 
         } finally {
 
@@ -929,7 +929,7 @@ fun List<*>.contentEquals(other: List<*>): Boolean {
 
                     if (item.propertiesHash() != otherItem.propertiesHash()) {
 
-                        Timber.v(
+                        Console.log(
 
                             "contentEquals :: FALSE (prop. hash eq.) :: " +
                                     "${item.propertiesHash()} != ${otherItem.propertiesHash()}"
@@ -941,7 +941,7 @@ fun List<*>.contentEquals(other: List<*>): Boolean {
 
             } else {
 
-                Timber.v(
+                Console.log(
 
                     "contentEquals :: FALSE (equality) :: " +
                             "${item.hashCode()} != ${other[index].hashCode()}"
@@ -953,7 +953,7 @@ fun List<*>.contentEquals(other: List<*>): Boolean {
 
     } else {
 
-        Timber.v(
+        Console.log(
 
             "contentEquals :: FALSE (sizes comparison) :: " +
                     "$size != ${other.size}"
@@ -993,7 +993,7 @@ private fun Violation.filter(
 
     if (violationPackageName != ignoredViolationPackageName && justVerbose) {
 
-        Timber.v(this)
+        Console.log(this)
     }
 }
 
@@ -1018,7 +1018,7 @@ fun String.compress(): String? {
 
     } catch (e: IOException) {
 
-        Timber.e(e)
+        Console.error(e)
 
         return null
     }
@@ -1051,7 +1051,7 @@ fun String.decompress(): String? {
 
     } catch (e: IOException) {
 
-        Timber.e(e)
+        Console.error(e)
 
         return null
     }

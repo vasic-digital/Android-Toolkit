@@ -7,7 +7,7 @@ import com.facebook.crypto.Crypto
 import com.facebook.crypto.CryptoConfig
 import com.facebook.crypto.Entity
 import com.facebook.crypto.keychain.KeyChain
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 
@@ -40,7 +40,7 @@ class ConcealEncryption constructor(
 
         if (encrypted.isEmpty()) {
 
-            Timber.w("Encrypted value is empty")
+            Console.warning("Encrypted value is empty")
         }
 
         return encrypted
@@ -52,7 +52,7 @@ class ConcealEncryption constructor(
         val entity = Entity.create(getKey(key))
         val decrypted = crypto.decrypt(value, entity)
 
-        Timber.v("Decrypted: ${decrypted.isNotEmpty()}")
+        Console.log("Decrypted: ${decrypted.isNotEmpty()}")
 
         return String(decrypted)
     }

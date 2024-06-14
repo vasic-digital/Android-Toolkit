@@ -2,7 +2,7 @@ package com.redelf.commons.execution
 
 import android.os.Handler
 import android.os.Looper
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
@@ -64,11 +64,11 @@ enum class Executor : Execution {
 
             if (available > 0) {
 
-                Timber.v(msg)
+                Console.log(msg)
 
             } else {
 
-                Timber.e(msg)
+                Console.error(msg)
             }
         }
     },
@@ -149,7 +149,7 @@ enum class Executor : Execution {
 
                 } catch (e: InterruptedException) {
 
-                    Timber.e(e)
+                    Console.error(e)
                 }
             }
         }

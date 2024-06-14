@@ -7,7 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.retrofit.gson.SerializationBenchmarkLoggingInterceptor
 import okhttp3.Call
@@ -30,25 +30,25 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
     override fun obtain(param: RetrofitApiParameters): Retrofit {
 
-        if (param.verbose == true) Timber.v("Retrofit :: Obtain: $param")
+        if (param.verbose == true) Console.log("Retrofit :: Obtain: $param")
 
         var interceptor: HttpLoggingInterceptor? = null
 
         if (DEBUG ?: BaseApplication.DEBUG.get()) {
 
-            if (param.verbose == true) Timber.v("Retrofit :: Debug :: ON")
+            if (param.verbose == true) Console.log("Retrofit :: Debug :: ON")
 
             interceptor = HttpLoggingInterceptor()
 
             if (param.bodyLog == true) {
 
-                if (param.verbose == true) Timber.v("Retrofit :: Debug :: BODY")
+                if (param.verbose == true) Console.log("Retrofit :: Debug :: BODY")
 
                 interceptor.level = HttpLoggingInterceptor.Level.BODY
 
             } else {
 
-                if (param.verbose == true) Timber.v("Retrofit :: Debug :: BASIC")
+                if (param.verbose == true) Console.log("Retrofit :: Debug :: BASIC")
 
                 interceptor.level = HttpLoggingInterceptor.Level.BASIC
             }
@@ -74,13 +74,13 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         val converter: Converter.Factory = if (param.scalar == true) {
 
-            if (param.verbose == true) Timber.v("Retrofit :: Converter: Scalar")
+            if (param.verbose == true) Console.log("Retrofit :: Converter: Scalar")
 
             ScalarsConverterFactory.create()
 
         } else if (param.jackson == true) {
 
-            if (param.verbose == true) Timber.v("Retrofit :: Converter: Jackson")
+            if (param.verbose == true) Console.log("Retrofit :: Converter: Jackson")
 
             val objectMapper = ObjectMapper()
                 .registerModule(JavaTimeModule())
@@ -94,7 +94,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         } else {
 
-            if (param.verbose == true) Timber.v("Retrofit :: Converter: GSON")
+            if (param.verbose == true) Console.log("Retrofit :: Converter: GSON")
 
             GsonBuilder()
                 .disableHtmlEscaping()
@@ -188,7 +188,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
             } catch (e: IllegalArgumentException) {
 
-                Timber.e(e)
+                Console.error(e)
             }
         }
 

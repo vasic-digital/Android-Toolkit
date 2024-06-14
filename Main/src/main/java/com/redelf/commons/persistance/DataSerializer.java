@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.redelf.commons.logging.Timber;
+import com.redelf.commons.logging.Console;
 import com.redelf.commons.persistance.base.Serializer;
 
 import java.util.Iterator;
@@ -97,13 +97,13 @@ class DataSerializer implements Serializer {
 
         } catch (OutOfMemoryError e) {
 
-            Timber.e(e);
+            Console.error(e);
 
             FirebaseCrashlytics.getInstance().recordException(e);
 
         } catch (Exception e) {
 
-            Timber.e(e);
+            Console.error(e);
         }
 
         return null;
@@ -125,7 +125,7 @@ class DataSerializer implements Serializer {
                 try {
                     dataInfo.setKeyClazz(Class.forName(dataInfo.getKeyClazzName()));
                 } catch (ClassNotFoundException e) {
-                    Timber.e(e);
+                    Console.error(e);
                 }
             }
 
@@ -133,7 +133,7 @@ class DataSerializer implements Serializer {
                 try {
                     dataInfo.setValueClazz(Class.forName(dataInfo.getValueClazzName()));
                 } catch (ClassNotFoundException e) {
-                    Timber.e(e);
+                    Console.error(e);
                 }
             }
 
@@ -141,7 +141,7 @@ class DataSerializer implements Serializer {
 
         } catch (JsonSyntaxException e) {
 
-            Timber.e(e);
+            Console.error(e);
         }
 
         return null;

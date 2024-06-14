@@ -18,7 +18,7 @@ import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.lifecycle.Initialization
 import com.redelf.commons.lifecycle.LifecycleCallback
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -124,7 +124,7 @@ class Access(builder: AccessBuilder) :
         callbacks.register(callback)
         if (initializing.get()) {
 
-            Timber.w("Already initializing")
+            Console.warning("Already initializing")
             return
         }
         initializing.set(true)
@@ -146,7 +146,7 @@ class Access(builder: AccessBuilder) :
 
                                 method.set(accessMethod)
                                 initCallback.onInitialization(true)
-                                Timber.i("Access method: $method")
+                                Console.info("Access method: $method")
                             } else {
 
                                 initialize(iterator)
@@ -158,7 +158,7 @@ class Access(builder: AccessBuilder) :
 
                 } else {
 
-                    Timber.w("No access method obtained")
+                    Console.warning("No access method obtained")
                     initCallback.onInitialization(false)
                 }
             }
@@ -203,7 +203,7 @@ class Access(builder: AccessBuilder) :
     @Throws(IllegalStateException::class)
     override fun checkInstalled(callback: InstallationCheckCallback) {
 
-        Timber.v("Check installed")
+        Console.log("Check installed")
 
         if (!isInitialized()) {
 
@@ -242,6 +242,6 @@ class Access(builder: AccessBuilder) :
 
     override fun initializationCompleted(e: Exception?) {
 
-        Timber.v("Initialization completed")
+        Console.log("Initialization completed")
     }
 }

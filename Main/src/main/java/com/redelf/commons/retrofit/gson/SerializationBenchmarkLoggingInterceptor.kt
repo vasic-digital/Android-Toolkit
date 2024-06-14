@@ -1,6 +1,6 @@
 package com.redelf.commons.retrofit.gson
 
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -19,11 +19,11 @@ class SerializationBenchmarkLoggingInterceptor : Interceptor {
 
         if (response.body != null) {
 
-            Timber.v("$tag Serializing time: $totalTime ms :: Url = ${request.url}")
+            Console.log("$tag Serializing time: $totalTime ms :: Url = ${request.url}")
 
         } else {
 
-            Timber.w("$tag Serializing time: $totalTime ms, no body")
+            Console.warning("$tag Serializing time: $totalTime ms, no body")
         }
 
         return response

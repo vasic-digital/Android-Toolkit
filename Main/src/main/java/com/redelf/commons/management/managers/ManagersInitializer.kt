@@ -3,7 +3,7 @@ package com.redelf.commons.management.managers
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.LazyDataManagement
 import com.redelf.commons.management.Management
@@ -53,7 +53,7 @@ class ManagersInitializer {
 
                 error?.let {
 
-                    Timber.e(it)
+                    Console.error(it)
                 }
             }
         }
@@ -80,7 +80,7 @@ class ManagersInitializer {
 
             exec {
 
-                Timber.v("$tag START")
+                Console.log("$tag START")
 
                 val failure = AtomicBoolean()
 
@@ -92,7 +92,7 @@ class ManagersInitializer {
 
                         if (failure.get()) {
 
-                            Timber.e("$mTag initialization skipped")
+                            Console.error("$mTag initialization skipped")
 
                         } else {
 
@@ -100,7 +100,7 @@ class ManagersInitializer {
 
                                 context?.let { ctx ->
 
-                                    Timber.v(
+                                    Console.log(
 
                                         "$mTag Injecting context: $ctx"
                                     )
@@ -113,7 +113,7 @@ class ManagersInitializer {
                                     val defaultResource = defaultResources?.get(manager.javaClass)
                                     defaultResource?.let {
 
-                                        Timber.v(
+                                        Console.log(
 
                                             "$mTag Setting defaults from the " +
                                                     "resource: $defaultResource"
@@ -127,15 +127,15 @@ class ManagersInitializer {
 
                                     val mlTag = "$mTag Registering to app lifecycle events ::"
 
-                                    Timber.v("$mlTag START")
+                                    Console.log("$mlTag START")
 
                                     context?.let { ctx ->
 
-                                        Timber.v("$mlTag REGISTERING")
+                                        Console.log("$mlTag REGISTERING")
 
                                         manager.register(ctx)
 
-                                        Timber.v(
+                                        Console.log(
 
                                             "$mlTag REGISTERED: ${manager.isRegistered(ctx)}"
                                         )
@@ -144,7 +144,7 @@ class ManagersInitializer {
 
                             } else {
 
-                                Timber.w("$mTag Not supported")
+                                Console.warning("$mTag Not supported")
                             }
                         }
                     }

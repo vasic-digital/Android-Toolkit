@@ -14,7 +14,7 @@ import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
@@ -67,13 +67,13 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         override fun onReceive(context: Context?, intent: Intent?) {
 
-            Timber.v("BROADCAST_ACTION_SEND on receive")
+            Console.log("BROADCAST_ACTION_SEND on receive")
 
             intent?.let {
 
                 if (it.action == BROADCAST_ACTION_SEND) {
 
-                    Timber.v("BROADCAST_ACTION_SEND on action")
+                    Console.log("BROADCAST_ACTION_SEND on action")
 
                     try {
 
@@ -81,7 +81,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
                     } catch (e: IllegalStateException) {
 
-                        Timber.e(e)
+                        Console.error(e)
                     }
                 }
             }
@@ -117,7 +117,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         val intentFilter = IntentFilter(BROADCAST_ACTION_SEND)
         registerReceiver(sendRequestReceiver, intentFilter)
 
-        Timber.v("BROADCAST_ACTION_SEND receiver registered")
+        Console.log("BROADCAST_ACTION_SEND receiver registered")
 
         val action = Runnable {
 
@@ -125,7 +125,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
             if (TextUtils.isEmpty(json)) {
 
-                Timber.w("No encrypted data persisted")
+                Console.warning("No encrypted data persisted")
                 onInit(true)
 
             } else {
@@ -139,7 +139,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
                     if (items.isEmpty()) {
 
-                        Timber.w("No data loaded from secure storage")
+                        Console.warning("No data loaded from secure storage")
 
                     } else {
 
@@ -182,7 +182,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val action = Runnable {
 
-            Timber.v("We are about to send data: %s", data::class.simpleName)
+            Console.log("We are about to send data: %s", data::class.simpleName)
 
             persist(data)
         }
@@ -239,7 +239,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     @Throws(IllegalStateException::class)
     fun send(executedFrom: String = "") {
 
-        Timber.v("Send (manager) :: executedFrom='$executedFrom'")
+        Console.log("Send (manager) :: executedFrom='$executedFrom'")
 
         val action = Runnable { executeSending("send") }
         sequentialExecutor.execute(action)
@@ -255,7 +255,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val action = Runnable {
 
-            Timber.w("We are about to delete all data")
+            Console.warning("We are about to delete all data")
             clear()
             persist()
         }
@@ -273,18 +273,18 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val action = Runnable {
 
-            Timber.w("We are about to delete the data item")
+            Console.warning("We are about to delete the data item")
 
             if (clear(item)) {
 
-                Timber.v("The data item has been deleted with success")
+                Console.log("The data item has been deleted with success")
                 persist()
 
                 callback.onCompleted(true)
 
             } else {
 
-                Timber.v("The data item has failed to delete")
+                Console.log("The data item has failed to delete")
 
                 callback.onCompleted(false)
             }
@@ -345,7 +345,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     fun setEncryptionProvider(provider: EncryptionProvider) {
 
-        Timber.v("Setting the data encryption provider: $provider")
+        Console.log("Setting the data encryption provider: $provider")
 
         currentEncryptionProvider = provider
     }
@@ -359,7 +359,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val new = TransmissionManagerEncryptionProvider(this, encryptionKeySuffix)
 
-        Timber.v("Reset data encryption provider: $new")
+        Console.log("Reset data encryption provider: $new")
 
         currentEncryptionProvider = new
 
@@ -375,7 +375,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     )
     fun add(data: String) {
 
-        Timber.v("Data: Add, %s", data.length)
+        Console.log("Data: Add, %s", data.length)
 
         this.data.add(data)
     }
@@ -399,21 +399,21 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
             return
         }
 
-        Timber.v("Last sending executed before: %s", timeDiff)
+        Console.log("Last sending executed before: %s", timeDiff)
 
         if (currentSendingStrategy.isNotReady()) {
 
-            Timber.w("Current sending strategy is not ready")
+            Console.warning("Current sending strategy is not ready")
             return
         }
 
         if (isSending()) {
 
-            Timber.w("Data is already sending")
+            Console.warning("Data is already sending")
             return
         }
 
-        Timber.v("Execute sending :: executedFrom='$executedFrom'")
+        Console.log("Execute sending :: executedFrom='$executedFrom'")
 
         setSending(true)
 
@@ -421,7 +421,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         if (data.isEmpty()) {
 
-            Timber.w("No data to be sent yet")
+            Console.warning("No data to be sent yet")
             setSending(false)
             return
         }
@@ -436,10 +436,10 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
                 try {
 
                     val encryption = currentEncryptionProvider.obtain()
-                    Timber.v("Data decrypting: %s", encrypted.length)
+                    Console.log("Data decrypting: %s", encrypted.length)
 
                     val data = decrypt(encrypted, encryption)
-                    Timber.v("Data decrypted")
+                    Console.log("Data decrypted")
 
                     onSendingStarted(data)
 
@@ -456,11 +456,11 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
                             persistingRequired = true
                         }
 
-                        Timber.i("Data has been sent")
+                        Console.info("Data has been sent")
 
                     } else {
 
-                        Timber.e("Data has not been sent")
+                        Console.error("Data has not been sent")
                     }
 
                     onSent(data, success)
@@ -497,7 +497,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
             if (this.data.contains(encrypted)) {
 
-                Timber.w("Data has been already persisted: %s", data)
+                Console.warning("Data has been already persisted: %s", data)
                 executeSending("persist")
 
             } else {
@@ -505,7 +505,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
                 add(encrypted)
                 persist()
 
-                Timber.v("Data has been persisted: %s", data)
+                Console.log("Data has been persisted: %s", data)
             }
 
         } catch (e: OutOfMemoryError) {
@@ -523,12 +523,12 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         if (currentSendingStrategy == sendingDefaultStrategy) {
 
             val default = "DEFAULT SENDING STRATEGY"
-            Timber.v("Executing sending of %s with '%s'", data, default)
+            Console.log("Executing sending of %s with '%s'", data, default)
 
         } else {
 
             val custom = "CUSTOM SENDING STRATEGY"
-            Timber.d("Executing sending of %s with '%s'", data, custom)
+            Console.debug("Executing sending of %s with '%s'", data, custom)
         }
 
         return currentSendingStrategy.executeSending(data)
@@ -550,11 +550,11 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         if (success) {
 
-            Timber.i("Data has been persisted")
+            Console.info("Data has been persisted")
 
         } else {
 
-            Timber.e("Data has not been persisted")
+            Console.error("Data has not been persisted")
         }
 
         onPersisted(success)
@@ -564,22 +564,22 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         if (success) {
 
-            Timber.v("Init success")
+            Console.log("Init success")
             return
         }
 
-        Timber.e("Init failed")
+        Console.error("Init failed")
     }
 
     private fun onShutdown(success: Boolean) {
 
         if (success) {
 
-            Timber.v("Shutdown success")
+            Console.log("Shutdown success")
             return
         }
 
-        Timber.e("Shutdown failed")
+        Console.error("Shutdown failed")
     }
 
     private fun onSent(data: T, success: Boolean) {
@@ -590,7 +590,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         val ctx = getContext()
         ctx.sendBroadcast(intent)
 
-        Timber.v("BROADCAST_ACTION_RESULT on sent")
+        Console.log("BROADCAST_ACTION_RESULT on sent")
 
         val operation = object : CallbackOperation<TransmissionSendingCallback<T>> {
 
@@ -618,7 +618,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     private fun onPersisted(success: Boolean) {
 
-        Timber.v("On data persisted: %b", success)
+        Console.log("On data persisted: %b", success)
 
         val operation = object : CallbackOperation<TransmissionManagerPersistCallback> {
 
@@ -634,14 +634,14 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
             if (success) {
 
-                Timber.v("On data persisted: We are about to start sending data")
+                Console.log("On data persisted: We are about to start sending data")
 
                 executeSending("onPersisted")
 
 
             } else {
 
-                Timber.e("On data NOT persisted: We are NOT going to start data sending")
+                Console.error("On data NOT persisted: We are NOT going to start data sending")
             }
         }
     }
@@ -652,11 +652,11 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
             unregisterReceiver(sendRequestReceiver)
 
-            Timber.v("BROADCAST_ACTION_SEND receiver unregistered")
+            Console.log("BROADCAST_ACTION_SEND receiver unregistered")
 
         } catch (e: IllegalArgumentException) {
 
-            Timber.e(e)
+            Console.error(e)
         }
 
         clear()
@@ -666,7 +666,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     @Throws(InterruptedException::class)
     private fun add(items: LinkedList<String>) {
 
-        Timber.v("Data: Add, count: %d", items.size)
+        Console.log("Data: Add, count: %d", items.size)
 
         items.forEach {
 
@@ -676,13 +676,13 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     private fun clear() {
 
-        Timber.v("Data: Clear")
+        Console.log("Data: Clear")
         data.clear()
     }
 
     private fun clear(item: T): Boolean {
 
-        Timber.v("Data: Clear item")
+        Console.log("Data: Clear item")
 
         val encryption = currentEncryptionProvider.obtain()
 
@@ -709,7 +709,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
     private fun setSending(sending: Boolean) {
 
-        Timber.v("Setting: Sending data to %b", sending)
+        Console.log("Setting: Sending data to %b", sending)
         this.sending.set(sending)
     }
 

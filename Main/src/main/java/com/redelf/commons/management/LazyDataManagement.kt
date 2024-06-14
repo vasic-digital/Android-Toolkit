@@ -8,7 +8,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -41,13 +41,13 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                             if (triggerOnBackgroundForScreenOff) {
 
-                                Timber.v("$tag OK")
+                                Console.log("$tag OK")
 
                                 onBackground()
 
                             } else {
 
-                                Timber.v("$tag SKIPPING")
+                                Console.log("$tag SKIPPING")
                             }
                         }
                     }
@@ -93,7 +93,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
             } catch (e: Exception) {
 
-                Timber.e(e)
+                Console.error(e)
             }
         }
     }
@@ -175,7 +175,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
     private fun onForeground() {
 
-        Timber.v("Application is in foreground")
+        Console.log("Application is in foreground")
     }
 
     private fun onBackground() {
@@ -192,22 +192,22 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
         val tag = "Application went to background :: ${getWho()} ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         try {
 
-            Timber.v("$tag SAVING")
+            Console.log("$tag SAVING")
 
             val data = obtain()
             overwriteData(data)
 
-            Timber.v("$tag SAVED")
+            Console.log("$tag SAVED")
 
         } catch (e: IllegalStateException) {
 
-            Timber.e(tag, e)
+            Console.error(tag, e)
         }
 
-        Timber.v("$tag END")
+        Console.log("$tag END")
     }
 }

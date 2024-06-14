@@ -2,7 +2,7 @@ package com.redelf.commons.test
 
 import com.redelf.commons.Credentials
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer
 import org.junit.Assert
@@ -23,9 +23,9 @@ abstract class ManagersDependentTest : BaseTest() {
 
     protected open fun setup() {
 
-        Timber.initialize()
+        Console.initialize(failOnError = true)
 
-        Timber.v("Timber initialized: $this")
+        Console.log("Timber initialized: $this")
 
         Assert.assertTrue(applicationContext is BaseApplication)
 
@@ -38,7 +38,7 @@ abstract class ManagersDependentTest : BaseTest() {
 
     private fun setupStorage() {
 
-        Timber.v("Timber initialized: $this")
+        Console.log("Timber initialized: $this")
     }
 
     private fun setupManagers() {

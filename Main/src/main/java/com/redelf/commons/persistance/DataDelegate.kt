@@ -8,7 +8,7 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.partition.Partitional
@@ -93,7 +93,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             val type = value.getClazz()
             val partitionsCount = value.getPartitionCount()
 
-            if (DEBUG.get()) Timber.v(
+            if (DEBUG.get()) Console.log(
 
                 "$tag START, Partitions count = $partitionsCount, T = '${type.simpleName}'"
             )
@@ -105,7 +105,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                 if (!marked) {
 
-                    Timber.e("$tag ERROR: Could not mark partitional data")
+                    Console.error("$tag ERROR: Could not mark partitional data")
 
                     return false
                 }
@@ -150,11 +150,11 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (written) {
 
-                                                    if (DEBUG.get()) Timber.v("$tag WRITTEN: Partition no. $i")
+                                                    if (DEBUG.get()) Console.log("$tag WRITTEN: Partition no. $i")
 
                                                 } else {
 
-                                                    Timber.e("$tag FAILURE: Partition no. $i")
+                                                    Console.error("$tag FAILURE: Partition no. $i")
                                                 }
 
                                                 return written
@@ -184,7 +184,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (written) {
 
-                                                    if (DEBUG.get()) Timber.v(
+                                                    if (DEBUG.get()) Console.log(
 
                                                         "$tag WRITTEN: Partition no. $partition, " +
                                                                 "Row no. $row, Qualified name: $fqName"
@@ -192,19 +192,19 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 } else {
 
-                                                    Timber.e(
+                                                    Console.error(
                                                         "$tag FAILURE: Partition no. $i, " +
                                                                 "Row no. $row, Qualified name: $fqName"
                                                     )
 
                                                     if (!savedValue) {
 
-                                                        Timber.e("$tag Value has not been persisted")
+                                                        Console.error("$tag Value has not been persisted")
                                                     }
 
                                                     if (!savedFqName) {
 
-                                                        Timber.e("$tag Qualified name has not been persisted")
+                                                        Console.error("$tag Qualified name has not been persisted")
                                                     }
                                                 }
 
@@ -234,7 +234,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (mapKeyType == null) {
 
-                                                    Timber.e(
+                                                    Console.error(
                                                         "$tag FAILURE: Partition no. $i, " +
                                                                 "Row no. $row, No map key type provided"
                                                     )
@@ -244,7 +244,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (valueType == null) {
 
-                                                    Timber.e(
+                                                    Console.error(
                                                         "$tag FAILURE: Partition no. $i, " +
                                                                 "Row no. $row, No value type provided"
                                                     )
@@ -284,7 +284,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (written) {
 
-                                                    if (DEBUG.get()) Timber.v(
+                                                    if (DEBUG.get()) Console.log(
 
                                                         "$tag WRITTEN: Partition no. $partition, " +
                                                                 "Row no. $row, Qualified name: $fqName, " +
@@ -293,7 +293,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 } else {
 
-                                                    Timber.e(
+                                                    Console.error(
                                                         "$tag FAILURE: Partition no. $i, " +
                                                                 "Row no. $row, Qualified name: $fqName, " +
                                                                 "Pair data info: $rowValue"
@@ -301,12 +301,12 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     if (!savedValue) {
 
-                                                        Timber.e("$tag Value has not been persisted")
+                                                        Console.error("$tag Value has not been persisted")
                                                     }
 
                                                     if (!savedFqName) {
 
-                                                        Timber.e("$tag Qualified name has not been persisted")
+                                                        Console.error("$tag Qualified name has not been persisted")
                                                     }
                                                 }
 
@@ -334,7 +334,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         } else {
 
                                                             val msg = "FAILURE: Writing rows count"
-                                                            Timber.e("$tag $msg")
+                                                            Console.error("$tag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
                                                             return false
@@ -370,7 +370,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         } else {
 
                                                             val msg = "FAILURE: Writing rows count"
-                                                            Timber.e("$tag $msg")
+                                                            Console.error("$tag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
                                                             return false
@@ -391,7 +391,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         } else {
 
                                                             val msg = "FAILURE: Writing rows count"
-                                                            Timber.e("$tag $msg")
+                                                            Console.error("$tag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
                                                             return false
@@ -412,7 +412,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         } else {
 
                                                             val msg = "FAILURE: Writing rows count"
-                                                            Timber.e("$tag $msg")
+                                                            Console.error("$tag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
                                                             return false
@@ -425,13 +425,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             if (DEBUG.get()) {
 
-                                                                Timber.v("$tag Simple write OK")
+                                                                Console.log("$tag Simple write OK")
                                                             }
 
                                                         } else {
 
                                                             val msg = "FAILURE: Simple write failed"
-                                                            Timber.e("$tag $msg")
+                                                            Console.error("$tag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
                                                             return false
@@ -445,13 +445,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     if (DEBUG.get()) {
 
-                                                        Timber.v("$tag Simple write OK")
+                                                        Console.log("$tag Simple write OK")
                                                     }
 
                                                 } else {
 
                                                     val msg = "FAILURE: Simple write failed"
-                                                    Timber.e("$tag $msg")
+                                                    Console.error("$tag $msg")
                                                     val e = IOException(msg)
                                                     callback?.onFailure(e)
                                                     return false
@@ -506,7 +506,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                         override fun onFailure(error: Throwable) {
 
-                            Timber.e(error)
+                            Console.error(error)
 
                             success.set(false)
 
@@ -535,7 +535,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                     } catch (e: InterruptedException) {
 
-                        Timber.e("$tag ERROR: ${e.message}")
+                        Console.error("$tag ERROR: ${e.message}")
 
                         return false
                     }
@@ -547,7 +547,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
             } else {
 
-                Timber.e("$tag END: No partitions reported")
+                Console.error("$tag END: No partitions reported")
 
                 return false
             }
@@ -569,7 +569,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         if (count > 0) {
 
-            if (DEBUG.get()) Timber.v("$tag Partitional :: START")
+            if (DEBUG.get()) Console.log("$tag Partitional :: START")
 
             return get<T?>(key = key, defaultValue = null)
         }
@@ -592,21 +592,21 @@ class DataDelegate private constructor(private val facade: Facade) :
 
             val tag = "Partitional :: Get :: key = $key, T = '${clazz?.simpleName}' :: "
 
-            if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
+            if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
 
             try {
 
                 clazz?.newInstance()?.let { instance ->
 
-                    if (DEBUG.get()) Timber.v("$tag INSTANTIATED")
+                    if (DEBUG.get()) Console.log("$tag INSTANTIATED")
 
                     if (instance is Partitional<*>) {
 
-                        if (DEBUG.get()) Timber.v("$tag IS PARTITIONAL")
+                        if (DEBUG.get()) Console.log("$tag IS PARTITIONAL")
 
                         for (i in 0..<partitionsCount) {
 
-                            if (DEBUG.get()) Timber.v("$tag Partition = $i")
+                            if (DEBUG.get()) Console.log("$tag Partition = $i")
 
                             val type = instance.getPartitionType(i)
 
@@ -629,7 +629,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                         if (isEmpty(rowType)) {
 
-                                            Timber.e(
+                                            Console.error(
 
                                                 "$tag FAILURE: No row type for the key:" +
                                                         " '$keyRowType'"
@@ -639,7 +639,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                         } else {
 
-                                            if (DEBUG.get()) Timber.v(
+                                            if (DEBUG.get()) Console.log(
 
                                                 "$tag Row type: '$rowType'"
                                             )
@@ -663,7 +663,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                         } catch (e: ClassNotFoundException) {
 
-                                            Timber.e(e)
+                                            Console.error(e)
                                         }
 
                                         rowClazz?.let { clz ->
@@ -699,7 +699,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                                         obt.secondType ?: ""
                                                                     )
 
-                                                                    if (DEBUG.get()) Timber.v(
+                                                                    if (DEBUG.get()) Console.log(
 
                                                                         "$tag Row key type: '${clz1.simpleName}', " +
                                                                                 "Row value type: '${clz2.simpleName}'"
@@ -726,7 +726,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                         } else {
 
-                                                            Timber.e(
+                                                            Console.error(
 
                                                                 "$tag FAILURE: " +
                                                                         "Unsupported map child " +
@@ -745,7 +745,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     else -> {
 
-                                                        Timber.e(
+                                                        Console.error(
 
                                                             "$tag FAILURE: Unsupported " +
                                                                     "partition type '${t.typeName}'"
@@ -758,7 +758,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                             if (obtained == null) {
 
-                                                Timber.e(
+                                                Console.error(
 
                                                     "$tag FAILURE: Obtained row is null"
                                                 )
@@ -769,7 +769,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                         if (rowClazz == null) {
 
-                                            Timber.e("$tag FAILURE: Row class is null")
+                                            Console.error("$tag FAILURE: Row class is null")
 
                                             return defaultValue
                                         }
@@ -781,12 +781,12 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                         if (DEBUG.get()) {
 
-                                            Timber.v("$tag Set: $i")
+                                            Console.log("$tag Set: $i")
                                         }
 
                                     } else {
 
-                                        Timber.e("$tag FAILURE: Not set: $i")
+                                        Console.error("$tag FAILURE: Not set: $i")
 
                                         return defaultValue
                                     }
@@ -797,17 +797,17 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                     partition?.let { part ->
 
-                                        if (DEBUG.get()) Timber.v("$tag Obtained: $i")
+                                        if (DEBUG.get()) Console.log("$tag Obtained: $i")
 
                                         val set = instance.setPartitionData(i, part)
 
                                         if (set) {
 
-                                            if (DEBUG.get()) Timber.v("$tag Set: $i")
+                                            if (DEBUG.get()) Console.log("$tag Set: $i")
 
                                         } else {
 
-                                            Timber.e("$tag FAILURE: Not set: $i")
+                                            Console.error("$tag FAILURE: Not set: $i")
 
                                             return defaultValue
                                         }
@@ -815,14 +815,14 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                     if (partition == null && DEBUG.get()) {
 
-                                        Timber.w("$tag WARNING: Null partition: $i")
+                                        Console.warning("$tag WARNING: Null partition: $i")
                                     }
                                 }
                             }
 
                             if (type == null) {
 
-                                Timber.e(
+                                Console.error(
 
                                     "$tag FAILURE: No partition type " +
                                             "defined for partition: $i"
@@ -836,7 +836,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                     } else {
 
-                        Timber.e("$tag END: No partitions reported")
+                        Console.error("$tag END: No partitions reported")
 
                         return defaultValue
                     }
@@ -864,7 +864,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         val tag = "Partitional :: Delete ::"
 
-        if (DEBUG.get()) Timber.v("$tag START, Partitions = $partitionsCount")
+        if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
 
         if (partitionsCount > 0) {
 
@@ -873,14 +873,14 @@ class DataDelegate private constructor(private val facade: Facade) :
 
             if (!markRemoved) {
 
-                Timber.e("$tag ERROR: Could not un-mark partitional data")
+                Console.error("$tag ERROR: Could not un-mark partitional data")
 
                 return false
             }
 
             if (!typeRemoved) {
 
-                Timber.e("$tag ERROR: Could not un-mark type data")
+                Console.error("$tag ERROR: Could not un-mark type data")
 
                 return false
             }
@@ -894,11 +894,11 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                     if (removed) {
 
-                        if (DEBUG.get()) Timber.v("$tag REMOVED: Partition no. $i")
+                        if (DEBUG.get()) Console.log("$tag REMOVED: Partition no. $i")
 
                     } else {
 
-                        Timber.e("$tag FAILURE: Partition no. $i")
+                        Console.error("$tag FAILURE: Partition no. $i")
                     }
 
                 } else {
@@ -910,27 +910,27 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                         if (rRemoved) {
 
-                            if (DEBUG.get()) Timber.v(
+                            if (DEBUG.get()) Console.log(
 
                                 "$tag REMOVED: Partition no. $i, Row no. $j"
                             )
 
                         } else {
 
-                            Timber.e("$tag FAILURE: Partition no. $i, Row no. $j")
+                            Console.error("$tag FAILURE: Partition no. $i, Row no. $j")
                         }
                     }
 
                     if (deleteRowsCount(key, i)) {
 
-                        if (DEBUG.get()) Timber.v(
+                        if (DEBUG.get()) Console.log(
 
                             "$tag REMOVED: Partition no. $i, Rows count"
                         )
 
                     } else {
 
-                        Timber.e("$tag FAILURE: Partition no. $i, Rows count")
+                        Console.error("$tag FAILURE: Partition no. $i, Rows count")
                     }
                 }
             }
@@ -1005,7 +1005,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         } catch (e: ClassNotFoundException) {
 
-            Timber.e(e)
+            Console.error(e)
         }
 
         return null
@@ -1058,7 +1058,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         if (DEBUG.get()) {
 
-            Timber.v("$tag '${what::class.qualifiedName}' from '${arg ?: "nothing"}'")
+            Console.log("$tag '${what::class.qualifiedName}' from '${arg ?: "nothing"}'")
         }
 
         arg?.let { argument ->

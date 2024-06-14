@@ -3,7 +3,7 @@ package com.redelf.commons.transmission.alarm
 import android.content.Context
 import android.content.Intent
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.scheduling.alarm.AlarmCallback
 import com.redelf.commons.transmission.TransmissionService
 
@@ -13,7 +13,7 @@ class TransmissionAlarmCallback(private val ctx: Context) : AlarmCallback {
 
     override fun onAlarm(alarm: Int) {
 
-        Timber.v("$alarmTag Received: $alarm")
+        Console.log("$alarmTag Received: $alarm")
 
         when (alarm) {
 
@@ -32,7 +32,7 @@ class TransmissionAlarmCallback(private val ctx: Context) : AlarmCallback {
             }
             else -> {
 
-                Timber.e("$alarmTag Unknown alarm received: $alarm")
+                Console.error("$alarmTag Unknown alarm received: $alarm")
             }
         }
     }

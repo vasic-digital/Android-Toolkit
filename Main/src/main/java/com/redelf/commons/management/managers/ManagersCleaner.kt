@@ -1,7 +1,7 @@
 package com.redelf.commons.management.managers
 
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import java.util.concurrent.CountDownLatch
@@ -30,7 +30,7 @@ class ManagersCleaner {
 
                 error?.let {
 
-                    Timber.e(it)
+                    Console.error(it)
                 }
 
                 latch.countDown()
@@ -40,7 +40,7 @@ class ManagersCleaner {
 
                 error?.let {
 
-                    Timber.e(it)
+                    Console.error(it)
                 }
 
                 latch.countDown()
@@ -72,7 +72,7 @@ class ManagersCleaner {
                 }
             }
 
-            Timber.v("$tag START: $managersListLog$")
+            Console.log("$tag START: $managersListLog$")
 
             exec {
 
@@ -85,20 +85,20 @@ class ManagersCleaner {
 
                         exec {
 
-                            Timber.v("$tag Manager :: ${manager.getWho()}")
+                            Console.log("$tag Manager :: ${manager.getWho()}")
 
                             if (manager is DataManagement<*>) {
 
                                 manager.lock()
 
-                                Timber.v(
+                                Console.log(
 
                                     "$tag Manager :: ${manager.getWho()} :: LOCKED"
                                 )
 
                                 if (manager.reset()) {
 
-                                    Timber.v(
+                                    Console.log(
 
                                         "$tag Manager :: ${manager.getWho()} :: " +
                                                 "Cleaned"
@@ -106,7 +106,7 @@ class ManagersCleaner {
 
                                 } else {
 
-                                    Timber.w(
+                                    Console.warning(
 
                                         "$tag Manager :: ${manager.getWho()} :: " +
                                                 "Not cleaned, not data manager"
@@ -117,14 +117,14 @@ class ManagersCleaner {
 
                                 manager.unlock()
 
-                                Timber.v(
+                                Console.log(
 
                                     "$tag Manager :: ${manager.getWho()} :: UNLOCKED"
                                 )
 
                             } else {
 
-                                Timber.w(
+                                Console.warning(
 
                                     "$tag Manager :: ${manager.getWho()} :: " +
                                             "SKIPPED: Not data manager"
@@ -164,7 +164,7 @@ class ManagersCleaner {
 
         try {
 
-            Timber.v("$tag START")
+            Console.log("$tag START")
 
             exec {
 
@@ -173,13 +173,13 @@ class ManagersCleaner {
 
                 managers.forEach { manager ->
 
-                    Timber.v("$tag Manager :: ${manager.getWho()}")
+                    Console.log("$tag Manager :: ${manager.getWho()}")
 
                     exec {
 
                         if (manager.reset()) {
 
-                            Timber.v(
+                            Console.log(
 
                                 "$tag Manager :: ${manager.getWho()} :: " +
                                         "Cleaned"
@@ -187,7 +187,7 @@ class ManagersCleaner {
 
                         } else {
 
-                            Timber.w(
+                            Console.warning(
 
                                 "$tag Manager :: ${manager.getWho()} :: " +
                                         "Not cleaned"

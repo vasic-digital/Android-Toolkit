@@ -8,7 +8,7 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.redelf.access.installation.InstallationCheckCallback
 import com.redelf.commons.capability.CapabilityCheckCallback
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 
 abstract class BiometricAccessMethod(priority: Int, ctx: AppCompatActivity) :
     AccessMethod(priority, ctx) {
@@ -29,7 +29,7 @@ abstract class BiometricAccessMethod(priority: Int, ctx: AppCompatActivity) :
         val success = capable && available
         if (!success) {
 
-            Timber.w("Not capable (capable=$capable, available=$available): $this")
+            Console.warning("Not capable (capable=$capable, available=$available): $this")
         }
         capabilityCheckCallback.onCapabilityChecked(success)
     }
@@ -46,7 +46,7 @@ abstract class BiometricAccessMethod(priority: Int, ctx: AppCompatActivity) :
 
                 val msg =
                     "Not installed (success=${result == success}, available=$available): $this"
-                Timber.w(msg)
+                Console.warning(msg)
             }
             installationCallback.onInstallationChecked(installed)
         }
@@ -70,7 +70,7 @@ abstract class BiometricAccessMethod(priority: Int, ctx: AppCompatActivity) :
 
             val noAuth = -1
             var auth = noAuth
-            Timber.v("Authenticators: $authenticators")
+            Console.log("Authenticators: $authenticators")
             authenticators.forEach {
 
                 auth = if (auth == noAuth) {
@@ -87,12 +87,12 @@ abstract class BiometricAccessMethod(priority: Int, ctx: AppCompatActivity) :
             val info = promptInfoBuilder.build()
             ctx.runOnUiThread {
 
-                Timber.v("Authenticate: $prompt, from: $from")
+                Console.log("Authenticate: $prompt, from: $from")
                 prompt.authenticate(info)
             }
         } catch (e: IllegalArgumentException) {
 
-            Timber.e(e)
+            Console.error(e)
             executionCallback.onExecution(false, "IllegalArgumentException")
         }
     }

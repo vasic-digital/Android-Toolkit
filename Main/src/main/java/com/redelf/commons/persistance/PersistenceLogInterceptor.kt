@@ -1,6 +1,6 @@
 package com.redelf.commons.persistance
 
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Persistence
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -13,16 +13,16 @@ object PersistenceLogInterceptor : LogInterceptor {
 
     override fun onLog(message: String?) {
 
-        if (DEBUG.get()) Timber.v("${Persistence.TAG} $message")
+        if (DEBUG.get()) Console.log("${Persistence.TAG} $message")
     }
 
     override fun onDebug(message: String?) {
 
-        if (DEBUG.get()) Timber.d("${Persistence.TAG} $message")
+        if (DEBUG.get()) Console.debug("${Persistence.TAG} $message")
     }
 
     override fun onError(message: String?) {
 
-        Timber.e("${Persistence.TAG} $message")
+        Console.error("${Persistence.TAG} $message")
     }
 }

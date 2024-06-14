@@ -1,6 +1,6 @@
 package com.redelf.commons.callback
 
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
@@ -22,7 +22,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         val tag = "$tag ON  ::"
 
-        if (DEBUG.get()) Timber.v(
+        if (DEBUG.get()) Console.log(
 
             "$tag Start :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -35,12 +35,12 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
             if (item == null) {
 
-                Timber.w("$tag Releasing null pointing reference")
+                Console.warning("$tag Releasing null pointing reference")
                 iterator.remove()
 
             } else if (item === subscriber) {
 
-                Timber.w("$tag Already subscribed: ${subscriber.hashCode()}")
+                Console.warning("$tag Already subscribed: ${subscriber.hashCode()}")
 
                 return
             }
@@ -48,12 +48,12 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         callbacks.add(subscriber)
 
-        if (DEBUG.get()) Timber.d(
+        if (DEBUG.get()) Console.debug(
 
             "$tag Subscriber registered: ${subscriber.hashCode()}"
         )
 
-        if (DEBUG.get()) Timber.v(
+        if (DEBUG.get()) Console.log(
 
             "$tag End :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -63,7 +63,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         val tag = "$tag OFF ::"
 
-        if (DEBUG.get()) Timber.v(
+        if (DEBUG.get()) Console.log(
 
             "$tag Start :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -78,11 +78,11 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
                 if (item == null) {
 
-                    Timber.w("$tag Releasing null pointing reference")
+                    Console.warning("$tag Releasing null pointing reference")
 
                 } else {
 
-                    if (DEBUG.get()) Timber.d(
+                    if (DEBUG.get()) Console.debug(
 
                         "$tag Subscriber unregistered: ${subscriber.hashCode()}"
                     )
@@ -92,7 +92,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
             }
         }
 
-        if (DEBUG.get()) Timber.v(
+        if (DEBUG.get()) Console.log(
 
             "$tag End :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -127,12 +127,12 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
             if (item == null) {
 
-                Timber.w("$operationName releasing null pointing reference")
+                Console.warning("$operationName releasing null pointing reference")
                 iterator.remove()
 
             } else {
 
-                if (DEBUG.get()) Timber.d(
+                if (DEBUG.get()) Console.debug(
 
                     "$operationName performing operation for subscriber: ${item.hashCode()}"
                 )
@@ -144,14 +144,14 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         if (count > 0) {
 
-            if (DEBUG.get()) Timber.d(
+            if (DEBUG.get()) Console.debug(
 
                 "$operationName performed for $count subscribers"
             )
 
         } else {
 
-            if (DEBUG.get()) Timber.v("$operationName performed for no subscribers")
+            if (DEBUG.get()) Console.log("$operationName performed for no subscribers")
         }
     }
 

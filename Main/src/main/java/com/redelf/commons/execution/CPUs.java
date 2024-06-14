@@ -2,7 +2,7 @@ package com.redelf.commons.execution;
 
 import android.os.Build;
 
-import com.redelf.commons.logging.Timber;
+import com.redelf.commons.logging.Console;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -25,7 +25,7 @@ public class CPUs {
             cores = getNumCoresOldPhones();
         }
 
-        Timber.v("%s Cores: %d", tag, cores);
+        Console.log("%s Cores: %d", tag, cores);
 
         return cores;
     }
@@ -59,7 +59,7 @@ public class CPUs {
 
         } catch (Exception e) {
 
-            Timber.w(e);
+            Console.warning(e);
         }
 
         return 1;

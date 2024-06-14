@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -48,7 +48,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
 
-        Timber.v("Alarm received: $intent")
+        Console.log("Alarm received: $intent")
 
         intent?.let {
 

@@ -9,7 +9,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Persistence
@@ -55,7 +55,7 @@ constructor(
 
     init {
 
-        if (DEBUG.get()) Timber.v(
+        if (DEBUG.get()) Console.log(
 
             "$LOG_TAG :: Initialization :: Storage tag: '$storageTag'"
         )
@@ -75,7 +75,7 @@ constructor(
 
                         serializationExclusionStrategy?.let {
 
-                            if (DEBUG.get()) Timber.v(
+                            if (DEBUG.get()) Console.log(
 
                                 "$tag Exclusion Strategies: $serializationExclusionStrategy"
                             )
@@ -87,7 +87,7 @@ constructor(
 
                         serializationExclusionStrategy?.let {
 
-                            if (DEBUG.get()) Timber.v(
+                            if (DEBUG.get()) Console.log(
 
                                 "$tag Ser. Excl. Strategy: $serializationExclusionStrategy"
                             )
@@ -99,7 +99,7 @@ constructor(
 
                         deserializationExclusionStrategy?.let {
 
-                            if (DEBUG.get()) Timber.v(
+                            if (DEBUG.get()) Console.log(
 
                                 "$tag De-Ser. Excl. Strategy: $serializationExclusionStrategy"
                             )
@@ -165,7 +165,7 @@ constructor(
 
         if (DEBUG.get()) {
 
-            Timber.v("$LOG_TAG :: Pull: key = '$key' ::")
+            Console.log("$LOG_TAG :: Pull: key = '$key' ::")
         }
 
         return dataDelegate?.get(key)

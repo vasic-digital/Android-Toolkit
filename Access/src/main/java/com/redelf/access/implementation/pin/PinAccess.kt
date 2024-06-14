@@ -9,7 +9,7 @@ import com.redelf.access.R
 import com.redelf.access.implementation.AccessActivity
 import com.redelf.access.installation.InstallationCheckCallback
 import com.redelf.commons.capability.CapabilityCheckCallback
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import kotlin.random.Random
 
 
@@ -46,7 +46,7 @@ class PinAccess(priority: Int, ctx: AccessActivity) : AccessMethod(priority, ctx
 
         if (context.isFinishing) {
 
-            Timber.w("Activity is finishing")
+            Console.warning("Activity is finishing")
             return
         }
 

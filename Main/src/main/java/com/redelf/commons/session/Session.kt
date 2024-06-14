@@ -1,7 +1,7 @@
 package com.redelf.commons.session
 
 import com.redelf.commons.execution.ExecuteWithResult
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.reset.Resettable
 import java.util.UUID
 
@@ -18,7 +18,7 @@ class Session(
 
     init {
 
-        Timber.d("Created :: Session: $identifier @ $name")
+        Console.debug("Created :: Session: $identifier @ $name")
     }
 
     fun takeName() = name
@@ -29,26 +29,26 @@ class Session(
 
         val transactionId = identifier
 
-        Timber.v("$name :: Execute :: START :: Session: $transactionId")
+        Console.log("$name :: Execute :: START :: Session: $transactionId")
 
         val started = what.start()
 
         if (started) {
 
-            Timber.v("$name :: Execute :: STARTED :: Session: $transactionId")
+            Console.log("$name :: Execute :: STARTED :: Session: $transactionId")
 
             val success = what.perform()
 
             if (success) {
 
-                Timber.v(
+                Console.log(
 
                     "$name :: Execute :: PERFORMED :: Session: $transactionId :: Success"
                 )
 
             } else {
 
-                Timber.e(
+                Console.error(
 
                     "$name :: Execute :: PERFORMED :: Session: $transactionId :: Failure"
                 )
@@ -56,20 +56,20 @@ class Session(
 
             if (success && transactionId == identifier) {
 
-                Timber.v("$name :: Execute :: ENDING :: Session: $transactionId")
+                Console.log("$name :: Execute :: ENDING :: Session: $transactionId")
 
                 val ended = what.end()
 
                 if (ended) {
 
-                    Timber.v(
+                    Console.log(
 
                         "$name :: Execute :: ENDED :: Session: $transactionId :: Success"
                     )
 
                 } else {
 
-                    Timber.v(
+                    Console.log(
 
                         "$name :: Execute :: ENDED :: Session: $transactionId :: Failure"
                     )
@@ -81,7 +81,7 @@ class Session(
 
                 if (transactionId != identifier) {
 
-                    Timber.w("$name :: Execute :: ENDED :: Session: Skipped")
+                    Console.warning("$name :: Execute :: ENDED :: Session: Skipped")
                 }
             }
         }
@@ -101,7 +101,7 @@ class Session(
             name = identifier.toString()
         }
 
-        Timber.d("$oldName :: Reset :: Session: $oldId -> $identifier")
+        Console.debug("$oldName :: Reset :: Session: $oldId -> $identifier")
 
         return oldId != identifier
     }

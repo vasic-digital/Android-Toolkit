@@ -6,7 +6,7 @@ import com.redelf.access.installation.InstallationCheckCallback
 import com.redelf.commons.activity.BaseActivity
 import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.lifecycle.LifecycleCallback
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 
 abstract class AccessActivity : BaseActivity() {
 
@@ -21,7 +21,7 @@ abstract class AccessActivity : BaseActivity() {
 
             if (success) {
 
-                Timber.i("Access has been initialized")
+                Console.info("Access has been initialized")
 
                 try {
 
@@ -30,7 +30,7 @@ abstract class AccessActivity : BaseActivity() {
                 } catch (e: IllegalStateException) {
 
                     accessFailed = true
-                    Timber.e(e)
+                    Console.error(e)
                     onAccessInitFailed()
                 }
             } else {
@@ -54,7 +54,7 @@ abstract class AccessActivity : BaseActivity() {
 
                 if (installed) {
 
-                    Timber.v("onInstallationChecked: %s", hashCode())
+                    Console.log("onInstallationChecked: %s", hashCode())
                     executeAccess()
 
                 } else {
@@ -65,7 +65,7 @@ abstract class AccessActivity : BaseActivity() {
 
                     } catch (e: IllegalStateException) {
 
-                        Timber.e(e)
+                        Console.error(e)
                         onAccessInstallFailed()
                     }
                 }
@@ -76,7 +76,7 @@ abstract class AccessActivity : BaseActivity() {
 
         override fun onExecution(success: Boolean, calledFrom: String) {
 
-            Timber.v(
+            Console.log(
 
                 "onAccessResult from onExecution: %s, hash=%s, called from: %s",
                 success, hashCode(), calledFrom
@@ -117,7 +117,7 @@ abstract class AccessActivity : BaseActivity() {
             }
         } catch (e: IllegalStateException) {
 
-            Timber.e(e)
+            Console.error(e)
             onAccessInitFailed()
         }
     }
@@ -126,20 +126,20 @@ abstract class AccessActivity : BaseActivity() {
 
     protected open fun onAccessFailed() {
 
-        Timber.w("We have faulty access")
+        Console.warning("We have faulty access")
     }
 
     protected open fun onAccessInitFailed() {
 
-        Timber.e("Access has not been initialized")
+        Console.error("Access has not been initialized")
     }
 
     protected open fun onAccessResult(success: Boolean) {
 
         if (success) {
-            Timber.i("Access has authenticated user with success")
+            Console.info("Access has authenticated user with success")
         } else {
-            Timber.e("Access has not authenticated user with success")
+            Console.error("Access has not authenticated user with success")
         }
     }
 
@@ -153,21 +153,21 @@ abstract class AccessActivity : BaseActivity() {
 
         if (access.isExecuting()) {
 
-            Timber.w("Already executing access: $access")
+            Console.warning("Already executing access: $access")
             return
         }
 
-        Timber.i("Executing access: $access")
+        Console.info("Executing access: $access")
 
         if (authenticated) {
 
-            Timber.v("onAccessResult from already authenticated hash=%s", hashCode())
-            Timber.d("Already authenticated: $access")
+            Console.log("onAccessResult from already authenticated hash=%s", hashCode())
+            Console.debug("Already authenticated: $access")
             onAccessResult(authenticated)
 
         } else {
 
-            Timber.d("Access is ready: ${access.hashCode()}")
+            Console.debug("Access is ready: ${access.hashCode()}")
 
             try {
 
@@ -175,13 +175,13 @@ abstract class AccessActivity : BaseActivity() {
 
             } catch (e: java.lang.IllegalStateException) {
 
-                Timber.e(e)
+                Console.error(e)
             }
         }
     }
 
     protected open fun onAccessInstallFailed() {
 
-        Timber.w("Access installation failed")
+        Console.warning("Access installation failed")
     }
 }

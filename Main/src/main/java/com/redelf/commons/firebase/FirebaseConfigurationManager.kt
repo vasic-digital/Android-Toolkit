@@ -8,7 +8,7 @@ import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 
@@ -40,7 +40,7 @@ object FirebaseConfigurationManager :
 
         remoteConfig.setConfigSettingsAsync(configSettings)
 
-        Timber.v("$logTag Config params fetching")
+        Console.log("$logTag Config params fetching")
 
         val latch = CountDownLatch(1)
 
@@ -54,16 +54,16 @@ object FirebaseConfigurationManager :
 
                     if (updated) {
 
-                        Timber.d(msg)
+                        Console.debug(msg)
 
                     } else {
 
-                        Timber.v(msg)
+                        Console.log(msg)
                     }
 
                     val all = remoteConfig.all
 
-                    Timber.v("$logTag Config params obtained: $all")
+                    Console.log("$logTag Config params obtained: $all")
 
                     try {
 
@@ -80,7 +80,7 @@ object FirebaseConfigurationManager :
 
                 } else {
 
-                    Timber.e("$logTag Config params update failed")
+                    Console.error("$logTag Config params update failed")
                 }
             }
 

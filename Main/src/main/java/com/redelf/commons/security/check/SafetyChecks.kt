@@ -4,7 +4,7 @@ import com.google.firebase.crashlytics.internal.common.CommonUtils
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean
 
 class SafetyChecks {
@@ -34,7 +34,7 @@ class SafetyChecks {
         callbacks.register(callback)
         if (checking.get()) {
 
-            Timber.w("Root check is already in prgress")
+            Console.warning("Root check is already in prgress")
             return
         }
         checking.set(true)

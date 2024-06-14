@@ -3,7 +3,7 @@ package com.redelf.commons.persistance
 import android.content.Context
 import android.text.TextUtils
 import com.google.gson.Gson
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Converter
 import com.redelf.commons.persistance.base.Encryption
@@ -37,7 +37,7 @@ class PersistenceBuilder(
 
         ): PersistenceBuilder {
 
-            Timber.i("Data :: Initializing")
+            Console.info("Data :: Initializing")
 
             if (!TextUtils.isEmpty(storageTag) && storageTag != null) {
 

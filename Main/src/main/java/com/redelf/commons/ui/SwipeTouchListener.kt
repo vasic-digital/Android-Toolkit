@@ -6,7 +6,7 @@ import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 
 class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
 
@@ -66,7 +66,7 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
 
                     tracking = false
 
-                    Timber.v("$tag translationY: ${swipeView.translationY}")
+                    Console.log("$tag translationY: ${swipeView.translationY}")
 
                     if (swipeView.translationY > 30) {
 
@@ -116,12 +116,12 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
         val parentHeight = swipeView.height
         val tag = "$tag Animate swipe view ::"
 
-        Timber.v("$tag Parent height: $parentHeight")
+        Console.log("$tag Parent height: $parentHeight")
 
         val currentPosition = swipeView.translationY
         val animateTo = -parentHeight.toFloat()
 
-        Timber.v("$tag Animate to: $animateTo")
+        Console.log("$tag Animate to: $animateTo")
 
         val animator = ObjectAnimator.ofFloat(
 

@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 import com.redelf.commons.desription.Subject
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.locking.Lockable
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.reset.Resettable
 
@@ -50,36 +50,36 @@ abstract class SingleInstance<T> :
         }
         val tag = "${prefix}Reset ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         instance?.let {
 
-            Timber.v("$tag To lock")
+            Console.log("$tag To lock")
 
             if (it is Lockable) {
 
                 it.lock()
 
-                Timber.v("$tag Locked")
+                Console.log("$tag Locked")
             }
         }
 
         val newManager = instantiate()
 
-        Timber.v("$tag New instance: ${newManager.hashCode()}")
+        Console.log("$tag New instance: ${newManager.hashCode()}")
 
         val result = newManager != instance
         instance = newManager
 
-        Timber.v("$tag New instance confirmed: ${instance.hashCode()}")
+        Console.log("$tag New instance confirmed: ${instance.hashCode()}")
 
         if (result) {
 
-            Timber.v("$tag END")
+            Console.log("$tag END")
 
         } else {
 
-            Timber.e("$tag END: Instance was not changed")
+            Console.error("$tag END: Instance was not changed")
         }
 
         return result

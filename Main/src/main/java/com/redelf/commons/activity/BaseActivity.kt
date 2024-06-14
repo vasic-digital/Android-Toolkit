@@ -39,7 +39,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.initRegistrationWithGoogle
 import com.redelf.commons.extensions.isServiceRunning
 import com.redelf.commons.extensions.randomInteger
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
@@ -97,7 +97,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         LocalBroadcastManager.getInstance(applicationContext)
             .registerReceiver(finishReceiver, filter)
 
-        Timber.v("Transmission management supported: ${isTransmissionServiceSupported()}")
+        Console.log("Transmission management supported: ${isTransmissionServiceSupported()}")
 
         if (isTransmissionServiceSupported()) {
 
@@ -182,7 +182,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 } else {
 
-                    Timber.e("Permission denied for phone state listener")
+                    Console.error("Permission denied for phone state listener")
                 }
 
                 return
@@ -207,12 +207,12 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     override fun showProgress(from: String) {
 
-        Timber.v("Progress :: SHOW, from: $from")
+        Console.log("Progress :: SHOW, from: $from")
     }
 
     override fun hideProgress(from: String) {
 
-        Timber.v("Progress :: HIDE, from: $from")
+        Console.log("Progress :: HIDE, from: $from")
     }
 
     override fun toggleProgress(show: Boolean, from: String) {
@@ -231,7 +231,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
 
-        Timber.v("Keyboard :: Is open: $isOpen")
+        Console.log("Keyboard :: Is open: $isOpen")
     }
 
     private val finishReceiver = object : BroadcastReceiver() {
@@ -258,7 +258,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         override fun onServiceDisconnected(name: ComponentName?) {
 
             transmissionService = null
-            Timber.v("Transmission service disconnected: %s", name)
+            Console.log("Transmission service disconnected: %s", name)
         }
 
         @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -274,11 +274,11 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
                     val intent = Intent(TransmissionManager.BROADCAST_ACTION_SEND)
                     sendBroadcast(intent)
 
-                    Timber.v("BROADCAST_ACTION_SEND on transmission service connected")
+                    Console.log("BROADCAST_ACTION_SEND on transmission service connected")
 
                 } else {
 
-                    Timber.w(
+                    Console.warning(
 
                         "BROADCAST_ACTION_SEND on transmission service connected, SKIPPED"
                     )
@@ -294,8 +294,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         override fun onDataAccessPrepared(file: File, uri: Uri) {
 
-            Timber.v("Camera output uri: $uri")
-            Timber.v("Camera output file: ${file.absolutePath}")
+            Console.log("Camera output uri: $uri")
+            Console.log("Camera output file: ${file.absolutePath}")
 
             val from = "onDataAccessPrepared"
 
@@ -311,7 +311,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         override fun onCompleted(data: Boolean) {
 
-            Timber.v("Transmission manager :: INIT :: onCompleted: $data")
+            Console.log("Transmission manager :: INIT :: onCompleted: $data")
 
             try {
 
@@ -319,11 +319,11 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 if (isServiceRunning(clazz)) {
 
-                    Timber.v("Transmission service is already running")
+                    Console.log("Transmission service is already running")
 
                 } else {
 
-                    Timber.v("Transmission service is going to be started")
+                    Console.log("Transmission service is going to be started")
 
                     val serviceIntent = Intent(this@BaseActivity, clazz)
                     startService(serviceIntent)
@@ -350,17 +350,17 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open fun onTransmissionManagementReady() {
 
-        Timber.v("Transmission management is ready")
+        Console.log("Transmission management is ready")
     }
 
     protected open fun onTransmissionManagementFailed(error: Throwable) {
 
-        Timber.e(error)
+        Console.error(error)
     }
 
     open fun onBack() {
 
-        Timber.v("onBack()")
+        Console.log("onBack()")
 
         if (isFinishing) {
 
@@ -531,7 +531,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 } catch (e: IllegalArgumentException) {
 
-                    Timber.w(e.message)
+                    Console.warning(e.message)
                 }
             }
         }
@@ -556,11 +556,11 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         val tag = "Google registration :: On act. result ::"
 
-        Timber.v("$tag requestCode: $requestCode")
+        Console.log("$tag requestCode: $requestCode")
 
         if (requestCode == googleSignInRequestCode.get()) {
 
-            Timber.v("$tag Req. code ok")
+            Console.log("$tag Req. code ok")
 
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
 
@@ -570,14 +570,14 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 account.idToken?.let {
 
-                    Timber.v("$tag We have token: $it")
+                    Console.log("$tag We have token: $it")
 
                     firebaseAuthWithGoogle(it)
                 }
 
                 if (account.idToken == null) {
 
-                    Timber.e("$tag We have no token")
+                    Console.error("$tag We have no token")
 
                     val e = IllegalStateException("Obtained null Google token ID")
                     onRegistrationWithGoogleFailed(e)
@@ -585,7 +585,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
             } catch (e: ApiException) {
 
-                Timber.e(
+                Console.error(
 
                     "$tag Status code: ${e.statusCode}, " +
                             "Message: ${e.message ?: "no message"}"
@@ -656,7 +656,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                         if (it.data == null) {
 
-                            Timber.e("Gallery obtained uri is null")
+                            Console.error("Gallery obtained uri is null")
 
                             showError(R.string.error_attaching_file)
                             return
@@ -683,7 +683,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                     } else {
 
-                        Timber.e("File does not exist: %s", it.absolutePath)
+                        Console.error("File does not exist: %s", it.absolutePath)
                         showError(R.string.error_attaching_file)
                     }
                 }
@@ -695,7 +695,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
             else -> {
 
-                Timber.w("Unknown request code: $requestCode")
+                Console.warning("Unknown request code: $requestCode")
             }
         }
     }
@@ -724,14 +724,14 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open fun onRegistrationWithGoogleCompleted(tokenId: String) {
 
-        Timber.v("Registration with Google completed: $tokenId")
+        Console.log("Registration with Google completed: $tokenId")
     }
 
     protected open fun onRegistrationWithGoogleFailed(error: Throwable) {
 
-        Timber.e("Registration with Google failed")
+        Console.error("Registration with Google failed")
 
-        Timber.e(error)
+        Console.error(error)
     }
 
     protected open fun isTransmissionServiceSupported(): Boolean {
@@ -741,12 +741,12 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open fun onTransmissionServiceConnected() {
 
-        Timber.v("Transmission service connected: %s", transmissionService)
+        Console.log("Transmission service connected: %s", transmissionService)
     }
 
     protected open fun onAttachmentReady(attachment: File) {
 
-        Timber.v("Attachment is ready: ${attachment.absolutePath}")
+        Console.log("Attachment is ready: ${attachment.absolutePath}")
     }
 
     protected open fun disposeAttachment(attachment: File) {
@@ -757,11 +757,11 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 if (attachment.delete()) {
 
-                    Timber.v("Attachment has been disposed: ${attachment.absolutePath}")
+                    Console.log("Attachment has been disposed: ${attachment.absolutePath}")
 
                 } else {
 
-                    Timber.w("Attachment has NOT been disposed: ${attachment.absolutePath}")
+                    Console.warning("Attachment has NOT been disposed: ${attachment.absolutePath}")
                 }
             }
         }
@@ -775,13 +775,13 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open fun initializeTransmissionManager(successCallback: OnObtain<Boolean>) {
 
-        Timber.v("Transmission manager :: INIT :: START")
+        Console.log("Transmission manager :: INIT :: START")
 
         val callback = object : OnObtain<TransmissionManager<*>> {
 
             override fun onCompleted(data: TransmissionManager<*>) {
 
-                Timber.v("Sending manager :: Ready: $data")
+                Console.log("Sending manager :: Ready: $data")
 
                 successCallback.onCompleted(true)
             }
@@ -883,13 +883,13 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 } else {
 
-                    Timber.w("Dialog will not be shown, the activity is finishing")
+                    Console.warning("Dialog will not be shown, the activity is finishing")
                 }
             }
 
         } else {
 
-            Timber.w("We will not present alert, activity is finishing")
+            Console.warning("We will not present alert, activity is finishing")
         }
 
         return thisDialog
@@ -906,7 +906,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected fun addAttachment() {
 
-        Timber.v("Add attachment")
+        Console.log("Add attachment")
 
         attachmentsDialog?.dismiss()
         attachmentsDialog = AttachFileDialog(this, onPickFromCameraCallback, multiple = true)
@@ -923,7 +923,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         } catch (e: RejectedExecutionException) {
 
-            Timber.e(e)
+            Console.error(e)
 
             return false
         }
@@ -937,17 +937,17 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         val tag = "Finish broadcast ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         val hash = this.hashCode()
 
         if (isFinishing) {
 
-            Timber.v("$tag ALREADY FINISHING, THIS_HASH=$hash")
+            Console.log("$tag ALREADY FINISHING, THIS_HASH=$hash")
 
         } else {
 
-            Timber.v("$tag FINISHING, THIS_HASH=$hash")
+            Console.log("$tag FINISHING, THIS_HASH=$hash")
 
             finish()
         }
@@ -966,7 +966,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected fun openUri(uri: Uri): Boolean {
 
-        Timber.v("openUri(): $uri")
+        Console.log("openUri(): $uri")
 
         val intent = Intent(Intent.ACTION_VIEW, uri)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -979,7 +979,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         } catch (e: ActivityNotFoundException) {
 
-            Timber.e("openUri(): Activity has not been found")
+            Console.error("openUri(): Activity has not been found")
         }
 
         return false
@@ -1002,7 +1002,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
             if (external == null) {
 
-                Timber.e("External files dir is null")
+                Console.error("External files dir is null")
                 showError(R.string.error_attaching_file)
                 return
             }
@@ -1018,7 +1018,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 if (!newDir.exists() && !newDir.mkdirs()) {
 
-                    Timber.e(
+                    Console.error(
 
                         "Could not make directory: %s",
                         newDir.absolutePath
@@ -1060,7 +1060,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                 try {
 
-                    Timber.v("Attachment uri: $it")
+                    Console.log("Attachment uri: $it")
 
                     var extension = ""
                     val mimeType = contentResolver.getType(it)
@@ -1088,7 +1088,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                         if (outputFile.delete()) {
 
-                            Timber.w("File already exists, deleting it: ${outputFile.absolutePath}")
+                            Console.warning("File already exists, deleting it: ${outputFile.absolutePath}")
                         }
                     }
 
@@ -1096,7 +1096,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                         closeAll()
 
-                        Timber.e("Could not create file: ${outputFile.absolutePath}")
+                        Console.error("Could not create file: ${outputFile.absolutePath}")
                         showError(R.string.error_attaching_file)
                         return@Runnable
                     }
@@ -1116,7 +1116,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
                             sent = bis.copyTo(fileOut)
                         }
 
-                        Timber.v(
+                        Console.log(
 
                             "Attachment is ready, size: " +
                                     "${outputFile.length()} :: ${sent.toInt() == available}"
@@ -1126,13 +1126,13 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                     } else {
 
-                        Timber.e("Input stream is null")
+                        Console.error("Input stream is null")
                         showError(R.string.error_attaching_file)
                     }
 
                 } catch (e: IOException) {
 
-                    Timber.e(e)
+                    Console.error(e)
                     showError(R.string.error_attaching_file)
 
                 } finally {
@@ -1147,14 +1147,14 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     private fun clearAttachmentUris(from: String) {
 
-        Timber.v("Clearing attachment URIs from '$from'")
+        Console.log("Clearing attachment URIs from '$from'")
 
         attachmentObtainedUris.clear()
     }
 
     private fun clearAttachmentFiles(from: String) {
 
-        Timber.v("Clearing attachment files from '$from'")
+        Console.log("Clearing attachment files from '$from'")
 
         attachmentObtainedFiles.clear()
     }
@@ -1193,17 +1193,17 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         val tag = "Finish broadcast :: All ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         val hash = this.hashCode()
 
         if (isFinishing) {
 
-            Timber.v("$tag ALREADY FINISHING, THIS_HASH=$hash")
+            Console.log("$tag ALREADY FINISHING, THIS_HASH=$hash")
 
         } else {
 
-            Timber.v("$tag FINISHING, THIS_HASH=$hash")
+            Console.log("$tag FINISHING, THIS_HASH=$hash")
 
             finish()
         }

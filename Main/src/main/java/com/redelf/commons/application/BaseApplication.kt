@@ -36,7 +36,7 @@ import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.fcm.FcmService
 import com.redelf.commons.firebase.FirebaseConfigurationManager
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.persistance.SharedPreferencesStorage
@@ -52,6 +52,7 @@ abstract class BaseApplication :
     ActivityCount,
     LifecycleObserver,
     Updatable<Long>
+
 {
 
     companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
@@ -165,7 +166,10 @@ abstract class BaseApplication :
 
     open fun canRecordApplicationLogs() = false
 
+    protected abstract fun isProduction(): Boolean
+
     protected abstract fun onDoCreate()
+
     protected abstract fun takeSalt(): String
 
     protected open fun populateManagers() = listOf<List<DataManagement<*>>>()
@@ -245,12 +249,12 @@ abstract class BaseApplication :
 
                 TelephonyManager.CALL_STATE_OFFHOOK -> {
 
-                    Timber.v("Phone is OFF-HOOK")
+                    Console.log("Phone is OFF-HOOK")
                 }
 
                 TelephonyManager.CALL_STATE_IDLE -> {
 
-                    Timber.v("Phone is IDLE")
+                    Console.log("Phone is IDLE")
                 }
             }
         }
@@ -263,14 +267,14 @@ abstract class BaseApplication :
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
 
-                Timber.d("Audio focus :: Transient or can dock")
+                Console.debug("Audio focus :: Transient or can dock")
 
                 onExternalStreamStarted()
             }
 
             AudioManager.AUDIOFOCUS_GAIN -> {
 
-                Timber.v("Audio focus :: Gained")
+                Console.log("Audio focus :: Gained")
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
@@ -284,18 +288,18 @@ abstract class BaseApplication :
 
         val tag = "Register phone state listener ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         if (registeredForPhoneCallsDetection.get()) {
 
-            Timber.v("$tag Already registered")
+            Console.log("$tag Already registered")
 
             return
         }
 
         if (detectPhoneCallReceived) {
 
-            Timber.v("$tag Phone calls detection enabled")
+            Console.log("$tag Phone calls detection enabled")
 
             telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
             telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
@@ -309,18 +313,18 @@ abstract class BaseApplication :
                     PhoneStateListener.LISTEN_CALL_STATE
                 )
 
-                Timber.v("$tag Phone state listener registered with success")
+                Console.log("$tag Phone state listener registered with success")
 
                 registeredForPhoneCallsDetection.set(true)
 
             } catch (e: SecurityException) {
 
-                Timber.e(tag, e)
+                Console.error(tag, e)
             }
 
         } else {
 
-            Timber.v("$tag Phone calls detection disabled")
+            Console.log("$tag Phone calls detection disabled")
         }
     }
 
@@ -328,11 +332,11 @@ abstract class BaseApplication :
 
         val tag = "Register audio focus listener ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         if (registeredForAudioFocusDetection.get()) {
 
-            Timber.v("$tag Already registered")
+            Console.log("$tag Already registered")
 
             return
         }
@@ -347,22 +351,22 @@ abstract class BaseApplication :
 
             audioManager?.requestAudioFocus(audioFocusRequest)
 
-            Timber.v("$tag END")
+            Console.log("$tag END")
 
         } else {
 
-            Timber.v("$tag Audio focus detection disabled")
+            Console.log("$tag Audio focus detection disabled")
         }
     }
 
     protected open fun onPhoneIsRinging() {
 
-        Timber.v("Phone is RINGING")
+        Console.log("Phone is RINGING")
     }
 
     protected open fun onExternalStreamStarted() {
 
-        Timber.d("Audio focus :: Lost")
+        Console.debug("Audio focus :: Lost")
     }
 
     override fun takeContext() = CONTEXT
@@ -380,11 +384,11 @@ abstract class BaseApplication :
         DEBUG.set(CONTEXT.resources.getBoolean(R.bool.debug))
         STRICT_MODE_DISABLED.set(isStrictModeDisabled())
 
-        if (DEBUG.get()) {
+        if (DEBUG.get() || canRecordApplicationLogs()) {
 
-            Timber.initialize(canRecordApplicationLogs())
+            Console.initialize(canRecordApplicationLogs(), production = isProduction())
 
-            Timber.i("Application :: Initializing")
+            Console.info("Application :: Initializing")
 
             enableStrictMode()
         }
@@ -416,9 +420,9 @@ abstract class BaseApplication :
                 initializeManagers()
                 onManagers()
 
-                Timber.v("Installing profile: START")
+                Console.log("Installing profile: START")
                 ProfileInstaller.writeProfile(applicationContext)
-                Timber.v("Installing profile: END")
+                Console.log("Installing profile: END")
             }
 
         } catch (e: RejectedExecutionException) {
@@ -431,12 +435,12 @@ abstract class BaseApplication :
 
     protected open fun onScreenOn() {
 
-        Timber.v("Screen is ON")
+        Console.log("Screen is ON")
     }
 
     protected open fun onScreenOff() {
 
-        Timber.v("Screen is OFF")
+        Console.log("Screen is OFF")
 
         val intent = Intent(BROADCAST_ACTION_APPLICATION_SCREEN_OFF)
         sendBroadcast(intent)
@@ -444,17 +448,17 @@ abstract class BaseApplication :
 
     protected open fun onFcmToken(token: String) {
 
-        Timber.v("FCM: Token => $token")
+        Console.log("FCM: Token => $token")
     }
 
     protected open fun onFcmEvent(intent: Intent) {
 
-        Timber.v("FCM: Event => $intent")
+        Console.log("FCM: Event => $intent")
     }
 
     protected open fun onManagersReady() {
 
-        Timber.i("Managers: Ready")
+        Console.info("Managers: Ready")
     }
 
     private fun initializeManagers(): Boolean {
@@ -482,7 +486,7 @@ abstract class BaseApplication :
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun initializeFcm() {
 
-        Timber.i("FCM: Initializing")
+        Console.info("FCM: Initializing")
 
         val tokenFilter = IntentFilter(FcmService.BROADCAST_ACTION_TOKEN)
         val eventFilter = IntentFilter(FcmService.BROADCAST_ACTION_EVENT)
@@ -498,7 +502,7 @@ abstract class BaseApplication :
 
                     if (!task.isSuccessful) {
 
-                        Timber.w("FCM: Fetching registration token failed", task.exception)
+                        Console.warning("FCM: Fetching registration token failed", task.exception)
                         return@OnCompleteListener
                     }
 
@@ -506,13 +510,13 @@ abstract class BaseApplication :
 
                     if (isNotEmpty(token)) {
 
-                        Timber.i("FCM: Initialized, token => $token")
+                        Console.info("FCM: Initialized, token => $token")
 
                         onFcmToken(token)
 
                     } else {
 
-                        Timber.i("FCM: Initialized with no token")
+                        Console.info("FCM: Initialized with no token")
                     }
                 }
             )
@@ -565,28 +569,28 @@ abstract class BaseApplication :
         TOP_ACTIVITY.add(clazz)
         TOP_ACTIVITIES.add(clazz)
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${clazz.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${clazz.simpleName}")
 
-        Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+        Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
 
         super.onActivityPreResumed(activity)
     }
 
     override fun onActivityPaused(activity: Activity) {
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG PAUSED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG PAUSED :: ${activity.javaClass.simpleName}")
     }
 
     override fun onActivityResumed(activity: Activity) {
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
 
         if (isAppInBackground.get()) {
 
             val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
             sendBroadcast(intent)
 
-            Timber.d("$ACTIVITY_LIFECYCLE_TAG Foreground")
+            Console.debug("$ACTIVITY_LIFECYCLE_TAG Foreground")
         }
 
         isAppInBackground.set(false)
@@ -594,7 +598,7 @@ abstract class BaseApplication :
 
     override fun onActivityPostResumed(activity: Activity) {
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG POST-RESUMED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG POST-RESUMED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPostResumed(activity)
     }
@@ -605,16 +609,16 @@ abstract class BaseApplication :
 
         TOP_ACTIVITIES.remove(clazz)
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
 
-        Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+        Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
 
         super.onActivityPrePaused(activity)
     }
 
     override fun onActivityPostPaused(activity: Activity) {
 
-        Timber.v(
+        Console.log(
 
             "$ACTIVITY_LIFECYCLE_TAG POST-PAUSED :: ${activity.javaClass.simpleName}, " +
                     "Active: ${TOP_ACTIVITY.size}"
@@ -630,19 +634,19 @@ abstract class BaseApplication :
 
     override fun onActivityPreStopped(activity: Activity) {
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-STOPPED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-STOPPED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPreStopped(activity)
     }
 
     override fun onActivityStopped(activity: Activity) {
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG STOPPED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG STOPPED :: ${activity.javaClass.simpleName}")
     }
 
     override fun onActivityPostStopped(activity: Activity) {
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG POST-STOPPED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG POST-STOPPED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPostStopped(activity)
     }
@@ -680,11 +684,11 @@ abstract class BaseApplication :
             }
         }
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
 
         if (TOP_ACTIVITIES.isEmpty()) {
 
-            Timber.d("$ACTIVITY_LIFECYCLE_TAG No top activity")
+            Console.debug("$ACTIVITY_LIFECYCLE_TAG No top activity")
 
             onAppBackgroundState()
 
@@ -694,7 +698,7 @@ abstract class BaseApplication :
 
                 val clazz = TOP_ACTIVITY.last()
 
-                Timber.d("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+                Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
             }
         }
 
@@ -703,7 +707,7 @@ abstract class BaseApplication :
 
     override fun onActivityDestroyed(activity: Activity) {
 
-        Timber.v("$ACTIVITY_LIFECYCLE_TAG DESTROYED :: ${activity.javaClass.simpleName}")
+        Console.log("$ACTIVITY_LIFECYCLE_TAG DESTROYED :: ${activity.javaClass.simpleName}")
     }
 
     override fun onActivityPostDestroyed(activity: Activity) {
@@ -722,7 +726,7 @@ abstract class BaseApplication :
 
     private fun enableStrictMode() {
 
-        Timber.v("Enable Strict Mode, disabled=$STRICT_MODE_DISABLED")
+        Console.log("Enable Strict Mode, disabled=$STRICT_MODE_DISABLED")
 
         if (STRICT_MODE_DISABLED.get()) {
 
@@ -773,7 +777,7 @@ abstract class BaseApplication :
 
         } catch (e: Throwable) {
 
-            Timber.e(e)
+            Console.error(e)
         }
     }
 
@@ -825,7 +829,7 @@ abstract class BaseApplication :
 
             onUpdatedFailed(0)
 
-            Timber.e(e)
+            Console.error(e)
         }
 
         getUpdatesCodes().forEach { code ->
@@ -835,7 +839,7 @@ abstract class BaseApplication :
             */
             if (versionCode >= code && isUpdateAvailable(code)) {
 
-                Timber.v("$tag Code :: $versionCode :: START")
+                Console.log("$tag Code :: $versionCode :: START")
 
                 val success = update(code)
 
@@ -848,7 +852,7 @@ abstract class BaseApplication :
                     onUpdatedFailed(code)
                 }
 
-                Timber.v("$tag Code :: $versionCode :: END")
+                Console.log("$tag Code :: $versionCode :: END")
             }
         }
     }
@@ -873,11 +877,11 @@ abstract class BaseApplication :
         val msg = "$tag Success: versionCode = ${getVersionCode()}, " +
                 "identifier = $identifier"
 
-        Timber.d(msg)
+        Console.debug(msg)
 
         if (!result) {
 
-            Timber.e("$tag Failed to update preferences :: key = '$key'")
+            Console.error("$tag Failed to update preferences :: key = '$key'")
         }
     }
 
@@ -891,11 +895,11 @@ abstract class BaseApplication :
 
         if (updateAvailable) {
 
-            Timber.v("Update :: Available :: identifier = '$identifier'")
+            Console.log("Update :: Available :: identifier = '$identifier'")
 
         } else {
 
-            Timber.v("Update :: Already applied :: identifier = '$identifier'")
+            Console.log("Update :: Already applied :: identifier = '$identifier'")
         }
 
         return updateAvailable
@@ -908,6 +912,6 @@ abstract class BaseApplication :
         val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
         sendBroadcast(intent)
 
-        Timber.d("$ACTIVITY_LIFECYCLE_TAG Background")
+        Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
     }
 }

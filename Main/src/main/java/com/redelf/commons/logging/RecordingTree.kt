@@ -13,7 +13,19 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.regex.Pattern
 
-class RecordingTree(private val destination: String) : Timber.Tree() {
+class RecordingTree(
+
+    private val destination: String,
+    private val production: Boolean = false
+
+) : Timber.Tree(), com.redelf.commons.logging.LogParametrized {
+
+    companion object {
+
+        private const val MAX_TAG_LENGTH = 23
+        private const val MAX_LOG_LENGTH = 4000
+        private val ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$")
+    }
 
     private var file: File? = null
     private var session: String? = null
@@ -22,7 +34,7 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
     private val fqcnIgnore = listOf(
 
         Timber::class.java.name,
-        com.redelf.commons.logging.Timber::class.java.name,
+        com.redelf.commons.logging.Console::class.java.name,
         Timber.Forest::class.java.name,
         Timber.Tree::class.java.name,
         Timber.DebugTree::class.java.name,
@@ -59,6 +71,32 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
         } else {
             tag.substring(0, MAX_TAG_LENGTH)
         }
+    }
+
+    fun hello() {
+
+        val calendar = Calendar.getInstance()
+        val format = SimpleDateFormat("yy-MM-dd", Locale.getDefault())
+        val formattedDate = format.format(calendar.time)
+
+        writeLog("LOG START", "LOG DATE: $formattedDate")
+    }
+
+    override fun logParametrized(priority: Int, tag: String?, message: String, t: Throwable?) {
+
+        if (production) {
+
+            writeLog("$tag :: P$priority ::", message)
+
+            t?.let {
+
+                writeLog(tag, it.stackTrace.toString())
+            }
+
+            return
+        }
+
+        log(priority, tag, message, t)
     }
 
     @SuppressLint("LogNotTimber")
@@ -139,12 +177,5 @@ class RecordingTree(private val destination: String) : Timber.Tree() {
 
             Timber.e("Failed to append text into: ${file?.absolutePath}")
         }
-    }
-
-    companion object {
-
-        private const val MAX_TAG_LENGTH = 23
-        private const val MAX_LOG_LENGTH = 4000
-        private val ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$")
     }
 }

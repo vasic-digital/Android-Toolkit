@@ -3,7 +3,7 @@ package com.redelf.commons.test
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
 import com.redelf.commons.execution.TaskExecutor
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.persistance.EncryptedPersistence
 import java.io.BufferedOutputStream
@@ -24,7 +24,7 @@ abstract class BaseTest {
     protected val testContext: Context = instrumentation.context
     protected val applicationContext = instrumentation.targetContext
 
-    protected fun log(what: String) = Timber.d(what)
+    protected fun log(what: String) = Console.debug(what)
 
     @Throws(IllegalStateException::class, IOException::class)
     protected fun uploadAssets(
@@ -51,7 +51,7 @@ abstract class BaseTest {
 
                     if (!toInclude.contains(assetName)) {
 
-                        Timber.v("Skipping the asset: $assetName")
+                        Console.log("Skipping the asset: $assetName")
                         return@forEach
                     }
                 }
@@ -63,11 +63,11 @@ abstract class BaseTest {
 
                     if (outputFile.exists()) {
 
-                        Timber.w("Tmp. file already exists: ${outputFile.absolutePath}")
+                        Console.warning("Tmp. file already exists: ${outputFile.absolutePath}")
 
                         if (outputFile.delete()) {
 
-                            Timber.v("Tmp. file deleted: ${outputFile.absolutePath}")
+                            Console.log("Tmp. file deleted: ${outputFile.absolutePath}")
 
                         } else {
 
@@ -79,7 +79,7 @@ abstract class BaseTest {
 
                     if (outputFile.createNewFile() && outputFile.exists()) {
 
-                        Timber.v("Tmp. file created: ${outputFile.absolutePath}")
+                        Console.log("Tmp. file created: ${outputFile.absolutePath}")
 
                     } else {
 
@@ -98,7 +98,7 @@ abstract class BaseTest {
 
                 } catch (e: IOException) {
 
-                    Timber.e(e)
+                    Console.error(e)
                 }
 
                 inputStream.close()

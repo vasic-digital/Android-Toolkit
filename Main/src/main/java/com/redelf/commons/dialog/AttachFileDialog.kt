@@ -13,7 +13,7 @@ import androidx.core.content.FileProvider
 import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.randomInteger
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import java.io.File
 
 class AttachFileDialog(
@@ -81,7 +81,7 @@ class AttachFileDialog(
 
         } else {
 
-            Timber.w("Attach file dialog is already opened")
+            Console.warning("Attach file dialog is already opened")
         }
     }
 
@@ -89,7 +89,7 @@ class AttachFileDialog(
 
         dialog?.let {
 
-            Timber.v("We are about to dismiss attach file dialog")
+            Console.log("We are about to dismiss attach file dialog")
 
             it.dismiss()
             dialog = null
@@ -98,7 +98,7 @@ class AttachFileDialog(
 
     private fun pickFromCamera() {
 
-        Timber.v("Pick from camera")
+        Console.log("Pick from camera")
 
         val external = ctx.getExternalFilesDir(null)
 
@@ -112,7 +112,7 @@ class AttachFileDialog(
             val newDir = File(dir)
             if (!newDir.exists() && !newDir.mkdirs()) {
 
-                Timber.e("Could not make directory: %s", newDir.absolutePath)
+                Console.error("Could not make directory: %s", newDir.absolutePath)
             }
 
             val file = dir + System.currentTimeMillis() + ".jpg"
@@ -122,12 +122,12 @@ class AttachFileDialog(
 
                 if (!outputFile.createNewFile()) {
 
-                    Timber.e("Could not create file: %s", outputFile)
+                    Console.error("Could not create file: %s", outputFile)
                 }
 
             } catch (e: Exception) {
 
-                Timber.e(e)
+                Console.error(e)
             }
 
             val authority: String = ctx.applicationContext.packageName.toString() +
@@ -140,7 +140,7 @@ class AttachFileDialog(
                 outputFile
             )
 
-            Timber.d("File output uri: %s", outputFileUri)
+            Console.debug("File output uri: %s", outputFileUri)
 
             val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri)
@@ -161,7 +161,7 @@ class AttachFileDialog(
 
     private fun pickFromGallery(multiple: Boolean = false) {
 
-        Timber.v("Pick from gallery")
+        Console.log("Pick from gallery")
 
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         val mimeTypes = arrayOf("image/*", "video/*", "audio/*")
@@ -185,7 +185,7 @@ class AttachFileDialog(
 
     private fun pickFromDocuments(multiple: Boolean = false) {
 
-        Timber.v("Pick from documents")
+        Console.log("Pick from documents")
 
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "*/*"

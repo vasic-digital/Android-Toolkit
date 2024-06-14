@@ -2,7 +2,7 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import com.redelf.commons.extensions.isEmpty
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Converter
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Facade
@@ -114,7 +114,7 @@ object DefaultFacade : Facade {
 
         } catch (e: Exception) {
 
-            Timber.e(e)
+            Console.error(e)
         }
 
         if (cipherText == null) {
@@ -332,7 +332,7 @@ object DefaultFacade : Facade {
 
         } catch (e: Exception) {
 
-            Timber.e(LOG_TAG, e)
+            Console.error(LOG_TAG, e)
 
             return null
         }

@@ -1,6 +1,6 @@
 package com.redelf.commons.migration
 
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.OnObtain
 
 abstract class DataMigration<SOURCE, TARGET> {
@@ -20,13 +20,13 @@ abstract class DataMigration<SOURCE, TARGET> {
 
         val tag = "Migrate :: $id ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         val onTarget = object : OnObtain<TARGET> {
 
             override fun onCompleted(data: TARGET) {
 
-                Timber.v("$tag Target obtained: $data")
+                Console.log("$tag Target obtained: $data")
 
                 apply(data, callback)
             }
@@ -41,11 +41,11 @@ abstract class DataMigration<SOURCE, TARGET> {
 
             override fun onCompleted(data: SOURCE) {
 
-                Timber.v("$tag Source obtained: $data")
+                Console.log("$tag Source obtained: $data")
 
                 data?.let {
 
-                    Timber.v("$tag Get target")
+                    Console.log("$tag Get target")
 
                     getTarget(data, onTarget)
                 }
@@ -62,7 +62,7 @@ abstract class DataMigration<SOURCE, TARGET> {
             }
         }
 
-        Timber.v("$tag Get source")
+        Console.log("$tag Get source")
 
         getSource(onSource)
     }

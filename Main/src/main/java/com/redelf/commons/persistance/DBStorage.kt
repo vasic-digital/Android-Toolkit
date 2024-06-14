@@ -12,7 +12,7 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.extensions.randomString
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Storage
 import java.sql.SQLException
@@ -71,12 +71,12 @@ object DBStorage : Storage<String> {
 
         } catch (e: Exception) {
 
-            Timber.e(e)
+            Console.error(e)
         }
 
         if (prefs?.put(prefsKey, result) != true) {
 
-            Timber.e("Error saving key preferences: $source")
+            Console.error("Error saving key preferences: $source")
         }
 
         return result
@@ -115,13 +115,13 @@ object DBStorage : Storage<String> {
 
             } catch (e: Exception) {
 
-                Timber.e(e)
+                Console.error(e)
             }
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
 
                 "Old version: $oldVersion :: New version: $newVersion"
             )
@@ -152,7 +152,7 @@ object DBStorage : Storage<String> {
 
                 } catch (e: Exception) {
 
-                    Timber.e(e)
+                    Console.error(e)
                 }
 
                 latch.countDown()
@@ -168,7 +168,7 @@ object DBStorage : Storage<String> {
 
         val tag = "Initialize ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
 
         try {
 
@@ -184,7 +184,7 @@ object DBStorage : Storage<String> {
 
                 if (!nPrefs.put(DATABASE_NAME_SUFFIX_KEY, suffix)) {
 
-                    Timber.e("Error saving key preferences: $DATABASE_NAME_SUFFIX_KEY")
+                    Console.error("Error saving key preferences: $DATABASE_NAME_SUFFIX_KEY")
                 }
             }
 
@@ -228,20 +228,20 @@ object DBStorage : Storage<String> {
             columnKey = columnKey()
             columnValue = columnValue()
 
-            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
 
                 "$tag dbName = '$dbName', rawName = '$rawName'"
             )
 
             dbHelper = DbHelper(ctx, dbName)
 
-            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END")
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END")
 
         } catch (e: SQLException) {
 
-            Timber.e(tag, e.message ?: "Unknown error")
+            Console.error(tag, e.message ?: "Unknown error")
 
-            Timber.e(e)
+            Console.error(e)
         }
     }
 
@@ -272,7 +272,7 @@ object DBStorage : Storage<String> {
 
         val tag = "Put :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -281,7 +281,7 @@ object DBStorage : Storage<String> {
 
             if (db?.isOpen == false) {
 
-                Timber.w("DB is not open")
+                Console.warning("DB is not open")
 
                 latch.countDown()
 
@@ -316,7 +316,7 @@ object DBStorage : Storage<String> {
 
                             if (rowsUpdated > 0) {
 
-                                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+                                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
 
                                     "$tag END: rowsUpdated = $rowsUpdated, " +
                                             "length = ${value.length}"
@@ -329,7 +329,7 @@ object DBStorage : Storage<String> {
 
                             if (rowsInserted > 0) {
 
-                                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+                                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
 
                                     "$tag END: rowsInserted = $rowsInserted, " +
                                             "length = ${value.length}"
@@ -340,12 +340,12 @@ object DBStorage : Storage<String> {
 
                         } catch (e: Exception) {
 
-                            Timber.e(tag, e.message ?: "Unknown error")
+                            Console.error(tag, e.message ?: "Unknown error")
 
-                            Timber.e(e)
+                            Console.error(e)
                         }
 
-                        Timber.e(
+                        Console.error(
 
                             "$tag END :: Nothing was inserted or updated, " +
                                     "length = ${value.length}"
@@ -381,13 +381,13 @@ object DBStorage : Storage<String> {
         val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
         val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
 
         withDb { db ->
 
             if (db?.isOpen == false) {
 
-                Timber.w("DB is not open")
+                Console.warning("DB is not open")
 
                 latch.countDown()
 
@@ -422,23 +422,23 @@ object DBStorage : Storage<String> {
 
             } catch (e: Exception) {
 
-                Timber.e(
+                Console.error(
 
                     "$tag SQL args :: Selection: $selection, Selection args:" +
                             " ${selectionArgs.toMutableList()}, projection: " +
                             "${projection.toMutableList()}", e.message ?: "Unknown error"
                 )
 
-                Timber.e(e)
+                Console.error(e)
             }
 
             if (isNotEmpty(result)) {
 
-                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END")
+                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END")
 
             } else {
 
-                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END: Nothing found")
+                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END: Nothing found")
             }
 
             latch.countDown()
@@ -455,12 +455,12 @@ object DBStorage : Storage<String> {
 
         if (isEmpty(key)) {
 
-            Timber.e("$tag Empty key")
+            Console.error("$tag Empty key")
 
             return false
         }
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -469,7 +469,7 @@ object DBStorage : Storage<String> {
 
             if (db?.isOpen == false) {
 
-                Timber.w("DB is not open")
+                Console.warning("DB is not open")
 
                 latch.countDown()
 
@@ -491,18 +491,18 @@ object DBStorage : Storage<String> {
 
                             if (res) {
 
-                                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END")
+                                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END")
 
                             } else {
 
-                                Timber.e("$tag FAILED")
+                                Console.error("$tag FAILED")
                             }
 
                             return res
 
                         } catch (e: Exception) {
 
-                            Timber.e(
+                            Console.error(
 
                                 "$tag ERROR :: SQL args :: Selection: $selection, " +
                                         "Selection args: " +
@@ -511,7 +511,7 @@ object DBStorage : Storage<String> {
                                 e.message ?: "Unknown error"
                             )
 
-                            Timber.e(e)
+                            Console.error(e)
                         }
 
                         return false
@@ -534,7 +534,7 @@ object DBStorage : Storage<String> {
 
         val tag = "Delete :: All ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -543,7 +543,7 @@ object DBStorage : Storage<String> {
 
             if (db?.isOpen == false) {
 
-                Timber.w("DB is not open")
+                Console.warning("DB is not open")
 
                 latch.countDown()
 
@@ -562,24 +562,24 @@ object DBStorage : Storage<String> {
 
                             if (res) {
 
-                                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag END")
+                                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END")
 
                             } else {
 
-                                Timber.e("$tag FAILED")
+                                Console.error("$tag FAILED")
                             }
 
                             return res
 
                         } catch (e: Exception) {
 
-                            Timber.e(
+                            Console.error(
 
                                 "$tag ERROR :: SQL args :: " +
                                         "TO DELETE ALL", e.message ?: "Unknown error"
                             )
 
-                            Timber.e(e)
+                            Console.error(e)
                         }
 
                         return false
@@ -602,7 +602,7 @@ object DBStorage : Storage<String> {
 
         val tag = "Delete :: Database ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
+        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
 
         try {
 
@@ -612,54 +612,54 @@ object DBStorage : Storage<String> {
 
             if (result) {
 
-                if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v(
+                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
 
                     "$tag END: DB '$dbName' has been deleted"
                 )
 
                 if (prefs?.delete(DATABASE_NAME_SUFFIX_KEY) != true) {
 
-                    Timber.e("Error deleting key preferences: $DATABASE_NAME_SUFFIX_KEY")
+                    Console.error("Error deleting key preferences: $DATABASE_NAME_SUFFIX_KEY")
                 }
 
                 if (prefs?.delete(TABLE_) != true) {
 
-                    Timber.e("Error deleting key preferences: $TABLE_")
+                    Console.error("Error deleting key preferences: $TABLE_")
                 }
 
                 if (prefs?.delete(COLUMN_KEY_) != true) {
 
-                    Timber.e("Error deleting key preferences: $COLUMN_KEY_")
+                    Console.error("Error deleting key preferences: $COLUMN_KEY_")
                 }
 
                 if (prefs?.delete(COLUMN_VALUE_) != true) {
 
-                    Timber.e("Error deleting key preferences: $COLUMN_VALUE_")
+                    Console.error("Error deleting key preferences: $COLUMN_VALUE_")
                 }
 
                 val dbKey = "$DATABASE_NAME.$DATABASE_VERSION"
 
                 if (prefs?.delete(dbKey) != true) {
 
-                    Timber.e("Error deleting key preferences: $dbKey")
+                    Console.error("Error deleting key preferences: $dbKey")
                 }
 
             } else {
 
-                Timber.e("$tag FAILED")
+                Console.error("$tag FAILED")
             }
 
             return result
 
         } catch (e: Exception) {
 
-            Timber.e(
+            Console.error(
 
                 "$tag ERROR :: SQL args :: " +
                         "TO DELETE DB", e.message ?: "Unknown error"
             )
 
-            Timber.e(e)
+            Console.error(e)
         }
 
         return false
@@ -679,7 +679,7 @@ object DBStorage : Storage<String> {
 
             if (db?.isOpen == false) {
 
-                Timber.w("DB is not open")
+                Console.warning("DB is not open")
 
                 latch.countDown()
 
@@ -708,7 +708,7 @@ object DBStorage : Storage<String> {
 
             } catch (e: Exception) {
 
-                Timber.e(e)
+                Console.error(e)
             }
 
             latch.countDown()
@@ -742,7 +742,7 @@ object DBStorage : Storage<String> {
 
             } catch (e: Exception) {
 
-                Timber.e(e)
+                Console.error(e)
 
             } finally {
 
@@ -752,7 +752,7 @@ object DBStorage : Storage<String> {
 
                 } catch (e: Exception) {
 
-                    Timber.e(e)
+                    Console.error(e)
                 }
             }
         }
@@ -770,37 +770,37 @@ object DBStorage : Storage<String> {
 
             tag = "$tag db = ${db?.hashCode()} ::"
 
-            if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag START")
+            if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
 
             db?.let {
 
                 if (db.isOpen) {
 
-                    if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag EXECUTING")
+                    if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag EXECUTING")
 
                     executor.execute {
 
                         doWhat(db)
 
-                        if (DEBUG ?: BaseApplication.DEBUG.get()) Timber.v("$tag EXECUTED")
+                        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag EXECUTED")
                     }
 
                 } else {
 
-                    Timber.w("$tag DB is not open")
+                    Console.warning("$tag DB is not open")
                 }
             }
 
             if (db == null) {
 
-                Timber.e("$tag DB is null")
+                Console.error("$tag DB is null")
             }
 
         } catch (e: Exception) {
 
-            Timber.e("$tag ERROR ::", e.message ?: "Unknown error")
+            Console.error("$tag ERROR ::", e.message ?: "Unknown error")
 
-            Timber.e(e)
+            Console.error(e)
         }
     }
 }

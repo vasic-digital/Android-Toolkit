@@ -12,7 +12,7 @@ import com.redelf.commons.execution.Cancellation
 import com.redelf.commons.execution.CommonExecution
 import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class AccessMethod(private val priority: Int, protected val ctx: AppCompatActivity) :
@@ -41,7 +41,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             super.onAuthenticationError(errorCode, errString)
 
-            Timber.e("Authentication error, %d, %s", errorCode, errString)
+            Console.error("Authentication error, %d, %s", errorCode, errString)
             executionCallback.onExecution(false, "onAuthenticationError")
         }
 
@@ -119,7 +119,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
         executionCallbacks.register(callback)
         if (executing.get()) {
 
-            Timber.w("Already executing: $this")
+            Console.warning("Already executing: $this")
             return
         }
 

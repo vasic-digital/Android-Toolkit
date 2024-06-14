@@ -3,7 +3,7 @@ package com.redelf.commons.persistance
 import com.google.gson.Gson
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import java.lang.reflect.Type
@@ -25,7 +25,7 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
 
             recordException(e)
 
-            Timber.e("Tried to deserialize into '${type?.typeName}' from '$content'")
+            Console.error("Tried to deserialize into '${type?.typeName}' from '$content'")
         }
 
         return null
@@ -46,7 +46,7 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
 
             recordException(e)
 
-            Timber.e("Tried to deserialize into '${clazz?.simpleName}' from '$content'")
+            Console.error("Tried to deserialize into '${clazz?.simpleName}' from '$content'")
         }
 
         return null

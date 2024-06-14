@@ -12,7 +12,7 @@ import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
 import com.redelf.commons.locking.Lockable
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
@@ -87,7 +87,7 @@ abstract class DataManagement<T> :
 
         init {
 
-            if (canLog) Timber.v(
+            if (canLog) Console.log(
 
                 "$tag Session: $session :: INIT :: $name :: " +
                     "With operation = ${operation != null}"
@@ -103,14 +103,14 @@ abstract class DataManagement<T> :
 
             session = parent.session.takeIdentifier()
 
-            if (canLog) Timber.v("$tag Session: $session :: START :: $name")
+            if (canLog) Console.log("$tag Session: $session :: START :: $name")
 
             return true
         }
 
         override fun perform(): Boolean {
 
-            if (canLog) Timber.v("$tag Session: $session :: PERFORM :: $name")
+            if (canLog) Console.log("$tag Session: $session :: PERFORM :: $name")
 
             operation?.let {
 
@@ -118,28 +118,28 @@ abstract class DataManagement<T> :
 
                 if (result) {
 
-                    if (canLog) Timber.v("$tag Session: $session :: PERFORMED :: $name")
+                    if (canLog) Console.log("$tag Session: $session :: PERFORMED :: $name")
 
                 } else {
 
-                    Timber.e("$tag Session: $session :: FAILED :: $name")
+                    Console.error("$tag Session: $session :: FAILED :: $name")
                 }
 
                 return result
             }
 
-            if (canLog) Timber.v("$tag Session: $session :: PERFORMED :: $name")
+            if (canLog) Console.log("$tag Session: $session :: PERFORMED :: $name")
 
             return true
         }
 
         override fun end(): Boolean {
 
-            if (canLog) Timber.v("$tag Session: $session :: ENDING :: $name")
+            if (canLog) Console.log("$tag Session: $session :: ENDING :: $name")
 
             if (session != parent.session.takeIdentifier()) {
 
-                if (canLog) Timber.w("$tag Session: $session :: SKIPPED :: $name")
+                if (canLog) Console.warning("$tag Session: $session :: SKIPPED :: $name")
 
                 return false
             }
@@ -156,17 +156,17 @@ abstract class DataManagement<T> :
 
                     result = true
 
-                    if (canLog) Timber.v("$tag Session: $session :: ENDED :: $name")
+                    if (canLog) Console.log("$tag Session: $session :: ENDED :: $name")
                 }
 
             } catch (e: IllegalStateException) {
 
-                Timber.e(e)
+                Console.error(e)
             }
 
             if (!result) {
 
-                if (canLog) Timber.v("$tag Session: $session :: ENDING :: Failed: $name")
+                if (canLog) Console.log("$tag Session: $session :: ENDING :: Failed: $name")
             }
 
             return result
@@ -212,26 +212,26 @@ abstract class DataManagement<T> :
         val transaction = what.name
         val session = what.getSession()
 
-        Timber.v("Session: $session :: Execute :: START: $transaction")
+        Console.log("Session: $session :: Execute :: START: $transaction")
 
         val started = what.start()
 
         if (started) {
 
-            Timber.v("Session: $session :: Execute :: STARTED: $transaction")
+            Console.log("Session: $session :: Execute :: STARTED: $transaction")
 
             val success = what.perform()
 
             if (success) {
 
-                Timber.v(
+                Console.log(
 
                     "Session: $session :: Execute :: PERFORMED :: $transaction :: Success"
                 )
 
             } else {
 
-                Timber.e(
+                Console.error(
 
                     "Session: $session :: Execute :: PERFORMED :: $transaction :: Failure"
                 )
@@ -264,7 +264,7 @@ abstract class DataManagement<T> :
 
     override fun lock() {
 
-        Timber.v("${getLogTag()} Lock")
+        Console.log("${getLogTag()} Lock")
 
         abort()
 
@@ -273,7 +273,7 @@ abstract class DataManagement<T> :
 
     override fun unlock() {
 
-        Timber.v("${getLogTag()} :: Unlock")
+        Console.log("${getLogTag()} :: Unlock")
 
         locked.set(false)
     }
@@ -293,12 +293,12 @@ abstract class DataManagement<T> :
 
         if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
-            if (canLog()) Timber.v("$tag START")
+            if (canLog()) Console.log("$tag START")
         }
 
         if (isLocked()) {
 
-            Timber.w("$tag Locked")
+            Console.warning("$tag Locked")
 
             return null
         }
@@ -307,7 +307,7 @@ abstract class DataManagement<T> :
 
             if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
-                if (canLog()) Timber.v("$tag END: OK")
+                if (canLog()) Console.log("$tag END: OK")
             }
 
             return data
@@ -315,7 +315,7 @@ abstract class DataManagement<T> :
 
         val dataObjTag = "$tag Data object ::"
 
-        if (canLog()) Timber.v("$dataObjTag Initial: ${data != null}")
+        if (canLog()) Console.log("$dataObjTag Initial: ${data != null}")
 
         if (data == null && persist) {
 
@@ -328,15 +328,15 @@ abstract class DataManagement<T> :
 
             if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
-                if (canLog()) Timber.d("$dataObjTag Obtained from storage: $data")
+                if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
 
             } else {
 
-                if (canLog()) Timber.v("$dataObjTag Obtained from storage: ${data != null}")
+                if (canLog()) Console.log("$dataObjTag Obtained from storage: ${data != null}")
             }
         }
 
-        if (canLog()) Timber.v("$dataObjTag Intermediate: ${data != null}")
+        if (canLog()) Console.log("$dataObjTag Intermediate: ${data != null}")
 
         if (instantiateDataObject) {
 
@@ -357,16 +357,16 @@ abstract class DataManagement<T> :
                 }
             }
 
-            if (canLog()) Timber.v("$dataObjTag Instantiated: ${data != null}")
+            if (canLog()) Console.log("$dataObjTag Instantiated: ${data != null}")
         }
 
         if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
-            if (canLog()) Timber.v("$dataObjTag Final: $data")
+            if (canLog()) Console.log("$dataObjTag Final: $data")
 
         } else {
 
-            if (canLog()) Timber.v("$dataObjTag Final: ${data != null}")
+            if (canLog()) Console.log("$dataObjTag Final: ${data != null}")
         }
 
         return data
@@ -388,7 +388,7 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     open fun pushData(data: T) {
 
-        Timber.v("${getLogTag()} Push data :: START")
+        Console.log("${getLogTag()} Push data :: START")
 
         doPushData(data)
     }
@@ -398,7 +398,7 @@ abstract class DataManagement<T> :
 
         if (isLocked()) {
 
-            Timber.w("${getLogTag()} Push data :: Locked: SKIPPING")
+            Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
 
             onDataPushed(success = false)
 
@@ -443,11 +443,11 @@ abstract class DataManagement<T> :
 
             if (success == true) {
 
-                Timber.v("${getLogTag()} Data pushed")
+                Console.log("${getLogTag()} Data pushed")
 
             } else {
 
-                Timber.e("${getLogTag()} Data push failed", err)
+                Console.error("${getLogTag()} Data push failed", err)
             }
         }
     }
@@ -456,7 +456,7 @@ abstract class DataManagement<T> :
 
         val tag = "${getLogTag()} :: Reset ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         try {
 
@@ -464,7 +464,7 @@ abstract class DataManagement<T> :
 
             if (isNotEmpty(storageKey)) {
 
-                Timber.v("$tag Storage key: $storageKey")
+                Console.log("$tag Storage key: $storageKey")
 
                 val s = takeStorage()
 
@@ -484,25 +484,25 @@ abstract class DataManagement<T> :
 
             } else {
 
-                Timber.w("$tag Empty storage key")
+                Console.warning("$tag Empty storage key")
             }
 
             eraseData()
 
-            Timber.v("$tag END")
+            Console.log("$tag END")
 
             return true
 
         } catch (e: RejectedExecutionException) {
 
-            Timber.e(tag, e)
+            Console.error(tag, e)
 
         } catch (e: IllegalStateException) {
 
-            Timber.e(tag, e)
+            Console.error(tag, e)
         }
 
-        Timber.e("$tag END: FAILED (2)")
+        Console.error("$tag END: FAILED (2)")
 
         return false
     }

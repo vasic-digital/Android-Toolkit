@@ -8,7 +8,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 
 open class FcmService : FirebaseMessagingService() {
 
@@ -22,26 +22,26 @@ open class FcmService : FirebaseMessagingService() {
     override fun onCreate() {
         super.onCreate()
 
-        Timber.v("onCreate()")
+        Console.log("onCreate()")
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        Timber.v("onDestroy()")
+        Console.log("onDestroy()")
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
 
-        Timber.e("onLowMemory()")
+        Console.error("onLowMemory()")
     }
 
     override fun onNewToken(token: String) {
 
         super.onNewToken(token)
 
-        Timber.i("New token available: $token")
+        Console.info("New token available: $token")
 
         val intent = Intent(BROADCAST_ACTION_TOKEN)
         intent.putExtra(BROADCAST_KEY_TOKEN, token)
@@ -54,7 +54,7 @@ open class FcmService : FirebaseMessagingService() {
 
         val data = message.data
 
-        Timber.i("New FCM message received: $data")
+        Console.info("New FCM message received: $data")
 
         wakeUpScreen()
 

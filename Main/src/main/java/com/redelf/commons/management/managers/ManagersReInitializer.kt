@@ -4,7 +4,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.instantiation.SingleInstance
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
@@ -49,7 +49,7 @@ class ManagersReInitializer {
 
             override fun onFailure(error: Throwable) {
 
-                Timber.e(error)
+                Console.error(error)
 
                 success.set(false)
 
@@ -92,7 +92,7 @@ class ManagersReInitializer {
 
             override fun onFailure(error: Throwable) {
 
-                Timber.e(error)
+                Console.error(error)
 
                 success.set(false)
 
@@ -140,7 +140,7 @@ class ManagersReInitializer {
 
                     context?.let { ctx ->
 
-                        Timber.v(
+                        Console.log(
 
                             "Manager: ${manager.getWho()} " +
                                     "injecting context: $ctx"
@@ -155,7 +155,7 @@ class ManagersReInitializer {
 
                         defaultResource?.let {
 
-                            Timber.v(
+                            Console.log(
 
                                 "Manager: ${manager.getWho()} " +
                                         "setting defaults from resource: $defaultResource"
@@ -186,25 +186,25 @@ class ManagersReInitializer {
 
         val tag = "Reinitialize managers ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         try {
 
             exec {
 
-                Timber.v("$tag We are going to reset managers")
+                Console.log("$tag We are going to reset managers")
 
                 val ok = resetManagers(managers)
 
                 if (!ok) {
 
-                    Timber.e("$tag Managers failed to reset with success")
+                    Console.error("$tag Managers failed to reset with success")
 
                     callback.onCompleted(false)
                     return@exec
                 }
 
-                Timber.v("$tag Managers have been reset with success")
+                Console.log("$tag Managers have been reset with success")
 
                 val failure = AtomicBoolean()
 
@@ -218,11 +218,11 @@ class ManagersReInitializer {
 
                             val mTag = "$tag ${manager.getWho()} :: ${manager.hashCode()}"
 
-                            Timber.v("$mTag START")
+                            Console.log("$mTag START")
 
                             context?.let { ctx ->
 
-                                Timber.v(
+                                Console.log(
 
                                     "Manager: ${manager.getWho()} " +
                                             "injecting context: $ctx"
@@ -237,7 +237,7 @@ class ManagersReInitializer {
 
                                 defaultResource?.let {
 
-                                    Timber.v(
+                                    Console.log(
 
                                         "Manager: ${manager.getWho()} " +
                                                 "setting defaults from resource: $defaultResource"
@@ -247,7 +247,7 @@ class ManagersReInitializer {
                                 }
                             }
 
-                            Timber.v("$mTag Ready to initialize")
+                            Console.log("$mTag Ready to initialize")
 
                         } else {
 
@@ -307,7 +307,7 @@ class ManagersReInitializer {
 
                 error?.let {
 
-                    Timber.e(error)
+                    Console.error(error)
                 }
             }
         }

@@ -5,7 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.redelf.commons.extensions.isEmpty
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.scheduling.Schedule
 
 class AlarmScheduler(
@@ -55,7 +55,7 @@ class AlarmScheduler(
             flags
         )
 
-        Timber.v("$tag Scheduling new alarm: What=$what, toWhen=$toWhen")
+        Console.log("$tag Scheduling new alarm: What=$what, toWhen=$toWhen")
 
         alarmManager.setExactAndAllowWhileIdle(
 
@@ -64,7 +64,7 @@ class AlarmScheduler(
             pendingIntent
         )
 
-        Timber.v("$tag COMPLETED")
+        Console.log("$tag COMPLETED")
 
         return true
     }
@@ -88,11 +88,11 @@ class AlarmScheduler(
             flags
         )
 
-        Timber.v("$tag Cancelling scheduled alarm (if any)")
+        Console.log("$tag Cancelling scheduled alarm (if any)")
 
         alarmManager.cancel(pendingIntent)
 
-        Timber.v("$tag COMPLETED")
+        Console.log("$tag COMPLETED")
 
         return true
     }

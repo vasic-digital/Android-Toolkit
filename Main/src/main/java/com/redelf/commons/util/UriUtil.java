@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 
-import com.redelf.commons.logging.Timber;
+import com.redelf.commons.logging.Console;
 
 public class UriUtil {
 
@@ -32,7 +32,7 @@ public class UriUtil {
 
             } catch (Exception e) {
 
-                Timber.w(e);
+                Console.warning(e);
             }
         }
 

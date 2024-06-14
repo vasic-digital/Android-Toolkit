@@ -9,7 +9,7 @@ import android.os.Binder
 import com.redelf.commons.application.BaseApplication
 
 import com.redelf.commons.connectivity.Connectivity
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.scheduling.alarm.AlarmReceiver
 import com.redelf.commons.scheduling.alarm.AlarmScheduler
 import com.redelf.commons.service.BaseService
@@ -62,13 +62,13 @@ class TransmissionService : BaseService() {
 
         override fun onReceive(context: Context?, intent: Intent?) {
 
-            Timber.v("BROADCAST_ACTION_RESULT on receive")
+            Console.log("BROADCAST_ACTION_RESULT on receive")
 
             intent?.let {
 
                 if (it.action == TransmissionManager.BROADCAST_ACTION_RESULT) {
 
-                    Timber.v("BROADCAST_ACTION_RESULT on action")
+                    Console.log("BROADCAST_ACTION_RESULT on action")
 
                     val key = TransmissionManager.BROADCAST_EXTRA_RESULT
                     val result = it.getBooleanExtra(key, true)
@@ -84,7 +84,7 @@ class TransmissionService : BaseService() {
     @Suppress("DEPRECATION")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        Timber.v("onStartCommand()")
+        Console.log("onStartCommand()")
 
         val connectivityIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         registerReceiver(connectivityListener, connectivityIntentFilter)
@@ -102,13 +102,13 @@ class TransmissionService : BaseService() {
 
         alarmCallback = TransmissionAlarmCallback(applicationContext)
 
-        Timber.v("onCreate()")
+        Console.log("onCreate()")
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        Timber.v("onDestroy()")
+        Console.log("onDestroy()")
 
         try {
 
@@ -116,7 +116,7 @@ class TransmissionService : BaseService() {
 
         } catch (e: IllegalArgumentException) {
 
-            Timber.w(e.message)
+            Console.warning(e.message)
         }
 
         try {
@@ -125,18 +125,18 @@ class TransmissionService : BaseService() {
 
         } catch (e: IllegalArgumentException) {
 
-            Timber.w(e.message)
+            Console.warning(e.message)
         }
     }
 
     private fun send(ctx: Context, executedFrom: String = "") {
 
-        Timber.v("Send (service) :: executedFrom='$executedFrom'")
+        Console.log("Send (service) :: executedFrom='$executedFrom'")
 
         val intent = Intent(TransmissionManager.BROADCAST_ACTION_SEND)
         ctx.sendBroadcast(intent)
 
-        Timber.v(
+        Console.log(
 
             "BROADCAST_ACTION_SEND on transmission service send(...)" +
                 " executedFrom='$executedFrom'"
@@ -157,7 +157,7 @@ class TransmissionService : BaseService() {
 
         val tag = "Alarm :: Scheduling :: $success ::"
 
-        Timber.v("$tag Start")
+        Console.log("$tag Start")
 
         if (success) {
 
@@ -173,7 +173,7 @@ class TransmissionService : BaseService() {
             AlarmScheduler(applicationContext).schedule(BROADCAST_EXTRA_CODE, time)
         }
 
-        Timber.v("$tag End")
+        Console.log("$tag End")
     }
 
     private fun registerAlarmCallback() {

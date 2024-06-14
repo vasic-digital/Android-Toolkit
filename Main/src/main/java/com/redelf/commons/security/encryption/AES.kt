@@ -3,7 +3,7 @@ package com.redelf.commons.security.encryption
 import android.os.Build
 import android.util.Base64
 import com.redelf.commons.extensions.isBase64Encoded
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import java.security.GeneralSecurityException
 import java.security.spec.KeySpec
 import javax.crypto.Cipher
@@ -30,7 +30,7 @@ class AES(private val key: String, private val salt: String) : Encryption<String
     @Throws(GeneralSecurityException::class)
     override fun encrypt(data: String): String {
 
-        Timber.v("AES: encrypt()")
+        Console.log("AES: encrypt()")
 
         val (ivSpec, secretKey, cipher) = getCipher()
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
@@ -41,7 +41,7 @@ class AES(private val key: String, private val salt: String) : Encryption<String
     @Throws(GeneralSecurityException::class, IllegalArgumentException::class)
     override fun decrypt(source: String): String {
 
-        Timber.v("AES: decrypt()")
+        Console.log("AES: decrypt()")
 
         val (ivSpec, secretKey, cipher) = getCipher()
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
@@ -65,7 +65,7 @@ class AES(private val key: String, private val salt: String) : Encryption<String
         val iv = emptyBytes()
         val ivSpec = IvParameterSpec(iv)
         val alg = algorithm
-        Timber.i("Algorithm: $alg")
+        Console.info("Algorithm: $alg")
         val factory = SecretKeyFactory.getInstance(alg)
         val chars = key.toCharArray()
         val bytes = salt.toByteArray()

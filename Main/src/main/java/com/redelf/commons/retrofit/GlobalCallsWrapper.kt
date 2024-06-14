@@ -1,7 +1,7 @@
 package com.redelf.commons.retrofit
 
 import com.redelf.commons.interruption.Abort
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import okhttp3.Call
 import java.util.concurrent.ConcurrentHashMap
 
@@ -13,11 +13,11 @@ object GlobalCallsWrapper : Abort {
 
         val tag = "GlobalCallsWrapper :: Abort ::"
 
-        Timber.v("$tag START")
+        Console.log("$tag START")
 
         CALLS.forEach { (k, v) ->
 
-            Timber.v("$tag Cancel :: $k")
+            Console.log("$tag Cancel :: $k")
 
             try {
 
@@ -25,12 +25,12 @@ object GlobalCallsWrapper : Abort {
 
             } catch (e: Exception) {
 
-                Timber.e("$tag Cancel failed: $k", e)
+                Console.error("$tag Cancel failed: $k", e)
             }
         }
 
         CALLS.clear()
 
-        Timber.v("$tag END")
+        Console.log("$tag END")
     }
 }

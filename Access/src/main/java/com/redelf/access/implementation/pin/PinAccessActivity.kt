@@ -5,7 +5,7 @@ import com.redelf.access.implementation.AccessActivity
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.CommonExecutionCallback
-import com.redelf.commons.logging.Timber
+import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
 
 abstract class PinAccessActivity : AccessActivity(), Registration<CommonExecutionCallback> {
@@ -34,17 +34,17 @@ abstract class PinAccessActivity : AccessActivity(), Registration<CommonExecutio
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
-        Timber.v("onActivityResult(): $requestCode, ${resultCode == RESULT_OK}")
+        Console.log("onActivityResult(): $requestCode, ${resultCode == RESULT_OK}")
 
         if (requestCode == activityRequestCode) {
 
             pinAuthenticated = resultCode == RESULT_OK
             if (pinAuthenticated) {
 
-                Timber.v("PIN access success")
+                Console.log("PIN access success")
             } else {
 
-                Timber.e("PIN access failed")
+                Console.error("PIN access failed")
             }
             activityRequestCode = 0
             executionCallback.onExecution(pinAuthenticated, "onActivityResult")
