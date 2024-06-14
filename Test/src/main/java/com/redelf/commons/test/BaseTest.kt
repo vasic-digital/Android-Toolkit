@@ -42,9 +42,12 @@ abstract class BaseTest {
         testContext.assets.list(directory)?.let {
 
             if (it.isEmpty()) {
+
                 throw exception
             }
+
             val assets = mutableListOf<File>()
+
             it.forEach { assetName ->
 
                 assetsToInclude?.let { toInclude ->

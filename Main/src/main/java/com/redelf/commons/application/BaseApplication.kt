@@ -154,13 +154,14 @@ abstract class BaseApplication :
     private val registeredForPhoneCallsDetection = AtomicBoolean()
     private val registeredForAudioFocusDetection = AtomicBoolean()
 
-    val managers = mutableListOf<List<DataManagement<*>>>(
+    protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
         listOf(FirebaseConfigurationManager)
     )
 
     val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
+    open val firebaseEnabled = true
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
 
@@ -485,6 +486,11 @@ abstract class BaseApplication :
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun initializeFcm() {
+
+        if (!firebaseEnabled) {
+
+            return
+        }
 
         Console.info("FCM: Initializing")
 

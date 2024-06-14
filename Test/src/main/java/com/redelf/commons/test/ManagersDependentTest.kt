@@ -5,6 +5,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer
+import junit.framework.Test
 import org.junit.Assert
 import org.junit.Before
 import java.util.concurrent.CountDownLatch
@@ -27,9 +28,6 @@ abstract class ManagersDependentTest : BaseTest() {
 
         Console.log("Timber initialized: $this")
 
-        Assert.assertTrue(applicationContext is BaseApplication)
-
-        BaseApplication.CONTEXT = applicationContext as BaseApplication
         BaseApplication.DEBUG.set(true)
 
         setupStorage()
@@ -81,7 +79,7 @@ abstract class ManagersDependentTest : BaseTest() {
 
             managers,
             managersInitializerCallback,
-            context = applicationContext as BaseApplication
+            context = TestApplication.takeContext(),
         )
 
         latch.await()
