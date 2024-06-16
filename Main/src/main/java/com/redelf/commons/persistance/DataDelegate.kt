@@ -33,9 +33,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     /*
      * TODO:
-     *  - Give to delegate abstractions so we multiple data delegates could support when needed.
+     *  - Give to delegate abstractions so we multiple data delegates could support when needed
      *  - Recursively partitioning - Each map or list member -> children
      *  - Parallelize reading
+     *  - Annotations
+     *  - Support for multiple data delegates (what would this mean - TBD)
+     *  - Connection with provided RecyclerView (Adapters, ViewHolders, etc)
+     *  - Data binding
      */
 
     companion object {
