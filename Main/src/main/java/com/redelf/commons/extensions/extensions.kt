@@ -40,6 +40,8 @@ import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import kotlin.reflect.jvm.internal.impl.builtins.StandardNames.FqNames.throwable
+
 
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
 var GLOBAL_RECORD_EXCEPTIONS = AtomicBoolean(true)
@@ -1058,3 +1060,22 @@ fun String.decompress(): String? {
 }
 
 fun isOnMainThread(): Boolean = Looper.getMainLooper().thread == Thread.currentThread()
+
+fun Throwable.toHumanReadableString(): String {
+
+    try {
+
+        val stringWriter = StringWriter()
+        val printWriter = PrintWriter(stringWriter)
+
+        printStackTrace(printWriter)
+
+        return stringWriter.toString()
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return ""
+}

@@ -6,6 +6,7 @@ import android.util.Log
 import com.redelf.commons.extensions.appendText
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.toHumanReadableString
 import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
@@ -18,7 +19,7 @@ class RecordingTree(
     private val destination: String,
     private val production: Boolean = false
 
-) : Timber.Tree(), com.redelf.commons.logging.LogParametrized {
+) : Timber.Tree(), LogParametrized {
 
     companion object {
 
@@ -34,11 +35,11 @@ class RecordingTree(
     private val fqcnIgnore = listOf(
 
         Timber::class.java.name,
-        com.redelf.commons.logging.Console::class.java.name,
-        Timber.Forest::class.java.name,
+        Console::class.java.name,
         Timber.Tree::class.java.name,
-        Timber.DebugTree::class.java.name,
-        RecordingTree::class.java.name
+        Timber.Forest::class.java.name,
+        RecordingTree::class.java.name,
+        Timber.DebugTree::class.java.name
     )
 
     @get:JvmSynthetic // Hide from public API.
@@ -90,7 +91,7 @@ class RecordingTree(
 
             t?.let {
 
-                writeLog(tag, it.stackTrace.toString())
+                writeLog(tag, it.toHumanReadableString())
             }
 
             return
