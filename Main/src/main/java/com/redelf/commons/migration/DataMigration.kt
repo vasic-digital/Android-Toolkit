@@ -3,7 +3,11 @@ package com.redelf.commons.migration
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.OnObtain
 
-abstract class DataMigration<SOURCE, TARGET> {
+abstract class DataMigration<SOURCE, TARGET>(
+
+    private val dataManagersReadyRequired: Boolean = true
+
+) {
 
     /*
         TODO: Support multiple migration contained inside the PriorityQueue ordered by the id (version code)
@@ -16,7 +20,15 @@ abstract class DataMigration<SOURCE, TARGET> {
 
     abstract fun getTarget(source: SOURCE, callback: OnObtain<TARGET>)
 
-    fun migrate(callback: OnObtain<Boolean>) {
+
+    fun migrate(managersReady: Boolean, callback: OnObtain<Boolean>) {
+
+        if (dataManagersReadyRequired && !managersReady) {
+
+            val e = MigrationNotReadyException()
+            callback.onFailure(e)
+            return
+        }
 
         val tag = "Migrate :: $id ::"
 

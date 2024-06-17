@@ -39,6 +39,7 @@ import com.redelf.commons.firebase.FirebaseConfigurationManager
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
+import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
@@ -148,22 +149,24 @@ abstract class BaseApplication :
         }
     }
 
-    private val prefsKeyUpdate = "Preferences.Update"
-    private var telecomManager: TelecomManager? = null
-    private var telephonyManager: TelephonyManager? = null
-    private val registeredForPhoneCallsDetection = AtomicBoolean()
-    private val registeredForAudioFocusDetection = AtomicBoolean()
+    open val detectAudioStreamed = false
+    open val detectPhoneCallReceived = false
+    open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
+
+    protected open val firebaseEnabled = true
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
         listOf(FirebaseConfigurationManager)
     )
 
-    val defaultManagerResources = mutableMapOf<Class<*>, Int>()
+    protected val managersReady = AtomicBoolean()
 
-    open val firebaseEnabled = true
-    open val detectAudioStreamed = false
-    open val detectPhoneCallReceived = false
+    private val prefsKeyUpdate = "Preferences.Update"
+    private var telecomManager: TelecomManager? = null
+    private var telephonyManager: TelephonyManager? = null
+    private val registeredForPhoneCallsDetection = AtomicBoolean()
+    private val registeredForAudioFocusDetection = AtomicBoolean()
 
     open fun canRecordApplicationLogs() = false
 
@@ -418,6 +421,7 @@ abstract class BaseApplication :
                 intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
                 registerReceiver(screenReceiver, intentFilter)
 
+                beforeManagers()
                 initializeManagers()
                 onManagers()
 
@@ -480,6 +484,8 @@ abstract class BaseApplication :
                 success = false
             }
         }
+
+        managersReady.set(true)
 
         return success
     }
@@ -723,6 +729,11 @@ abstract class BaseApplication :
         super.onActivityPostDestroyed(activity)
     }
 
+    private fun beforeManagers() {
+
+        update()
+    }
+
     private fun onManagers() {
 
         initializeFcm()
@@ -847,18 +858,25 @@ abstract class BaseApplication :
 
                 Console.log("$tag Code :: $versionCode :: START")
 
-                val success = update(code)
+                try {
 
-                if (success) {
+                    val success = update(code)
 
-                    onUpdated(code)
+                    if (success) {
 
-                } else {
+                        onUpdated(code)
 
-                    onUpdatedFailed(code)
+                        Console.log("$tag Code :: $versionCode :: END")
+
+                    } else {
+
+                        onUpdatedFailed(code)
+                    }
+
+                } catch (e: MigrationNotReadyException) {
+
+                    Console.warning("${e.message}, Code = $versionCode")
                 }
-
-                Console.log("$tag Code :: $versionCode :: END")
             }
         }
     }

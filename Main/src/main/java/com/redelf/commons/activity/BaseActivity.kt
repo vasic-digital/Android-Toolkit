@@ -74,6 +74,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
+
     protected open val detectPhoneCallReceived =
         BaseApplication.takeContext().detectPhoneCallReceived
 

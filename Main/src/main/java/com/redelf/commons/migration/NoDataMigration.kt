@@ -3,7 +3,11 @@ package com.redelf.commons.migration
 import android.content.Context
 import com.redelf.commons.obtain.OnObtain
 
-abstract class NoDataMigration(private val ctx: Context) : DataMigration<Unit, Unit>() {
+abstract class NoDataMigration(dataManagersReadyRequired: Boolean = true) :
+
+    DataMigration<Unit, Unit>(dataManagersReadyRequired)
+
+{
 
     override fun getTarget(source: Unit, callback: OnObtain<Unit>) = callback.onCompleted(Unit)
 
