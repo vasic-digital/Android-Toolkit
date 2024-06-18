@@ -283,6 +283,8 @@ abstract class BaseApplication :
             AudioManager.AUDIOFOCUS_GAIN -> {
 
                 Console.log("$audioFocusTag Gained")
+
+                onExternalStreamStopped()
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
