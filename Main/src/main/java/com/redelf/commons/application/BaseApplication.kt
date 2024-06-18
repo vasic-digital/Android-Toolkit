@@ -375,6 +375,12 @@ abstract class BaseApplication :
 
     protected open fun onExternalStreamStarted() {
 
+        if (audioFocusLost.get() > 0L) {
+
+            Console.debug("Audio focus :: Already lost")
+            return
+        }
+
         audioFocusLost.set(System.currentTimeMillis())
 
         Console.debug("Audio focus :: Lost")
@@ -385,6 +391,8 @@ abstract class BaseApplication :
         Console.debug("Audio focus :: Gained")
 
         if (System.currentTimeMillis() - audioFocusLost.get() <= audioFocusGainTolerance) {
+
+            audioFocusLost.set(0L)
 
             resumeStream()
         }
