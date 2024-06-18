@@ -962,7 +962,7 @@ abstract class BaseApplication :
 
     private fun onExternalStreamStarted() {
 
-        val tag = "$audioFocusTag External stream started"
+        val tag = "$audioFocusTag External stream started ::"
 
         Console.log("$tag START")
 
@@ -994,12 +994,12 @@ abstract class BaseApplication :
 
         if (diff <= audioFocusGainTolerance) {
 
-            audioFocusLost.set(0L)
-
             if (resumeStream()) {
 
                 Console.log("$audioFocusTag Stream resumed")
             }
         }
+
+        audioFocusLost.set(0L)
     }
 }
