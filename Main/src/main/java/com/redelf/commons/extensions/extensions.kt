@@ -40,7 +40,6 @@ import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
-import kotlin.reflect.jvm.internal.impl.builtins.StandardNames.FqNames.throwable
 
 
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
@@ -700,7 +699,7 @@ fun safeRemoteDouble(provider: () -> Double, default: Double = 0.0): Double {
     return safeRemoteValue(provider, default)
 }
 
-fun exec(onError: ((Throwable) -> Unit)? = null, what: Runnable) {
+fun exec(onRejected: ((Throwable) -> Unit)? = null, what: Runnable) {
 
     try {
 
@@ -708,12 +707,12 @@ fun exec(onError: ((Throwable) -> Unit)? = null, what: Runnable) {
 
     } catch (e: RejectedExecutionException) {
 
-        onError?.let {
+        onRejected?.let {
 
             it(e)
         }
 
-        if (onError == null) {
+        if (onRejected == null) {
 
             recordException(e)
         }
