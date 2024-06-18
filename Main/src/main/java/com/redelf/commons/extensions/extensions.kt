@@ -28,6 +28,7 @@ import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.PropertiesHash
+import timber.log.Timber
 import java.io.*
 import java.util.*
 import java.util.concurrent.Callable
@@ -699,7 +700,12 @@ fun safeRemoteDouble(provider: () -> Double, default: Double = 0.0): Double {
     return safeRemoteValue(provider, default)
 }
 
-fun exec(onRejected: ((Throwable) -> Unit)? = null, what: Runnable) {
+fun exec(
+
+    onRejected: ((Throwable) -> Unit)? = { err -> recordException(err) },
+    what: Runnable
+
+) {
 
     try {
 
