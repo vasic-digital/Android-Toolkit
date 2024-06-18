@@ -340,7 +340,7 @@ abstract class BaseApplication :
 
     fun registerAudioFocusChangeListener() {
 
-        val tag = "Register audio focus listener ::"
+        val tag = "$audioFocusTag Register listener ::"
 
         Console.log("$tag START")
 
@@ -360,6 +360,8 @@ abstract class BaseApplication :
                 .build()
 
             audioManager?.requestAudioFocus(audioFocusRequest)
+
+            registeredForAudioFocusDetection.set(true)
 
             Console.log("$tag END")
 
