@@ -44,6 +44,7 @@ import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 abstract class BaseApplication :
 
@@ -162,6 +163,8 @@ abstract class BaseApplication :
 
     protected val managersReady = AtomicBoolean()
 
+    private val audioFocusLost = AtomicLong()
+    private val audioFocusGainTolerance = 3000L
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null
@@ -283,6 +286,8 @@ abstract class BaseApplication :
 
             AudioManager.AUDIOFOCUS_LOSS -> {
 
+                Console.debug("Audio focus :: Lost")
+
                 onExternalStreamStarted()
             }
         }
@@ -370,7 +375,24 @@ abstract class BaseApplication :
 
     protected open fun onExternalStreamStarted() {
 
+        audioFocusLost.set(System.currentTimeMillis())
+
         Console.debug("Audio focus :: Lost")
+    }
+
+    protected open fun onExternalStreamStopped() {
+
+        Console.debug("Audio focus :: Gained")
+
+        if (System.currentTimeMillis() - audioFocusLost.get() <= audioFocusGainTolerance) {
+
+            resumeStream()
+        }
+    }
+
+    protected open fun resumeStream() {
+
+        Console.debug("Audio focus :: Resume")
     }
 
     override fun takeContext() = CONTEXT
