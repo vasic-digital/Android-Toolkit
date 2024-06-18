@@ -165,6 +165,7 @@ abstract class BaseApplication :
 
     private val audioFocusLost = AtomicLong()
     private val audioFocusGainTolerance = 3000L
+    private val audioFocusTag = "Audio focus ::"
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null
@@ -274,19 +275,19 @@ abstract class BaseApplication :
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
 
-                Console.debug("Audio focus :: Transient or can dock")
+                Console.log("$audioFocusTag Transient or can dock")
 
                 onExternalStreamStarted()
             }
 
             AudioManager.AUDIOFOCUS_GAIN -> {
 
-                Console.log("Audio focus :: Gained")
+                Console.log("$audioFocusTag Gained")
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
 
-                Console.debug("Audio focus :: Lost")
+                Console.log("$audioFocusTag Lost")
 
                 onExternalStreamStarted()
             }
@@ -375,22 +376,31 @@ abstract class BaseApplication :
 
     protected open fun onExternalStreamStarted() {
 
+        val tag = "$audioFocusTag External stream started"
+
+        Console.log("$tag START")
+
         if (audioFocusLost.get() > 0L) {
 
-            Console.debug("Audio focus :: Already lost")
+            Console.log("$tag SKIP")
             return
         }
 
         audioFocusLost.set(System.currentTimeMillis())
 
-        Console.debug("Audio focus :: Lost")
+        Console.log("$tag END")
     }
 
     protected open fun onExternalStreamStopped() {
 
-        Console.debug("Audio focus :: Gained")
+        val diff = System.currentTimeMillis() - audioFocusLost.get()
 
-        if (System.currentTimeMillis() - audioFocusLost.get() <= audioFocusGainTolerance) {
+        Console.log(
+
+            "$audioFocusTag Gained: diff = $diff, tolerance = $audioFocusGainTolerance"
+        )
+
+        if (diff <= audioFocusGainTolerance) {
 
             audioFocusLost.set(0L)
 
@@ -400,7 +410,7 @@ abstract class BaseApplication :
 
     protected open fun resumeStream() {
 
-        Console.debug("Audio focus :: Resume")
+        Console.log("$audioFocusTag Resume")
     }
 
     override fun takeContext() = CONTEXT
