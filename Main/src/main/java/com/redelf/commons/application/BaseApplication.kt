@@ -376,43 +376,18 @@ abstract class BaseApplication :
         Console.log("Phone is RINGING")
     }
 
-    protected open fun onExternalStreamStarted() {
+    protected open fun stopStream(): Boolean {
 
-        val tag = "$audioFocusTag External stream started"
+        Console.log("$audioFocusTag Stop stream")
 
-        Console.log("$tag START")
-
-        if (audioFocusLost.get() > 0L) {
-
-            Console.log("$tag SKIP")
-            return
-        }
-
-        audioFocusLost.set(System.currentTimeMillis())
-
-        Console.log("$tag END")
+        return false
     }
 
-    protected open fun onExternalStreamStopped() {
+    protected open fun resumeStream(): Boolean {
 
-        val diff = System.currentTimeMillis() - audioFocusLost.get()
+        Console.log("$audioFocusTag Resume stream")
 
-        Console.log(
-
-            "$audioFocusTag Gained: diff = $diff, tolerance = $audioFocusGainTolerance"
-        )
-
-        if (diff <= audioFocusGainTolerance) {
-
-            audioFocusLost.set(0L)
-
-            resumeStream()
-        }
-    }
-
-    protected open fun resumeStream() {
-
-        Console.log("$audioFocusTag Resume")
+        return false
     }
 
     override fun takeContext() = CONTEXT
@@ -979,5 +954,48 @@ abstract class BaseApplication :
         sendBroadcast(intent)
 
         Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
+    }
+
+    private fun onExternalStreamStarted() {
+
+        val tag = "$audioFocusTag External stream started"
+
+        Console.log("$tag START")
+
+        if (audioFocusLost.get() > 0L) {
+
+            Console.log("$tag SKIP")
+
+            return
+        }
+
+        if (stopStream()) {
+
+            Console.log("$tag Stream stopped")
+
+            audioFocusLost.set(System.currentTimeMillis())
+        }
+
+        Console.log("$tag END")
+    }
+
+    private fun onExternalStreamStopped() {
+
+        val diff = System.currentTimeMillis() - audioFocusLost.get()
+
+        Console.log(
+
+            "$audioFocusTag Gained: diff = $diff, tolerance = $audioFocusGainTolerance"
+        )
+
+        if (diff <= audioFocusGainTolerance) {
+
+            audioFocusLost.set(0L)
+
+            if (resumeStream()) {
+
+                Console.log("$audioFocusTag Stream resumed")
+            }
+        }
     }
 }
