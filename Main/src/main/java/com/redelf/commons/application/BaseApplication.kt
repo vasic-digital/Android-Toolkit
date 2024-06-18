@@ -445,6 +445,8 @@ abstract class BaseApplication :
                 Console.log("Installing profile: START")
                 ProfileInstaller.writeProfile(applicationContext)
                 Console.log("Installing profile: END")
+
+                onPostCreate()
             }
 
         } catch (e: RejectedExecutionException) {
@@ -454,6 +456,8 @@ abstract class BaseApplication :
             throw e
         }
     }
+
+    protected open fun onPostCreate() = Unit
 
     protected open fun onScreenOn() {
 
