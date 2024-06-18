@@ -38,7 +38,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
             if (param.verbose == true) Console.log("Retrofit :: Debug :: ON")
 
-            interceptor = HttpLoggingInterceptor()
+            interceptor = HttpLoggingInterceptor(RetrofitLogger())
 
             if (param.bodyLog == true) {
 
