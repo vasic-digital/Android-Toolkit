@@ -6,6 +6,6 @@ import timber.log.Timber
 class RetrofitLogger : HttpLoggingInterceptor.Logger {
     override fun log(message: String) {
 
-        Timber.v(message)
+        Timber.v("Retrofit $message" )
     }
 }
