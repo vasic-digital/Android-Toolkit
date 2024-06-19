@@ -41,7 +41,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                             if (triggerOnBackgroundForScreenOff) {
 
-                                Console.log("$tag OK")
+                                if (DEBUG.get()) Console.log("$tag OK")
 
                                 onBackground()
 
@@ -175,7 +175,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
     private fun onForeground() {
 
-        Console.log("Application is in foreground")
+        if (DEBUG.get()) Console.log("Application is in foreground")
     }
 
     private fun onBackground() {
@@ -192,22 +192,22 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
         val tag = "Application went to background :: ${getWho()} ::"
 
-        Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         try {
 
-            Console.log("$tag SAVING")
+            if (DEBUG.get()) Console.log("$tag SAVING")
 
             val data = obtain()
             overwriteData(data)
 
-            Console.log("$tag SAVED")
+            if (DEBUG.get()) Console.log("$tag SAVED")
 
         } catch (e: IllegalStateException) {
 
             Console.error(tag, e)
         }
 
-        Console.log("$tag END")
+        if (DEBUG.get()) Console.log("$tag END")
     }
 }
