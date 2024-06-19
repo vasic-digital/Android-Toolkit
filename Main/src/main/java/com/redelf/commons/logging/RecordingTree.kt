@@ -6,6 +6,7 @@ import android.util.Log
 import com.redelf.commons.extensions.appendText
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toHumanReadableString
 import timber.log.Timber
 import java.io.File
@@ -139,44 +140,51 @@ class RecordingTree(
     @SuppressLint("LogNotTimber")
     private fun writeLog(tag: String?, logs: String) {
 
-        val cal = Calendar.getInstance()
-        val datetime = fmt.format(cal.time)
+        try {
 
-        if (isEmpty(session)) {
+            val cal = Calendar.getInstance()
+            val datetime = fmt.format(cal.time)
 
-            val fmt2 = SimpleDateFormat("h-m-s", Locale.getDefault())
-            session = fmt2.format(cal.time)
-        }
+            if (isEmpty(session)) {
 
-        if (file == null) {
-
-            val calendar = Calendar.getInstance()
-            val dir = Environment.DIRECTORY_DOWNLOADS
-            val format = SimpleDateFormat("yy-MM-dd", Locale.getDefault())
-            val formattedDate = format.format(calendar.time)
-            val fileName = "$formattedDate-$destination-$session.txt"
-            val downloadsFolder = Environment.getExternalStoragePublicDirectory(dir)
-
-            file = File(downloadsFolder, fileName)
-
-            if (file?.exists() != true && file?.createNewFile() != true) {
-
-                Timber.e("No logs gathering file crated at: ${file?.absolutePath}")
+                val fmt2 = SimpleDateFormat("h-m-s", Locale.getDefault())
+                session = fmt2.format(cal.time)
             }
-        }
 
-        val tagVal = if (isNotEmpty(tag)) {
+            if (file == null) {
 
-            "$tag :: "
+                val calendar = Calendar.getInstance()
+                val dir = Environment.DIRECTORY_DOWNLOADS
+                val format = SimpleDateFormat("yy-MM-dd", Locale.getDefault())
+                val formattedDate = format.format(calendar.time)
+                val fileName = "$formattedDate-$destination-$session.txt"
+                val downloadsFolder = Environment.getExternalStoragePublicDirectory(dir)
 
-        } else {
+                file = File(downloadsFolder, fileName)
 
-            ""
-        }
+                if (file?.exists() != true && file?.createNewFile() != true) {
 
-        if (file?.appendText("$datetime :: $tagVal$logs") != true) {
+                    Timber.e("No logs gathering file crated at: ${file?.absolutePath}")
+                }
+            }
 
-            Timber.e("Failed to append text into: ${file?.absolutePath}")
+            val tagVal = if (isNotEmpty(tag)) {
+
+                "$tag :: "
+
+            } else {
+
+                ""
+            }
+
+            if (file?.appendText("$datetime :: $tagVal$logs") != true) {
+
+                Timber.e("Failed to append text into: ${file?.absolutePath}")
+            }
+
+        } catch (e: Exception) {
+
+            recordException(e)
         }
     }
 }
