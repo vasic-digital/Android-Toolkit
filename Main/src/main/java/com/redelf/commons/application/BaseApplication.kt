@@ -162,10 +162,10 @@ abstract class BaseApplication :
     )
 
     protected val managersReady = AtomicBoolean()
+    protected val audioFocusGainTolerance = 3000L
     protected val audioFocusTag = "Audio focus ::"
 
     private val audioFocusLost = AtomicLong()
-    private val audioFocusGainTolerance = 3000L
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null

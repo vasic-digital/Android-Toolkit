@@ -740,6 +740,16 @@ fun exec(what: Runnable, delayInMilliseconds: Long) {
     RejectedExecutionException::class,
     NullPointerException::class
 )
+fun exec(delayInMilliseconds: Long, what: Runnable) {
+
+    Executor.MAIN.execute(what, delayInMilliseconds)
+}
+
+@Throws(
+
+    RejectedExecutionException::class,
+    NullPointerException::class
+)
 fun exec(what: Runnable) {
 
     Executor.MAIN.execute(what)
