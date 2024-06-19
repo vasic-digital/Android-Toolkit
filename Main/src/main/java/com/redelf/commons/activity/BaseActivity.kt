@@ -114,6 +114,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
 
         onBackPressedDispatcher.addCallback(this, backPressedCallback)
+
         created = true
     }
 
