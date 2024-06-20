@@ -162,10 +162,8 @@ abstract class BaseApplication :
     )
 
     protected val managersReady = AtomicBoolean()
-    protected val audioFocusGainTolerance = 3000L
     protected val audioFocusTag = "Audio focus ::"
 
-    private val audioFocusLost = AtomicLong()
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null
@@ -272,26 +270,33 @@ abstract class BaseApplication :
 
         when (focusChange) {
 
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
 
                 Console.log("$audioFocusTag Transient or can dock")
 
-                onExternalStreamStarted()
+                streamVolumeDown()
             }
 
-            AudioManager.AUDIOFOCUS_GAIN -> {
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
 
-                Console.log("$audioFocusTag Gained")
-
-                onExternalStreamStopped()
+                streamStop()
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
 
                 Console.log("$audioFocusTag Lost")
 
-                onExternalStreamStarted()
+                streamStop()
+            }
+
+            AudioManager.AUDIOFOCUS_GAIN -> {
+
+                Console.log("$audioFocusTag Gained")
+
+                if (streamPlay()) {
+
+                    streamVolumeUp()
+                }
             }
         }
     }
@@ -378,16 +383,24 @@ abstract class BaseApplication :
         Console.log("Phone is RINGING")
     }
 
-    protected open fun stopStream(): Boolean {
+    protected open fun streamStop() {
 
-        Console.log("$audioFocusTag Stop stream")
-
-        return false
+        Console.log("$audioFocusTag Stream :: STOP")
     }
 
-    protected open fun resumeStream(): Boolean {
+    protected open fun streamVolumeUp() {
 
-        Console.log("$audioFocusTag Resume stream")
+        Console.log("$audioFocusTag Stream :: VOLUME UP")
+    }
+
+    protected open fun streamVolumeDown() {
+
+        Console.log("$audioFocusTag Stream :: VOLUME DOWN")
+    }
+
+    protected open fun streamPlay(): Boolean {
+
+        Console.log("$audioFocusTag Stream :: PLAY")
 
         return false
     }
@@ -960,48 +973,5 @@ abstract class BaseApplication :
         sendBroadcast(intent)
 
         Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
-    }
-
-    private fun onExternalStreamStarted() {
-
-        val tag = "$audioFocusTag External stream started ::"
-
-        Console.log("$tag START")
-
-        if (audioFocusLost.get() > 0L) {
-
-            Console.log("$tag SKIP")
-
-            return
-        }
-
-        if (stopStream()) {
-
-            Console.log("$tag Stream stopped")
-
-            audioFocusLost.set(System.currentTimeMillis())
-        }
-
-        Console.log("$tag END")
-    }
-
-    private fun onExternalStreamStopped() {
-
-        val diff = System.currentTimeMillis() - audioFocusLost.get()
-
-        Console.log(
-
-            "$audioFocusTag Gained: diff = $diff, tolerance = $audioFocusGainTolerance"
-        )
-
-        if (diff <= audioFocusGainTolerance) {
-
-            if (resumeStream()) {
-
-                Console.log("$audioFocusTag Stream resumed")
-            }
-        }
-
-        audioFocusLost.set(0L)
     }
 }
