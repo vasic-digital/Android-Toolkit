@@ -44,7 +44,6 @@ import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
 
 abstract class BaseApplication :
 

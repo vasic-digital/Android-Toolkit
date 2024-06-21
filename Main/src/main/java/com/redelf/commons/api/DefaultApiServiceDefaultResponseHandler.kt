@@ -1,6 +1,5 @@
 package com.redelf.commons.api
 
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.exception.credentials.CredentialsInvalidException
 import com.redelf.commons.obtain.OnObtain
 import retrofit2.Response
@@ -61,7 +60,7 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
                 val e = if (DEBUG.get()) {
 
                     val loc = response?.raw()?.request?.url ?: ""
-                    val codeStr = code?.toString() ?: ""
+                    val codeStr = code.toString()
                     IOException("Response is not successful $codeStr $loc".trim())
 
                 } else {

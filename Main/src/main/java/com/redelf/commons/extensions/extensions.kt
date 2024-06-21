@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
@@ -28,7 +30,6 @@ import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.PropertiesHash
-import timber.log.Timber
 import java.io.*
 import java.util.*
 import java.util.concurrent.Callable

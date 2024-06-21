@@ -5,7 +5,6 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer
-import junit.framework.Test
 import org.junit.Assert
 import org.junit.Before
 import java.util.concurrent.CountDownLatch

@@ -1,6 +1,5 @@
 package com.redelf.commons.migration
 
-import android.content.Context
 import com.redelf.commons.obtain.OnObtain
 
 abstract class NoDataMigration(dataManagersReadyRequired: Boolean = true) :

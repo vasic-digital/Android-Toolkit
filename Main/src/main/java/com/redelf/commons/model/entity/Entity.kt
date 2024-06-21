@@ -2,11 +2,11 @@ package com.redelf.commons.model.entity
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.google.gson.internal.LinkedTreeMap
-import com.redelf.commons.model.Identifiable
+import com.redelf.commons.model.identifiable.IdentifiableLong
 import com.redelf.commons.obtain.Obtain
 import java.io.Serializable
 
-abstract class Entity : Identifiable, Serializable {
+abstract class Entity : IdentifiableLong, Serializable {
 
     @JsonCreator constructor() : super()
 
