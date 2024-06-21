@@ -177,9 +177,16 @@ class RecordingTree(
                 ""
             }
 
-            if (file?.appendText("$datetime :: $tagVal$logs") != true) {
+            try {
 
-                Timber.e("Failed to append text into: ${file?.absolutePath}")
+                if (file?.appendText("$datetime :: $tagVal$logs") != true) {
+
+                    Timber.e("Failed to append text into: ${file?.absolutePath}")
+                }
+
+            } catch (e: Exception) {
+
+                recordException(e)
             }
 
         } catch (e: Exception) {
