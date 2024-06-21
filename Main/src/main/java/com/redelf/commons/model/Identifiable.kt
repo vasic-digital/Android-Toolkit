@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
 
-abstract class HasId {
+/*
+* TODO: Abstraction branches and Long and UUID descendants
+*/
+abstract class Identifiable {
 
     @JsonProperty("id")
     @SerializedName("id")
