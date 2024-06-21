@@ -61,6 +61,7 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
                     val loc = response?.raw()?.request?.url ?: ""
                     val codeStr = code.toString()
+
                     IOException("Response is not successful $codeStr $loc".trim())
 
                 } else {

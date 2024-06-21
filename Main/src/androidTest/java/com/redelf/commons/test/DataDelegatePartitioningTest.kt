@@ -36,7 +36,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         Console.initialize(failOnError = true)
 
-        Console.log("Timber initialized: $this")
+        Console.log("Console initialized: $this")
 
         GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK.set(true)
     }
