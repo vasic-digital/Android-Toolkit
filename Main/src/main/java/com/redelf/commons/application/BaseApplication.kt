@@ -52,9 +52,7 @@ abstract class BaseApplication :
     ActivityLifecycleCallbacks,
     ActivityCount,
     LifecycleObserver,
-    Updatable<Long>
-
-{
+    Updatable<Long> {
 
     companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
 
@@ -112,7 +110,14 @@ abstract class BaseApplication :
                 val context = takeContext()
                 val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
 
-                return packageInfo.versionName
+                val vName = packageInfo.versionName
+
+                if (isEmpty(vName)) {
+
+                    return "unknown"
+                }
+
+                return vName
 
             } catch (e: NameNotFoundException) {
 

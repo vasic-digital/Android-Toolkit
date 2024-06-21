@@ -4,7 +4,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.management.DataManagement
 
-class TestApplication : BaseApplication() {
+open class TestApplication : BaseApplication() {
 
     companion object : ContextAvailability<TestApplication> {
 
