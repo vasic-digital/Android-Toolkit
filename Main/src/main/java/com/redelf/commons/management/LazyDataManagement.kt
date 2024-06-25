@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.Connectivity
+import com.redelf.commons.data.Empty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
@@ -199,9 +200,24 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
             if (DEBUG.get()) Console.log("$tag SAVING")
 
             val data = obtain()
+            var empty: Boolean? = null
+
+            if (data is Empty) {
+
+                empty = data.isEmpty()
+            }
+
             overwriteData(data)
 
-            if (DEBUG.get()) Console.log("$tag SAVED")
+            empty?.let {
+
+                if (DEBUG.get()) Console.log("$tag SAVED :: Empty = $it")
+            }
+
+            if (empty == null) {
+
+                if (DEBUG.get()) Console.log("$tag SAVED")
+            }
 
         } catch (e: IllegalStateException) {
 

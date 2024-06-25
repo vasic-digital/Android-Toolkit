@@ -4,6 +4,7 @@ import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
+import com.redelf.commons.data.Empty
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
@@ -315,11 +316,27 @@ abstract class DataManagement<T> :
 
         val dataObjTag = "$tag Data object ::"
 
-        if (canLog()) Console.log("$dataObjTag Initial: ${data != null}")
+        if (canLog()) Console.log("$dataObjTag Has initial: ${data != null}")
 
         if (data == null && persist) {
 
+            var empty: Boolean? = null
             val pulled = STORAGE.pull<T?>(storageKey)
+
+            if (pulled is Empty) {
+
+                empty = pulled.isEmpty()
+            }
+
+            empty?.let {
+
+                if (canLog()) Console.log("$dataObjTag Pulled :: Empty = $it")
+            }
+
+            if (empty == null) {
+
+                if (canLog()) Console.log("$dataObjTag Pulled :: Null = ${data == null}")
+            }
 
             pulled?.let {
 
@@ -388,7 +405,7 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     open fun pushData(data: T) {
 
-        Console.log("${getLogTag()} Push data :: START")
+        if (DEBUG.get()) Console.log("${getLogTag()} Push data :: START")
 
         doPushData(data)
     }
@@ -443,11 +460,11 @@ abstract class DataManagement<T> :
 
             if (success == true) {
 
-                Console.log("${getLogTag()} Data pushed")
+                if (DEBUG.get()) Console.log("${getLogTag()} Data pushed")
 
             } else {
 
-                Console.error("${getLogTag()} Data push failed", err)
+                if (DEBUG.get()) Console.error("${getLogTag()} Data push failed", err)
             }
         }
     }
