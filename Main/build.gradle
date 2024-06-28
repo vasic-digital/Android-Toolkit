@@ -138,7 +138,7 @@ dependencies {
 
     api "com.airbnb.android:lottie:5.2.0"
     api "androidx.preference:preference-ktx:1.2.1"
-    api "com.google.android.material:material:1.11.0"
+    api "com.google.android.material:material:1.12.0"
     api "androidx.navigation:navigation-ui-ktx:2.7.7"
     api "androidx.navigation:navigation-fragment-ktx:2.7.7"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
@@ -148,8 +148,8 @@ dependencies {
     testImplementation "junit:junit:4.13.2"
 
     androidTestImplementation project(":Toolkit:Test")
-    androidTestImplementation "androidx.test:rules:1.5.0"
-    androidTestImplementation "androidx.test.ext:junit:1.2.0"
+    androidTestImplementation "androidx.test:rules:1.6.1"
+    androidTestImplementation "androidx.test.ext:junit:1.2.1"
 
     implementation "com.jakewharton.timber:timber:5.0.1"
     testImplementation "com.jakewharton.timber:timber:5.0.1"
