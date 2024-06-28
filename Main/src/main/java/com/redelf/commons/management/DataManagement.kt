@@ -365,6 +365,8 @@ abstract class DataManagement<T> :
 
                 current?.let {
 
+                    data = current
+
                     doPushData(current)
                 }
 
