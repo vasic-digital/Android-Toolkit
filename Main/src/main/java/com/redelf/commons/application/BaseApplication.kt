@@ -25,6 +25,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
@@ -415,6 +416,11 @@ abstract class BaseApplication :
 
     override fun onCreate() {
         super.onCreate()
+
+        if (firebaseEnabled) {
+
+            FirebaseApp.initializeApp(applicationContext)
+        }
 
         prefs = SharedPreferencesStorage(applicationContext)
 
