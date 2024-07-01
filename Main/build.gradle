@@ -8,6 +8,12 @@ plugins {
 
 android {
 
+    // FIXME:
+    packagingOptions {
+
+        exclude 'META-INF/USE_EXACT_ALARM'
+    }
+
     compileSdk 34
     namespace "com.redelf.commons"
 
