@@ -57,6 +57,7 @@ class AlarmScheduler(
 
         Console.log("$tag Scheduling new alarm: What=$what, toWhen=$toWhen")
 
+        // FIXME:
         alarmManager.setExactAndAllowWhileIdle(
 
             AlarmManager.RTC_WAKEUP,

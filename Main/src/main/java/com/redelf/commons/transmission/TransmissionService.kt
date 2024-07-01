@@ -11,7 +11,6 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.logging.Console
 import com.redelf.commons.scheduling.alarm.AlarmReceiver
-import com.redelf.commons.scheduling.alarm.AlarmScheduler
 import com.redelf.commons.service.BaseService
 import com.redelf.commons.transmission.alarm.TransmissionAlarmCallback
 import java.util.concurrent.atomic.AtomicBoolean
