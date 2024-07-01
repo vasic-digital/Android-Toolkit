@@ -163,14 +163,16 @@ class TransmissionService : BaseService() {
 
             unregisterAlarmCallback()
 
-            AlarmScheduler(applicationContext).unSchedule(BROADCAST_EXTRA_CODE)
+            // FIXME: ... Also add proper manifest permissions!
+            //            AlarmScheduler(applicationContext).unSchedule(BROADCAST_EXTRA_CODE)
 
         } else {
 
             registerAlarmCallback()
 
-            val time = getAlarmInterval()
-            AlarmScheduler(applicationContext).schedule(BROADCAST_EXTRA_CODE, time)
+            // FIXME: ... Also add proper manifest permissions!
+            //            val time = getAlarmInterval()
+            //            AlarmScheduler(applicationContext).schedule(BROADCAST_EXTRA_CODE, time)
         }
 
         Console.log("$tag End")

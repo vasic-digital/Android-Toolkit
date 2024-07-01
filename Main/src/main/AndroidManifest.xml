@@ -2,12 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
-    <!-- FIXME: -->
-    <!--    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />-->
 
     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -43,8 +40,6 @@
             android:name="com.redelf.commons.transmission.TransmissionService"
             android:enabled="true"
             android:exported="false" />
-
-        <receiver android:name="com.redelf.commons.scheduling.alarm.AlarmReceiver" />
 
         <provider
             android:name="com.redelf.commons.provider.filesystem.GenericFileProvider"
