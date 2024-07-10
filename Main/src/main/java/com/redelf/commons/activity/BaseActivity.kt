@@ -389,6 +389,20 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     open fun showError(
 
+        error: String,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return showError(error, null, positiveAction, dismissAction, style)
+    }
+
+    open fun showError(
+
         error: Int,
         title: Int? = null,
 
@@ -403,6 +417,40 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
             title = title ?: android.R.string.dialog_alert_title,
             message = error,
+            action = {
+
+                dismissDialogs()
+                positiveAction?.run()
+
+            },
+            dismissAction = {
+
+                dismissDialogs()
+                dismissAction?.run()
+            },
+            actionLabel = android.R.string.ok,
+            dismissible = false,
+            cancellable = true,
+            style = style ?: 0
+        )
+    }
+
+    open fun showError(
+
+        error: String,
+        title: Int? = null,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return alert(
+
+            title = title ?: android.R.string.dialog_alert_title,
+            messageString = error,
             action = {
 
                 dismissDialogs()

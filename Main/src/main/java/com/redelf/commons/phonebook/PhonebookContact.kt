@@ -9,19 +9,19 @@ data class PhonebookContact @JsonCreator constructor(
 
     @JsonProperty("name")
     @SerializedName("name")
-    val name: String? = null,
+    var name: String? = null,
 
     @JsonProperty("email")
     @SerializedName("email")
-    val email: ArrayList<String>? = ArrayList(),
+    var email: ArrayList<String>? = ArrayList(),
 
     @JsonProperty("phone")
     @SerializedName("phone")
-    val phone: ArrayList<String>? = ArrayList(),
+    var phone: ArrayList<String>? = ArrayList(),
 
     @JsonProperty("avatar")
     @SerializedName("avatar")
-    val avatar: Uri? = null
+    var avatar: Uri? = null
 
 ) {
 
