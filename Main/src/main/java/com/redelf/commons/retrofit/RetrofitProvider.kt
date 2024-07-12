@@ -24,6 +24,12 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
+    // TODO: Incorporate the support for Proxy:
+    //  https://stackoverflow.com/questions/32053413/using-retrofit-behind-a-proxy
+    //  https://github.com/proxifly/free-proxy-list/tree/main
+    //  https://github.com/proxifly/free-proxy-list/blob/main/proxies/protocols/http/data.txt
+    //  Proxy to be picked dynamically!
+
     var DEBUG: Boolean? = null
 
     val PINNED_CERTIFICATES = mutableMapOf<String, String>()
