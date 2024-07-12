@@ -67,7 +67,7 @@ dependencies {
     final String okioVersion = "3.9.0"
     final String okHttpVersion = "4.12.0"
     final String jacksonVersion = "2.12.5"
-    final String lifecycleVersion = "2.8.2"
+    final String lifecycleVersion = "2.8.3"
     final String retrofitHttpVersion = "2.11.0"
 
     api "com.squareup.okio:okio:$okioVersion"
@@ -99,7 +99,7 @@ dependencies {
     api "com.google.firebase:firebase-analytics:22.0.2"
     api "com.google.firebase:firebase-analytics-ktx:22.0.2"
     api "com.google.firebase:firebase-messaging:24.0.0"
-    api "com.google.firebase:firebase-crashlytics:19.0.2"
+    api "com.google.firebase:firebase-crashlytics:19.0.3"
     api "com.google.android.gms:play-services-auth:21.2.0"
 
     api "com.google.android.play:app-update:2.1.0"
@@ -131,12 +131,13 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
 
-    api platform("com.google.firebase:firebase-bom:33.1.1")
+    api platform("com.google.firebase:firebase-bom:33.1.2")
 
     api "io.github.nefilim.kjwt:kjwt-core:0.9.0"
     api "io.github.nefilim.kjwt:kjwt-jwks:0.9.0"
 
     api "com.airbnb.android:lottie:5.2.0"
+    api "androidx.work:work-runtime-ktx:2.9.0"
     api "androidx.preference:preference-ktx:1.2.1"
     api "com.google.android.material:material:1.12.0"
     api "androidx.navigation:navigation-ui-ktx:2.7.7"
