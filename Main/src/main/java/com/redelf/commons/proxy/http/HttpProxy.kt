@@ -8,9 +8,20 @@ import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
 import java.net.URL
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port) {
+class HttpProxy(
+
+    ctx: Context,
+    address: String, port: Int,
+
+    private var timeoutInMilliseconds: AtomicInteger = AtomicInteger(
+
+        ctx.resources.getInteger(R.integer.proxy_timeout_in_milliseconds)
+    )
+
+) : Proxy(address, port) {
 
     companion object {
 
@@ -62,6 +73,13 @@ class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port)
         return java.net.Proxy(java.net.Proxy.Type.HTTP, InetSocketAddress(address, port))
     }
 
+    override fun getTimeout() = timeoutInMilliseconds.get()
+
+    override fun setTimeout(value: Int) {
+
+        timeoutInMilliseconds.set(value)
+    }
+
     override fun isAlive(ctx: Context): Boolean {
 
         return try {
@@ -72,8 +90,8 @@ class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port)
             val connection = url?.openConnection(proxy) as HttpURLConnection?
 
             connection?.requestMethod = "GET"
-            connection?.readTimeout = 5000 // 5 seconds
-            connection?.connectTimeout = 5000 // 5 seconds
+            connection?.readTimeout = timeoutInMilliseconds.get()
+            connection?.connectTimeout = timeoutInMilliseconds.get()
 
             connection?.connect()
 
@@ -98,8 +116,8 @@ class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port)
             val url = getTestUrl(ctx)
             val connection = url?.openConnection(proxy) as HttpURLConnection?
 
-            connection?.readTimeout = 5000 // 5 seconds
-            connection?.connectTimeout = 5000 // 5 seconds
+            connection?.readTimeout = timeoutInMilliseconds.get()
+            connection?.connectTimeout = timeoutInMilliseconds.get()
             connection?.requestMethod = "GET"
 
             val startTime = System.currentTimeMillis()
