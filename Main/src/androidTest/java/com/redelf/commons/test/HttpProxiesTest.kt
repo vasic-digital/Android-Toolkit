@@ -117,7 +117,7 @@ class HttpProxiesTest : BaseTest() {
 
         try {
 
-            val sourceAddress = "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt"
+            val sourceAddress = "https://raw.githubusercontent.com/red-elf/Android-Toolkit/main/Main/src/androidTest/res/raw/test_proxies.txt"
             val source = HttpStringsListDataSource(sourceAddress)
             var proxies = HttpProxies(applicationContext, sources = listOf(source), alive = false)
             var obtained = proxies.obtain()
