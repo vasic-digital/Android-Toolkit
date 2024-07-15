@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Proxy: -->
+    <string name="proxy_alive_check_url">https://www.google.rs</string>
+
+</resources>
