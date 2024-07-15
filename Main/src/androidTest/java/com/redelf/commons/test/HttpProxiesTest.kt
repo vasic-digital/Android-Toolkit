@@ -75,7 +75,7 @@ class HttpProxiesTest : BaseTest() {
 
         try {
 
-            val source = RawStringsListDataSource(applicationContext, R.raw.test_proxies_2)
+            val source = RawStringsListDataSource(applicationContext, R.raw.proxies2)
             var proxies = HttpProxies(applicationContext, sources = listOf(source), alive = false)
             var obtained = proxies.obtain()
 
