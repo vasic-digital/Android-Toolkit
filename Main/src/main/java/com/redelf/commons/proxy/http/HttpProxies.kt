@@ -6,8 +6,20 @@ import java.util.concurrent.PriorityBlockingQueue
 
 class HttpProxies(private val ctx: Context) : Proxies<HttpProxy> {
 
+    private val proxies = PriorityBlockingQueue<HttpProxy>()
+
     override fun obtain(): PriorityBlockingQueue<HttpProxy> {
 
-        TODO("Not yet implemented")
+        if (proxies.isEmpty()) {
+
+            // Add proxies here
+        }
+
+        return proxies
+    }
+
+    override fun clear() {
+
+        proxies.clear()
     }
 }
