@@ -16,6 +16,9 @@ class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port)
 
         var MEASUREMENT_ITERATIONS = 3
 
+        val QUALITY_COMPARATOR =
+            Comparator<HttpProxy> { p1, p2 -> p1.getQuality().compareTo(p2.getQuality()) }
+
         @Throws(IllegalArgumentException::class)
         private fun parseProxy(proxy: String): Pair<String, Int> {
 
