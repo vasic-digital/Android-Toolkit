@@ -123,7 +123,7 @@ class HttpProxiesTest : BaseTest() {
             var obtained = proxies.obtain()
 
             Assert.assertNotNull(obtained)
-            Assert.assertTrue(obtained.isNotEmpty())
+            Assert.assertTrue(obtained.isNotEmpty()) // FIXME: Check this
 
             proxies = HttpProxies(applicationContext, sources = listOf(source), alive = true)
             obtained = proxies.obtain()
