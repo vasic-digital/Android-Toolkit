@@ -2,9 +2,11 @@ package com.redelf.commons.proxy.http
 
 import android.content.Context
 import com.redelf.commons.R
+import com.redelf.commons.logging.Console
 import com.redelf.commons.proxy.Proxy
 import java.net.HttpURLConnection
 import java.net.InetSocketAddress
+import java.net.MalformedURLException
 import java.net.URL
 
 class HttpProxy(address: String, port: Int) : Proxy(address, port) {
@@ -19,24 +21,76 @@ class HttpProxy(address: String, port: Int) : Proxy(address, port) {
         return try {
 
             val proxy = get()
-            val url = URL(ctx.getString(R.string.proxy_alive_check_url))
+            val url = getTestUrl(ctx)
 
-            val connection = url.openConnection(proxy) as HttpURLConnection
+            val connection = url?.openConnection(proxy) as HttpURLConnection?
 
-            connection.requestMethod = "GET"
-            connection.readTimeout = 5000 // 5 seconds timeout
-            connection.connectTimeout = 5000 // 5 seconds timeout
+            connection?.requestMethod = "GET"
+            connection?.readTimeout = 5000 // 5 seconds timeout
+            connection?.connectTimeout = 5000 // 5 seconds timeout
 
-            connection.connect()
+            connection?.connect()
 
-            val responseCode = connection.responseCode
-            connection.disconnect()
+            val responseCode: Int = connection?.responseCode ?: -1
+            connection?.disconnect()
 
-            responseCode == 200
+            responseCode in 200..299
 
         } catch (e: Exception) {
 
+            Console.log(e)
+
             false
         }
+    }
+
+    override fun getSpeed(ctx: Context): Long {
+
+        return try {
+
+            val proxy = get()
+            val url = getTestUrl(ctx)
+            val connection = url?.openConnection(proxy) as HttpURLConnection?
+
+            connection?.readTimeout = 5000 // 5 seconds timeout
+            connection?.connectTimeout = 5000 // 5 seconds timeout
+            connection?.requestMethod = "GET"
+
+            val startTime = System.currentTimeMillis()
+            connection?.connect()
+
+            val responseCode = connection?.responseCode
+            val endTime = System.currentTimeMillis()
+
+            connection?.disconnect()
+
+            if (responseCode == 200) {
+
+                endTime - startTime
+            } else {
+
+                Long.MAX_VALUE // If the response is not 200, consider it as a very slow proxy
+            }
+
+        } catch (e: Exception) {
+
+            Console.error(e)
+
+            Long.MAX_VALUE // If any exception occurs, consider it as a very slow proxy
+        }
+    }
+
+    private fun getTestUrl(ctx: Context): URL? {
+
+        try {
+
+            return URL(ctx.getString(R.string.proxy_alive_check_url))
+
+        } catch (e: MalformedURLException) {
+
+            Console.error(e)
+        }
+
+        return null
     }
 }
