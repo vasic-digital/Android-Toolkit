@@ -113,7 +113,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
             }
         }
 
-        // FIXME: ?
         onBackPressedDispatcher.addCallback(this, backPressedCallback)
 
         created = true
