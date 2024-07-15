@@ -1,7 +1,8 @@
-package com.redelf.commons.proxy
+package com.redelf.commons.proxy.http
 
 import android.content.Context
 import com.redelf.commons.R
+import com.redelf.commons.proxy.Proxy
 import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.URL
