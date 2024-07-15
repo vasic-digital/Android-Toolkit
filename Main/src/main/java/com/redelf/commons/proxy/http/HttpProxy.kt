@@ -15,7 +15,30 @@ class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port)
     companion object {
 
         var MEASUREMENT_ITERATIONS = 3
+
+        @Throws(IllegalArgumentException::class)
+        private fun parseProxy(proxy: String): Pair<String, Int> {
+
+            return try {
+
+                val url = URL(proxy)
+                val address = url.host
+                val port = url.port
+
+                Pair(address, port)
+
+            } catch (e: Exception) {
+
+                Console.error(e)
+
+                throw IllegalArgumentException("Could not pares proxy from URL: $proxy")
+            }
+        }
     }
+
+    @Throws(IllegalArgumentException::class)
+    constructor(ctx: Context, proxy: String) :
+            this(ctx, parseProxy(proxy).first, parseProxy(proxy).second)
 
     private val quality = AtomicLong(Long.MAX_VALUE)
 
