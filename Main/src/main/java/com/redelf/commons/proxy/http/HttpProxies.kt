@@ -4,8 +4,6 @@ import android.content.Context
 import com.redelf.commons.R
 import com.redelf.commons.data.list.ListDataSource
 import com.redelf.commons.data.list.RawStringsListDataSource
-import com.redelf.commons.extensions.isNotEmpty
-import com.redelf.commons.extensions.readRawTextFile
 import com.redelf.commons.logging.Console
 import com.redelf.commons.proxy.Proxies
 import java.util.PriorityQueue
