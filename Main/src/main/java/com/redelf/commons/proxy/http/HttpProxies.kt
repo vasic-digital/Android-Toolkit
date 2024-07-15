@@ -28,7 +28,7 @@ class HttpProxies(private val ctx: Context) : Proxies<HttpProxy> {
 
                         val proxy = HttpProxy(ctx, line.trim())
 
-                        // TODO: Continue
+                        proxies.add(proxy)
 
                     } catch (e: IllegalArgumentException) {
 
