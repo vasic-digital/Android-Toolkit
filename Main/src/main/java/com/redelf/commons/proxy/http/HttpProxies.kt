@@ -7,9 +7,13 @@ import com.redelf.commons.extensions.readRawTextFile
 import com.redelf.commons.logging.Console
 import com.redelf.commons.proxy.Proxies
 import java.util.PriorityQueue
-import java.util.concurrent.PriorityBlockingQueue
 
-class HttpProxies(private val ctx: Context) : Proxies<HttpProxy> {
+class HttpProxies(
+
+    private val ctx: Context,
+    private val alive: Boolean = true
+
+) : Proxies<HttpProxy> {
 
     private val proxies = PriorityQueue(HttpProxy.QUALITY_COMPARATOR)
 
@@ -29,7 +33,14 @@ class HttpProxies(private val ctx: Context) : Proxies<HttpProxy> {
 
                         val proxy = HttpProxy(ctx, line.trim())
 
-                        if (proxy.isAlive(ctx)) {
+                        if (alive) {
+
+                            if (proxy.isAlive(ctx)) {
+
+                                proxies.add(proxy)
+                            }
+
+                        } else {
 
                             proxies.add(proxy)
                         }

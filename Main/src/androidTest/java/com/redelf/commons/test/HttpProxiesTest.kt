@@ -12,11 +12,16 @@ class HttpProxiesTest : BaseTest() {
 
         try {
 
-            val proxies = HttpProxies(applicationContext)
-            val obtained = proxies.obtain()
+            var proxies = HttpProxies(applicationContext, alive = false)
+            var obtained = proxies.obtain()
 
             Assert.assertNotNull(obtained)
             Assert.assertTrue(obtained.isNotEmpty())
+
+            proxies = HttpProxies(applicationContext, alive = true)
+            obtained = proxies.obtain()
+
+            Assert.assertNotNull(obtained)
 
             val iterator = obtained.iterator()
             val quality = AtomicLong(Long.MAX_VALUE)
