@@ -8,11 +8,28 @@ import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
 import java.net.URL
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
-class HttpProxy(address: String, port: Int) : Proxy(address, port) {
+class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port) {
 
-    private val quality = AtomicInteger(Int.MAX_VALUE)
+    companion object {
+
+        var MEASUREMENT_ITERATIONS = 3
+    }
+
+    private val quality = AtomicLong(Long.MAX_VALUE)
+
+    init {
+
+        var qSum = 0L
+
+        for (i in 0 until MEASUREMENT_ITERATIONS) {
+
+            qSum += getSpeed(ctx)
+        }
+
+        quality.set(qSum / MEASUREMENT_ITERATIONS)
+    }
 
     fun get(): java.net.Proxy {
 
@@ -70,6 +87,7 @@ class HttpProxy(address: String, port: Int) : Proxy(address, port) {
             if (responseCode == 200) {
 
                 endTime - startTime
+
             } else {
 
                 Long.MAX_VALUE

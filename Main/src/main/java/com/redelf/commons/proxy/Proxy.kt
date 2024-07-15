@@ -8,5 +8,5 @@ abstract class Proxy(var address: String, var port: Int) {
 
     abstract fun getSpeed(ctx: Context): Long
 
-    abstract fun getQuality(): Int
+    abstract fun getQuality(): Long
 }
