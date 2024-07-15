@@ -8,8 +8,11 @@ import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
 import java.net.URL
+import java.util.concurrent.atomic.AtomicInteger
 
 class HttpProxy(address: String, port: Int) : Proxy(address, port) {
+
+    private val quality = AtomicInteger(Int.MAX_VALUE)
 
     fun get(): java.net.Proxy {
 
@@ -79,6 +82,8 @@ class HttpProxy(address: String, port: Int) : Proxy(address, port) {
             Long.MAX_VALUE // If any exception occurs, consider it as a very slow proxy
         }
     }
+
+    override fun getQuality() = quality.get()
 
     private fun getTestUrl(ctx: Context): URL? {
 
