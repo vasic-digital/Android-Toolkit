@@ -29,8 +29,8 @@ class HttpProxy(address: String, port: Int) : Proxy(address, port) {
             val connection = url?.openConnection(proxy) as HttpURLConnection?
 
             connection?.requestMethod = "GET"
-            connection?.readTimeout = 5000 // 5 seconds timeout
-            connection?.connectTimeout = 5000 // 5 seconds timeout
+            connection?.readTimeout = 5000 // 5 seconds
+            connection?.connectTimeout = 5000 // 5 seconds
 
             connection?.connect()
 
@@ -55,8 +55,8 @@ class HttpProxy(address: String, port: Int) : Proxy(address, port) {
             val url = getTestUrl(ctx)
             val connection = url?.openConnection(proxy) as HttpURLConnection?
 
-            connection?.readTimeout = 5000 // 5 seconds timeout
-            connection?.connectTimeout = 5000 // 5 seconds timeout
+            connection?.readTimeout = 5000 // 5 seconds
+            connection?.connectTimeout = 5000 // 5 seconds
             connection?.requestMethod = "GET"
 
             val startTime = System.currentTimeMillis()
@@ -72,14 +72,14 @@ class HttpProxy(address: String, port: Int) : Proxy(address, port) {
                 endTime - startTime
             } else {
 
-                Long.MAX_VALUE // If the response is not 200, consider it as a very slow proxy
+                Long.MAX_VALUE
             }
 
         } catch (e: Exception) {
 
             Console.error(e)
 
-            Long.MAX_VALUE // If any exception occurs, consider it as a very slow proxy
+            Long.MAX_VALUE
         }
     }
 
