@@ -1,11 +1,31 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.proxy.http.HttpProxies
+import com.redelf.commons.proxy.http.HttpProxy
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong
 
 class HttpProxiesTest : BaseTest() {
+
+    @Test
+    fun testComparison() {
+
+        val proxy1 = "http://192.168.1.1:8080"
+        val proxy2 = "http://192.168.1.1:8080"
+        val proxy3 = "http://192.168.1.2:8080"
+
+        val httpProxy1 = HttpProxy(applicationContext, proxy1)
+        val httpProxy2 = HttpProxy(applicationContext, proxy2)
+        val httpProxy3 = HttpProxy(applicationContext, proxy3)
+
+        Assert.assertEquals(httpProxy1, httpProxy2)
+        Assert.assertNotEquals(httpProxy1, httpProxy3)
+
+        Assert.assertEquals(httpProxy1.hashCode(), httpProxy2.hashCode())
+        Assert.assertNotEquals(httpProxy1.hashCode(), httpProxy3.hashCode())
+        Assert.assertNotEquals(httpProxy2.hashCode(), httpProxy3.hashCode())
+    }
 
     @Test
     fun testProxies() {

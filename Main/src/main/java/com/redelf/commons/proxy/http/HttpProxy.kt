@@ -151,6 +151,21 @@ class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port)
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+
+        if (other is HttpProxy) {
+
+            return this.address == other.address && this.port == other.port
+        }
+
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+
+        return "$address:$port".hashCode()
+    }
+
     private fun getTestUrl(ctx: Context): URL? {
 
         try {
