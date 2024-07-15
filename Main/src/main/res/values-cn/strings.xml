@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Default: -->
+    <string name="attach_file_from_camera" >从相机附加文件</string>
+    <string name="attach_file_from_gallery">从图库附加文件</string>
+    <string name="attach_file_from_documents">从文档中附加文件</string>
+
+    <!-- Errors: -->
+    <string name="error_attaching_file">附加文件时出错</string>
+
     <!-- Proxy: -->
     <string name="proxy_alive_check_url">https://www.baidu.com</string>
 

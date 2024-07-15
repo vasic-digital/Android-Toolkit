@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Default: -->
-    <string name="attach_file_from_camera">Attach file from camera</string>
+    <string name="attach_file_from_camera" >Attach file from camera</string>
     <string name="attach_file_from_gallery">Attach file from gallery</string>
     <string name="attach_file_from_documents">Attach file from documents</string>
 
@@ -10,9 +10,10 @@
     <string name="error_attaching_file">There was error attaching the file</string>
 
     <!-- FCM: -->
-    <string name="default_notification_channel_id">common_channel</string>
+    <string name="default_notification_channel_id" translatable="false">common_channel</string>
 
     <!-- Proxy: -->
     <string name="proxy_alive_check_url">https://www.google.com</string>
+    <string name="proxy_list_url" translatable="false">https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt</string>
 
 </resources>

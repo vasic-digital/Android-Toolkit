@@ -172,3 +172,25 @@ dependencies {
     testApi "com.google.code.gson:gson:2.10.1"
     androidTestApi "com.google.code.gson:gson:2.10.1"
 }
+
+task downloadProxies(type: Exec) {
+
+    def outputDir = file("$projectDir/src/main/res/raw")
+    def testOutputDir = file("$projectDir/src/androidTest/res/raw")
+    def outputFile = file("$outputDir/proxies.txt")
+    def testOutputFile = file("$testOutputDir/test_proxies.txt")
+
+    doFirst {
+
+        if (!outputDir.exists()) {
+
+            outputDir.mkdirs()
+        }
+    }
+
+    // curl -sL https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt -o http.txt
+    commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', outputFile
+    commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', testOutputFile
+}
+
+preBuild.dependsOn downloadProxies

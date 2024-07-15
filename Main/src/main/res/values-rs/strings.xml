@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Default: -->
+    <string name="attach_file_from_camera" >Приложите датотеку са камере</string>
+    <string name="attach_file_from_gallery">Приложите датотеку из галерије</string>
+    <string name="attach_file_from_documents">Приложите датотеку из докумената</string>
+
+    <!-- Errors: -->
+    <string name="error_attaching_file">Дошло је до грешке приликом прилога датотеке</string>
+
     <!-- Proxy: -->
     <string name="proxy_alive_check_url">https://www.google.rs</string>
 
