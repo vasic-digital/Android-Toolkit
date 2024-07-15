@@ -17,6 +17,9 @@ class HttpStringsListDataSource(
 
     override fun getList(): List<String> {
 
+        /*
+        * TODO: Use Retrofit
+        */
         val client = OkHttpClient()
 
         val request = Request.Builder()
