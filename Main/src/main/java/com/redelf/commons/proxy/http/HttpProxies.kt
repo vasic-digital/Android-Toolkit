@@ -2,6 +2,8 @@ package com.redelf.commons.proxy.http
 
 import android.content.Context
 import com.redelf.commons.R
+import com.redelf.commons.data.list.ListDataSource
+import com.redelf.commons.data.list.RawStringsListDataSource
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.readRawTextFile
 import com.redelf.commons.logging.Console
@@ -11,7 +13,8 @@ import java.util.PriorityQueue
 class HttpProxies(
 
     private val ctx: Context,
-    private val alive: Boolean = true
+    private val alive: Boolean = true,
+    private val source: ListDataSource<String> = RawStringsListDataSource(ctx, R.raw.proxies)
 
 ) : Proxies<HttpProxy> {
 
@@ -21,34 +24,29 @@ class HttpProxies(
 
         if (proxies.isEmpty()) {
 
-            val raw = ctx.readRawTextFile(R.raw.proxies)
+            val lines = source.getList()
 
-            if (isNotEmpty(raw)) {
+            lines.forEach { line ->
 
-                val lines = raw.split("\n")
+                try {
 
-                lines.forEach { line ->
+                    val proxy = HttpProxy(ctx, line.trim())
 
-                    try {
+                    if (alive) {
 
-                        val proxy = HttpProxy(ctx, line.trim())
-
-                        if (alive) {
-
-                            if (proxy.isAlive(ctx)) {
-
-                                proxies.add(proxy)
-                            }
-
-                        } else {
+                        if (proxy.isAlive(ctx)) {
 
                             proxies.add(proxy)
                         }
 
-                    } catch (e: IllegalArgumentException) {
+                    } else {
 
-                        Console.error(e)
+                        proxies.add(proxy)
                     }
+
+                } catch (e: IllegalArgumentException) {
+
+                    Console.error(e)
                 }
             }
         }
