@@ -4,6 +4,8 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.provider.Settings
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
 import com.redelf.commons.scheduling.Schedule
@@ -19,6 +21,21 @@ class AlarmScheduler(
 
         const val ALARM_VALUE = "AlarmScheduler.VALUE"
         const val ALARM_ACTION = "AlarmScheduler.ON_ALARM"
+    }
+
+    init {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+            val localCtx = ctx.applicationContext
+            val alarmManager = localCtx.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+
+            if (alarmManager?.canScheduleExactAlarms() == false) {
+
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                localCtx.startActivity(intent)
+            }
+        }
     }
 
     private val context = ctx.applicationContext
