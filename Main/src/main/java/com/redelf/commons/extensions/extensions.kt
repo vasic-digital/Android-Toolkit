@@ -255,6 +255,40 @@ fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int): Int {
     return requestCode
 }
 
+fun Context.readRawTextFile(resId: Int): String {
+
+    var line: String?
+    val stringBuilder = StringBuilder()
+    val inputStream = resources.openRawResource(resId)
+    val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+
+    try {
+
+        while (bufferedReader.readLine().also { line = it } != null) {
+
+            stringBuilder.append(line)
+            stringBuilder.append('\n')
+        }
+
+    } catch (e: Exception) {
+
+        Console.error(e)
+
+    } finally {
+
+        try {
+
+            bufferedReader.close()
+
+        } catch (e: Exception) {
+
+            Console.error(e)
+        }
+    }
+
+    return stringBuilder.toString().trim()
+}
+
 fun Activity.onUI(doWhat: () -> Unit) {
 
     if (!isFinishing) {
