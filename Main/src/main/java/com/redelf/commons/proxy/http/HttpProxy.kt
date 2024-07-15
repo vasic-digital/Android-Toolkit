@@ -129,6 +129,28 @@ class HttpProxy(ctx: Context, address: String, port: Int) : Proxy(address, port)
 
     override fun getQuality() = quality.get()
 
+    @Throws(IllegalArgumentException::class)
+    override fun compareTo(other: Proxy): Int {
+
+        if (other is HttpProxy) {
+
+            // Compare addresses lexicographically
+            val addressComparison = this.address.compareTo(other.address)
+
+            if (addressComparison != 0) {
+
+                return addressComparison
+            }
+
+            // If addresses are equal, compare ports numerically
+            return this.port.compareTo(other.port)
+
+        }  else {
+
+            throw IllegalArgumentException("Cannot compare HttpProxy with non-HttpProxy object")
+        }
+    }
+
     private fun getTestUrl(ctx: Context): URL? {
 
         try {

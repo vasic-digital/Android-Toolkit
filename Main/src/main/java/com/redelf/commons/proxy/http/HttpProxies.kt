@@ -14,7 +14,11 @@ class HttpProxies(
 
     private val ctx: Context,
     private val alive: Boolean = true,
-    private val source: ListDataSource<String> = RawStringsListDataSource(ctx, R.raw.proxies)
+
+    private val sources: List<ListDataSource<String>> =
+        listOf(RawStringsListDataSource(ctx, R.raw.proxies)),
+
+    private val combineSources: Boolean = true,
 
 ) : Proxies<HttpProxy> {
 
@@ -24,7 +28,25 @@ class HttpProxies(
 
         if (proxies.isEmpty()) {
 
-            val lines = source.getList()
+            var next = true
+            val lines = mutableListOf<String>()
+            val sourcesIterator = sources.iterator()
+
+            while (sourcesIterator.hasNext() && next) {
+
+                val source = sourcesIterator.next()
+                val obtained = source.getList()
+
+                if (obtained.isNotEmpty()) {
+
+                    lines.addAll(obtained)
+                }
+
+                if (!combineSources) {
+
+                    next = lines.isEmpty()
+                }
+            }
 
             lines.forEach { line ->
 
@@ -36,12 +58,18 @@ class HttpProxies(
 
                         if (proxy.isAlive(ctx)) {
 
-                            proxies.add(proxy)
+                            if (!proxies.contains(proxy)) {
+
+                                proxies.add(proxy)
+                            }
                         }
 
                     } else {
 
-                        proxies.add(proxy)
+                        if (!proxies.contains(proxy)) {
+
+                            proxies.add(proxy)
+                        }
                     }
 
                 } catch (e: IllegalArgumentException) {
