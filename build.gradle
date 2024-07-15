@@ -1,9 +1,6 @@
 buildscript {
 
-    /*
-        TODO: Kotlin 2.0
-    */
-    ext.kotlin_version = '1.9.23'
+    ext.kotlin_version = '2.0.0'
 
     repositories {
 
@@ -31,9 +28,4 @@ allprojects {
         mavenCentral()
         maven { url "https://jitpack.io" }
     }
-}
-
-task clean(type: Delete) {
-
-    delete rootProject.buildDir
 }
