@@ -152,7 +152,6 @@ class HttpProxy(
 
         if (other is HttpProxy) {
 
-            // Compare addresses lexicographically
             val addressComparison = this.address.compareTo(other.address)
 
             if (addressComparison != 0) {
@@ -160,7 +159,6 @@ class HttpProxy(
                 return addressComparison
             }
 
-            // If addresses are equal, compare ports numerically
             return this.port.compareTo(other.port)
 
         }  else {
@@ -179,10 +177,7 @@ class HttpProxy(
         return super.equals(other)
     }
 
-    override fun hashCode(): Int {
-
-        return "$address:$port".hashCode()
-    }
+    override fun hashCode() = "$address:$port".hashCode()
 
     private fun getTestUrl(ctx: Context): URL? {
 
