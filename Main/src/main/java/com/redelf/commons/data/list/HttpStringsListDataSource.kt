@@ -11,7 +11,6 @@ import java.io.IOException
 
 class HttpStringsListDataSource(
 
-    private val ctx: Context,
     private val url: String
 
 ) : ListDataSource<String> {
