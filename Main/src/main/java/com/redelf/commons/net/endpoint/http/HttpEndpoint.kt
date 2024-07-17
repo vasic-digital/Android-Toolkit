@@ -126,21 +126,8 @@ class HttpEndpoint(
 
         if (other is HttpEndpoint) {
 
-            val thisUri = this.getUrl()?.toURI()?.normalize()?.let { uri ->
-
-                val normalizedPath = if (uri.path.endsWith("/")) uri.path.dropLast(1) else uri.path
-                val normalizedPort = if (uri.port == 80) -1 else uri.port
-
-                URI(uri.scheme, uri.userInfo, uri.host, normalizedPort, normalizedPath, uri.query, uri.fragment)
-            }
-
-            val otherUri = other.getUrl()?.toURI()?.normalize()?.let { uri ->
-
-                val normalizedPath = if (uri.path.endsWith("/")) uri.path.dropLast(1) else uri.path
-                val normalizedPort = if (uri.port == 80) -1 else uri.port
-
-                URI(uri.scheme, uri.userInfo, uri.host, normalizedPort, normalizedPath, uri.query, uri.fragment)
-            }
+            val thisUri = this.getUri()
+            val otherUri = other.getUri()
 
             return thisUri == otherUri
         }
@@ -150,22 +137,40 @@ class HttpEndpoint(
 
     override fun hashCode() : Int {
 
-        val thisUri = this.getUrl()?.toURI()?.normalize()?.let { uri ->
-
-            val normalizedPath = if (uri.path.endsWith("/")) uri.path.dropLast(1) else uri.path
-            val normalizedPort = if (uri.port == 80) -1 else uri.port
-
-            URI(uri.scheme, uri.userInfo, uri.host, normalizedPort, normalizedPath, uri.query, uri.fragment)
-        }
+        val thisUri = getUri()
 
         return thisUri?.hashCode()?: 0
+    }
+
+    fun getUri(): URI? {
+
+        try {
+
+            val addressUrl = URL(address)
+
+            return addressUrl.toURI()?.normalize()?.let { uri ->
+
+                val normalizedPath = if (uri.path.endsWith("/")) uri.path.dropLast(1) else uri.path
+                val normalizedPort = if (uri.port == 80) -1 else uri.port
+
+                URI(uri.scheme, uri.userInfo, uri.host, normalizedPort, normalizedPath, uri.query, uri.fragment)
+            }
+
+        } catch (e: MalformedURLException) {
+
+            Console.error(e)
+        }
+
+        return null
     }
 
     fun getUrl(): URL? {
 
         try {
 
-            return URL(address)
+            val thisUri = getUri()
+
+            return thisUri?.toURL()
 
         } catch (e: MalformedURLException) {
 
