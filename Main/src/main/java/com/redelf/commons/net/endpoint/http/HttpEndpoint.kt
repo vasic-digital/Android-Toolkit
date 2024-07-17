@@ -6,6 +6,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.net.endpoint.Endpoint
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
@@ -55,7 +56,7 @@ class HttpEndpoint(
 
         return try {
 
-            val url = getTestUrl()
+            val url = getUrl()
 
             val connection = url?.openConnection() as HttpURLConnection?
 
@@ -82,7 +83,7 @@ class HttpEndpoint(
 
         return try {
 
-            val url = getTestUrl()
+            val url = getUrl()
             val connection = url?.openConnection() as HttpURLConnection?
 
             connection?.readTimeout = timeoutInMilliseconds.get()
@@ -123,17 +124,44 @@ class HttpEndpoint(
 
     override fun equals(other: Any?): Boolean {
 
-        if (other is Endpoint) {
+        if (other is HttpEndpoint) {
 
-            return this.address == other.address
+            val thisUri = this.getUrl()?.toURI()?.normalize()?.let { uri ->
+
+                val normalizedPath = if (uri.path.endsWith("/")) uri.path.dropLast(1) else uri.path
+                val normalizedPort = if (uri.port == 80) -1 else uri.port
+
+                URI(uri.scheme, uri.userInfo, uri.host, normalizedPort, normalizedPath, uri.query, uri.fragment)
+            }
+
+            val otherUri = other.getUrl()?.toURI()?.normalize()?.let { uri ->
+
+                val normalizedPath = if (uri.path.endsWith("/")) uri.path.dropLast(1) else uri.path
+                val normalizedPort = if (uri.port == 80) -1 else uri.port
+
+                URI(uri.scheme, uri.userInfo, uri.host, normalizedPort, normalizedPath, uri.query, uri.fragment)
+            }
+
+            return thisUri == otherUri
         }
 
         return super.equals(other)
     }
 
-    override fun hashCode() = address.hashCode()
+    override fun hashCode() : Int {
 
-    private fun getTestUrl(): URL? {
+        val thisUri = this.getUrl()?.toURI()?.normalize()?.let { uri ->
+
+            val normalizedPath = if (uri.path.endsWith("/")) uri.path.dropLast(1) else uri.path
+            val normalizedPort = if (uri.port == 80) -1 else uri.port
+
+            URI(uri.scheme, uri.userInfo, uri.host, normalizedPort, normalizedPath, uri.query, uri.fragment)
+        }
+
+        return thisUri?.hashCode()?: 0
+    }
+
+    fun getUrl(): URL? {
 
         try {
 
