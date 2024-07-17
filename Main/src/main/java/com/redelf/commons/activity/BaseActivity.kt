@@ -29,11 +29,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.redelf.commons.Broadcast
+import com.redelf.commons.messaging.broadcast.Broadcast
 import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.dialog.AttachFileDialog
-import com.redelf.commons.dialog.OnPickFromCameraCallback
+import com.redelf.commons.ui.dialog.AttachFileDialog
+import com.redelf.commons.ui.dialog.OnPickFromCameraCallback
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.initRegistrationWithGoogle

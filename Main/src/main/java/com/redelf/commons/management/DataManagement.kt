@@ -17,11 +17,11 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
-import com.redelf.commons.reset.Resettable
+import com.redelf.commons.destruction.reset.Resettable
 import com.redelf.commons.session.Session
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
-import com.redelf.commons.type.Typed
+import com.redelf.commons.data.type.Typed
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.RejectedExecutionException

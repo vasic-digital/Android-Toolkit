@@ -35,8 +35,8 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.fcm.FcmService
-import com.redelf.commons.firebase.FirebaseConfigurationManager
+import com.redelf.commons.messaging.firebase.FcmService
+import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer

@@ -28,7 +28,7 @@
     <application android:largeHeap="true">
 
         <service
-            android:name=".fcm.FcmService"
+            android:name=".messaging.firebase.FcmService"
             android:exported="false">
 
             <intent-filter>

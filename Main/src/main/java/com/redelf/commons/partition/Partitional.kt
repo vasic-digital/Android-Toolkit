@@ -1,6 +1,6 @@
 package com.redelf.commons.partition
 
-import com.redelf.commons.type.Typed
+import com.redelf.commons.data.type.Typed
 import java.lang.reflect.Type
 
 interface Partitional<T> : Typed<T> {

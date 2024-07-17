@@ -2,7 +2,7 @@ package com.redelf.commons.session
 
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.logging.Console
-import com.redelf.commons.reset.Resettable
+import com.redelf.commons.destruction.reset.Resettable
 import java.util.UUID
 
 class Session(

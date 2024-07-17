@@ -1,7 +1,7 @@
 package com.redelf.commons.extensions
 
 import android.content.Context
-import com.redelf.commons.retrofit.RetrofitApiParameters
+import com.redelf.commons.net.retrofit.RetrofitApiParameters
 
 fun retrofitApiParameters(
 

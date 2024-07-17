@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.connectivity.Connectivity
+import com.redelf.commons.net.connectivity.Connectivity
 import com.redelf.commons.data.Empty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
