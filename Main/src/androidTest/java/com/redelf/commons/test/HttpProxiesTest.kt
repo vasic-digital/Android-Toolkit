@@ -117,13 +117,13 @@ class HttpProxiesTest : BaseTest() {
 
         try {
 
-            val sourceAddress = "https://raw.githubusercontent.com/red-elf/Android-Toolkit/main/Main/src/androidTest/res/raw/test_proxies.txt"
+            val sourceAddress = "https://raw.githubusercontent.com/red-elf/Android-Toolkit/main/Main/src/androidTest/res/raw/proxies.txt"
             val source = HttpStringsListDataSource(sourceAddress)
             var proxies = HttpProxies(applicationContext, sources = listOf(source), alive = false)
             var obtained = proxies.obtain()
 
             Assert.assertNotNull(obtained)
-            Assert.assertTrue(obtained.isNotEmpty()) // FIXME: Check this
+            Assert.assertTrue(obtained.isNotEmpty())
 
             proxies = HttpProxies(applicationContext, sources = listOf(source), alive = true)
             obtained = proxies.obtain()

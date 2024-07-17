@@ -4,9 +4,16 @@ import android.content.Context
 import com.redelf.commons.R
 import com.redelf.commons.data.list.ListDataSource
 import com.redelf.commons.data.list.RawStringsListDataSource
+import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.logging.Console
 import com.redelf.commons.proxy.Proxies
 import java.util.PriorityQueue
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 class HttpProxies(
 
@@ -26,53 +33,95 @@ class HttpProxies(
 
         if (proxies.isEmpty()) {
 
-            var next = true
-            val lines = mutableListOf<String>()
+            val completed = AtomicInteger()
+            val waitingFor = AtomicInteger()
+            val next = AtomicBoolean(true)
             val sourcesIterator = sources.iterator()
 
-            while (sourcesIterator.hasNext() && next) {
+            while (sourcesIterator.hasNext() && next.get()) {
+
+                waitingFor.incrementAndGet()
 
                 val source = sourcesIterator.next()
-                val obtained = source.getList()
 
-                if (obtained.isNotEmpty()) {
+                exec(
 
-                    lines.addAll(obtained)
-                }
+                    onRejected = { err ->
 
-                if (!combineSources) {
+                        Console.error(err)
 
-                    next = lines.isEmpty()
-                }
-            }
+                        completed.incrementAndGet()
+                    }
 
-            lines.forEach { line ->
+                ) {
 
-                try {
+                    val obtained = source.getList()
 
-                    val proxy = HttpProxy(ctx, line.trim())
+                    if (obtained.isNotEmpty()) {
 
-                    if (alive) {
-
-                        if (proxy.isAlive(ctx)) {
+                        fun addProxy(proxy: HttpProxy) {
 
                             if (!proxies.contains(proxy)) {
 
                                 proxies.add(proxy)
                             }
+
+                            if (!combineSources) {
+
+                                next.set(proxies.isEmpty())
+                            }
                         }
 
-                    } else {
+                        obtained.forEach { line ->
 
-                        if (!proxies.contains(proxy)) {
+                            waitingFor.incrementAndGet()
 
-                            proxies.add(proxy)
+                            exec(
+
+                                onRejected = { err ->
+
+                                    Console.error(err)
+
+                                    completed.incrementAndGet()
+                                }
+
+                            ) {
+
+                                if (next.get()) {
+
+                                    try {
+
+                                        val proxy = HttpProxy(ctx, line.trim())
+
+                                        if (alive) {
+
+                                            if (proxy.isAlive(ctx)) {
+
+                                                addProxy(proxy)
+                                            }
+
+                                        } else {
+
+                                            addProxy(proxy)
+                                        }
+
+                                    } catch (e: IllegalArgumentException) {
+
+                                        Console.error(e)
+                                    }
+                                }
+
+                                completed.incrementAndGet()
+                            }
                         }
                     }
 
-                } catch (e: IllegalArgumentException) {
+                    completed.incrementAndGet()
+                }
 
-                    Console.error(e)
+                yieldWhile {
+
+                    waitingFor.get() != completed.get()
                 }
             }
         }
