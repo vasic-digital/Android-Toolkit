@@ -176,9 +176,9 @@ dependencies {
 task downloadProxies(type: Exec) {
 
     def outputDir = file("$projectDir/src/main/res/raw")
-//    def testOutputDir = file("$projectDir/src/androidTest/res/raw")
+    //    def testOutputDir = file("$projectDir/src/androidTest/res/raw")
     def outputFile = file("$outputDir/proxies.txt")
-//    def testOutputFile = file("$testOutputDir/test_proxies.txt")
+    //    def testOutputFile = file("$testOutputDir/test_proxies.txt")
 
     doFirst {
 
@@ -190,7 +190,7 @@ task downloadProxies(type: Exec) {
 
     // curl -sL https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt -o http.txt
     commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', outputFile
-//    commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', testOutputFile
+    //    commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', testOutputFile
 }
 
 preBuild.dependsOn downloadProxies

@@ -1,0 +1,1 @@
+https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt
