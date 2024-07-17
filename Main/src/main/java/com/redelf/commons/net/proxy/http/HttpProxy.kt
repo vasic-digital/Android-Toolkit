@@ -7,6 +7,7 @@ import com.redelf.commons.net.proxy.Proxy
 import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
@@ -178,6 +179,34 @@ class HttpProxy(
     }
 
     override fun hashCode() = "$address:$port".hashCode()
+
+    fun getUri(): URI? {
+
+        try {
+
+            return URI.create("http://$address:$port")
+
+        } catch (e: IllegalArgumentException) {
+
+            Console.error(e)
+        }
+
+        return null
+    }
+
+    fun getUrl(ctx: Context): URL? {
+
+        try {
+
+            return URL("http://$address:$port")
+
+        } catch (e: MalformedURLException) {
+
+            Console.error(e)
+        }
+
+        return null
+    }
 
     private fun getTestUrl(ctx: Context): URL? {
 
