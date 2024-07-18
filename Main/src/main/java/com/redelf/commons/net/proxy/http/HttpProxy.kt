@@ -5,10 +5,12 @@ import com.redelf.commons.R
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.proxy.Proxy
+import java.net.Authenticator
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
+import java.net.PasswordAuthentication
 import java.net.URI
 import java.net.URL
 import java.util.Base64
@@ -74,6 +76,14 @@ class HttpProxy(
     private val quality = AtomicLong(Long.MAX_VALUE)
 
     init {
+
+        Authenticator.setDefault(object : Authenticator() {
+
+            override fun getPasswordAuthentication(): PasswordAuthentication {
+
+                return PasswordAuthentication(username, password?.toCharArray())
+            }
+        })
 
         var qSum = 0L
 
@@ -275,8 +285,12 @@ class HttpProxy(
 
         if (isNotEmpty(username) && isNotEmpty(password)) {
 
-            val encoded = Base64.getEncoder().encodeToString("$username:$password".toByteArray())
+            val credentials = "$username:$password"
+            val encoded = Base64.getEncoder().encodeToString(credentials.toByteArray())
+
             connection.setRequestProperty("Proxy-Authorization", "Basic $encoded")
+
+            Console.log("Added Proxy-Authorization header: Basic $encoded")
         }
     }
 
