@@ -2,6 +2,7 @@ package com.redelf.commons.net.proxy.http
 
 import android.content.Context
 import com.redelf.commons.R
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.proxy.Proxy
 import java.net.HttpURLConnection
@@ -9,6 +10,7 @@ import java.net.InetSocketAddress
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
+import java.util.Base64
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
@@ -17,7 +19,10 @@ class HttpProxy(
     ctx: Context,
     address: String, port: Int,
 
-    private var timeoutInMilliseconds: AtomicInteger = AtomicInteger(
+    var username: String? = null,
+    var password: String? = null,
+
+    val timeoutInMilliseconds: AtomicInteger = AtomicInteger(
 
         ctx.resources.getInteger(R.integer.proxy_timeout_in_milliseconds)
     ),
@@ -94,6 +99,11 @@ class HttpProxy(
             connection?.readTimeout = timeoutInMilliseconds.get()
             connection?.connectTimeout = timeoutInMilliseconds.get()
 
+            connection?.let {
+
+                addAuthentication(it)
+            }
+
             connection?.connect()
 
             val responseCode: Int = connection?.responseCode ?: -1
@@ -120,6 +130,11 @@ class HttpProxy(
             connection?.readTimeout = timeoutInMilliseconds.get()
             connection?.connectTimeout = timeoutInMilliseconds.get()
             connection?.requestMethod = "GET"
+
+            connection?.let {
+
+                addAuthentication(it)
+            }
 
             val startTime = System.currentTimeMillis()
             connection?.connect()
@@ -220,5 +235,15 @@ class HttpProxy(
         }
 
         return null
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun addAuthentication(connection: HttpURLConnection) {
+
+        if (isNotEmpty(username) && isNotEmpty(password)) {
+
+            val encoded = Base64.getEncoder().encodeToString("$username:$password".toByteArray())
+            connection.setRequestProperty("Proxy-Authorization", "Basic $encoded")
+        }
     }
 }
