@@ -40,7 +40,7 @@ class HttpEndpointsTest : BaseTest() {
     }
 
     @Test
-    fun testRawSourceEndpoint() {
+    fun testDefaultRawSourceEndpoint() {
 
         try {
 
@@ -79,48 +79,54 @@ class HttpEndpointsTest : BaseTest() {
         }
     }
 
-    //    @Test
-//    fun testRawSourceProxy() {
-//
-//        try {
-//
-//            val source = RawStringsListDataSource(applicationContext, R.raw.proxies2)
-//            var proxies = HttpProxies(applicationContext, sources = listOf(source), alive = false)
-//            var obtained = proxies.obtain()
-//
-//            Assert.assertNotNull(obtained)
-//            Assert.assertTrue(obtained.size == 1)
-//
-//            proxies = HttpProxies(applicationContext, sources = listOf(source), alive = true)
-//            obtained = proxies.obtain()
-//
-//            Assert.assertNotNull(obtained)
-//
-//            val iterator = obtained.iterator()
-//            val quality = AtomicLong(Long.MAX_VALUE)
-//
-//            while (iterator.hasNext()) {
-//
-//                val proxy = iterator.next()
-//
-//                Assert.assertNotNull(proxy)
-//                Assert.assertTrue(proxy.address.isNotBlank())
-//                Assert.assertTrue(proxy.port > 0)
-//                Assert.assertTrue(proxy.isAlive(applicationContext))
-//
-//                val newQuality = proxy.getQuality()
-//
-//                Assert.assertTrue(newQuality < quality.get())
-//
-//                quality.set(newQuality)
-//            }
-//
-//        } catch (e: Exception) {
-//
-//            Assert.fail(e.message)
-//        }
-//    }
-//
+    @Test
+    fun testRawSourceEndpoint() {
+
+        try {
+
+            val source = RawStringsListDataSource(
+
+                applicationContext,
+                com.redelf.commons.R.raw.proxy_endpoints
+            )
+
+            var endpoints =
+                HttpEndpoints(applicationContext, sources = listOf(source), alive = false)
+
+            var obtained = endpoints.obtain()
+
+            Assert.assertNotNull(obtained)
+            Assert.assertTrue(obtained.size == 1)
+
+            endpoints = HttpEndpoints(applicationContext, sources = listOf(source), alive = true)
+            obtained = endpoints.obtain()
+
+            Assert.assertNotNull(obtained)
+
+            val iterator = obtained.iterator()
+            val quality = AtomicLong(Long.MAX_VALUE)
+
+            while (iterator.hasNext()) {
+
+                val endpoint = iterator.next()
+
+                Assert.assertNotNull(endpoint)
+                Assert.assertTrue(endpoint.address.isNotBlank())
+                Assert.assertTrue(endpoint.isAlive(applicationContext))
+
+                val newQuality = endpoint.getQuality()
+
+                Assert.assertTrue(newQuality < quality.get())
+
+                quality.set(newQuality)
+            }
+
+        } catch (e: Exception) {
+
+            Assert.fail(e.message)
+        }
+    }
+
     @Test
     fun testHttpSourceProxies() {
 

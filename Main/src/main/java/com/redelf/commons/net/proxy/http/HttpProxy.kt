@@ -22,11 +22,6 @@ class HttpProxy(
         ctx.resources.getInteger(R.integer.proxy_timeout_in_milliseconds)
     ),
 
-    /*
-    * TODO: Add support for https
-    */
-    private var https: Boolean = false
-
 ) : Proxy(address, port) {
 
     companion object {
