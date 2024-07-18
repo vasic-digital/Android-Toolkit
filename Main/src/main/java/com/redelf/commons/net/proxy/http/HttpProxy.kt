@@ -246,6 +246,9 @@ class HttpProxy(
 
         try {
 
+            /*
+            * FIXME: Authenticator approach must be replaced with proper alternative because it is global!
+            */
             Authenticator.setDefault(null)
 
             return true
