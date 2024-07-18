@@ -41,6 +41,8 @@ abstract class ProxiesTest : EndpointsTest() {
                 Assert.assertTrue(newQuality < quality.get())
 
                 quality.set(newQuality)
+
+                Assert.assertTrue(proxy.terminate())
             }
 
         } catch (e: Exception) {
