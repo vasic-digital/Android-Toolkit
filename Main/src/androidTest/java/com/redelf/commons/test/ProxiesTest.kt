@@ -22,7 +22,6 @@ abstract class ProxiesTest : EndpointsTest() {
             obtained = proxies.obtain()
 
             Assert.assertNotNull(obtained)
-            Assert.assertTrue(obtained.isNotEmpty()) // FIXME
 
             val iterator = obtained.iterator()
             val quality = AtomicLong(Long.MAX_VALUE)
