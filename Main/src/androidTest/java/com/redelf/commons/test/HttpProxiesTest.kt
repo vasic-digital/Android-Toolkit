@@ -71,6 +71,7 @@ class HttpProxiesTest : ProxiesTest() {
                     Assert.assertTrue(isNotEmpty(proxy.username))
                     Assert.assertTrue(isNotEmpty(proxy.password))
                     Assert.assertTrue(proxy.isAlive(applicationContext))
+                    Assert.assertTrue(proxy.terminate())
                 }
             }
 

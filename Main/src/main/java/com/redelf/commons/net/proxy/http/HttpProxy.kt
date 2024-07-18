@@ -3,6 +3,7 @@ package com.redelf.commons.net.proxy.http
 import android.content.Context
 import com.redelf.commons.R
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.proxy.Proxy
 import java.net.Authenticator
@@ -30,7 +31,7 @@ class HttpProxy(
         ctx.resources.getInteger(R.integer.proxy_timeout_in_milliseconds)
     ),
 
-) : Proxy(address, port) {
+) : Proxy(address, port), TerminationSynchronized {
 
     companion object {
 
@@ -77,13 +78,16 @@ class HttpProxy(
 
     init {
 
-        Authenticator.setDefault(object : Authenticator() {
+        if (isNotEmpty(username) && isNotEmpty(password)) {
 
-            override fun getPasswordAuthentication(): PasswordAuthentication {
+            Authenticator.setDefault(object : Authenticator() {
 
-                return PasswordAuthentication(username, password?.toCharArray())
-            }
-        })
+                override fun getPasswordAuthentication(): PasswordAuthentication {
+
+                    return PasswordAuthentication(username, password?.toCharArray())
+                }
+            })
+        }
 
         var qSum = 0L
 
@@ -237,6 +241,22 @@ class HttpProxy(
     }
 
     override fun hashCode() = "$address:$port".hashCode()
+
+    override fun terminate(): Boolean {
+
+        try {
+
+            Authenticator.setDefault(null)
+
+            return true
+
+        } catch (e: SecurityException) {
+
+            Console.error(e)
+        }
+
+        return false
+    }
 
     fun getUri(): URI? {
 
