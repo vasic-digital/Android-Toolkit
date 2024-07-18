@@ -140,6 +140,56 @@ class HttpProxiesTest : ProxiesTest() {
         getAndTestDefaultEndpoints()
     }
 
+    @Test
+    fun testMixedSourceProxy() {
+
+        try {
+
+            val sourceRaw = RawStringsListDataSource(applicationContext, R.raw.proxies)
+
+            val sourceHttp =
+                HttpStringsListDataSource("https://raw.githubusercontent.com/red-elf/" +
+                        "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt")
+
+            val source = listOf(sourceRaw, sourceHttp)
+
+            var proxies = HttpProxies(applicationContext, sources = source, alive = false)
+            var obtained = proxies.obtain()
+
+            Assert.assertNotNull(obtained)
+            Assert.assertTrue(obtained.isNotEmpty())
+
+            proxies = HttpProxies(applicationContext, sources = source, alive = true)
+            obtained = proxies.obtain()
+
+            Assert.assertNotNull(obtained)
+            Assert.assertTrue(obtained.isNotEmpty())
+
+            val iterator = obtained.iterator()
+            val quality = AtomicLong(Long.MAX_VALUE)
+
+            while (iterator.hasNext()) {
+
+                val proxy = iterator.next()
+
+                Assert.assertNotNull(proxy)
+                Assert.assertTrue(proxy.address.isNotBlank())
+                Assert.assertTrue(proxy.port > 0)
+                Assert.assertTrue(proxy.isAlive(applicationContext))
+
+                val newQuality = proxy.getQuality()
+
+                Assert.assertTrue(newQuality < quality.get())
+
+                quality.set(newQuality)
+            }
+
+        } catch (e: Exception) {
+
+            Assert.fail(e.message)
+        }
+    }
+
     override fun onEndpoint(endpoint: HttpEndpoint) {
         super.onEndpoint(endpoint)
 
