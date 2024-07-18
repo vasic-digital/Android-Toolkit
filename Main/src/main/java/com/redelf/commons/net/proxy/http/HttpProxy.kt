@@ -27,7 +27,7 @@ class HttpProxy(
         ctx.resources.getInteger(R.integer.proxy_timeout_in_milliseconds)
     ),
 
-) : Proxy(address, port) {
+    ) : Proxy(address, port) {
 
     companion object {
 
@@ -37,7 +37,7 @@ class HttpProxy(
             Comparator<HttpProxy> { p1, p2 -> p1.getQuality().compareTo(p2.getQuality()) }
 
         @Throws(IllegalArgumentException::class)
-        private fun parseProxy(proxy: String): Pair<String, Int> {
+        private fun parseProxy(proxy: String): Triple<String, Int, Pair<String?, String?>> {
 
             return try {
 
@@ -45,7 +45,11 @@ class HttpProxy(
                 val address = url.host
                 val port = url.port
 
-                Pair(address, port)
+                val userInfo = url.userInfo?.split(":")
+                val username = userInfo?.getOrNull(0)
+                val password = userInfo?.getOrNull(1)
+
+                Triple(address, port, Pair(username, password))
 
             } catch (e: Exception) {
 
@@ -57,8 +61,14 @@ class HttpProxy(
     }
 
     @Throws(IllegalArgumentException::class)
-    constructor(ctx: Context, proxy: String) :
-            this(ctx, parseProxy(proxy).first, parseProxy(proxy).second)
+    constructor(ctx: Context, proxy: String) : this(
+
+        ctx,
+        parseProxy(proxy).first,
+        parseProxy(proxy).second,
+        parseProxy(proxy).third.first,
+        parseProxy(proxy).third.second
+    )
 
     private val quality = AtomicLong(Long.MAX_VALUE)
 
@@ -177,7 +187,7 @@ class HttpProxy(
 
             return this.port.compareTo(other.port)
 
-        }  else {
+        } else {
 
             throw IllegalArgumentException("Cannot compare HttpProxy with non-HttpProxy object")
         }
