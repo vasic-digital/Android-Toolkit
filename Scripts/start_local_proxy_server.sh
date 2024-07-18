@@ -1,0 +1,1 @@
+cd Toolkit/Squid && docker login && docker-compose up -d && echo "- - - - - - - - - - - - - - " && docker ps
