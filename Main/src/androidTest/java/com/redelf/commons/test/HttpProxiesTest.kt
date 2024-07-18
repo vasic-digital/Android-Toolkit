@@ -34,10 +34,10 @@ class HttpProxiesTest : ProxiesTest() {
     @Test
     fun testCreation() {
 
-        val proxy = "http://test:test@127.0.0.1:8080"
+        val proxy = "http://test:test@mistborn.local:8080"
         val httpProxy = HttpProxy(applicationContext, proxy)
 
-        Assert.assertEquals(httpProxy.address, "127.0.0.1")
+        Assert.assertEquals(httpProxy.address, "mistborn.local")
         Assert.assertEquals(httpProxy.username, "test")
         Assert.assertEquals(httpProxy.password, "test")
         Assert.assertEquals(httpProxy.port, 8080)
@@ -48,7 +48,7 @@ class HttpProxiesTest : ProxiesTest() {
 
         try {
 
-            val proxy = HttpProxy(applicationContext, "http://test:test@127.0.0.1:8080")
+            val proxy = HttpProxy(applicationContext, "http://test:test@mistborn.local:8080")
 
             Assert.assertNotNull(proxy)
             Assert.assertTrue(proxy.address.isNotBlank())
