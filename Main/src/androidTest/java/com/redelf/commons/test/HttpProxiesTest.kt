@@ -2,13 +2,14 @@ package com.redelf.commons.test
 
 import com.redelf.commons.data.list.HttpStringsListDataSource
 import com.redelf.commons.data.list.RawStringsListDataSource
+import com.redelf.commons.net.endpoint.http.HttpEndpoint
 import com.redelf.commons.net.proxy.http.HttpProxies
 import com.redelf.commons.net.proxy.http.HttpProxy
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong
 
-class HttpProxiesTest : BaseTest() {
+class HttpProxiesTest : ProxiesTest() {
 
     @Test
     fun testComparison() {
@@ -115,43 +116,23 @@ class HttpProxiesTest : BaseTest() {
     @Test
     fun testHttpSourceProxies() {
 
-        try {
+        val sourceAddress = "https://raw.githubusercontent.com/red-elf/Android-Toolkit/main/" +
+                "Main/src/androidTest/res/raw/proxies.txt"
 
-            val sourceAddress = "https://raw.githubusercontent.com/red-elf/Android-Toolkit/main/Main/src/androidTest/res/raw/proxies.txt"
-            val source = HttpStringsListDataSource(sourceAddress)
-            var proxies = HttpProxies(applicationContext, sources = listOf(source), alive = false)
-            var obtained = proxies.obtain()
+        testHttpSourceProxies(sourceAddress)
+    }
 
-            Assert.assertNotNull(obtained)
-            Assert.assertTrue(obtained.isNotEmpty())
+    @Test
+    fun testHttpDynamicSourceProxies() {
 
-            proxies = HttpProxies(applicationContext, sources = listOf(source), alive = true)
-            obtained = proxies.obtain()
+        getAndTestDefaultEndpoints()
+    }
 
-            Assert.assertNotNull(obtained)
+    override fun onEndpoint(endpoint: HttpEndpoint) {
+        super.onEndpoint(endpoint)
 
-            val iterator = obtained.iterator()
-            val quality = AtomicLong(Long.MAX_VALUE)
+        val sourceAddress = endpoint.address
 
-            while (iterator.hasNext()) {
-
-                val proxy = iterator.next()
-
-                Assert.assertNotNull(proxy)
-                Assert.assertTrue(proxy.address.isNotBlank())
-                Assert.assertTrue(proxy.port > 0)
-                Assert.assertTrue(proxy.isAlive(applicationContext))
-
-                val newQuality = proxy.getQuality()
-
-                Assert.assertTrue(newQuality < quality.get())
-
-                quality.set(newQuality)
-            }
-
-        } catch (e: Exception) {
-
-            Assert.fail(e.message)
-        }
+        testHttpSourceProxies(sourceAddress)
     }
 }
