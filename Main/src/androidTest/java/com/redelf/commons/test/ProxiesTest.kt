@@ -2,7 +2,6 @@ package com.redelf.commons.test
 
 import com.redelf.commons.data.list.HttpStringsListDataSource
 import com.redelf.commons.net.proxy.http.HttpProxies
-import okhttp3.Address
 import org.junit.Assert
 import java.util.concurrent.atomic.AtomicLong
 
@@ -49,5 +48,4 @@ abstract class ProxiesTest : EndpointsTest() {
             Assert.fail(e.message)
         }
     }
-
 }

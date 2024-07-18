@@ -31,6 +31,18 @@ class HttpProxiesTest : ProxiesTest() {
     }
 
     @Test
+    fun testCreation() {
+
+        val proxy = "http://test:test@127.0.0.1:8080"
+        val httpProxy = HttpProxy(applicationContext, proxy)
+
+        Assert.assertEquals(httpProxy.address, "127.0.0.1")
+        Assert.assertEquals(httpProxy.username, "test")
+        Assert.assertEquals(httpProxy.password, "test")
+        Assert.assertEquals(httpProxy.port, 8080)
+    }
+
+    @Test
     fun testRawSourceProxies() {
 
         try {
