@@ -2,6 +2,6 @@
 <resources>
 
     <!-- Proxy: -->
-    <integer name="proxy_timeout_in_milliseconds">300</integer>
+    <integer name="proxy_timeout_in_milliseconds">500</integer>
 
 </resources>
