@@ -2,6 +2,7 @@ package com.redelf.commons.test
 
 import com.redelf.commons.data.list.HttpStringsListDataSource
 import com.redelf.commons.data.list.RawStringsListDataSource
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.net.endpoint.http.HttpEndpoint
 import com.redelf.commons.net.proxy.http.HttpProxies
 import com.redelf.commons.net.proxy.http.HttpProxy
@@ -40,6 +41,26 @@ class HttpProxiesTest : ProxiesTest() {
         Assert.assertEquals(httpProxy.username, "test")
         Assert.assertEquals(httpProxy.password, "test")
         Assert.assertEquals(httpProxy.port, 8080)
+    }
+
+    @Test
+    fun testAliveProxy() {
+
+        try {
+
+            val proxy = HttpProxy(applicationContext, "http://test:test@127.0.0.1:8080")
+
+            Assert.assertNotNull(proxy)
+            Assert.assertTrue(proxy.address.isNotBlank())
+            Assert.assertTrue(proxy.port > 0)
+            Assert.assertTrue(isNotEmpty(proxy.username))
+            Assert.assertTrue(isNotEmpty(proxy.password))
+            Assert.assertTrue(proxy.isAlive(applicationContext))
+
+        } catch (e: Exception) {
+
+            Assert.fail(e.message)
+        }
     }
 
     @Test
