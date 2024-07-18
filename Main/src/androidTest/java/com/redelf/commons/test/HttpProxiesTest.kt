@@ -48,14 +48,31 @@ class HttpProxiesTest : ProxiesTest() {
 
         try {
 
-            val proxy = HttpProxy(applicationContext, "http://test:test@mistborn.local:8080")
+            listOf(
 
-            Assert.assertNotNull(proxy)
-            Assert.assertTrue(proxy.address.isNotBlank())
-            Assert.assertTrue(proxy.port > 0)
-            Assert.assertTrue(isNotEmpty(proxy.username))
-            Assert.assertTrue(isNotEmpty(proxy.password))
-            Assert.assertTrue(proxy.isAlive(applicationContext))
+                Pair("http://google.com:80", false),
+                Pair("http://test:test@mistborn.local:8080", true)
+
+            ).forEach { pair ->
+
+                val address = pair.first
+                val checkAliveAndCredentials = pair.second
+
+                val proxy = HttpProxy(applicationContext, address)
+
+                Assert.assertNotNull(proxy)
+                Assert.assertTrue(proxy.address.isNotBlank())
+                Assert.assertTrue(proxy.port > 0)
+
+                Assert.assertTrue(proxy.ping())
+
+                if (checkAliveAndCredentials) {
+
+                    Assert.assertTrue(isNotEmpty(proxy.username))
+                    Assert.assertTrue(isNotEmpty(proxy.password))
+                    Assert.assertTrue(proxy.isAlive(applicationContext))
+                }
+            }
 
         } catch (e: Exception) {
 
@@ -169,8 +186,10 @@ class HttpProxiesTest : ProxiesTest() {
             val sourceRaw = RawStringsListDataSource(applicationContext, R.raw.proxies)
 
             val sourceHttp =
-                HttpStringsListDataSource("https://raw.githubusercontent.com/red-elf/" +
-                        "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt")
+                HttpStringsListDataSource(
+                    "https://raw.githubusercontent.com/red-elf/" +
+                            "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt"
+                )
 
             val source = listOf(sourceRaw, sourceHttp)
 

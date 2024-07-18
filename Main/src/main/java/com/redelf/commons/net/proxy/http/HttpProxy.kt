@@ -118,6 +118,11 @@ class HttpProxy(
 
         return try {
 
+            if (unreachable()) {
+
+                return false
+            }
+
             val proxy = get()
             val url = getTestUrl(ctx)
 
@@ -273,5 +278,10 @@ class HttpProxy(
             val encoded = Base64.getEncoder().encodeToString("$username:$password".toByteArray())
             connection.setRequestProperty("Proxy-Authorization", "Basic $encoded")
         }
+    }
+
+    private fun unreachable(): Boolean {
+
+        return !ping()
     }
 }
