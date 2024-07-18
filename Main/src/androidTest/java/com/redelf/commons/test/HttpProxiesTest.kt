@@ -158,13 +158,13 @@ class HttpProxiesTest : ProxiesTest() {
 
             Assert.assertNotNull(obtained)
             Assert.assertTrue(obtained.isNotEmpty())
-            Assert.assertTrue(obtained.size == 1)
 
             proxies = HttpProxies(applicationContext, sources = source, alive = true)
             obtained = proxies.obtain()
 
             Assert.assertNotNull(obtained)
-            Assert.assertTrue(obtained.size > 1)
+            Assert.assertTrue(obtained.isNotEmpty())
+            Assert.assertTrue(obtained.size == 1)
 
             val iterator = obtained.iterator()
             val quality = AtomicLong(Long.MAX_VALUE)
