@@ -8,7 +8,7 @@ import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong
 
-class HttpEndpointsTest : BaseTest() {
+class HttpEndpointsTest : EndpointsTest() {
 
     @Test
     fun testComparison() {
@@ -40,44 +40,8 @@ class HttpEndpointsTest : BaseTest() {
     }
 
     @Test
-    fun testDefaultRawSourceEndpoint() {
+    fun testDefaultRawSourceEndpoint() = getAndTestDefaultEndpoints()
 
-        try {
-
-            var endpoints = HttpEndpoints(applicationContext, alive = false)
-            var obtained = endpoints.obtain()
-
-            Assert.assertNotNull(obtained)
-            Assert.assertTrue(obtained.isNotEmpty())
-
-            endpoints = HttpEndpoints(applicationContext, alive = true)
-            obtained = endpoints.obtain()
-
-            Assert.assertNotNull(obtained)
-
-            val iterator = obtained.iterator()
-            val quality = AtomicLong(Long.MAX_VALUE)
-
-            while (iterator.hasNext()) {
-
-                val endpoint = iterator.next()
-
-                Assert.assertNotNull(endpoint)
-                Assert.assertTrue(endpoint.address.isNotBlank())
-                Assert.assertTrue(endpoint.isAlive(applicationContext))
-
-                val newQuality = endpoint.getQuality()
-
-                Assert.assertTrue(newQuality < quality.get())
-
-                quality.set(newQuality)
-            }
-
-        } catch (e: Exception) {
-
-            Assert.fail(e.message)
-        }
-    }
 
     @Test
     fun testRawSourceEndpoint() {
@@ -119,6 +83,8 @@ class HttpEndpointsTest : BaseTest() {
                 Assert.assertTrue(newQuality < quality.get())
 
                 quality.set(newQuality)
+
+                onEndpoint(endpoint)
             }
 
         } catch (e: Exception) {
@@ -137,8 +103,10 @@ class HttpEndpointsTest : BaseTest() {
                         "/proxies/protocols/http/data.txt"
 
             val source = HttpStringsListDataSource(sourceAddress)
+
             var endpoints =
                 HttpEndpoints(applicationContext, sources = listOf(source), alive = false)
+
             var obtained = endpoints.obtain()
 
             Assert.assertNotNull(obtained)
@@ -165,6 +133,8 @@ class HttpEndpointsTest : BaseTest() {
                 Assert.assertTrue(newQuality < quality.get())
 
                 quality.set(newQuality)
+
+                onEndpoint(endpoint)
             }
 
         } catch (e: Exception) {
