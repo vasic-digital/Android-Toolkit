@@ -5,6 +5,7 @@ import com.redelf.commons.R
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.endpoint.Endpoint
 import java.net.HttpURLConnection
+import java.net.InetAddress
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
@@ -50,6 +51,23 @@ class HttpEndpoint(
     override fun setTimeout(value: Int) {
 
         timeoutInMilliseconds.set(value)
+    }
+
+    override fun ping(): Boolean {
+
+        return try {
+
+            val timeout = getTimeout()
+            val inetAddress = InetAddress.getByName(address)
+
+            inetAddress.isReachable(timeout)
+
+        } catch (e: Exception) {
+
+            Console.log(e)
+
+            false
+        }
     }
 
     override fun isAlive(ctx: Context): Boolean {

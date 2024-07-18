@@ -6,6 +6,7 @@ import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.proxy.Proxy
 import java.net.HttpURLConnection
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
 import java.net.URI
@@ -27,7 +28,7 @@ class HttpProxy(
         ctx.resources.getInteger(R.integer.proxy_timeout_in_milliseconds)
     ),
 
-    ) : Proxy(address, port) {
+) : Proxy(address, port) {
 
     companion object {
 
@@ -94,6 +95,23 @@ class HttpProxy(
     override fun setTimeout(value: Int) {
 
         timeoutInMilliseconds.set(value)
+    }
+
+    override fun ping(): Boolean {
+
+        return try {
+
+            val timeout = getTimeout()
+            val inetAddress = InetAddress.getByName(address)
+
+            inetAddress.isReachable(timeout)
+
+        } catch (e: Exception) {
+
+            Console.log(e)
+
+            false
+        }
     }
 
     override fun isAlive(ctx: Context): Boolean {
