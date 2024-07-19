@@ -19,7 +19,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         /*
-             .zshrc / .bashrc example:
+             The .zshrc / .bashrc example:
 
              export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
              export PROXY_LOCAL_PROD="milosvasic.local"
