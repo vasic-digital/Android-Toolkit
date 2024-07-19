@@ -252,5 +252,23 @@ task generateProxiesLocalTxt {
     }
 }
 
+task startLocalProxyServer {
+    doLast {
+
+        try {
+
+            exec {
+
+                commandLine 'sh', "${projectDir}/Toolkit/Scripts/start_local_proxy_server.sh"
+            }
+
+        } catch (Exception e) {
+
+            println "Shell script execution failed: ${e.message}"
+        }
+    }
+}
+
 preBuild.dependsOn downloadProxies
 preBuild.dependsOn generateProxiesLocalTxt
+preBuild.dependsOn startLocalProxyServer
