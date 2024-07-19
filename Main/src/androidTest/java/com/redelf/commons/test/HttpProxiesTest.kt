@@ -54,10 +54,12 @@ class HttpProxiesTest : ProxiesTest() {
 
         try {
 
+            val plTest = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test)
+
             listOf(
 
                 Pair("http://google.com:80", false),
-                Pair("http://test:test@mistborn.local:8080", true)
+                Pair("http://test:test@$plTest:8080", true)
 
             ).forEach { pair ->
 

@@ -226,14 +226,28 @@ task generateProxiesLocalTxt {
             commandLine 'git', 'add', filePath
         }
 
-        exec {
+        try {
 
-            commandLine 'git', 'commit', '-m', 'Auto-generated proxies_local.txt'
+            exec {
+
+                commandLine 'git', 'commit', '-m', 'Auto-generated proxies_local.txt'
+            }
+
+        } catch (Exception e) {
+
+            println "Git commit command failed: ${e.message}"
         }
 
-        exec {
+        try {
 
-            commandLine 'git', 'push'
+            exec {
+
+                commandLine 'git', 'push'
+            }
+
+        } catch (Exception e) {
+
+            println "Git push command failed: ${e.message}"
         }
     }
 }
