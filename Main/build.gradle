@@ -18,10 +18,12 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        // .zshrc:
-        //
-        // export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
-        // export PROXY_LOCAL_PROD="milosvasic.local"
+        /*
+             .zshrc / .bashrc example:
+
+             export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
+             export PROXY_LOCAL_PROD="milosvasic.local"
+        */
 
         def proxyLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
         def proxyLocalProd = System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1"
