@@ -14,10 +14,26 @@ import java.nio.file.Paths
 
      export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
      export PROXY_LOCAL_PROD="milosvasic.local"
+
+     export PROXY_LOCAL_TEST_PORT="8080" // TODO: Obtain ports dynamically from Docker if possible
+     export PROXY_LOCAL_PROD_PORT="8080" // TODO: Obfuscate these data so only the app can understand it!
+
+     export PROXY_LOCAL_TEST_USERNAME="test"
+     export PROXY_LOCAL_PROD_USERNAME="admin"
+
+     export PROXY_LOCAL_TEST_PASSWORD="test"
+     export PROXY_LOCAL_PROD_PASSWORD="admin"
 */
 
 def proxyLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
+def proxyLocalTestPort = System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080"
+def proxyLocalTestUsername = System.getenv("PROXY_LOCAL_TEST_USERNAME") ?: "test"
+def proxyLocalTestPassword = System.getenv("PROXY_LOCAL_TEST_PASSWORD") ?: "test"
+
 def proxyLocalProd = System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1"
+def proxyLocalProdPort = System.getenv("PROXY_LOCAL_PROD_PORT") ?: "8080"
+def proxyLocalProdUsername = System.getenv("PROXY_LOCAL_PROD_USERNAME") ?: "admin"
+def proxyLocalProdPassword = System.getenv("PROXY_LOCAL_PROD_PASSWORD") ?: "admin"
 
 android {
 
@@ -33,6 +49,15 @@ android {
 
         resValue "string", "proxy_local_test", proxyLocalTest
         resValue "string", "proxy_local_prod", proxyLocalProd
+
+        resValue "string", "proxy_local_test_port", proxyLocalTestPort
+        resValue "string", "proxy_local_prod_port", proxyLocalProdPort
+
+        resValue "string", "proxy_local_test_username", proxyLocalTestUsername
+        resValue "string", "proxy_local_prod_username", proxyLocalProdUsername
+
+        resValue "string", "proxy_local_test_password", proxyLocalTestPassword
+        resValue "string", "proxy_local_prod_password", proxyLocalProdPassword
     }
 
     compileOptions {
@@ -212,9 +237,7 @@ task downloadProxies(type: Exec) {
 task generateProxiesLocalTxt {
     doLast {
 
-        def content = """
-            http://test:test@${proxyLocalTest}:8080
-        """.stripIndent()
+        def content = "http://${proxyLocalTestUsername}:${proxyLocalTestPassword}@${proxyLocalTest}:${proxyLocalTestPort}".stripIndent().trim()
 
         def filePath = "${projectDir}/src/androidTest/res/raw/proxies_local.txt"
 
