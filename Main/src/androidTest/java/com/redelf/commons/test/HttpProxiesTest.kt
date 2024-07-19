@@ -35,18 +35,28 @@ class HttpProxiesTest : ProxiesTest() {
     fun testCreation() {
 
         val res = com.redelf.commons.R.string.proxy_local_test
+        val resPort = com.redelf.commons.R.string.proxy_local_test_port
+        val resUsername = com.redelf.commons.R.string.proxy_local_test_username
+        val resPassword = com.redelf.commons.R.string.proxy_local_test_password
+
         val host = applicationContext.resources.getString(res)
+        val port = applicationContext.resources.getString(resPort)
+        val username = applicationContext.resources.getString(resUsername)
+        val password = applicationContext.resources.getString(resPassword)
 
         Assert.assertTrue(isNotEmpty(host))
+        Assert.assertTrue(isNotEmpty(port))
+        Assert.assertTrue(isNotEmpty(username))
+        Assert.assertTrue(isNotEmpty(password))
         Assert.assertTrue(host.endsWith(".local"))
 
-        val proxy = "http://test:test@$host:8080"
+        val proxy = "http://$username:$password@$host:$port"
         val httpProxy = HttpProxy(applicationContext, proxy)
 
         Assert.assertEquals(httpProxy.address, host)
-        Assert.assertEquals(httpProxy.username, "test")
-        Assert.assertEquals(httpProxy.password, "test")
-        Assert.assertEquals(httpProxy.port, 8080)
+        Assert.assertEquals(httpProxy.username, username)
+        Assert.assertEquals(httpProxy.password, password)
+        Assert.assertEquals(httpProxy.port, port.toInt())
     }
 
     @Test
