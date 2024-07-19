@@ -6,6 +6,19 @@ plugins {
     id 'kotlin-kapt'
 }
 
+import java.nio.file.Files
+import java.nio.file.Paths
+
+/*
+     The .zshrc / .bashrc example:
+
+     export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
+     export PROXY_LOCAL_PROD="milosvasic.local"
+*/
+
+def proxyLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
+def proxyLocalProd = System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1"
+
 android {
 
     compileSdk 34
@@ -17,16 +30,6 @@ android {
         targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        /*
-             The .zshrc / .bashrc example:
-
-             export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
-             export PROXY_LOCAL_PROD="milosvasic.local"
-        */
-
-        def proxyLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
-        def proxyLocalProd = System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1"
 
         resValue "string", "proxy_local_test", proxyLocalTest
         resValue "string", "proxy_local_prod", proxyLocalProd
@@ -206,4 +209,34 @@ task downloadProxies(type: Exec) {
     //    commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', testOutputFile
 }
 
+task generateProxiesLocalTxt {
+    doLast {
+
+        def content = """
+            http://test:test@${proxyLocalTest}:8080
+        """.stripIndent()
+
+        def filePath = "${projectDir}/src/androidTest/res/raw/proxies_local.txt"
+
+        Files.write(Paths.get(filePath), content.getBytes())
+        println "Generated proxies_local.txt at: ${filePath}"
+
+        exec {
+
+            commandLine 'git', 'add', filePath
+        }
+
+        exec {
+
+            commandLine 'git', 'commit', '-m', 'Auto-generated proxies_local.txt'
+        }
+
+        exec {
+
+            commandLine 'git', 'push'
+        }
+    }
+}
+
 preBuild.dependsOn downloadProxies
+preBuild.dependsOn generateProxiesLocalTxt
