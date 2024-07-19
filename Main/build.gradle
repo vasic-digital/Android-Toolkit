@@ -20,7 +20,7 @@ android {
 
         // .zshrc:
         //
-        // export PROXY_LOCAL_TEST="mistborn.local"
+        // export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
         // export PROXY_LOCAL_PROD="milosvasic.local"
 
         def proxyLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
