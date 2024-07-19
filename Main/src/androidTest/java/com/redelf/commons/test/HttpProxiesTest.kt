@@ -34,10 +34,16 @@ class HttpProxiesTest : ProxiesTest() {
     @Test
     fun testCreation() {
 
-        val proxy = "http://test:test@mistborn.local:8080"
+        val res = com.redelf.commons.R.string.proxy_local_test
+        val host = applicationContext.resources.getString(res)
+
+        Assert.assertTrue(isNotEmpty(host))
+        Assert.assertTrue(host.endsWith(".local"))
+
+        val proxy = "http://test:test@$host:8080"
         val httpProxy = HttpProxy(applicationContext, proxy)
 
-        Assert.assertEquals(httpProxy.address, "mistborn.local")
+        Assert.assertEquals(httpProxy.address, host)
         Assert.assertEquals(httpProxy.username, "test")
         Assert.assertEquals(httpProxy.password, "test")
         Assert.assertEquals(httpProxy.port, 8080)
