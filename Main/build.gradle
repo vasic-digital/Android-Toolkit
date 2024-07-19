@@ -15,8 +15,8 @@ import java.nio.file.Paths
      export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
      export PROXY_LOCAL_PROD="milosvasic.local"
 
-     export PROXY_LOCAL_TEST_PORT="8080" // TODO: Obtain ports dynamically from Docker if possible
-     export PROXY_LOCAL_PROD_PORT="8080" // TODO: Obfuscate these data so only the app can understand it!
+     export PROXY_LOCAL_TEST_PORT="8080"
+     export PROXY_LOCAL_PROD_PORT="8080"
 
      export PROXY_LOCAL_TEST_USERNAME="test"
      export PROXY_LOCAL_PROD_USERNAME="admin"
