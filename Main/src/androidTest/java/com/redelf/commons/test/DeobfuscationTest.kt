@@ -1,4 +1,12 @@
 package com.redelf.commons.test
 
-class DeobfuscationTest {
+import org.junit.Test
+
+class DeobfuscationTest : BaseTest() {
+
+    @Test
+    fun testDeobfuscation() {
+
+        // TODO: Implement deobfuscation test
+    }
 }
