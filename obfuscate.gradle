@@ -1,2 +1,19 @@
+import java.util.Base64
 
 def salt = System.getenv("OBFUSCATION_SALT") ?: ""
+
+String obfuscate(String input) {
+    
+    String saltedInput = input + salt
+    byte[] obfuscatedBytes = saltedInput.bytes.collect { it ^ salt.hashCode() } as byte[]
+    
+    return Base64.encoder.encodeToString(obfuscatedBytes)
+}
+
+String deobfuscate(String input) {
+    
+    byte[] decodedBytes = Base64.decoder.decode(input)
+    byte[] originalBytes = decodedBytes.collect { it ^ salt.hashCode() } as byte[]
+    String originalString = new String(originalBytes)
+    return originalString.replace(salt, "")
+}
