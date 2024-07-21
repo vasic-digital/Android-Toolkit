@@ -1,65 +1,78 @@
 package com.redelf.commons.net.proxy.http
 
 import android.content.Context
+import android.content.res.Resources.NotFoundException
 import com.redelf.commons.R
 import com.redelf.commons.extensions.isNotEmpty
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.proxy.Proxy
-import java.net.Authenticator
-import java.net.HttpURLConnection
+import okhttp3.Credentials
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
-import java.net.PasswordAuthentication
+import java.net.Proxy as JavaNetProxy
 import java.net.URI
 import java.net.URL
-import java.util.Base64
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 class HttpProxy(
 
     ctx: Context,
-    address: String, port: Int,
+
+    schema: String,
+    address: String,
+    port: Int,
 
     var username: String? = null,
     var password: String? = null,
 
-    val timeoutInMilliseconds: AtomicInteger = AtomicInteger(
+    private val testUrlResourceId: Int = R.string.proxy_alive_check_url,
+    private val timeoutResourceId: Int = R.integer.proxy_timeout_in_milliseconds,
+    private val timeoutInMilliseconds: AtomicInteger = getInteger(ctx, timeoutResourceId)
 
-        ctx.resources.getInteger(R.integer.proxy_timeout_in_milliseconds)
-    ),
-
-) : Proxy(address, port), TerminationSynchronized {
+) : Proxy(schema, address, port) {
 
     companion object {
 
+        var DEFAULT_TIMEOUT = 5000
         var MEASUREMENT_ITERATIONS = 3
+        var DEFAULT_TEST_URL = "https://www.github.com"
 
-        val QUALITY_COMPARATOR =
-            Comparator<HttpProxy> { p1, p2 -> p1.getQuality().compareTo(p2.getQuality()) }
+        val QUALITY_COMPARATOR = Comparator<HttpProxy> { p1, p2 ->
+
+            p1.getQuality().compareTo(p2.getQuality())
+        }
+
+        private fun getInteger(ctx: Context, resId: Int): AtomicInteger {
+
+            val value = try { ctx.resources.getInteger(resId) } catch (e: NotFoundException) {
+
+                recordException(e)
+
+                DEFAULT_TIMEOUT
+            }
+
+            return AtomicInteger(value)
+        }
 
         @Throws(IllegalArgumentException::class)
-        private fun parseProxy(proxy: String): Triple<String, Int, Pair<String?, String?>> {
+        private fun parseProxy(proxy: String): URL {
 
             return try {
 
-                val url = URL(proxy)
-                val address = url.host
-                val port = url.port
-
-                val userInfo = url.userInfo?.split(":")
-                val username = userInfo?.getOrNull(0)
-                val password = userInfo?.getOrNull(1)
-
-                Triple(address, port, Pair(username, password))
+                URL(proxy)
 
             } catch (e: Exception) {
 
                 Console.error(e)
 
-                throw IllegalArgumentException("Could not pares proxy from URL: $proxy")
+                throw IllegalArgumentException("Could not parse proxy from URL: $proxy")
             }
         }
     }
@@ -67,27 +80,17 @@ class HttpProxy(
     @Throws(IllegalArgumentException::class)
     constructor(ctx: Context, proxy: String) : this(
 
-        ctx,
-        parseProxy(proxy).first,
-        parseProxy(proxy).second,
-        parseProxy(proxy).third.first,
-        parseProxy(proxy).third.second
+        ctx = ctx,
+        port = parseProxy(proxy).port,
+        address = parseProxy(proxy).host,
+        schema = parseProxy(proxy).protocol.lowercase(),
+        username = parseProxy(proxy).userInfo?.split(":")?.get(0),
+        password = parseProxy(proxy).userInfo?.split(":")?.get(1)
     )
 
     private val quality = AtomicLong(Long.MAX_VALUE)
 
     init {
-
-        if (isNotEmpty(username) && isNotEmpty(password)) {
-
-            Authenticator.setDefault(object : Authenticator() {
-
-                override fun getPasswordAuthentication(): PasswordAuthentication {
-
-                    return PasswordAuthentication(username, password?.toCharArray())
-                }
-            })
-        }
 
         var qSum = 0L
 
@@ -99,9 +102,9 @@ class HttpProxy(
         quality.set(qSum / MEASUREMENT_ITERATIONS)
     }
 
-    fun get(): java.net.Proxy {
+    fun get(): JavaNetProxy {
 
-        return java.net.Proxy(java.net.Proxy.Type.HTTP, InetSocketAddress(address, port))
+        return JavaNetProxy(JavaNetProxy.Type.HTTP, InetSocketAddress(address, port))
     }
 
     override fun getTimeout() = timeoutInMilliseconds.get()
@@ -137,24 +140,18 @@ class HttpProxy(
                 return false
             }
 
-            val proxy = get()
-            val url = getTestUrl(ctx)
+            val testUrl = getTestUrl(ctx) ?: URL(DEFAULT_TEST_URL)
 
-            val connection = url?.openConnection(proxy) as HttpURLConnection?
+            val client = createOkHttpClient()
 
-            connection?.requestMethod = "GET"
-            connection?.readTimeout = timeoutInMilliseconds.get()
-            connection?.connectTimeout = timeoutInMilliseconds.get()
+            val request = Request.Builder()
+                .url(testUrl)
+                .build()
 
-            connection?.let {
+            val response: Response = client.newCall(request).execute()
+            val responseCode = response.code
 
-                addAuthentication(it)
-            }
-
-            connection?.connect()
-
-            val responseCode: Int = connection?.responseCode ?: -1
-            connection?.disconnect()
+            response.close()
 
             responseCode in 200..299
 
@@ -167,31 +164,21 @@ class HttpProxy(
     }
 
     override fun getSpeed(ctx: Context): Long {
-
         return try {
 
-            val proxy = get()
-            val url = getTestUrl(ctx)
-            val connection = url?.openConnection(proxy) as HttpURLConnection?
+            val client = createOkHttpClient()
 
-            connection?.readTimeout = timeoutInMilliseconds.get()
-            connection?.connectTimeout = timeoutInMilliseconds.get()
-            connection?.requestMethod = "GET"
-
-            connection?.let {
-
-                addAuthentication(it)
-            }
+            val request = Request.Builder()
+                .url(getTestUrl(ctx)!!)
+                .build()
 
             val startTime = System.currentTimeMillis()
-            connection?.connect()
-
-            val responseCode = connection?.responseCode
+            val response: Response = client.newCall(request).execute()
             val endTime = System.currentTimeMillis()
 
-            connection?.disconnect()
+            response.close()
 
-            if (responseCode in 200..299) {
+            if (response.code in 200..299) {
 
                 endTime - startTime
 
@@ -242,79 +229,68 @@ class HttpProxy(
 
     override fun hashCode() = "$address:$port".hashCode()
 
-    override fun terminate(): Boolean {
-
-        try {
-
-            /*
-            * FIXME: Authenticator approach must be replaced with proper alternative because it is global!
-            */
-            Authenticator.setDefault(null)
-
-            return true
-
-        } catch (e: SecurityException) {
-
-            Console.error(e)
-        }
-
-        return false
-    }
-
     fun getUri(): URI? {
 
-        try {
+        return try {
 
-            return URI.create("http://$address:$port")
+            URI.create("$schema://$address:$port")
 
         } catch (e: IllegalArgumentException) {
 
             Console.error(e)
-        }
 
-        return null
+            null
+        }
     }
 
     fun getUrl(ctx: Context): URL? {
 
-        try {
+        return try {
 
-            return URL("http://$address:$port")
+            URL("$schema://$address:$port")
 
         } catch (e: MalformedURLException) {
 
             Console.error(e)
-        }
 
-        return null
+            null
+        }
     }
 
     private fun getTestUrl(ctx: Context): URL? {
 
-        try {
+        return try {
 
-            return URL(ctx.getString(R.string.proxy_alive_check_url))
+            URL(ctx.getString(testUrlResourceId))
 
         } catch (e: MalformedURLException) {
 
             Console.error(e)
-        }
 
-        return null
+            null
+        }
     }
 
-    @Throws(IllegalArgumentException::class)
-    private fun addAuthentication(connection: HttpURLConnection) {
+    private fun createOkHttpClient(): OkHttpClient {
+
+        val builder = OkHttpClient.Builder()
+            .proxy(get())
+            .connectTimeout(timeoutInMilliseconds.get().toLong(), TimeUnit.MILLISECONDS)
+            .readTimeout(timeoutInMilliseconds.get().toLong(), TimeUnit.MILLISECONDS)
 
         if (isNotEmpty(username) && isNotEmpty(password)) {
 
-            val credentials = "$username:$password"
-            val encoded = Base64.getEncoder().encodeToString(credentials.toByteArray())
+            val credentials = Credentials.basic(username ?: "", password ?: "")
 
-            connection.setRequestProperty("Proxy-Authorization", "Basic $encoded")
+            builder.proxyAuthenticator { _, response ->
 
-            Console.log("Added Proxy-Authorization header: Basic $encoded")
+                response.request.newBuilder()
+                    .header("Proxy-Authorization", credentials)
+                    .build()
+            }
         }
+
+        return builder.build()
     }
 
     private fun unreachable(): Boolean {

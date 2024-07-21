@@ -65,11 +65,14 @@ class HttpProxiesTest : ProxiesTest() {
         try {
 
             val plTest = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test)
+            val plTestPort = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test_port)
+            val plTestUsername = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test_username)
+            val plTestPassword = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test_password)
 
             listOf(
 
                 Pair("http://google.com:80", false),
-                Pair("http://test:test@$plTest:8080", true)
+                Pair("http://$plTestUsername:$plTestPassword@$plTest:$plTestPort", true)
 
             ).forEach { pair ->
 
@@ -89,7 +92,6 @@ class HttpProxiesTest : ProxiesTest() {
                     Assert.assertTrue(isNotEmpty(proxy.username))
                     Assert.assertTrue(isNotEmpty(proxy.password))
                     Assert.assertTrue(proxy.isAlive(applicationContext))
-                    Assert.assertTrue(proxy.terminate())
                 }
             }
 
@@ -132,8 +134,6 @@ class HttpProxiesTest : ProxiesTest() {
                 Assert.assertTrue(newQuality < quality.get())
 
                 quality.set(newQuality)
-
-                Assert.assertTrue(proxy.terminate())
             }
 
         } catch (e: Exception) {
@@ -176,8 +176,6 @@ class HttpProxiesTest : ProxiesTest() {
                 Assert.assertTrue(newQuality < quality.get())
 
                 quality.set(newQuality)
-
-                Assert.assertTrue(proxy.terminate())
             }
 
         } catch (e: Exception) {
@@ -246,8 +244,6 @@ class HttpProxiesTest : ProxiesTest() {
                 Assert.assertTrue(newQuality < quality.get())
 
                 quality.set(newQuality)
-
-                Assert.assertTrue(proxy.terminate())
             }
 
         } catch (e: Exception) {
@@ -315,8 +311,6 @@ class HttpProxiesTest : ProxiesTest() {
                 Assert.assertTrue(newQuality < quality.get())
 
                 quality.set(newQuality)
-
-                Assert.assertTrue(proxy.terminate())
             }
 
         } catch (e: Exception) {
