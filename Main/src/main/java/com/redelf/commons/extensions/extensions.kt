@@ -8,6 +8,7 @@ import android.app.ActivityManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources.NotFoundException
 import android.database.Cursor
 import android.media.AudioAttributes
 import android.media.RingtoneManager
@@ -30,6 +31,7 @@ import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.PropertiesHash
+import com.redelf.commons.security.obfuscation.Obfuscator
 import java.io.*
 import java.util.*
 import java.util.concurrent.Callable
@@ -201,6 +203,54 @@ fun Context.clearAllSharedPreferences(): Boolean {
     }
 
     return result
+}
+
+fun Context.deobfuscateString(resId: Int): String {
+
+    try {
+
+        return getString(resId).deobfuscate()
+
+    } catch (e: NotFoundException) {
+
+        recordException(e)
+    }
+
+    return ""
+}
+
+
+
+fun String.deobfuscate(): String {
+
+    try {
+
+        val deobfuscator = Obfuscator()
+
+        return deobfuscator.deobfuscate(this)
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return ""
+}
+
+fun String.obfuscate(): String {
+
+    try {
+
+        val deobfuscator = Obfuscator()
+
+        return deobfuscator.obfuscate(this)
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return ""
 }
 
 fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_ACTIVITY_REQUEST) {

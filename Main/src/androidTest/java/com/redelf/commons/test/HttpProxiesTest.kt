@@ -2,6 +2,7 @@ package com.redelf.commons.test
 
 import com.redelf.commons.data.list.HttpStringsListDataSource
 import com.redelf.commons.data.list.RawStringsListDataSource
+import com.redelf.commons.extensions.deobfuscateString
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.net.endpoint.http.HttpEndpoint
 import com.redelf.commons.net.proxy.http.HttpProxies
@@ -34,15 +35,15 @@ class HttpProxiesTest : ProxiesTest() {
     @Test
     fun testCreation() {
 
-        val res = com.redelf.commons.R.string.proxy_local_test
-        val resPort = com.redelf.commons.R.string.proxy_local_test_port
-        val resUsername = com.redelf.commons.R.string.proxy_local_test_username
-        val resPassword = com.redelf.commons.R.string.proxy_local_test_password
+        val res = com.redelf.commons.R.string.ob_proxy_local_test
+        val resPort = com.redelf.commons.R.string.ob_proxy_local_test_port
+        val resUsername = com.redelf.commons.R.string.ob_proxy_local_test_username
+        val resPassword = com.redelf.commons.R.string.ob_proxy_local_test_password
 
-        val host = applicationContext.resources.getString(res)
-        val port = applicationContext.resources.getString(resPort)
-        val username = applicationContext.resources.getString(resUsername)
-        val password = applicationContext.resources.getString(resPassword)
+        val host = applicationContext.deobfuscateString(res)
+        val port = applicationContext.deobfuscateString(resPort)
+        val username = applicationContext.deobfuscateString(resUsername)
+        val password = applicationContext.deobfuscateString(resPassword)
 
         Assert.assertTrue(isNotEmpty(host))
         Assert.assertTrue(isNotEmpty(port))
@@ -64,10 +65,15 @@ class HttpProxiesTest : ProxiesTest() {
 
         try {
 
-            val plTest = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test)
-            val plTestPort = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test_port)
-            val plTestUsername = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test_username)
-            val plTestPassword = applicationContext.getString(com.redelf.commons.R.string.proxy_local_test_password)
+            val res = com.redelf.commons.R.string.ob_proxy_local_test
+            val resPort = com.redelf.commons.R.string.ob_proxy_local_test_port
+            val resUsername = com.redelf.commons.R.string.ob_proxy_local_test_username
+            val resPassword = com.redelf.commons.R.string.ob_proxy_local_test_password
+
+            val plTest = applicationContext.deobfuscateString(res)
+            val plTestPort = applicationContext.deobfuscateString(resPort)
+            val plTestUsername = applicationContext.deobfuscateString(resUsername)
+            val plTestPassword = applicationContext.deobfuscateString(resPassword)
 
             listOf(
 
