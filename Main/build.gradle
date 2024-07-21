@@ -34,6 +34,10 @@ class Obfuscator {
 /*
      The .zshrc / .bashrc example:
 
+     export OBFUSCATION_SALT="your_secret_salt"
+
+     export PROXY_LOCAL_ENABLED=true
+
      export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
      export PROXY_LOCAL_PROD="milosvasic.local"
 
@@ -49,6 +53,8 @@ class Obfuscator {
 
 def salt = System.getenv("OBFUSCATION_SALT") ?: ""
 def obfuscator = new Obfuscator(salt)
+
+def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "false").toBoolean()
 
 def proxyLocalTest = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1")
 def proxyLocalTestPort = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080")
@@ -72,17 +78,20 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        resValue "string", "ob_proxy_local_test", proxyLocalTest
-        resValue "string", "ob_proxy_local_prod", proxyLocalProd
+        if (proxyEnabled) {
 
-        resValue "string", "ob_proxy_local_test_port", proxyLocalTestPort
-        resValue "string", "ob_proxy_local_prod_port", proxyLocalProdPort
+            resValue "string", "ob_proxy_local_test", proxyLocalTest
+            resValue "string", "ob_proxy_local_prod", proxyLocalProd
 
-        resValue "string", "ob_proxy_local_test_username", proxyLocalTestUsername
-        resValue "string", "ob_proxy_local_prod_username", proxyLocalProdUsername
+            resValue "string", "ob_proxy_local_test_port", proxyLocalTestPort
+            resValue "string", "ob_proxy_local_prod_port", proxyLocalProdPort
 
-        resValue "string", "ob_proxy_local_test_password", proxyLocalTestPassword
-        resValue "string", "ob_proxy_local_prod_password", proxyLocalProdPassword
+            resValue "string", "ob_proxy_local_test_username", proxyLocalTestUsername
+            resValue "string", "ob_proxy_local_prod_username", proxyLocalProdUsername
+
+            resValue "string", "ob_proxy_local_test_password", proxyLocalTestPassword
+            resValue "string", "ob_proxy_local_prod_password", proxyLocalProdPassword
+        }
     }
 
     compileOptions {
@@ -242,9 +251,7 @@ dependencies {
 task downloadProxies(type: Exec) {
 
     def outputDir = file("$projectDir/src/main/res/raw")
-    //    def testOutputDir = file("$projectDir/src/androidTest/res/raw")
     def outputFile = file("$outputDir/proxies.txt")
-    //    def testOutputFile = file("$testOutputDir/test_proxies.txt")
 
     doFirst {
 
@@ -254,9 +261,7 @@ task downloadProxies(type: Exec) {
         }
     }
 
-    // curl -sL https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt -o http.txt
     commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', outputFile
-    //    commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', testOutputFile
 }
 
 task generateProxiesLocalTxt {
@@ -317,6 +322,23 @@ task startLocalProxyServer {
     }
 }
 
-preBuild.dependsOn downloadProxies
-preBuild.dependsOn generateProxiesLocalTxt
-preBuild.dependsOn startLocalProxyServer
+task obtainAndWriteSalt {
+    doLast {
+
+        def content = "${salt}"
+        def filePath = "${getRootDir()}/salt.txt"
+
+        Files.write(Paths.get(filePath), content.getBytes())
+
+        println "Generated salt.txt at: ${filePath}"
+    }
+}
+
+preBuild.dependsOn obtainAndWriteSalt
+
+if (proxyEnabled) {
+
+    preBuild.dependsOn downloadProxies
+    preBuild.dependsOn generateProxiesLocalTxt
+    preBuild.dependsOn startLocalProxyServer
+}
