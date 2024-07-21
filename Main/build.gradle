@@ -72,17 +72,17 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        resValue "string", "proxy_local_test", proxyLocalTest
-        resValue "string", "proxy_local_prod", proxyLocalProd
+        resValue "string", "ob_proxy_local_test", proxyLocalTest
+        resValue "string", "ob_proxy_local_prod", proxyLocalProd
 
-        resValue "string", "proxy_local_test_port", proxyLocalTestPort
-        resValue "string", "proxy_local_prod_port", proxyLocalProdPort
+        resValue "string", "ob_proxy_local_test_port", proxyLocalTestPort
+        resValue "string", "ob_proxy_local_prod_port", proxyLocalProdPort
 
-        resValue "string", "proxy_local_test_username", proxyLocalTestUsername
-        resValue "string", "proxy_local_prod_username", proxyLocalProdUsername
+        resValue "string", "ob_proxy_local_test_username", proxyLocalTestUsername
+        resValue "string", "ob_proxy_local_prod_username", proxyLocalProdUsername
 
-        resValue "string", "proxy_local_test_password", proxyLocalTestPassword
-        resValue "string", "proxy_local_prod_password", proxyLocalProdPassword
+        resValue "string", "ob_proxy_local_test_password", proxyLocalTestPassword
+        resValue "string", "ob_proxy_local_prod_password", proxyLocalProdPassword
     }
 
     compileOptions {
