@@ -31,6 +31,8 @@ import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.PropertiesHash
+import com.redelf.commons.security.obfuscation.DefaultObfuscator
+import com.redelf.commons.security.obfuscation.Obfuscation
 import com.redelf.commons.security.obfuscation.Obfuscator
 import java.io.*
 import java.util.*
@@ -221,11 +223,9 @@ fun Context.deobfuscateString(resId: Int): String {
 
 
 
-fun String.deobfuscate(): String {
+fun String.deobfuscate(deobfuscator: Obfuscation = DefaultObfuscator): String {
 
     try {
-
-        val deobfuscator = Obfuscator()
 
         return deobfuscator.deobfuscate(this)
 
@@ -237,13 +237,11 @@ fun String.deobfuscate(): String {
     return ""
 }
 
-fun String.obfuscate(): String {
+fun String.obfuscate(obfuscator: Obfuscation = DefaultObfuscator): String {
 
     try {
 
-        val deobfuscator = Obfuscator()
-
-        return deobfuscator.obfuscate(this)
+        return obfuscator.obfuscate(this)
 
     } catch (e: Exception) {
 

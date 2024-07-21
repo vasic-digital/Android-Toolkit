@@ -4,11 +4,11 @@ import android.util.Base64
 import com.redelf.commons.extensions.recordException
 
 
-class Obfuscator(private val salt: String) {
+class Obfuscator(private val salt: String) : Obfuscation {
 
     constructor(salt: ObfuscatorSaltObtain) : this(salt.obtain())
 
-    fun obfuscate(input: String): String {
+    override fun obfuscate(input: String): String {
 
         try {
 
@@ -28,7 +28,7 @@ class Obfuscator(private val salt: String) {
         return ""
     }
 
-    fun deobfuscate(input: String): String {
+    override fun deobfuscate(input: String): String {
 
         try {
 
