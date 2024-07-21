@@ -6,17 +6,12 @@ import com.redelf.commons.extensions.recordException
 
 class Obfuscator(private val salt: String) {
 
-    companion object {
-
-        // TODO: Obtain salt
-        private fun getDefaultSalt() = ""
-    }
-
-    constructor() : this(getDefaultSalt())
+    constructor(salt: ObfuscatorSaltObtain) : this(salt.obtain())
 
     fun obfuscate(input: String): String {
 
         try {
+
             val saltedInput = input + salt
 
             val obfuscatedBytes = saltedInput.toByteArray().map { it.toInt() xor salt.hashCode() }
