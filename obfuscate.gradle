@@ -1,0 +1,2 @@
+
+def salt = System.getenv("OBFUSCATION_SALT") ?: ""
