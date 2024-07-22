@@ -42,6 +42,9 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.persistance.SharedPreferencesStorage
+import com.redelf.commons.security.obfuscation.DefaultObfuscator
+import com.redelf.commons.security.obfuscation.Obfuscator
+import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltObtain
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -179,9 +182,9 @@ abstract class BaseApplication :
 
     protected abstract fun isProduction(): Boolean
 
-    protected abstract fun onDoCreate()
-
     protected abstract fun takeSalt(): String
+
+    protected open fun onDoCreate() = Unit
 
     protected open fun populateManagers() = listOf<List<DataManagement<*>>>()
 
@@ -455,6 +458,8 @@ abstract class BaseApplication :
         try {
 
             exec {
+
+                onPreCreate()
 
                 onDoCreate()
 
@@ -957,6 +962,26 @@ abstract class BaseApplication :
 
     override fun isUpdateApplied(identifier: Long) = !isUpdateAvailable(identifier)
 
+    protected open fun setupObfuscator() {
+
+        val tag = "Obfuscator ::"
+
+        Console.log("$tag Setting up :: START")
+
+        val endpoint = getObfuscatorEndpoint()
+        val ghToken = getObfuscatorEndpointToken()
+        val saltObtain = RemoteObfuscatorSaltObtain(endpoint, ghToken)
+        val obfuscation = Obfuscator(saltObtain)
+
+        DefaultObfuscator.setStrategy(obfuscation)
+
+        Console.log("$tag Setting up :: END")
+    }
+
+    protected open fun getObfuscatorEndpoint() = ""
+
+    protected open fun getObfuscatorEndpointToken() = ""
+
     protected fun isUpdateAvailable(identifier: Long): Boolean {
 
         val key = "$prefsKeyUpdate.$identifier"
@@ -983,5 +1008,10 @@ abstract class BaseApplication :
         sendBroadcast(intent)
 
         Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
+    }
+
+    private fun onPreCreate() {
+
+        setupObfuscator()
     }
 }
