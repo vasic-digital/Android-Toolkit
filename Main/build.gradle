@@ -49,7 +49,11 @@ class Obfuscator {
 
      export PROXY_LOCAL_TEST_PASSWORD="test"
      export PROXY_LOCAL_PROD_PASSWORD="admin"
+
+     export OBFUSCATION_TEST="test"
 */
+
+def test = System.getenv("OBFUSCATION_TEST") ?: ""
 
 def salt = System.getenv("OBFUSCATION_SALT") ?: ""
 def obfuscator = new Obfuscator(salt)
@@ -92,6 +96,8 @@ android {
             resValue "string", "ob_proxy_local_test_password", proxyLocalTestPassword
             resValue "string", "ob_proxy_local_prod_password", proxyLocalProdPassword
         }
+
+        resValue "string", "ob_test", test
     }
 
     compileOptions {
