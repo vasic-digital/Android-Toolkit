@@ -3,7 +3,7 @@ package com.redelf.commons.security.obfuscation
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 
-data class RemoteSaltResult(
+data class ObfuscatorSaltResult(
 
     @SerializedName("salt")
     @JsonProperty("salt")
