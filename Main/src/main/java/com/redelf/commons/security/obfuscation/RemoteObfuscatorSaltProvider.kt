@@ -1,7 +1,6 @@
 package com.redelf.commons.security.obfuscation
 
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Console
 import com.redelf.commons.security.management.SecretsManager
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -13,7 +12,7 @@ class RemoteObfuscatorSaltObtain(
     private val endpoint: String,
     private val token: String
 
-) : ObfuscatorSaltObtain {
+) : ObfuscatorSaltProvider {
 
     companion object {
 
