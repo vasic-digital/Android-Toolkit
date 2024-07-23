@@ -46,6 +46,8 @@ abstract class DeobfuscationTest : BaseTest() {
 
             !DefaultObfuscator.READY.get()
         }
+
+        Assert.assertTrue(DefaultObfuscator.READY.get())
     }
 
     fun testDeobfuscation(
