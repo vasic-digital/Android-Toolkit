@@ -1,6 +1,10 @@
 package com.redelf.commons.security.obfuscation
 
+import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.security.management.SecretsManager
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -15,14 +19,58 @@ class RemoteObfuscatorSaltObtain(
 
     override fun obtain(): String {
 
-        val data = fetchContentFromPrivateRepo(endpoint, token)
+        fun getData() : String {
 
-        data?.let {
+            val data = fetchContentFromPrivateRepo(endpoint, token)
 
-            return it
+            data?.let {
+
+                return it
+            }
+
+            return ""
         }
 
-        return ""
+        try {
+
+            val secrets = SecretsManager.obtain().obtain()
+
+            secrets?.let {
+
+                it.obfuscationSalt?.let { salt ->
+
+                    if (isNotEmpty(salt)) {
+
+                        exec {
+
+                            try {
+
+                                val newSalt = getData()
+
+                                if (isNotEmpty(newSalt)) {
+
+                                    it.obfuscationSalt = newSalt
+
+                                    SecretsManager.obtain().pushData(it)
+                                }
+
+                            } catch (e: Exception) {
+
+                                recordException(e)
+                            }
+                        }
+
+                        return salt
+                    }
+                }
+            }
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+
+        return getData()
     }
 
     private fun fetchContentFromPrivateRepo(url: String, token: String): String? {

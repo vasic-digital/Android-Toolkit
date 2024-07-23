@@ -42,6 +42,7 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.persistance.SharedPreferencesStorage
+import com.redelf.commons.security.management.SecretsManager
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscator
 import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltObtain
@@ -166,7 +167,11 @@ abstract class BaseApplication :
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
-        listOf(FirebaseConfigurationManager)
+        listOf(
+
+            FirebaseConfigurationManager,
+            SecretsManager.obtain()
+        )
     )
 
     protected val managersReady = AtomicBoolean()
