@@ -1,7 +1,5 @@
 package com.redelf.commons.security.obfuscation
 
-import com.redelf.commons.execution.Executor
-import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.security.management.SecretsManager
@@ -17,19 +15,19 @@ class RemoteObfuscatorSaltObtain(
 
 ) : ObfuscatorSaltObtain {
 
-    override fun obtain(): String {
+    fun getRemoteData() : String {
 
-        fun getData() : String {
+        val data = fetchContentFromPrivateRepo(endpoint, token)
 
-            val data = fetchContentFromPrivateRepo(endpoint, token)
+        data?.let {
 
-            data?.let {
-
-                return it
-            }
-
-            return ""
+            return it
         }
+
+        return ""
+    }
+
+    override fun obtain(): String {
 
         try {
 
@@ -41,24 +39,7 @@ class RemoteObfuscatorSaltObtain(
 
                     if (isNotEmpty(salt)) {
 
-                        exec {
-
-                            try {
-
-                                val newSalt = getData()
-
-                                if (isNotEmpty(newSalt)) {
-
-                                    it.obfuscationSalt = newSalt
-
-                                    SecretsManager.obtain().pushData(it)
-                                }
-
-                            } catch (e: Exception) {
-
-                                recordException(e)
-                            }
-                        }
+                        SecretsManager.obtain().setObfuscationSalt(this)
 
                         return salt
                     }
@@ -70,7 +51,7 @@ class RemoteObfuscatorSaltObtain(
             recordException(e)
         }
 
-        return getData()
+        return getRemoteData()
     }
 
     private fun fetchContentFromPrivateRepo(url: String, token: String): String? {
