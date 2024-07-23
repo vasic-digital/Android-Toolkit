@@ -2,9 +2,9 @@ package com.redelf.commons.security.obfuscation
 
 object DefaultObfuscator : Obfuscation {
 
-    private var STRATEGY: Obfuscation = Obfuscator(salt = "default_salt")
+    private var STRATEGY: SaltedObfuscator = Obfuscator(salt = "default_salt")
 
-    fun setStrategy(strategy: Obfuscation) {
+    fun setStrategy(strategy: SaltedObfuscator) {
 
         STRATEGY = strategy
     }

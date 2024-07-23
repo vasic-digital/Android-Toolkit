@@ -4,7 +4,7 @@ import android.util.Base64
 import com.redelf.commons.extensions.recordException
 
 
-class Obfuscator(private val salt: String) : Obfuscation {
+class Obfuscator(salt: String) : SaltedObfuscator(salt) {
 
     constructor(salt: ObfuscatorSaltObtain) : this(salt.obtain())
 
