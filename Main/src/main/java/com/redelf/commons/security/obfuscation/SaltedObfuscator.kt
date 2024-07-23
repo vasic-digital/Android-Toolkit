@@ -1,6 +1,3 @@
 package com.redelf.commons.security.obfuscation
 
-abstract class SaltedObfuscator(protected val salt: String) : Obfuscation {
-
-    fun getSalt() = salt
-}
+abstract class SaltedObfuscator(val salt: String) : Obfuscation
