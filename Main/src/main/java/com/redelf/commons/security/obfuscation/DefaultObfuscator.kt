@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 object DefaultObfuscator : Obfuscation {
 
-    val READY = AtomicBoolean(true)
+    val READY = AtomicBoolean()
 
     private var STRATEGY: SaltedObfuscator = Obfuscator(salt = "default_salt")
 
