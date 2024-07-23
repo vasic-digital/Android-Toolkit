@@ -3,6 +3,12 @@
 # TODO: Create user
 # sudo htpasswd -c /etc/squid/passwords username
 
+if [ "$1" ]; then
+
+  echo "Error: No Docker recipes path argument provided"
+  exit 1
+fi
+
 if [ -z "$PROXY_LOCAL_TEST_PORT" ]; then
 
   echo "Error: PROXY_LOCAL_TEST_PORT is not set"
@@ -21,7 +27,7 @@ if [ -z "$PROXY_LOCAL_TEST_PASSWORD" ]; then
   exit 1
 fi
 
-if cd Toolkit/Squid && docker login && docker-compose up -d && docker ps; then
+if cd "$1" && docker login && docker-compose up -d && docker ps; then
 
   if curl -x "http://127.0.0.1:$PROXY_LOCAL_TEST_PORT" -U "$PROXY_LOCAL_TEST_USERNAME:$PROXY_LOCAL_TEST_PASSWORD" https://www.github.com; then
 

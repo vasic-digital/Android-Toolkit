@@ -318,7 +318,7 @@ task startLocalProxyServer {
 
             exec {
 
-                commandLine 'sh', "${projectDir}/Toolkit/Scripts/start_local_proxy_server.sh"
+                commandLine 'sh', "${rootDir}/Toolkit/Scripts/start_local_proxy_server.sh", "${rootDir}/Toolkit/Squid"
             }
 
         } catch (Exception e) {
