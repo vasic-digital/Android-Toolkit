@@ -7,7 +7,7 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 
-class RemoteObfuscatorSaltObtain(
+class RemoteObfuscatorSaltProvider(
 
     private val endpoint: String,
     private val token: String

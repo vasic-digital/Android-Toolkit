@@ -1,14 +1,13 @@
 package com.redelf.commons.security.management
 
 import android.annotation.SuppressLint
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.data.type.Typed
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltObtain
+import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
 import com.redelf.commons.security.obfuscation.ObfuscatorSalt
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -38,7 +37,7 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
 
     override fun createDataObject() = Secrets()
 
-    fun getObfuscationSalt(source: RemoteObfuscatorSaltObtain): ObfuscatorSalt {
+    fun getObfuscationSalt(source: RemoteObfuscatorSaltProvider): ObfuscatorSalt {
 
         val result = ObfuscatorSalt()
 

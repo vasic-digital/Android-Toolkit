@@ -45,7 +45,7 @@ import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscator
-import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltObtain
+import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -975,7 +975,7 @@ abstract class BaseApplication :
 
         val endpoint = getObfuscatorEndpoint()
         val ghToken = getObfuscatorEndpointToken()
-        val saltObtain = RemoteObfuscatorSaltObtain(endpoint, ghToken)
+        val saltObtain = RemoteObfuscatorSaltProvider(endpoint, ghToken)
         val obfuscation = Obfuscator(saltObtain)
 
         DefaultObfuscator.setStrategy(obfuscation)

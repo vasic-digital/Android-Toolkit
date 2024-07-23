@@ -4,17 +4,16 @@ import android.util.Base64
 import com.redelf.commons.extensions.recordException
 
 
-class Obfuscator(salt: ObfuscatorSalt) : SaltedObfuscator(salt) {
-
-    constructor(salt: ObfuscatorSaltObtain) : this(salt.obtain())
+class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltProvider) {
 
     override fun obfuscate(input: String): String {
 
         try {
 
-            val saltedInput = input + salt
+            val saltedInput = input + saltProvider
 
-            val obfuscatedBytes = saltedInput.toByteArray().map { it.toInt() xor salt.value.hashCode() }
+            val obfuscatedBytes = saltedInput.toByteArray()
+                .map { it.toInt() xor saltProvider.obtain().value.hashCode() }
                 .map { it.toByte() }
                 .toByteArray()
 
@@ -34,13 +33,14 @@ class Obfuscator(salt: ObfuscatorSalt) : SaltedObfuscator(salt) {
 
             val decodedBytes = Base64.decode(input, Base64.DEFAULT)
 
-            val originalBytes = decodedBytes.map { it.toInt() xor salt.value.hashCode() }
+            val originalBytes = decodedBytes
+                .map { it.toInt() xor saltProvider.obtain().value.hashCode() }
                 .map { it.toByte() }
                 .toByteArray()
 
             val originalString = String(originalBytes)
 
-            return originalString.removeSuffix(salt.value ?: "")
+            return originalString.removeSuffix(saltProvider.obtain().value ?: "")
 
         } catch (e: Exception) {
 

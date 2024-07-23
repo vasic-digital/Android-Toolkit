@@ -30,7 +30,7 @@ abstract class DeobfuscationTest : BaseTest() {
 
         Assert.assertNotNull(deobfuscator)
 
-        val salt =  deobfuscator.salt
+        val salt =  deobfuscator.saltProvider.obtain()
 
         Assert.assertNotNull(salt)
         Assert.assertNull(salt.error)
@@ -73,7 +73,7 @@ abstract class DeobfuscationTest : BaseTest() {
 
         val data = getDeobfuscatedData()
 
-        Assert.assertEquals(expectedSalt, salt)
+        Assert.assertEquals(expectedSalt, salt.value)
         Assert.assertEquals(expectedDeobfuscatedData, data)
     }
 }
