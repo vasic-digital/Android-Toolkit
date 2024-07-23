@@ -44,10 +44,10 @@ abstract class DeobfuscationTest : BaseTest() {
 
         ) {
 
-            !DefaultObfuscator.READY.get()
+            DefaultObfuscator.isNotReady()
         }
 
-        Assert.assertTrue(DefaultObfuscator.READY.get())
+        Assert.assertTrue(DefaultObfuscator.isReady())
     }
 
     fun testDeobfuscation(

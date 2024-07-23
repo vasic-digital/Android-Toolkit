@@ -420,8 +420,6 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
-        DefaultObfuscator.READY.set(false)
-
         if (firebaseEnabled) {
 
             FirebaseApp.initializeApp(applicationContext)
@@ -1017,7 +1015,7 @@ abstract class BaseApplication :
     private fun onPreCreate() {
 
         val success = setupObfuscator()
-        DefaultObfuscator.READY.set(success)
+        DefaultObfuscator.setReady(success)
 
         if (!success) {
 
