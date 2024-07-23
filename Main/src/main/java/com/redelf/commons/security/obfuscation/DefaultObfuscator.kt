@@ -9,6 +9,8 @@ object DefaultObfuscator : Obfuscation {
         STRATEGY = strategy
     }
 
+    fun getStrategy() = STRATEGY
+
     override fun obfuscate(input: String): String {
 
         return STRATEGY.obfuscate(input)
