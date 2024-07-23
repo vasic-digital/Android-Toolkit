@@ -5,7 +5,7 @@ import org.junit.Assert
 
 abstract class DeobfuscationTest : BaseTest() {
 
-    open fun testDeobfuscation() {
+    fun getDeobfuscatedData() : String {
 
         val resourceId = com.redelf.commons.R.string.ob_test
 
@@ -16,5 +16,7 @@ abstract class DeobfuscationTest : BaseTest() {
         val deobfuscated = applicationContext.deobfuscateString(resourceId)
 
         Assert.assertTrue(deobfuscated.isNotEmpty())
+
+        return deobfuscated
     }
 }
