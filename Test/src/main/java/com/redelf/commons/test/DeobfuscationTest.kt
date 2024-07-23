@@ -31,9 +31,12 @@ abstract class DeobfuscationTest : BaseTest() {
 
         val salt =  deobfuscator.salt
 
-        Assert.assertTrue(isNotEmpty(salt))
+        Assert.assertNotNull(salt)
+        Assert.assertNull(salt.error)
+        Assert.assertTrue(isNotEmpty(salt.value))
+        Assert.assertTrue(salt.isFirstTimeObtained)
 
-        return salt
+        return salt.value ?: ""
     }
 
     private fun waitForObfuscator(timeoutInMilliseconds: Long = 5000L) {

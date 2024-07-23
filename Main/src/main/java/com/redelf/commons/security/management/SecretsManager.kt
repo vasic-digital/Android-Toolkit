@@ -8,9 +8,10 @@ import com.redelf.commons.data.type.Typed
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Console
-import com.redelf.commons.security.obfuscation.ObfuscatorSaltObtain
 import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltObtain
+import com.redelf.commons.security.obfuscation.ObfuscatorSalt
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
 class SecretsManager private constructor() : ContextualManager<Secrets>() {
@@ -38,36 +39,71 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
 
     override fun createDataObject() = Secrets()
 
-    fun setObfuscationSalt(source: RemoteObfuscatorSaltObtain) {
+    fun getObfuscationSalt(source: RemoteObfuscatorSaltObtain): ObfuscatorSalt {
 
-        exec(
+        val result = ObfuscatorSalt()
 
-            onRejected = { err -> recordException(err) }
+        try {
 
-        ) {
+            val data = obtain()
+            val latch = CountDownLatch(1)
 
-            val transaction = transaction("setObfuscationSalt")
+            exec(
 
-            try {
+                onRejected = { err ->
 
-                val data = obtain()
-
-                data?.let {
-
-                    val newSalt = source.getRemoteData()
-
-                    if (isNotEmpty(newSalt)) {
-
-                        it.obfuscationSalt = newSalt
-
-                        transaction.end()
-                    }
+                    recordException(err)
+                    latch.countDown()
                 }
 
-            } catch (e: Exception) {
+            ) {
 
-                recordException(e)
+                val transaction = transaction("setObfuscationSalt")
+
+                try {
+
+                    data?.let {
+
+                        val newSalt = source.getRemoteData()
+
+                        if (isNotEmpty(newSalt)) {
+
+                            it.obfuscationSalt = newSalt
+
+                            transaction.end()
+                        }
+                    }
+
+                    latch.countDown()
+
+                } catch (e: Exception) {
+
+                    recordException(e)
+
+                    result.error = e
+
+                    latch.countDown()
+                }
             }
+
+            if (data?.obfuscationSalt.isNullOrEmpty()) {
+
+                latch.await(60, TimeUnit.SECONDS)
+
+                result.isFirstTimeObtained = true
+            }
+
+            result.value = data?.obfuscationSalt ?: ""
+
+            return result
+
+        } catch (e: Exception) {
+
+            result.error = e
+
+            recordException(e)
         }
+
+        return result
     }
 }
