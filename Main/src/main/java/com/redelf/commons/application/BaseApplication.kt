@@ -420,6 +420,8 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
+        DefaultObfuscator.READY.set(false)
+
         if (firebaseEnabled) {
 
             FirebaseApp.initializeApp(applicationContext)
@@ -962,7 +964,7 @@ abstract class BaseApplication :
 
     override fun isUpdateApplied(identifier: Long) = !isUpdateAvailable(identifier)
 
-    protected open fun setupObfuscator() {
+    protected open fun setupObfuscator() : Boolean {
 
         val tag = "Obfuscator ::"
 
@@ -976,6 +978,8 @@ abstract class BaseApplication :
         DefaultObfuscator.setStrategy(obfuscation)
 
         Console.log("$tag Setting up :: END")
+
+        return true
     }
 
     protected open fun getObfuscatorEndpoint() = ""
@@ -1012,6 +1016,13 @@ abstract class BaseApplication :
 
     private fun onPreCreate() {
 
-        setupObfuscator()
+        val success = setupObfuscator()
+        DefaultObfuscator.READY.set(success)
+
+        if (!success) {
+
+            val e = IllegalStateException("Failed to setup obfuscator")
+            recordException(e)
+        }
     }
 }

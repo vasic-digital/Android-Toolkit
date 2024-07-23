@@ -99,6 +99,22 @@ fun yieldWhile(condition: () -> Boolean) {
     }
 }
 
+fun yieldWhile(timeoutInMilliseconds: Long, condition: () -> Boolean) {
+
+    val start = System.currentTimeMillis()
+
+    while (
+
+        condition() &&
+        !Thread.currentThread().isInterrupted &&
+        (System.currentTimeMillis() - start < timeoutInMilliseconds)
+
+    ) {
+
+        Thread.yield()
+    }
+}
+
 fun recordException(e: Throwable) {
 
     Console.error(e)

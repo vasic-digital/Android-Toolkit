@@ -1,6 +1,10 @@
 package com.redelf.commons.security.obfuscation
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 object DefaultObfuscator : Obfuscation {
+
+    val READY = AtomicBoolean(true)
 
     private var STRATEGY: SaltedObfuscator = Obfuscator(salt = "default_salt")
 

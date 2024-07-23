@@ -2,12 +2,13 @@ package com.redelf.commons.test
 
 import com.redelf.commons.extensions.deobfuscateString
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import org.junit.Assert
 
 abstract class DeobfuscationTest : BaseTest() {
 
-    fun getDeobfuscatedData() : String {
+    private fun getDeobfuscatedData() : String {
 
         val resourceId = com.redelf.commons.R.string.ob_test
 
@@ -22,7 +23,7 @@ abstract class DeobfuscationTest : BaseTest() {
         return deobfuscated
     }
 
-    fun getSalt() : String {
+    private fun getSalt() : String {
 
         val deobfuscator = DefaultObfuscator.getStrategy()
 
@@ -35,7 +36,27 @@ abstract class DeobfuscationTest : BaseTest() {
         return salt
     }
 
-    fun testDeobfuscation(expectedSalt: String, expectedDeobfuscatedData: String) {
+    private fun waitForObfuscator(timeoutInMilliseconds: Long = 5000L) {
+
+        yieldWhile(
+
+            timeoutInMilliseconds = timeoutInMilliseconds
+
+        ) {
+
+            !DefaultObfuscator.READY.get()
+        }
+    }
+
+    fun testDeobfuscation(
+
+        expectedSalt: String,
+        expectedDeobfuscatedData: String,
+        timeoutInMilliseconds: Long = 5000L
+
+    ) {
+
+        waitForObfuscator(timeoutInMilliseconds)
 
         val data = getDeobfuscatedData()
         val salt = getSalt()
