@@ -32,8 +32,7 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
         override fun getClazz(): Class<Secrets> = Secrets::class.java
     }
 
-    override val storageKey = "s3_cR3_tZ" +
-            "${BaseApplication.getVersion()}_${BaseApplication.getVersionCode()}"
+    override val storageKey = "s3_cR3_tZ"
 
     override fun getLogTag() = "SecretsManager :: ${hashCode()} ::"
 
