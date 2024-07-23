@@ -60,8 +60,8 @@ abstract class DeobfuscationTest : BaseTest() {
 
         waitForObfuscator(timeoutInMilliseconds)
 
-        val data = getDeobfuscatedData()
         val salt = getSalt()
+        val data = getDeobfuscatedData()
 
         Assert.assertEquals(expectedSalt, salt)
         Assert.assertEquals(expectedDeobfuscatedData, data)
