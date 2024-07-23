@@ -16,4 +16,8 @@ data class ObfuscatorSalt(
     @JsonProperty("isFirstTimeObtained")
     @SerializedName("isFirstTimeObtained")
     var isFirstTimeObtained: Boolean = false
-)
+
+) {
+
+    fun isFromCache() = !isFirstTimeObtained
+}
