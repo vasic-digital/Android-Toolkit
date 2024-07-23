@@ -1,6 +1,8 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.extensions.deobfuscateString
+import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import org.junit.Assert
 
 abstract class DeobfuscationTest : BaseTest() {
@@ -18,5 +20,27 @@ abstract class DeobfuscationTest : BaseTest() {
         Assert.assertTrue(deobfuscated.isNotEmpty())
 
         return deobfuscated
+    }
+
+    fun getSalt() : String {
+
+        val deobfuscator = DefaultObfuscator.getStrategy()
+
+        Assert.assertNotNull(deobfuscator)
+
+        val salt =  deobfuscator.salt
+
+        Assert.assertTrue(isNotEmpty(salt))
+
+        return salt
+    }
+
+    fun testDeobfuscation(expectedSalt: String, expectedDeobfuscatedData: String) {
+
+        val data = getDeobfuscatedData()
+        val salt = getSalt()
+
+        Assert.assertEquals(expectedSalt, salt)
+        Assert.assertEquals(expectedDeobfuscatedData, data)
     }
 }
