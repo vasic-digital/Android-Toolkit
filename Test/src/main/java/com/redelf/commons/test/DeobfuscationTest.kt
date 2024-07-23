@@ -2,7 +2,6 @@ package com.redelf.commons.test
 
 import com.redelf.commons.extensions.deobfuscateString
 import org.junit.Assert
-import org.junit.Test
 
 abstract class DeobfuscationTest : BaseTest() {
 
