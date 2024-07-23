@@ -3,7 +3,7 @@
 # TODO: Create user
 # sudo htpasswd -c /etc/squid/passwords username
 
-if [ "$1" ]; then
+if [ -z "$1" ]; then
 
   echo "Error: No Docker recipes path argument provided"
   exit 1
