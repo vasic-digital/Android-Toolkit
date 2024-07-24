@@ -66,10 +66,14 @@ abstract class DeobfuscationTest : BaseTest() {
         var salt = getSalt()
 
         Assert.assertTrue(salt.firstTimeObtained.get())
+        Assert.assertEquals(1, salt.refreshCount.get())
+        Assert.assertEquals(0, salt.refreshSkipCount.get())
 
         salt = getSalt()
 
         Assert.assertTrue(salt.fromCache())
+        Assert.assertEquals(1, salt.refreshCount.get())
+        Assert.assertEquals(1, salt.refreshSkipCount.get())
 
         val data = getDeobfuscatedData()
 

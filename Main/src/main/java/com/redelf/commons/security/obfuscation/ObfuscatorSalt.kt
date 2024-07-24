@@ -41,7 +41,7 @@ data class ObfuscatorSalt(
 
             value = newValue
 
-            refreshCount.incrementAndGet()
+            return refreshCount.incrementAndGet()
         }
 
         return refreshSkipCount.incrementAndGet()
