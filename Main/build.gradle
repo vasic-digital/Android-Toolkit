@@ -12,19 +12,25 @@ import java.nio.file.Paths
 /*
     TODO: Move Obfuscator into reusable .gradle file and remove duplicated code
 */
+import java.nio.charset.StandardCharsets
+
 class Obfuscator {
 
-    private String key
+    private final String salt
 
-    Obfuscator(String key) {
+    Obfuscator(String salt) {
 
-        this.key = key
+        this.salt = salt
     }
 
-    String obfuscate(String data) {
+    String obfuscate(String what) {
 
-        // FIXME:
-        return data
+        return Base64.getEncoder().encodeToString((what + salt).getBytes(StandardCharsets.UTF_8))
+    }
+
+    String deobfuscate(String what) {
+
+        return new String(Base64.getDecoder().decode(what), StandardCharsets.UTF_8).replace(salt, "")
     }
 }
 

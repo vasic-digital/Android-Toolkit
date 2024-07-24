@@ -10,14 +10,10 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
 
         try {
 
-            val saltedInput = input + saltProvider
+            val salt = saltProvider.obtain()?.takeValue() ?: ""
+            val jObfuscator = JObfuscator(salt)
 
-            val obfuscatedBytes = saltedInput.toByteArray()
-                .map { it.toInt() xor saltProvider.obtain()?.takeValue().hashCode() }
-                .map { it.toByte() }
-                .toByteArray()
-
-            return Base64.encodeToString(obfuscatedBytes, Base64.DEFAULT)
+            return jObfuscator.obfuscate(input)
 
         } catch (e: Exception) {
 
@@ -31,16 +27,10 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
 
         try {
 
-            val decodedBytes = Base64.decode(input, Base64.DEFAULT)
+            val salt = saltProvider.obtain()?.takeValue() ?: ""
+            val jObfuscator = JObfuscator(salt)
 
-            val originalBytes = decodedBytes
-                .map { it.toInt() xor saltProvider.obtain()?.takeValue().hashCode() }
-                .map { it.toByte() }
-                .toByteArray()
-
-            val originalString = String(originalBytes)
-
-            return originalString.removeSuffix(saltProvider.obtain()?.takeValue() ?: "")
+            return jObfuscator.deobfuscate(input)
 
         } catch (e: Exception) {
 
