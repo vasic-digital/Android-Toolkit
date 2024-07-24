@@ -237,6 +237,20 @@ fun Context.deobfuscateString(resId: Int): String {
     return ""
 }
 
+fun Context.obfuscateString(resId: Int): String {
+
+    try {
+
+        return getString(resId).obfuscate()
+
+    } catch (e: NotFoundException) {
+
+        recordException(e)
+    }
+
+    return ""
+}
+
 
 
 fun String.deobfuscate(deobfuscator: Obfuscation = DefaultObfuscator): String {
