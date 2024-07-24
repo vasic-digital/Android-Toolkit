@@ -45,7 +45,7 @@ data class ObfuscatorSalt(
 
     fun takeValue(): String = value ?: ""
 
-    fun updateValue(newValue: String): Int {
+    fun updateValue(newValue: String = value ?: ""): Int {
 
         if (value != newValue) {
 

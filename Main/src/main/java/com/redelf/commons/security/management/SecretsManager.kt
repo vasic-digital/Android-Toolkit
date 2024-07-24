@@ -105,6 +105,8 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
 
             } else {
 
+                result?.updateValue()
+
                 result?.firstTimeObtained?.set(false)
             }
 
