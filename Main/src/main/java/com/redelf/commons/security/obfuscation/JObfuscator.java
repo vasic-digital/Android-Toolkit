@@ -8,7 +8,6 @@ class JObfuscator {
     private final String salt;
 
     public JObfuscator(String salt) {
-
         this.salt = salt;
     }
 

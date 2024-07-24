@@ -10,27 +10,28 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 /*
-    TODO: Move Obfuscator into reusable .gradle file and remove duplicated code
+    TODO: Use the JObfuscator from the Toolkit source code
 */
-import java.nio.charset.StandardCharsets
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 class Obfuscator {
 
-    private final String salt
+    private final String salt;
 
-    Obfuscator(String salt) {
+    public Obfuscator(String salt) {
 
-        this.salt = salt
+        this.salt = salt;
     }
 
     String obfuscate(String what) {
 
-        return Base64.getEncoder().encodeToString((what + salt).getBytes(StandardCharsets.UTF_8))
+        return Base64.getEncoder().encodeToString((what + salt).getBytes(StandardCharsets.UTF_8));
     }
 
     String deobfuscate(String what) {
 
-        return new String(Base64.getDecoder().decode(what), StandardCharsets.UTF_8).replace(salt, "")
+        return new String(Base64.getDecoder().decode(what), StandardCharsets.UTF_8).replace(salt, "");
     }
 }
 
