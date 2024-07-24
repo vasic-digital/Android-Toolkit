@@ -2,12 +2,14 @@ package com.redelf.commons.security.obfuscation
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 data class ObfuscatorSalt(
 
     @SerializedName("value")
     @JsonProperty("value")
-    var value: String? = "",
+    private var value: String? = "",
 
     @SerializedName("error")
     @JsonProperty("error")
@@ -15,9 +17,33 @@ data class ObfuscatorSalt(
 
     @JsonProperty("isFirstTimeObtained")
     @SerializedName("isFirstTimeObtained")
-    var isFirstTimeObtained: Boolean = false
+    val firstTimeObtained: AtomicBoolean = AtomicBoolean(),
 
-) {
+    @JsonProperty("refreshCount")
+    @SerializedName("refreshCount")
+    val refreshCount: AtomicInteger = AtomicInteger(),
 
-    fun isFromCache() = !isFirstTimeObtained
+    @JsonProperty("refreshSkipCount")
+    @SerializedName("refreshSkipCount")
+    val refreshSkipCount: AtomicInteger = AtomicInteger(),
+
+    ) {
+
+    fun fromCache() = !firstTimeObtained.get()
+
+    fun getTotalRefreshCount() = refreshCount.get() + refreshSkipCount.get()
+
+    fun takeValue(): String = value ?: ""
+
+    fun updateValue(newValue: String): Int {
+
+        if (value != newValue) {
+
+            value = newValue
+
+            refreshCount.incrementAndGet()
+        }
+
+        return refreshSkipCount.incrementAndGet()
+    }
 }

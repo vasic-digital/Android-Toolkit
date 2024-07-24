@@ -88,10 +88,10 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
 
                 latch.await(60, TimeUnit.SECONDS)
 
-                result.isFirstTimeObtained = true
+                result.firstTimeObtained.set(true)
             }
 
-            result.value = data?.obfuscationSalt ?: ""
+            result.updateValue(data?.obfuscationSalt ?: "")
 
             return result
 

@@ -34,7 +34,7 @@ abstract class DeobfuscationTest : BaseTest() {
 
         Assert.assertNotNull(salt)
         Assert.assertNull(salt.error)
-        Assert.assertTrue(isNotEmpty(salt.value))
+        Assert.assertTrue(isNotEmpty(salt.takeValue()))
 
         return salt
     }
@@ -65,15 +65,15 @@ abstract class DeobfuscationTest : BaseTest() {
 
         var salt = getSalt()
 
-        Assert.assertTrue(salt.isFirstTimeObtained)
+        Assert.assertTrue(salt.firstTimeObtained.get())
 
         salt = getSalt()
 
-        Assert.assertTrue(salt.isFromCache())
+        Assert.assertTrue(salt.fromCache())
 
         val data = getDeobfuscatedData()
 
-        Assert.assertEquals(expectedSalt, salt.value)
+        Assert.assertEquals(expectedSalt, salt.takeValue())
         Assert.assertEquals(expectedDeobfuscatedData, data)
     }
 }
