@@ -5,6 +5,7 @@ import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.data.type.Typed
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
@@ -37,14 +38,16 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
 
     override fun createDataObject() = Secrets()
 
-    fun getObfuscationSalt(source: RemoteObfuscatorSaltProvider): ObfuscatorSalt {
+    fun getObfuscationSalt(source: RemoteObfuscatorSaltProvider): ObfuscatorSalt? {
 
-        val result = ObfuscatorSalt()
+        var result: ObfuscatorSalt? = null
 
         try {
 
             val data = obtain()
             val latch = CountDownLatch(1)
+
+            result = data?.obfuscationSalt?: ObfuscatorSalt()
 
             exec(
 
@@ -66,7 +69,17 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
 
                         if (isNotEmpty(newSalt)) {
 
-                            it.obfuscationSalt = newSalt
+                            if (it.obfuscationSalt == null) {
+
+                                it.obfuscationSalt = result
+                            }
+
+                            it.obfuscationSalt?.let { salt ->
+
+                                result = salt
+                            }
+
+                            result?.updateValue(newSalt)
 
                             transaction.end()
                         }
@@ -78,26 +91,28 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
 
                     recordException(e)
 
-                    result.error = e
+                    result?.error = e
 
                     latch.countDown()
                 }
             }
 
-            if (data?.obfuscationSalt.isNullOrEmpty()) {
+            if (isEmpty(result?.takeValue())) {
 
                 latch.await(60, TimeUnit.SECONDS)
 
-                result.firstTimeObtained.set(true)
-            }
+                result?.firstTimeObtained?.set(true)
 
-            result.updateValue(data?.obfuscationSalt ?: "")
+            } else {
+
+                result?.firstTimeObtained?.set(false)
+            }
 
             return result
 
         } catch (e: Exception) {
 
-            result.error = e
+            result?.error = e
 
             recordException(e)
         }

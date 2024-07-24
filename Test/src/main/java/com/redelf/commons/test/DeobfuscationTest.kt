@@ -24,7 +24,7 @@ abstract class DeobfuscationTest : BaseTest() {
         return deobfuscated
     }
 
-    private fun getSalt() : ObfuscatorSalt {
+    private fun getSalt() : ObfuscatorSalt? {
 
         val deobfuscator = DefaultObfuscator.getStrategy()
 
@@ -33,8 +33,8 @@ abstract class DeobfuscationTest : BaseTest() {
         val salt =  deobfuscator.saltProvider.obtain()
 
         Assert.assertNotNull(salt)
-        Assert.assertNull(salt.error)
-        Assert.assertTrue(isNotEmpty(salt.takeValue()))
+        Assert.assertNull(salt?.error)
+        Assert.assertTrue(isNotEmpty(salt?.takeValue()))
 
         return salt
     }
@@ -64,20 +64,27 @@ abstract class DeobfuscationTest : BaseTest() {
         waitForObfuscator(timeoutInMilliseconds)
 
         var salt = getSalt()
+        val hashCode = salt?.hashCode()
 
-        Assert.assertTrue(salt.firstTimeObtained.get())
-        Assert.assertEquals(1, salt.refreshCount.get())
-        Assert.assertEquals(0, salt.refreshSkipCount.get())
+        Assert.assertTrue((hashCode ?: 0) > 0)
+        Assert.assertTrue(salt?.firstTimeObtained?.get() == true)
+        Assert.assertEquals(1, salt?.refreshCount?.get())
+        Assert.assertEquals(0, salt?.refreshSkipCount?.get())
+
+        Assert.assertEquals(expectedSalt, salt?.takeValue())
 
         salt = getSalt()
 
-        Assert.assertTrue(salt.fromCache())
-        Assert.assertEquals(1, salt.refreshCount.get())
-        Assert.assertEquals(1, salt.refreshSkipCount.get())
+        Assert.assertEquals(hashCode, salt?.hashCode())
+
+        Assert.assertTrue(salt?.fromCache() == true)
+        Assert.assertEquals(1, salt?.refreshCount?.get())
+        Assert.assertEquals(1, salt?.refreshSkipCount?.get())
+
+        Assert.assertEquals(expectedSalt, salt?.takeValue())
 
         val data = getDeobfuscatedData()
 
-        Assert.assertEquals(expectedSalt, salt.takeValue())
         Assert.assertEquals(expectedDeobfuscatedData, data)
     }
 }

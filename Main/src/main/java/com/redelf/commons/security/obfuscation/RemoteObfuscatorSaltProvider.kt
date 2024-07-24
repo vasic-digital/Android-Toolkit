@@ -31,7 +31,7 @@ class RemoteObfuscatorSaltProvider(
         return ""
     }
 
-    override fun obtain(): ObfuscatorSalt {
+    override fun obtain(): ObfuscatorSalt? {
 
         return SecretsManager.obtain().getObfuscationSalt(this)
     }

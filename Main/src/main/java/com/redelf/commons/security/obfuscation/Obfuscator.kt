@@ -13,7 +13,7 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
             val saltedInput = input + saltProvider
 
             val obfuscatedBytes = saltedInput.toByteArray()
-                .map { it.toInt() xor saltProvider.obtain().takeValue().hashCode() }
+                .map { it.toInt() xor saltProvider.obtain()?.takeValue().hashCode() }
                 .map { it.toByte() }
                 .toByteArray()
 
@@ -34,13 +34,13 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
             val decodedBytes = Base64.decode(input, Base64.DEFAULT)
 
             val originalBytes = decodedBytes
-                .map { it.toInt() xor saltProvider.obtain().takeValue().hashCode() }
+                .map { it.toInt() xor saltProvider.obtain()?.takeValue().hashCode() }
                 .map { it.toByte() }
                 .toByteArray()
 
             val originalString = String(originalBytes)
 
-            return originalString.removeSuffix(saltProvider.obtain().takeValue())
+            return originalString.removeSuffix(saltProvider.obtain()?.takeValue() ?: "")
 
         } catch (e: Exception) {
 
