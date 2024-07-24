@@ -2,10 +2,15 @@ package com.redelf.commons.security.obfuscation
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 data class ObfuscatorSalt(
+
+    @SerializedName("identifier")
+    @JsonProperty("identifier")
+    var identifier: UUID? = UUID.randomUUID(),
 
     @SerializedName("value")
     @JsonProperty("value")

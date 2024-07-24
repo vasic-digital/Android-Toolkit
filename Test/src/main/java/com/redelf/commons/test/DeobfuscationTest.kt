@@ -64,8 +64,10 @@ abstract class DeobfuscationTest : BaseTest() {
         waitForObfuscator(timeoutInMilliseconds)
 
         var salt = getSalt()
+        val id = salt?.identifier
         val hashCode = salt?.hashCode()
 
+        Assert.assertNotNull(id)
         Assert.assertTrue((hashCode ?: 0) > 0)
         Assert.assertTrue(salt?.firstTimeObtained?.get() == true)
         Assert.assertEquals(1, salt?.refreshCount?.get())
@@ -75,8 +77,8 @@ abstract class DeobfuscationTest : BaseTest() {
 
         salt = getSalt()
 
+        Assert.assertEquals(id, salt?.identifier)
         Assert.assertEquals(hashCode, salt?.hashCode())
-
         Assert.assertTrue(salt?.fromCache() == true)
         Assert.assertEquals(1, salt?.refreshCount?.get())
         Assert.assertEquals(1, salt?.refreshSkipCount?.get())
