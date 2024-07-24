@@ -9,25 +9,22 @@ plugins {
 import java.nio.file.Files
 import java.nio.file.Paths
 
-import java.util.Base64
-
+/*
+    TODO: Move Obfuscator into reusable .gradle file and remove duplicated code
+*/
 class Obfuscator {
 
-    private String salt
+    private String key
 
-    Obfuscator(String salt) {
+    Obfuscator(String key) {
 
-        this.salt = salt
+        this.key = key
     }
 
-    String obfuscate(String input) {
+    String obfuscate(String data) {
 
-        String saltedInput = input + salt
-        byte[] obfuscatedBytes = saltedInput.getBytes()
-        for (int i = 0; i < obfuscatedBytes.length; i++) {
-            obfuscatedBytes[i] = (byte) (obfuscatedBytes[i] ^ salt.hashCode())
-        }
-        return Base64.getEncoder().encodeToString(obfuscatedBytes)
+        // FIXME:
+        return data
     }
 }
 
