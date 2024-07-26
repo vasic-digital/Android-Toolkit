@@ -1,7 +1,7 @@
 package com.redelf.commons.test
 
-import com.redelf.commons.authentification.Credentials
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.authentification.Credentials
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer

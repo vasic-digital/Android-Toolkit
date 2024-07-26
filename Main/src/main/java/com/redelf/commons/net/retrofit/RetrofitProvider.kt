@@ -8,8 +8,8 @@ import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.net.retrofit.gson.SerializationBenchmarkLoggingInterceptor
+import com.redelf.commons.obtain.ObtainParametrized
 import okhttp3.Call
 import okhttp3.CertificatePinner
 import okhttp3.ConnectionPool

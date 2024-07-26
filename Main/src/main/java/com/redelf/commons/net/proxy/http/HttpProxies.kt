@@ -4,16 +4,13 @@ import android.content.Context
 import com.redelf.commons.R
 import com.redelf.commons.data.list.ListDataSource
 import com.redelf.commons.data.list.RawStringsListDataSource
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.proxy.Proxies
 import java.util.PriorityQueue
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
 
 class HttpProxies(
 

@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.redelf.commons.desription.Subject
+import com.redelf.commons.destruction.reset.Resettable
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.destruction.reset.Resettable
 
 abstract class SingleInstance<T> :
 

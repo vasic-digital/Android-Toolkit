@@ -1,7 +1,7 @@
 package com.redelf.commons.test.data.wrapper
 
-import com.redelf.commons.logging.Console
 import com.redelf.commons.data.model.Wrapper
+import com.redelf.commons.logging.Console
 import com.redelf.commons.partition.Partitional
 import org.junit.Assert
 

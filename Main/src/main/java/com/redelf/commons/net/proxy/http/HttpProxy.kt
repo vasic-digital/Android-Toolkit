@@ -14,12 +14,12 @@ import okhttp3.Response
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
-import java.net.Proxy as JavaNetProxy
 import java.net.URI
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+import java.net.Proxy as JavaNetProxy
 
 class HttpProxy(
 

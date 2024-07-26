@@ -1,6 +1,5 @@
 package com.redelf.commons.security.obfuscation
 
-import android.util.Base64
 import com.redelf.commons.extensions.recordException
 
 

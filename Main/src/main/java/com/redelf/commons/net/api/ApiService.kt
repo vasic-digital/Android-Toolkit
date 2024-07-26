@@ -1,9 +1,9 @@
 package com.redelf.commons.net.api
 
 import android.content.Context
+import com.redelf.commons.extensions.retrofitApiParameters
 import com.redelf.commons.net.connectivity.Connectivity
 import com.redelf.commons.net.connectivity.ConnectivityCheck
-import com.redelf.commons.extensions.retrofitApiParameters
 import com.redelf.commons.net.retrofit.RetrofitApiParameters
 
 abstract class ApiService<T> (

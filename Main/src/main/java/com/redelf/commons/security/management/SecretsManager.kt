@@ -8,8 +8,8 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
 import com.redelf.commons.security.obfuscation.ObfuscatorSalt
+import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 

@@ -35,11 +35,11 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.messaging.firebase.FcmService
-import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
+import com.redelf.commons.messaging.firebase.FcmService
+import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager

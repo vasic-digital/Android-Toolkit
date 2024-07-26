@@ -4,8 +4,8 @@ import android.content.Context
 import com.google.gson.ExclusionStrategy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.redelf.commons.destruction.erasing.Erasing
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.destruction.erasing.Erasing
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized

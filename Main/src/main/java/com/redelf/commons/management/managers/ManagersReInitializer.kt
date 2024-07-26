@@ -1,9 +1,9 @@
 package com.redelf.commons.management.managers
 
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management

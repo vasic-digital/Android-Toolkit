@@ -1,7 +1,5 @@
 package com.redelf.commons.security.obfuscation;
 
-import java.nio.charset.StandardCharsets;
-
 class JObfuscator {
 
     private final String salt;

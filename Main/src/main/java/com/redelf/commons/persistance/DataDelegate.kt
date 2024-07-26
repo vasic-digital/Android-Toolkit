@@ -2,6 +2,7 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import com.redelf.commons.data.type.PairDataInfo
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
@@ -13,7 +14,6 @@ import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.partition.Partitional
 import com.redelf.commons.persistance.base.Facade
-import com.redelf.commons.data.type.PairDataInfo
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.util.Queue

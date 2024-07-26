@@ -33,7 +33,6 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.PropertiesHash
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscation
-import com.redelf.commons.security.obfuscation.Obfuscator
 import java.io.*
 import java.util.*
 import java.util.concurrent.Callable
