@@ -12,7 +12,6 @@ import java.nio.file.Paths
 /*
     TODO: Use the JObfuscator from the Toolkit source code
 */
-import java.nio.charset.StandardCharsets;
 
 class Obfuscator {
 
@@ -26,14 +25,7 @@ class Obfuscator {
     String obfuscate(String what) {
 
         String concatenated = what + salt
-        return bytesToHex(concatenated.getBytes(StandardCharsets.UTF_8))
-    }
-
-    String deobfuscate(String what) {
-
-        byte[] decodedBytes = hexToBytes(what)
-        String decodedString = new String(decodedBytes, StandardCharsets.UTF_8)
-        return decodedString.replace(salt, "")
+        return bytesToHex(concatenated.getBytes())
     }
 
     private static String bytesToHex(byte[] bytes) {
@@ -47,17 +39,6 @@ class Obfuscator {
             hexString.append(hex)
         }
         return hexString.toString()
-    }
-
-    private static byte[] hexToBytes(String hex) {
-
-        int len = hex.length()
-        byte[] data = new byte[len / 2]
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i+1), 16))
-        }
-        return data
     }
 }
 
@@ -191,7 +172,7 @@ dependencies {
     final String okioVersion = "3.9.0"
     final String okHttpVersion = "4.12.0"
     final String jacksonVersion = "2.12.5"
-    final String lifecycleVersion = "2.8.3"
+    final String lifecycleVersion = "2.8.4"
     final String retrofitHttpVersion = "2.11.0"
 
     api "com.squareup.okio:okio:$okioVersion"
@@ -241,7 +222,7 @@ dependencies {
     api "androidx.lifecycle:lifecycle-extensions:2.2.0"
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
     api "androidx.profileinstaller:profileinstaller:1.3.1"
-    api "androidx.activity:activity-ktx:1.9.0"
+    api "androidx.activity:activity-ktx:1.9.1"
 
     api "commons-codec:commons-codec:1.16.0"
 

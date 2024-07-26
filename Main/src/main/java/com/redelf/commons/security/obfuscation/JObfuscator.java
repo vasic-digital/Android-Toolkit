@@ -12,12 +12,12 @@ class JObfuscator {
 
     String obfuscate(String what) {
         String concatenated = what + salt;
-        return bytesToHex(concatenated.getBytes(StandardCharsets.UTF_8));
+        return bytesToHex(concatenated.getBytes());
     }
 
     String deobfuscate(String what) {
         byte[] decodedBytes = hexToBytes(what);
-        String decodedString = new String(decodedBytes, StandardCharsets.UTF_8);
+        String decodedString = new String(decodedBytes);
         return decodedString.replace(salt, "");
     }
 
