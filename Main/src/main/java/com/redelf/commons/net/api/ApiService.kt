@@ -15,7 +15,7 @@ abstract class ApiService<T> (
     protected val ctx: Context,
     protected val connectivity: ConnectivityCheck = Connectivity(),
 
-    ) {
+) {
 
     protected open val retrofitApiParameters: RetrofitApiParameters = retrofitApiParameters(
 
