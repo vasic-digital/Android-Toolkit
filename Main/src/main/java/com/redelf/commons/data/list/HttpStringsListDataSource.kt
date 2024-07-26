@@ -1,5 +1,6 @@
 package com.redelf.commons.data.list
 
+import android.content.res.Resources.NotFoundException
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
 import okhttp3.OkHttpClient
@@ -8,10 +9,12 @@ import java.io.IOException
 
 class HttpStringsListDataSource(
 
-    private val url: String
+    private val url: String,
+    private val throwOnError: Boolean = false
 
 ) : ListDataSource<String> {
 
+    @Throws(IOException::class, IllegalStateException::class)
     override fun getList(): List<String> {
 
         /*
@@ -38,6 +41,11 @@ class HttpStringsListDataSource(
             }
 
         } catch (e: IOException) {
+
+            if (throwOnError) {
+
+                throw e
+            }
 
             Console.error(e)
         }

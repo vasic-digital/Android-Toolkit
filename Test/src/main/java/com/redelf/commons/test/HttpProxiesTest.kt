@@ -211,12 +211,11 @@ abstract class HttpProxiesTest : ProxiesTest() {
 
             val sourceRaw = RawStringsListDataSource(applicationContext, rawRes, throwOnError = true)
 
-            val sourceHttp =
-                HttpStringsListDataSource(
+            val sourceHttp = HttpStringsListDataSource(
 
                     "https://raw.githubusercontent.com/red-elf/" +
                             "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt"
-                )
+            )
 
             val source = listOf(sourceRaw, sourceHttp)
 

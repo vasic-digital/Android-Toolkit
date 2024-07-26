@@ -71,15 +71,25 @@ def obfuscator = new Obfuscator(salt)
 
 def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "false").toBoolean()
 
-def proxyLocalTest = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1")
-def proxyLocalTestPort = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080")
-def proxyLocalTestUsername = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_TEST_USERNAME") ?: "test")
-def proxyLocalTestPassword = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_TEST_PASSWORD") ?: "test")
+def pLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
+def pLocalTestPort = System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080"
+def pLocalTestUsername = System.getenv("PROXY_LOCAL_TEST_USERNAME") ?: "test"
+def pLocalTestPassword = System.getenv("PROXY_LOCAL_TEST_PASSWORD") ?: "test"
 
-def proxyLocalProd = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1")
-def proxyLocalProdPort = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_PROD_PORT") ?: "8080")
-def proxyLocalProdUsername = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_PROD_USERNAME") ?: "admin")
-def proxyLocalProdPassword = obfuscator.obfuscate(System.getenv("PROXY_LOCAL_PROD_PASSWORD") ?: "admin")
+def proxyLocalTest = obfuscator.obfuscate(pLocalTest)
+def proxyLocalTestPort = obfuscator.obfuscate(pLocalTestPort)
+def proxyLocalTestUsername = obfuscator.obfuscate(pLocalTestUsername)
+def proxyLocalTestPassword = obfuscator.obfuscate(pLocalTestPassword)
+
+def pLocalProd = System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1"
+def pLocalProdPort = System.getenv("PROXY_LOCAL_PROD_PORT") ?: "8080"
+def pLocalProdUsername = System.getenv("PROXY_LOCAL_PROD_USERNAME") ?: "admin"
+def pLocalProdPassword = System.getenv("PROXY_LOCAL_PROD_PASSWORD") ?: "admin"
+
+def proxyLocalProd = obfuscator.obfuscate(pLocalProd)
+def proxyLocalProdPort = obfuscator.obfuscate(pLocalProdPort)
+def proxyLocalProdUsername = obfuscator.obfuscate(pLocalProdUsername)
+def proxyLocalProdPassword = obfuscator.obfuscate(pLocalProdPassword)
 
 android {
 
@@ -284,7 +294,7 @@ task downloadProxies(type: Exec) {
 task generateProxiesLocalTxt {
     doLast {
 
-        def content = "http://${proxyLocalTestUsername}:${proxyLocalTestPassword}@${proxyLocalTest}:${proxyLocalTestPort}".stripIndent().trim()
+        def content = "http://${pLocalTestUsername}:${pLocalTestPassword}@${pLocalTest}:${pLocalTestPort}".stripIndent().trim()
 
         def filePath = "${projectDir}/src/androidTest/res/raw/proxies_local.txt"
 
