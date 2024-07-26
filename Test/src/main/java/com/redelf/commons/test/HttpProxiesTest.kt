@@ -11,7 +11,7 @@ import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong
 
-class HttpProxiesTest : ProxiesTest() {
+abstract class HttpProxiesTest : ProxiesTest() {
 
     @Test
     fun testComparison() {
