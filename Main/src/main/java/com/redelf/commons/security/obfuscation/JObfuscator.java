@@ -1,7 +1,6 @@
 package com.redelf.commons.security.obfuscation;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 class JObfuscator {
 
@@ -12,12 +11,35 @@ class JObfuscator {
     }
 
     String obfuscate(String what) {
-
-        return Base64.getEncoder().encodeToString((what + salt).getBytes(StandardCharsets.UTF_8));
+        String concatenated = what + salt;
+        return bytesToHex(concatenated.getBytes(StandardCharsets.UTF_8));
     }
 
     String deobfuscate(String what) {
+        byte[] decodedBytes = hexToBytes(what);
+        String decodedString = new String(decodedBytes, StandardCharsets.UTF_8);
+        return decodedString.replace(salt, "");
+    }
 
-        return new String(Base64.getDecoder().decode(what), StandardCharsets.UTF_8).replace(salt, "");
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder(2 * bytes.length);
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
+    private byte[] hexToBytes(String hex) {
+        int len = hex.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                    + Character.digit(hex.charAt(i+1), 16));
+        }
+        return data;
     }
 }
