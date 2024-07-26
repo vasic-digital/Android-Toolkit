@@ -148,12 +148,11 @@ abstract class HttpProxiesTest : ProxiesTest() {
         }
     }
 
-    @Test
-    fun testRawSourceProxy() {
+    protected fun testRawSourceProxy(rawRes: Int) {
 
         try {
 
-            val source = RawStringsListDataSource(applicationContext, R.raw.proxies2)
+            val source = RawStringsListDataSource(applicationContext, rawRes, throwOnError = true)
             var proxies = HttpProxies(applicationContext, sources = listOf(source), alive = false)
             var obtained = proxies.obtain()
 
@@ -206,15 +205,15 @@ abstract class HttpProxiesTest : ProxiesTest() {
         getAndTestDefaultEndpoints()
     }
 
-    @Test
-    fun testMixedSourceProxy() {
+    protected fun testMixedSourceProxy(rawRes: Int) {
 
         try {
 
-            val sourceRaw = RawStringsListDataSource(applicationContext, R.raw.proxies)
+            val sourceRaw = RawStringsListDataSource(applicationContext, rawRes, throwOnError = true)
 
             val sourceHttp =
                 HttpStringsListDataSource(
+
                     "https://raw.githubusercontent.com/red-elf/" +
                             "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt"
                 )
@@ -259,12 +258,11 @@ abstract class HttpProxiesTest : ProxiesTest() {
         }
     }
 
-    @Test
-    fun testMixedSourceProxyCombined() {
+    protected fun testMixedSourceProxyCombined(rawRes: Int) {
 
         try {
 
-            val sourceRaw = RawStringsListDataSource(applicationContext, R.raw.proxies)
+            val sourceRaw = RawStringsListDataSource(applicationContext, rawRes, throwOnError = true)
 
             val sourceHttp =
                 HttpStringsListDataSource(

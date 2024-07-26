@@ -8,7 +8,8 @@ import com.redelf.commons.extensions.recordException
 class RawStringsListDataSource(
 
     private val ctx: Context,
-    private val resId: Int
+    private val resId: Int,
+    private val throwOnError: Boolean = false
 
 ) : ListDataSource<String> {
 
@@ -24,6 +25,11 @@ class RawStringsListDataSource(
             }
 
         } catch (e: Exception) {
+
+            if (throwOnError) {
+
+                throw e
+            }
 
             recordException(e)
         }
