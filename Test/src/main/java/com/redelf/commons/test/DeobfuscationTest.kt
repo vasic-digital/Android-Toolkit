@@ -112,12 +112,11 @@ abstract class DeobfuscationTest : BaseTest() {
 
         Assert.assertEquals(expectedSalt, salt?.takeValue())
 
-        val obfuscated = expectedSalt.obfuscate()
         val obfuscatedResource = getObfuscatedData()
+        val obfuscated = expectedDeobfuscatedData.obfuscate()
 
         Assert.assertTrue(isNotEmpty(obfuscated))
 
-        // FIXME: They differ!
         Assert.assertEquals(obfuscated, obfuscatedResource)
 
         val data = getDeobfuscatedData()
