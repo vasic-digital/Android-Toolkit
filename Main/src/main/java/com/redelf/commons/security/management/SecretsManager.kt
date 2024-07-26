@@ -1,6 +1,8 @@
 package com.redelf.commons.security.management
 
 import android.annotation.SuppressLint
+import com.fasterxml.jackson.annotation.JsonKey
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.data.type.Typed
@@ -14,13 +16,15 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
-class SecretsManager private constructor() : ContextualManager<Secrets>() {
+class SecretsManager private constructor(storageKeyToSet: String) : ContextualManager<Secrets>() {
 
     companion object : SingleInstance<SecretsManager>() {
 
         override fun instantiate(): SecretsManager {
 
-            return SecretsManager()
+            val app = BaseApplication.takeContext()
+
+            return SecretsManager(app.secretsKey)
         }
     }
 
@@ -32,7 +36,7 @@ class SecretsManager private constructor() : ContextualManager<Secrets>() {
         override fun getClazz(): Class<Secrets> = Secrets::class.java
     }
 
-    override val storageKey = "s3_cR3_tZ"
+    override val storageKey = storageKeyToSet
 
     override fun getLogTag() = "SecretsManager :: ${hashCode()} ::"
 

@@ -41,6 +41,7 @@ import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.messaging.firebase.FcmService
 import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.migration.MigrationNotReadyException
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
@@ -57,7 +58,9 @@ abstract class BaseApplication :
     ActivityLifecycleCallbacks,
     ActivityCount,
     LifecycleObserver,
-    Updatable<Long> {
+    Updatable<Long>
+
+{
 
     companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
 
@@ -161,6 +164,7 @@ abstract class BaseApplication :
 
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
+    open val secretsKey = "com.redelf.commons.security.secrets"
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
     protected open val firebaseEnabled = true
@@ -169,9 +173,19 @@ abstract class BaseApplication :
 
         listOf(
 
-            FirebaseConfigurationManager,
-            SecretsManager.obtain()
+            FirebaseConfigurationManager
         )
+    )
+
+    protected open val contextDependentManagers = mutableListOf<Obtain<DataManagement<*>>>(
+
+        object : Obtain<DataManagement<*>> {
+
+            override fun obtain(): DataManagement<*> {
+
+                return SecretsManager.obtain()
+            }
+        }
     )
 
     protected val managersReady = AtomicBoolean()
@@ -453,6 +467,16 @@ abstract class BaseApplication :
         registerActivityLifecycleCallbacks(this)
 
         managers.addAll(populateManagers())
+
+        val contextDependableManagers = mutableListOf<DataManagement<*>>()
+
+        contextDependentManagers.forEach { contextDependentManager ->
+
+            contextDependableManagers.add(contextDependentManager.obtain())
+        }
+
+        managers.addAll(listOf(contextDependableManagers))
+
         defaultManagerResources.putAll(populateDefaultManagerResources())
 
         doCreate()
