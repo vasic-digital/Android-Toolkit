@@ -25,6 +25,17 @@ abstract class DeobfuscationTest : BaseTest() {
         return obfuscated
     }
 
+    private fun getObfuscatedData(): String {
+
+        val resourceId = com.redelf.commons.R.string.ob_test
+
+        val obfuscated = applicationContext.getString(resourceId)
+
+        Assert.assertTrue(obfuscated.isNotEmpty())
+
+        return obfuscated
+    }
+
     private fun getDeobfuscatedData(): String {
 
         val resourceId = com.redelf.commons.R.string.ob_test
@@ -100,6 +111,14 @@ abstract class DeobfuscationTest : BaseTest() {
         Assert.assertEquals(1, salt?.refreshSkipCount?.get())
 
         Assert.assertEquals(expectedSalt, salt?.takeValue())
+
+        val obfuscated = expectedSalt.obfuscate()
+        val obfuscatedResource = getObfuscatedData()
+
+        Assert.assertTrue(isNotEmpty(obfuscated))
+
+        // FIXME: They differ!
+        Assert.assertEquals(obfuscated, obfuscatedResource)
 
         val data = getDeobfuscatedData()
 
