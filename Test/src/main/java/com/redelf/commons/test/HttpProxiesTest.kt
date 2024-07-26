@@ -158,6 +158,7 @@ abstract class HttpProxiesTest : ProxiesTest() {
             var obtained = proxies.obtain()
 
             Assert.assertNotNull(obtained)
+            Assert.assertTrue(obtained.isNotEmpty())
             Assert.assertTrue(obtained.size == 1)
 
             proxies = HttpProxies(applicationContext, sources = listOf(source), alive = true)
@@ -194,7 +195,7 @@ abstract class HttpProxiesTest : ProxiesTest() {
     fun testHttpSourceProxies() {
 
         val sourceAddress = "https://raw.githubusercontent.com/red-elf/Android-Toolkit/main/" +
-                "Main/src/androidTest/res/raw/proxies.txt"
+                "Test/src/main/res/raw/proxies.txt"
 
         testHttpSourceProxies(sourceAddress)
     }
