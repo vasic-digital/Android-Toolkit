@@ -294,7 +294,9 @@ task downloadProxies(type: Exec) {
 task generateProxiesLocalTxt {
     doLast {
 
-        def content = "http://${pLocalTestUsername}:${pLocalTestPassword}@${pLocalTest}:${pLocalTestPort}".stripIndent().trim()
+        def content = """http://${pLocalTestUsername}:${pLocalTestPassword}@${pLocalTest}:${pLocalTestPort}
+http://${pLocalProdUsername}:${pLocalProdPassword}@${pLocalProd}:${pLocalProdPort}
+""".stripIndent().trim()
 
         def filePath = "${projectDir}/src/androidTest/res/raw/proxies_local.txt"
 
