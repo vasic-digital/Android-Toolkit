@@ -48,6 +48,7 @@ class Obfuscator {
      export OBFUSCATION_SALT="your_secret_salt"
 
      export PROXY_LOCAL_ENABLED=true
+     export PROXY_LOCAL_PROD_ENABLED=true
 
      export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
      export PROXY_LOCAL_PROD="milosvasic.local"
@@ -70,6 +71,7 @@ def salt = System.getenv("OBFUSCATION_SALT") ?: ""
 def obfuscator = new Obfuscator(salt)
 
 def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "false").toBoolean()
+def proxyProdEnabled = (System.getenv("PROXY_LOCAL_PROD_ENABLED") ?: "false").toBoolean()
 
 def pLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
 def pLocalTestPort = System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080"
@@ -106,15 +108,16 @@ android {
         if (proxyEnabled) {
 
             resValue "string", "ob_proxy_local_test", proxyLocalTest
-            resValue "string", "ob_proxy_local_prod", proxyLocalProd
-
             resValue "string", "ob_proxy_local_test_port", proxyLocalTestPort
-            resValue "string", "ob_proxy_local_prod_port", proxyLocalProdPort
-
             resValue "string", "ob_proxy_local_test_username", proxyLocalTestUsername
-            resValue "string", "ob_proxy_local_prod_username", proxyLocalProdUsername
-
             resValue "string", "ob_proxy_local_test_password", proxyLocalTestPassword
+        }
+
+        if (proxyProdEnabled) {
+
+            resValue "string", "ob_proxy_local_prod", proxyLocalProd
+            resValue "string", "ob_proxy_local_prod_port", proxyLocalProdPort
+            resValue "string", "ob_proxy_local_prod_username", proxyLocalProdUsername
             resValue "string", "ob_proxy_local_prod_password", proxyLocalProdPassword
         }
 
@@ -294,9 +297,19 @@ task downloadProxies(type: Exec) {
 task generateProxiesLocalTxt {
     doLast {
 
-        def content = """http://${pLocalTestUsername}:${pLocalTestPassword}@${pLocalTest}:${pLocalTestPort}
+        def content = ""
+
+        if (proxyEnabled) {
+
+            content = "http://${pLocalTestUsername}:${pLocalTestPassword}@${pLocalTest}:${pLocalTestPort}".stripIndent().trim()
+        }
+
+        if (proxyProdEnabled) {
+
+            content = """http://${pLocalTestUsername}:${pLocalTestPassword}@${pLocalTest}:${pLocalTestPort}
 http://${pLocalProdUsername}:${pLocalProdPassword}@${pLocalProd}:${pLocalProdPort}
 """.stripIndent().trim()
+        }
 
         def filePath = "${projectDir}/src/androidTest/res/raw/proxies_local.txt"
 
@@ -368,6 +381,14 @@ preBuild.dependsOn obtainAndWriteSalt
 if (proxyEnabled) {
 
     preBuild.dependsOn downloadProxies
+}
+
+if (proxyEnabled || proxyProdEnabled) {
+
     preBuild.dependsOn generateProxiesLocalTxt
+}
+
+if (proxyEnabled) {
+
     preBuild.dependsOn startLocalProxyServer
 }
