@@ -51,7 +51,9 @@ class HttpProxy(
 
         private fun getInteger(ctx: Context, resId: Int): AtomicInteger {
 
-            val value = try { ctx.resources.getInteger(resId) } catch (e: NotFoundException) {
+            val value = try {
+                ctx.resources.getInteger(resId)
+            } catch (e: NotFoundException) {
 
                 recordException(e)
 
@@ -96,10 +98,14 @@ class HttpProxy(
 
         for (i in 0 until MEASUREMENT_ITERATIONS) {
 
-            qSum += getSpeed(ctx)
+            val speedInMilliseconds = getSpeed(ctx)
+
+            qSum += speedInMilliseconds
         }
 
-        quality.set(qSum / MEASUREMENT_ITERATIONS)
+        val newQuality: Long = qSum / MEASUREMENT_ITERATIONS
+
+        quality.set(newQuality)
     }
 
     fun get(): JavaNetProxy {
@@ -133,54 +139,37 @@ class HttpProxy(
 
     override fun isAlive(ctx: Context): Boolean {
 
-        return try {
+        if (unreachable()) {
 
-            if (unreachable()) {
-
-                return false
-            }
-
-            val testUrl = getTestUrl(ctx) ?: URL(DEFAULT_TEST_URL)
-
-            val client = createOkHttpClient()
-
-            val request = Request.Builder()
-                .url(testUrl)
-                .build()
-
-            val response: Response = client.newCall(request).execute()
-            val responseCode = response.code
-
-            response.close()
-
-            responseCode in 200..299
-
-        } catch (e: Exception) {
-
-            Console.log(e)
-
-            false
+            return false
         }
+
+        return getSpeed(ctx) != Long.MAX_VALUE
     }
 
     override fun getSpeed(ctx: Context): Long {
         return try {
 
+            val testUrl = getTestUrl(ctx)
             val client = createOkHttpClient()
 
+            if (testUrl == null) {
+
+                throw IllegalArgumentException("Test URL is null or empty")
+            }
+
             val request = Request.Builder()
-                .url(getTestUrl(ctx)!!)
+                .url(testUrl)
                 .build()
 
             val startTime = System.currentTimeMillis()
             val response: Response = client.newCall(request).execute()
-            val endTime = System.currentTimeMillis()
 
             response.close()
 
-            if (response.code in 200..299) {
+            if (response.isSuccessful) {
 
-                endTime - startTime
+                System.currentTimeMillis() - startTime
 
             } else {
 
@@ -263,7 +252,7 @@ class HttpProxy(
 
             URL(ctx.getString(testUrlResourceId))
 
-        } catch (e: MalformedURLException) {
+        } catch (e: Exception) {
 
             Console.error(e)
 

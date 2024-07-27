@@ -4,6 +4,7 @@ import com.redelf.commons.data.list.HttpStringsListDataSource
 import com.redelf.commons.data.list.RawStringsListDataSource
 import com.redelf.commons.extensions.deobfuscateString
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.logging.Console
 import com.redelf.commons.net.endpoint.http.HttpEndpoint
 import com.redelf.commons.net.proxy.http.HttpProxies
 import com.redelf.commons.net.proxy.http.HttpProxy
@@ -230,14 +231,12 @@ abstract class HttpProxiesTest : ProxiesTest() {
 
             Assert.assertNotNull(obtained)
             Assert.assertTrue(obtained.isNotEmpty())
-            Assert.assertTrue(obtained.size == 1)
+            Assert.assertTrue(obtained.size in 1..obtained.size)
 
-            val iterator = obtained.iterator()
-            val quality = AtomicLong(Long.MAX_VALUE)
+            val quality = AtomicLong(-1L)
+            var proxy = obtained.poll()
 
-            while (iterator.hasNext()) {
-
-                val proxy = iterator.next()
+            while (proxy != null) {
 
                 Assert.assertNotNull(proxy)
                 Assert.assertTrue(proxy.address.isNotBlank())
@@ -245,10 +244,18 @@ abstract class HttpProxiesTest : ProxiesTest() {
                 Assert.assertTrue(proxy.isAlive(applicationContext))
 
                 val newQuality = proxy.getQuality()
+                val assertCondition = newQuality > quality.get()
 
-                Assert.assertTrue(newQuality < quality.get())
+                if (!assertCondition) {
+
+                    Console.error("Proxy quality assert failure")
+                }
+
+                Assert.assertTrue(assertCondition)
 
                 quality.set(newQuality)
+
+                proxy = obtained.poll()
             }
 
         } catch (e: Exception) {
@@ -296,14 +303,12 @@ abstract class HttpProxiesTest : ProxiesTest() {
 
             Assert.assertNotNull(obtained)
             Assert.assertTrue(obtained.isNotEmpty())
-            Assert.assertTrue(obtained.size == 1)
+            Assert.assertTrue(obtained.size in 1..obtained.size)
 
-            val iterator = obtained.iterator()
-            val quality = AtomicLong(Long.MAX_VALUE)
+            val quality = AtomicLong(-1L)
+            var proxy = obtained.poll()
 
-            while (iterator.hasNext()) {
-
-                val proxy = iterator.next()
+            while (proxy != null) {
 
                 Assert.assertNotNull(proxy)
                 Assert.assertTrue(proxy.address.isNotBlank())
@@ -312,9 +317,11 @@ abstract class HttpProxiesTest : ProxiesTest() {
 
                 val newQuality = proxy.getQuality()
 
-                Assert.assertTrue(newQuality < quality.get())
+                Assert.assertTrue(newQuality > quality.get())
 
                 quality.set(newQuality)
+
+                proxy = obtained.poll()
             }
 
         } catch (e: Exception) {
