@@ -43,7 +43,7 @@ fi
 if cd "$1" && docker login && \
   PROXY_LOCAL_PROD_PORT="$PROXY_LOCAL_PROD_PORT" PROXY_LOCAL_PROD_USERNAME="$PROXY_LOCAL_PROD_USERNAME" \
    PROXY_LOCAL_PROD_PASSWORD="$PROXY_LOCAL_PROD_PASSWORD" \
-   docker-compose up -d && docker ps; then
+   docker compose up -d && docker ps; then
 
   if curl -x "http://127.0.0.1:$PROXY_LOCAL_PROD_PORT" -U "$PROXY_LOCAL_PROD_USERNAME:$PROXY_LOCAL_PROD_PASSWORD" https://www.github.com; then
 
