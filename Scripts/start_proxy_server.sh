@@ -6,9 +6,6 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-# TODO: Create user
-# sudo htpasswd -c /etc/squid/passwords username
-
 if [ -z "$PROXY_LOCAL_PROD_PORT" ]; then
 
   echo "Error: PROXY_LOCAL_PROD_PORT is not set"
@@ -24,6 +21,12 @@ fi
 if [ -z "$PROXY_LOCAL_PROD_PASSWORD" ]; then
 
   echo "Error: PROXY_LOCAL_PROD_PASSWORD is not set"
+  exit 1
+fi
+
+if ! sudo htpasswd -b -c /etc/squid/passwords "$PROXY_LOCAL_PROD_USERNAME" "$PROXY_LOCAL_PROD_PASSWORD"; then
+
+  echo "Error: Failed to create Squid user"
   exit 1
 fi
 
