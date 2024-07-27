@@ -294,6 +294,20 @@ task downloadProxies(type: Exec) {
     commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', outputFile
 }
 
+/*
+    Generate proxies_local.txt file with local test and prod proxies.
+
+    This task is intended to be executed locally and will create a new file named "proxies_local.txt"
+    in the "src/androidTest/res/raw" directory.
+    The content of this file will be the concatenation of local test and prod proxies, if enabled.
+    Generated entries are created based on the values from the dev. environment (variables).
+    We could have the following proxy entries:
+
+    - Localhost dev (current dev. machine)
+    - Localhost prod (current dev. machine)
+    - Local prod (external machine) // TODO: Implement this
+    - Remote prod (external machine, exposed or entirely dedicated remote server) // TODO: Implement this
+*/
 task generateProxiesLocalTxt {
     doLast {
 
