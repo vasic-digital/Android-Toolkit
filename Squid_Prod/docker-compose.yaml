@@ -3,7 +3,7 @@ services:
   proxy:
     image: ubuntu/squid
     ports:
-      - "8587:3128"
+      - "${PROXY_LOCAL_PROD_PORT}:3129"
     volumes:
       - ./squid.conf:/etc/squid/squid.conf
       - ./passwords:/etc/squid/passwords
