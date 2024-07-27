@@ -24,11 +24,21 @@ if [ -z "$PROXY_LOCAL_PROD_PASSWORD" ]; then
   exit 1
 fi
 
-if ! sudo htpasswd -b -c "$1"/passwords "$PROXY_LOCAL_PROD_USERNAME" "$PROXY_LOCAL_PROD_PASSWORD"; then
+if test -e "$1"/passwords; then
 
-  echo "Error: Failed to create Squid user"
+  echo "ERROR: Squid user passwords file already exists '$1/passwords'"
   exit 1
+
+else
+
+  if ! sudo htpasswd -b -c "$1"/passwords "$PROXY_LOCAL_PROD_USERNAME" "$PROXY_LOCAL_PROD_PASSWORD"; then
+
+    echo "Error: Failed to create Squid user"
+    exit 1
+  fi
 fi
+
+
 
 if cd "$1" && docker login && \
   PROXY_LOCAL_PROD_PORT="$PROXY_LOCAL_PROD_PORT" PROXY_LOCAL_PROD_USERNAME="$PROXY_LOCAL_PROD_USERNAME" \
