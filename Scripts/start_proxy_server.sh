@@ -24,7 +24,7 @@ if [ -z "$PROXY_LOCAL_PROD_PASSWORD" ]; then
   exit 1
 fi
 
-if ! sudo htpasswd -b -c /etc/squid/passwords "$PROXY_LOCAL_PROD_USERNAME" "$PROXY_LOCAL_PROD_PASSWORD"; then
+if ! sudo htpasswd -b -c "$1"/passwords "$PROXY_LOCAL_PROD_USERNAME" "$PROXY_LOCAL_PROD_PASSWORD"; then
 
   echo "Error: Failed to create Squid user"
   exit 1
