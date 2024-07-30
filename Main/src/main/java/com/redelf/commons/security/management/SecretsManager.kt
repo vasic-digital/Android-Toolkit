@@ -1,7 +1,6 @@
 package com.redelf.commons.security.management
 
 import android.annotation.SuppressLint
-import com.fasterxml.jackson.annotation.JsonKey
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance

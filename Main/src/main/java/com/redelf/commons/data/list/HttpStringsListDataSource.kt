@@ -1,6 +1,5 @@
 package com.redelf.commons.data.list
 
-import android.content.res.Resources.NotFoundException
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
 import okhttp3.OkHttpClient
