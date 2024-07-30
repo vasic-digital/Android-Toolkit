@@ -1208,6 +1208,9 @@ fun Throwable.toHumanReadableString(): String {
     return ""
 }
 
+/*
+* Default pattern gives Date in following format: "YYYY-MM-DD HH:MM:SS"
+*/
 fun Date.format(pattern: String = "yyyy-MM-dd HH:mm:ss"): String {
 
     val dateFormat = SimpleDateFormat(pattern, Locale.getDefault())
