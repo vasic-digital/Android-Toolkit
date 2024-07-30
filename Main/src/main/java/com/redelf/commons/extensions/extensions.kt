@@ -34,6 +34,7 @@ import com.redelf.commons.persistance.PropertiesHash
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscation
 import java.io.*
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
@@ -1205,4 +1206,10 @@ fun Throwable.toHumanReadableString(): String {
     }
 
     return ""
+}
+
+fun Date.format(pattern: String = "yyyy-MM-dd HH:mm:ss"): String {
+
+    val dateFormat = SimpleDateFormat(pattern, Locale.getDefault())
+    return dateFormat.format(this)
 }
