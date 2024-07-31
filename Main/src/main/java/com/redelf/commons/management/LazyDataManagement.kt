@@ -209,6 +209,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
             overwriteData(data)
 
+            data?.let {
+
+                doPushData(it)
+            }
+
             empty?.let {
 
                 if (DEBUG.get()) Console.log("$tag SAVED :: Empty = $it")
