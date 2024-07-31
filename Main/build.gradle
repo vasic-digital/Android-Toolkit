@@ -291,6 +291,8 @@ task downloadProxies(type: Exec) {
         }
     }
 
+    // FIXME: Obtain with NO proxy, ignore any if set
+
     commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', outputFile
 }
 
