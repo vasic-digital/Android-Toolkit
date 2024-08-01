@@ -27,6 +27,7 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
@@ -1215,4 +1216,13 @@ fun Date.format(pattern: String = "yyyy-MM-dd HH:mm:ss"): String {
 
     val dateFormat = SimpleDateFormat(pattern, Locale.getDefault())
     return dateFormat.format(this)
+}
+
+fun <F, S> getPair(first: F, second: S): Pair<F, S> = Pair(first, second)
+
+@Suppress("UNCHECKED_CAST")
+@Throws(ClassCastException::class)
+fun <F, S> getPair(map: LinkedTreeMap<String, Any>): Pair<F, S> {
+
+    return Pair((map["first"] as String) as F, (map["second"] as String) as S)
 }
