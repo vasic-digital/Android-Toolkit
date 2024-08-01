@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.redelf.access.implementation.pin
 
 import android.content.Intent
