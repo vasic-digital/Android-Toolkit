@@ -817,7 +817,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
     }
 
-    protected open fun getTransmissionManager(callback: OnObtain<TransmissionManager<*>>) {
+    protected open fun getTransmissionManager(callback: OnObtain<TransmissionManager<*, *>>) {
 
         val e = IllegalArgumentException("No transmission manager available")
         callback.onFailure(e)
@@ -827,9 +827,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         Console.log("Transmission manager :: INIT :: START")
 
-        val callback = object : OnObtain<TransmissionManager<*>> {
+        val callback = object : OnObtain<TransmissionManager<*, *>> {
 
-            override fun onCompleted(data: TransmissionManager<*>) {
+            override fun onCompleted(data: TransmissionManager<*, *>) {
 
                 Console.log("Sending manager :: Ready: $data")
 
