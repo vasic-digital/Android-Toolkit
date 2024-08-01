@@ -47,8 +47,6 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
     protected open val logTag = "Transmission manager ::"
 
-    private val capacity = 100
-    private val maxRetries = 10
     private var managedData: T? = null
     private val sending = AtomicBoolean()
     private var lastSendingTime: Long = 0
