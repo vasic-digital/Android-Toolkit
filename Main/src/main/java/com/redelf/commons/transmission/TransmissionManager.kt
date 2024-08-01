@@ -45,6 +45,8 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
         const val BROADCAST_ACTION_RESULT = "TransmissionManager.Action.RESULT"
     }
 
+    protected open val logTag = "Transmission manager ::"
+
     private val capacity = 100
     private val maxRetries = 10
     private var managedData: T? = null
@@ -67,13 +69,13 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
         override fun onReceive(context: Context?, intent: Intent?) {
 
-            Console.log("BROADCAST_ACTION_SEND on receive")
+            Console.log("$logTag BROADCAST_ACTION_SEND on receive")
 
             intent?.let {
 
                 if (it.action == BROADCAST_ACTION_SEND) {
 
-                    Console.log("BROADCAST_ACTION_SEND on action")
+                    Console.log("$logTag BROADCAST_ACTION_SEND on action")
 
                     try {
 
@@ -81,6 +83,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
                     } catch (e: IllegalStateException) {
 
+                        Console.error("$logTag ERROR: ${e.message}")
                         Console.error(e)
                     }
                 }
@@ -108,7 +111,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
         val intentFilter = IntentFilter(BROADCAST_ACTION_SEND)
         registerReceiver(sendRequestReceiver, intentFilter)
 
-        Console.log("BROADCAST_ACTION_SEND receiver registered")
+        Console.log("$logTag BROADCAST_ACTION_SEND receiver registered")
 
         val action = Runnable {
 
@@ -150,7 +153,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
         val action = Runnable {
 
-            Console.log("We are about to send data")
+            Console.log("$logTag We are about to send data")
 
             persist(data)
         }
@@ -208,7 +211,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
     @Throws(IllegalStateException::class)
     fun send(executedFrom: String = "") {
 
-        Console.log("Send (manager) :: executedFrom='$executedFrom'")
+        Console.log("$logTag Send :: executedFrom='$executedFrom'")
 
         val action = Runnable { executeSending("send") }
         sequentialExecutor.execute(action)
@@ -224,7 +227,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
         val action = Runnable {
 
-            Console.warning("We are about to delete all data")
+            Console.warning("$logTag We are about to delete all data")
             clear()
             persist()
         }
@@ -242,11 +245,11 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
         val action = Runnable {
 
-            Console.warning("We are about to delete the data item")
+            Console.warning("$logTag We are about to delete the data item")
 
             if (clear(item)) {
 
-                Console.log("The data item has been deleted with success")
+                Console.log("$logTag The data item has been deleted with success")
 
                 persist()
 
@@ -254,7 +257,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
             } else {
 
-                Console.log("The data item has failed to delete")
+                Console.log("$logTag The data item has failed to delete")
 
                 callback.onCompleted(false)
             }
@@ -304,7 +307,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
     override fun add(data: D): Boolean {
 
-        Console.log("Data: Add")
+        Console.log("$logTag Data: Add")
 
         return managedData?.add(data) == true
     }
@@ -325,23 +328,23 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
             return
         }
 
-        Console.log("Last sending executed before: %s", timeDiff)
+        Console.log("$logTag Last sending executed before: %s", timeDiff)
 
         if (currentSendingStrategy.isNotReady()) {
 
-            Console.warning("Current sending strategy is not ready")
+            Console.warning("$logTag Current sending strategy is not ready")
 
             return
         }
 
         if (isSending()) {
 
-            Console.warning("Data is already sending")
+            Console.warning("$logTag Data is already sending")
 
             return
         }
 
-        Console.log("Execute sending :: executedFrom='$executedFrom'")
+        Console.log("$logTag Execute sending :: executedFrom='$executedFrom'")
 
         setSending(true)
 
@@ -349,7 +352,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
         if (managedData?.isEmpty() == true) {
 
-            Console.warning("No data to be sent yet")
+            Console.warning("$logTag No data to be sent yet")
             setSending(false)
 
             return
@@ -363,7 +366,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
             item?.let { data ->
 
-                Console.log("Data decrypted")
+                Console.log("$logTag Data decrypted")
 
                 onSendingStarted(data)
 
@@ -380,11 +383,11 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
                         persistingRequired = true
                     }
 
-                    Console.info("Data has been sent")
+                    Console.info("$logTag Data has been sent")
 
                 } else {
 
-                    Console.error("Data has not been sent")
+                    Console.error("$logTag Data has not been sent")
                 }
 
                 onSent(data, success)
@@ -405,7 +408,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
             if (managedData?.contains(data) == true) {
 
-                Console.warning("Data has been already persisted: %s", data)
+                Console.warning("$logTag Data has been already persisted: %s", data)
 
                 executeSending("persist")
 
@@ -415,7 +418,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
                 persist()
 
-                Console.log("Data has been persisted: %s", data)
+                Console.log("$logTag Data has been persisted: %s", data)
             }
 
         } catch (e: OutOfMemoryError) {
@@ -433,12 +436,14 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
         if (currentSendingStrategy == sendingDefaultStrategy) {
 
             val default = "DEFAULT SENDING STRATEGY"
-            Console.log("Executing sending of %s with '%s'", data, default)
+
+            Console.log("$logTag Executing sending of %s with '%s'", data, default)
 
         } else {
 
             val custom = "CUSTOM SENDING STRATEGY"
-            Console.debug("Executing sending of %s with '%s'", data, custom)
+
+            Console.debug("$logTag Executing sending of %s with '%s'", data, custom)
         }
 
         return currentSendingStrategy.executeSending(data)
@@ -464,11 +469,11 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
         if (success) {
 
-            Console.info("Data has been persisted")
+            Console.info("$logTag Data has been persisted")
 
         } else {
 
-            Console.error("Data has not been persisted")
+            Console.error("$logTag Data has not been persisted")
         }
 
         onPersisted(success)
@@ -478,22 +483,24 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
         if (success) {
 
-            Console.log("Init success")
+            Console.log("$logTag Init success")
+
             return
         }
 
-        Console.error("Init failed")
+        Console.error("$logTag Init failure")
     }
 
     private fun onShutdown(success: Boolean) {
 
         if (success) {
 
-            Console.log("Shutdown success")
+            Console.log("$logTag Shutdown success")
+
             return
         }
 
-        Console.error("Shutdown failed")
+        Console.error("$logTag Shutdown failure")
     }
 
     private fun onSent(data: D, success: Boolean) {
@@ -504,7 +511,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
         val ctx = takeContext()
         ctx.sendBroadcast(intent)
 
-        Console.log("BROADCAST_ACTION_RESULT on sent")
+        Console.log("$logTag BROADCAST_ACTION_RESULT on sent")
 
         val operation = object : CallbackOperation<TransmissionSendingCallback<D>> {
 
@@ -532,7 +539,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
     private fun onPersisted(success: Boolean) {
 
-        Console.log("On data persisted: %b", success)
+        Console.log("$logTag On data persisted: %b", success)
 
         val operation = object : CallbackOperation<TransmissionManagerPersistCallback> {
 
@@ -548,14 +555,17 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
             if (success) {
 
-                Console.log("On data persisted: We are about to start sending data")
+                Console.log("$logTag On data persisted: We are about to start sending data")
 
                 executeSending("onPersisted")
 
 
             } else {
 
-                Console.error("On data NOT persisted: We are NOT going to start data sending")
+                Console.error(
+
+                    "$logTag On data NOT persisted: We are NOT going to start data sending"
+                )
             }
         }
     }
@@ -566,10 +576,11 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
             unregisterReceiver(sendRequestReceiver)
 
-            Console.log("BROADCAST_ACTION_SEND receiver unregistered")
+            Console.log("$logTag BROADCAST_ACTION_SEND receiver unregistered")
 
         } catch (e: IllegalArgumentException) {
 
+            Console.error("$logTag ERROR: ${e.message}")
             Console.error(e)
         }
 
@@ -581,7 +592,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
     @Throws(InterruptedException::class)
     private fun add(items: LinkedList<D>) {
 
-        Console.log("Data: Add, count: %d", items.size)
+        Console.log("$logTag Data: Add, count: %d", items.size)
 
         items.forEach {
 
@@ -591,14 +602,14 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
     private fun clear() {
 
-        Console.log("Data: Clear")
+        Console.log("$logTag Data: Clear")
 
         managedData?.clear()
     }
 
     private fun clear(item: D): Boolean {
 
-        Console.log("Data: Clear item")
+        Console.log("$logTag Data: Clear item")
 
         try {
 
@@ -621,7 +632,7 @@ abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataMan
 
     private fun setSending(sending: Boolean) {
 
-        Console.log("Setting: Sending data to %b", sending)
+        Console.log("$logTag Setting: Sending data to %b", sending)
 
         this.sending.set(sending)
     }
