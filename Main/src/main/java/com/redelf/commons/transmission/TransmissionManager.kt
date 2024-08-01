@@ -30,7 +30,7 @@ import java.util.*
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataManagement<T>>) :
+abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataManagement<T>>) :
 
     Add<D>,
     Management,
