@@ -4,32 +4,39 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.text.TextUtils
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
-import com.google.gson.reflect.TypeToken
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.contain.Contain
+import com.redelf.commons.context.Contextual
+import com.redelf.commons.data.Empty
+import com.redelf.commons.destruction.clear.Clearing
+import com.redelf.commons.destruction.delete.Removal
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.iteration.Iterable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
+import com.redelf.commons.measure.Size
+import com.redelf.commons.modification.Add
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.security.encryption.Encrypt
 import com.redelf.commons.security.encryption.Encryption
-import com.redelf.commons.security.encryption.EncryptionProvider
-import com.redelf.commons.transmission.encryption.TransmissionManagerEncryptionProvider
-import java.lang.reflect.Type
 import java.security.GeneralSecurityException
 import java.util.*
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: String) : Management {
+abstract class TransmissionManager<T, D>(private val dataManager: Obtain<DataManagement<T>>) :
+
+    Add<D>,
+    Management,
+    Contextual<BaseApplication> where T : Empty, T : Clearing,
+                                      T : Size, T : Add<D>, T : Iterable<D>,
+                                      T : Contain<D>, T : Removal<D> {
 
     companion object {
 
@@ -38,30 +45,23 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         const val BROADCAST_ACTION_RESULT = "TransmissionManager.Action.RESULT"
     }
 
-    /*
-    * TODO: Support Jackson as well and stream read & write
-    */
-    private val gson = Gson()
     private val capacity = 100
     private val maxRetries = 10
+    private var managedData: T? = null
     private val sending = AtomicBoolean()
     private var lastSendingTime: Long = 0
     private val sequentialExecutor = TaskExecutor.instantiateSingle()
 
     private val sendingCallbacks =
-        Callbacks<TransmissionSendingCallback<T>>(identifier = "Transmission sending")
+        Callbacks<TransmissionSendingCallback<D>>(identifier = "Transmission sending")
 
     private val persistCallbacks =
         Callbacks<TransmissionManagerPersistCallback>(identifier = "Transmission persistence")
 
-    protected val data = LinkedBlockingQueue<String>(capacity)
-
     protected open val minSendIntervalInSeconds = 0
 
-    protected abstract val encryptionKeySuffix: String
-    protected abstract var currentEncryptionProvider: EncryptionProvider
-    protected abstract val sendingDefaultStrategy: TransmissionManagerSendingStrategy<T>
-    protected abstract var currentSendingStrategy: TransmissionManagerSendingStrategy<T>
+    protected abstract val sendingDefaultStrategy: TransmissionManagerSendingStrategy<D>
+    protected abstract var currentSendingStrategy: TransmissionManagerSendingStrategy<D>
 
     private val sendRequestReceiver = object : BroadcastReceiver() {
 
@@ -88,19 +88,10 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         }
     }
 
-    private val persistDefaultStrategy = object : TransmissionManagerPersistStrategy {
-
-        override fun persist(identifier: String, data: String): Boolean {
-
-            return DataManagement.STORAGE.push(identifier, data)
-        }
-    }
-
-    private var persistStrategy: TransmissionManagerPersistStrategy = persistDefaultStrategy
-
-    fun setSendingStrategy(sendingStrategy: TransmissionManagerSendingStrategy<T>): Boolean {
+    fun setSendingStrategy(sendingStrategy: TransmissionManagerSendingStrategy<D>): Boolean {
 
         currentSendingStrategy = sendingStrategy
+
         return currentSendingStrategy == sendingStrategy
     }
 
@@ -121,44 +112,21 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         val action = Runnable {
 
-            val json = DataManagement.STORAGE.pull(storageIdentifier) ?: ""
+            try {
 
-            if (TextUtils.isEmpty(json)) {
+                val dManager = dataManager.obtain()
+                managedData = dManager.obtain()
 
-                Console.warning("No encrypted data persisted")
-                onInit(true)
+            } catch (e: Exception) {
 
-            } else {
+                recordException(e)
 
-                try {
+                onInit(false)
 
-                    val listType: Type = object : TypeToken<LinkedList<String>>() {}.type
-                    val items = gson.fromJson<LinkedList<String>>(json, listType)
-
-                    clear()
-
-                    if (items.isEmpty()) {
-
-                        Console.warning("No data loaded from secure storage")
-
-                    } else {
-
-                        add(items)
-                    }
-
-                    onInit(true)
-
-                } catch (e: JsonSyntaxException) {
-
-                    recordException(e)
-                    onInit(false)
-
-                } catch (e: InterruptedException) {
-
-                    recordException(e)
-                    onInit(false)
-                }
+                return@Runnable
             }
+
+            onInit(true)
         }
 
         try {
@@ -178,11 +146,11 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     }
 
     @Throws(IllegalStateException::class)
-    fun send(data: T, async: Boolean = true) {
+    fun send(data: D, async: Boolean = true) {
 
         val action = Runnable {
 
-            Console.log("We are about to send data: %s", data::class.simpleName)
+            Console.log("We are about to send data")
 
             persist(data)
         }
@@ -208,7 +176,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         Note: Returns True if there was something to update
      */
     @Throws(IllegalStateException::class)
-    fun update(data: T): Boolean {
+    fun update(data: D): Boolean {
 
         return reSchedule(data)
     }
@@ -221,10 +189,11 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
             return it
         }
+
         return null
     }
 
-    private fun reSchedule(scheduled: T): Boolean {
+    private fun reSchedule(scheduled: D): Boolean {
 
         if (doReSchedule(scheduled)) {
 
@@ -264,7 +233,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     }
 
     @Throws(IllegalStateException::class)
-    fun delete(item: T, callback: OnObtain<Boolean>) {
+    fun delete(item: D, callback: OnObtain<Boolean>) {
 
         if (isSending()) {
 
@@ -278,6 +247,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
             if (clear(item)) {
 
                 Console.log("The data item has been deleted with success")
+
                 persist()
 
                 callback.onCompleted(true)
@@ -293,26 +263,25 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         sequentialExecutor.execute(action)
     }
 
-    @Throws(IllegalStateException::class)
-    fun getScheduledCount(): Int {
+    fun getScheduledCount(): Long {
 
-        return data.size
+        return managedData?.getSize() ?: 0
     }
 
     abstract fun getScheduled(): Collection<T>
 
     abstract fun doUnSchedule(scheduled: T): T?
 
-    abstract fun doReSchedule(scheduled: T): Boolean
+    abstract fun doReSchedule(scheduled: D): Boolean
 
     fun isSending() = sending.get()
 
-    fun addSendingCallback(callback: TransmissionSendingCallback<T>) {
+    fun addSendingCallback(callback: TransmissionSendingCallback<D>) {
 
         sendingCallbacks.register(callback)
     }
 
-    fun removeSendingCallback(callback: TransmissionSendingCallback<T>) {
+    fun removeSendingCallback(callback: TransmissionSendingCallback<D>) {
 
         sendingCallbacks.unregister(callback)
     }
@@ -333,54 +302,12 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         return currentSendingStrategy == sendingDefaultStrategy
     }
 
-    fun setPersistStrategy(persistStrategy: TransmissionManagerPersistStrategy) {
+    override fun add(data: D): Boolean {
 
-        this.persistStrategy = persistStrategy
+        Console.log("Data: Add")
+
+        return managedData?.add(data) == true
     }
-
-    fun resetPersistStrategy() {
-
-        persistStrategy = persistDefaultStrategy
-    }
-
-    fun setEncryptionProvider(provider: EncryptionProvider) {
-
-        Console.log("Setting the data encryption provider: $provider")
-
-        currentEncryptionProvider = provider
-    }
-
-    fun getEncryptionProvider(): EncryptionProvider {
-
-        return currentEncryptionProvider
-    }
-
-    fun resetEncryptionProvider() {
-
-        val new = TransmissionManagerEncryptionProvider(this, encryptionKeySuffix)
-
-        Console.log("Reset data encryption provider: $new")
-
-        currentEncryptionProvider = new
-
-    }
-
-    @Throws(
-
-        IllegalStateException::class,
-        ClassCastException::class,
-        NullPointerException::class,
-        IllegalArgumentException::class
-
-    )
-    fun add(data: String) {
-
-        Console.log("Data: Add, %s", data.length)
-
-        this.data.add(data)
-    }
-
-    protected abstract fun getContext(): Context
 
     protected abstract fun decrypt(encrypted: String, encryption: Encryption<String, String>): T
 
@@ -395,7 +322,6 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         if (timeCondition) {
 
-            // Timber.w("Too soon to send data. Last sending executed before: %s", timeDiff)
             return
         }
 
@@ -404,12 +330,14 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         if (currentSendingStrategy.isNotReady()) {
 
             Console.warning("Current sending strategy is not ready")
+
             return
         }
 
         if (isSending()) {
 
             Console.warning("Data is already sending")
+
             return
         }
 
@@ -419,64 +347,47 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         var persistingRequired = false
 
-        if (data.isEmpty()) {
+        if (managedData?.isEmpty() == true) {
 
             Console.warning("No data to be sent yet")
             setSending(false)
+
             return
         }
 
-        val iterator = data.iterator()
+        val iterator = managedData?.getIterator()
 
-        while (iterator.hasNext()) {
+        while (iterator?.hasNext() == true) {
 
             val item = iterator.next()
-            item?.let { encrypted ->
 
-                try {
+            item?.let { data ->
 
-                    val encryption = currentEncryptionProvider.obtain()
-                    Console.log("Data decrypting: %s", encrypted.length)
+                Console.log("Data decrypted")
 
-                    val data = decrypt(encrypted, encryption)
-                    Console.log("Data decrypted")
+                onSendingStarted(data)
 
-                    onSendingStarted(data)
+                val success = executeSending(data)
 
-                    val success = executeSending(data)
+                if (success) {
 
-                    if (success) {
+                    lastSendingTime = System.currentTimeMillis()
 
-                        lastSendingTime = System.currentTimeMillis()
+                    iterator.remove()
 
-                        iterator.remove()
+                    if (!persistingRequired) {
 
-                        if (!persistingRequired) {
-
-                            persistingRequired = true
-                        }
-
-                        Console.info("Data has been sent")
-
-                    } else {
-
-                        Console.error("Data has not been sent")
+                        persistingRequired = true
                     }
 
-                    onSent(data, success)
+                    Console.info("Data has been sent")
 
-                } catch (e: GeneralSecurityException) {
+                } else {
 
-                    recordException(e)
-
-                } catch (e: IllegalArgumentException) {
-
-                    recordException(e)
-
-                } catch (e: JsonSyntaxException) {
-
-                    recordException(e)
+                    Console.error("Data has not been sent")
                 }
+
+                onSent(data, success)
             }
         }
 
@@ -488,21 +399,20 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         }
     }
 
-    private fun persist(data: T) {
+    private fun persist(data: D) {
 
         try {
 
-            val encryption = currentEncryptionProvider.obtain()
-            val encrypted = data.encrypt(encryption)
-
-            if (this.data.contains(encrypted)) {
+            if (managedData?.contains(data) == true) {
 
                 Console.warning("Data has been already persisted: %s", data)
+
                 executeSending("persist")
 
             } else {
 
-                add(encrypted)
+                add(data)
+
                 persist()
 
                 Console.log("Data has been persisted: %s", data)
@@ -518,7 +428,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         }
     }
 
-    private fun executeSending(data: T): Boolean {
+    private fun executeSending(data: D): Boolean {
 
         if (currentSendingStrategy == sendingDefaultStrategy) {
 
@@ -540,10 +450,14 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         try {
 
-            val json = gson.toJson(data)
-            success = persistStrategy.persist(storageIdentifier, json)
+            managedData?.let { data ->
 
-        } catch (e: OutOfMemoryError) {
+                dataManager.obtain().pushData(data)
+
+                success = true
+            }
+
+        } catch (e: Exception) {
 
             recordException(e)
         }
@@ -582,19 +496,19 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         Console.error("Shutdown failed")
     }
 
-    private fun onSent(data: T, success: Boolean) {
+    private fun onSent(data: D, success: Boolean) {
 
         val intent = Intent(BROADCAST_ACTION_RESULT)
         intent.putExtra(BROADCAST_EXTRA_RESULT, success)
 
-        val ctx = getContext()
+        val ctx = takeContext()
         ctx.sendBroadcast(intent)
 
         Console.log("BROADCAST_ACTION_RESULT on sent")
 
-        val operation = object : CallbackOperation<TransmissionSendingCallback<T>> {
+        val operation = object : CallbackOperation<TransmissionSendingCallback<D>> {
 
-            override fun perform(callback: TransmissionSendingCallback<T>) {
+            override fun perform(callback: TransmissionSendingCallback<D>) {
 
                 callback.onSent(data, success)
             }
@@ -603,11 +517,11 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         sendingCallbacks.doOnAll(operation, "onSent")
     }
 
-    private fun onSendingStarted(data: T) {
+    private fun onSendingStarted(data: D) {
 
-        val operation = object : CallbackOperation<TransmissionSendingCallback<T>> {
+        val operation = object : CallbackOperation<TransmissionSendingCallback<D>> {
 
-            override fun perform(callback: TransmissionSendingCallback<T>) {
+            override fun perform(callback: TransmissionSendingCallback<D>) {
 
                 callback.onSendingStarted(data)
             }
@@ -630,7 +544,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         persistCallbacks.doOnAll(operation, "On persisted")
 
-        if (data.isNotEmpty()) {
+        if (managedData?.isNotEmpty() == true) {
 
             if (success) {
 
@@ -660,39 +574,37 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         }
 
         clear()
-        return data.isEmpty()
+
+        return managedData?.isEmpty() == true
     }
 
     @Throws(InterruptedException::class)
-    private fun add(items: LinkedList<String>) {
+    private fun add(items: LinkedList<D>) {
 
         Console.log("Data: Add, count: %d", items.size)
 
         items.forEach {
 
-            data.put(it)
+            managedData?.add(it)
         }
     }
 
     private fun clear() {
 
         Console.log("Data: Clear")
-        data.clear()
+
+        managedData?.clear()
     }
 
-    private fun clear(item: T): Boolean {
+    private fun clear(item: D): Boolean {
 
         Console.log("Data: Clear item")
 
-        val encryption = currentEncryptionProvider.obtain()
-
         try {
 
-            val encrypted = item.encrypt(encryption)
+            if (managedData?.contains(item) == true) {
 
-            if (data.contains(encrypted)) {
-
-                return data.remove(encrypted)
+                return managedData?.remove(item) == true
             }
 
         } catch (e: GeneralSecurityException) {
@@ -710,6 +622,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
     private fun setSending(sending: Boolean) {
 
         Console.log("Setting: Sending data to %b", sending)
+
         this.sending.set(sending)
     }
 
@@ -718,7 +631,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
         receiver?.let { r ->
             filter?.let { f ->
 
-                LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(r, f)
+                LocalBroadcastManager.getInstance(takeContext()).registerReceiver(r, f)
             }
         }
 
@@ -729,7 +642,7 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         receiver?.let {
 
-            LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(it)
+            LocalBroadcastManager.getInstance(takeContext()).unregisterReceiver(it)
         }
     }
 
@@ -737,9 +650,12 @@ abstract class TransmissionManager<T : Encrypt>(private val storageIdentifier: S
 
         intent?.let {
 
-            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(it)
+            LocalBroadcastManager.getInstance(takeContext()).sendBroadcast(it)
         }
     }
 
-    protected fun getApplicationContext(): Context = getContext().applicationContext
+    override fun takeContext(): BaseApplication {
+
+        return BaseApplication.takeContext()
+    }
 }
