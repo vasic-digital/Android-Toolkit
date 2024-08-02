@@ -46,7 +46,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
     protected open val logTag = "Transmission manager ::"
 
-    private var managedData: T? = null
+    protected var managedData: T? = null
+
     private val sending = AtomicBoolean()
     private var lastSendingTime: Long = 0
     private val sequentialExecutor = TaskExecutor.instantiateSingle()
@@ -181,7 +182,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         return reSchedule(data)
     }
 
-    private fun unSchedule(scheduled: T): T? {
+    private fun unSchedule(scheduled: D): D? {
 
         doUnSchedule(scheduled)?.let {
 
@@ -268,9 +269,9 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         return managedData?.getSize() ?: 0
     }
 
-    abstract fun getScheduled(): Collection<T>
+    abstract fun getScheduled(): Collection<D>
 
-    abstract fun doUnSchedule(scheduled: T): T?
+    abstract fun doUnSchedule(scheduled: D): D?
 
     abstract fun doReSchedule(scheduled: D): Boolean
 
