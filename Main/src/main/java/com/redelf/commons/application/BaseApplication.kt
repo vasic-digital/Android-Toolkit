@@ -50,17 +50,18 @@ import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
+import androidx.work.Configuration
+
 
 abstract class BaseApplication :
 
     Application(),
+    Configuration.Provider,
     ContextAvailability<BaseApplication>,
     ActivityLifecycleCallbacks,
     ActivityCount,
     LifecycleObserver,
-    Updatable<Long>
-
-{
+    Updatable<Long> {
 
     companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
 
@@ -77,6 +78,11 @@ abstract class BaseApplication :
         const val BROADCAST_ACTION_APPLICATION_SCREEN_OFF = "APPLICATION_STATE.SCREEN_OFF"
         const val BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND = "APPLICATION_STATE.BACKGROUND"
         const val BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND = "APPLICATION_STATE.FOREGROUND"
+
+        const val JOB_ID_MIN = 1000
+        const val JOB_ID_MAX = 4000
+        const val ALARM_SERVICE_JOB_ID_MIN = 4001
+        const val ALARM_SERVICE_JOB_ID_MAX = 8000
 
         override fun takeContext() = CONTEXT
 
@@ -161,6 +167,10 @@ abstract class BaseApplication :
             return ""
         }
     }
+
+    override val workManagerConfiguration = Configuration.Builder()
+        .setJobSchedulerJobIdRange(JOB_ID_MIN, JOB_ID_MAX)
+        .build()
 
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
@@ -991,7 +1001,7 @@ abstract class BaseApplication :
 
     override fun isUpdateApplied(identifier: Long) = !isUpdateAvailable(identifier)
 
-    protected open fun setupObfuscator() : Boolean {
+    protected open fun setupObfuscator(): Boolean {
 
         val tag = "Obfuscator ::"
 

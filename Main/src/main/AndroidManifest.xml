@@ -37,6 +37,17 @@
             </intent-filter>
         </service>
 
+        <service
+            android:exported="true"
+            android:name=".scheduling.alarm.AlarmService"
+            android:permission="android.permission.BIND_JOB_SERVICE">
+
+            <intent-filter>
+
+                <action android:name="android.app.job.JobService" />
+            </intent-filter>
+        </service>
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@android:drawable/ic_dialog_alert" />

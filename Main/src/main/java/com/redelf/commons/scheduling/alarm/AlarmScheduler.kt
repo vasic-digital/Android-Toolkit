@@ -2,10 +2,11 @@ package com.redelf.commons.scheduling.alarm
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.provider.Settings
+import android.os.PersistableBundle
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
 import com.redelf.commons.scheduling.Schedule
@@ -23,38 +24,12 @@ class AlarmScheduler(
         const val ALARM_ACTION = "AlarmScheduler.ON_ALARM"
     }
 
-    init {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-
-            val localCtx = ctx.applicationContext
-            val alarmManager = localCtx.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
-
-            if (alarmManager?.canScheduleExactAlarms() == false) {
-
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-
-                localCtx.startActivity(intent)
-            }
-        }
-    }
-
     private val context = ctx.applicationContext
-
-    private val alarmIntent = Intent(context, AlarmReceiver::class.java)
 
     private val flags = PendingIntent.FLAG_UPDATE_CURRENT or
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-    init {
-
-        alarmIntent.action = ALARM_ACTION
-    }
 
     override fun schedule(
 
@@ -67,43 +42,35 @@ class AlarmScheduler(
 
         val tag = "$logTag ON ::"
 
-        alarmIntent.putExtra(ALARM_VALUE, what)
+        val delay = toWhen - System.currentTimeMillis()
 
-        val pendingIntent = PendingIntent.getBroadcast(
+        Console.log(
 
-            context,
-            what,
-            alarmIntent,
-            flags
+            "$tag Scheduling new alarm: what = $what, to when = " +
+                    "$toWhen (delay = $delay ms)"
         )
 
-        Console.log("$tag Scheduling new alarm: What=$what, toWhen=$toWhen")
+        val componentName = ComponentName(context, AlarmService::class.java)
 
-        var canSchedule = true
+        val extras = PersistableBundle()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        extras.putInt(ALARM_VALUE, what)
 
-            canSchedule = alarmManager.canScheduleExactAlarms()
-        }
+        val jobInfo = JobInfo.Builder(what, componentName)
+            .setMinimumLatency(delay)
+            .setOverrideDeadline(1000)
+            .setExtras(extras)
+            .build()
 
-        if (canSchedule) {
+        val jobScheduler = context?.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler?
+        jobScheduler?.schedule(jobInfo)
 
-            alarmManager.setAndAllowWhileIdle(
+        Console.log("$tag COMPLETED")
 
-                AlarmManager.RTC_WAKEUP,
-                toWhen,
-                pendingIntent
-            )
-
-            Console.log("$tag COMPLETED")
-
-            return true
-        }
-
-        return false
+        return true
     }
 
-    fun unSchedule(what: Int, from: String = ""): Boolean {
+    private fun unSchedule(what: Int, from: String = ""): Boolean {
 
         val tag = if (isEmpty(from)) {
 
@@ -114,17 +81,11 @@ class AlarmScheduler(
             "$from :: $logTag OFF ::"
         }
 
-        val pendingIntent = PendingIntent.getBroadcast(
-
-            context,
-            what,
-            alarmIntent,
-            flags
-        )
-
         Console.log("$tag Cancelling scheduled alarm (if any)")
 
-        alarmManager.cancel(pendingIntent)
+        val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler?
+
+        jobScheduler?.cancel(what)
 
         Console.log("$tag COMPLETED")
 
