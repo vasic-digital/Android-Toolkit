@@ -24,7 +24,6 @@ import com.redelf.commons.measure.Size
 import com.redelf.commons.modification.Add
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.security.encryption.Encryption
 import java.security.GeneralSecurityException
 import java.util.*
 import java.util.concurrent.RejectedExecutionException
@@ -309,8 +308,6 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
         return managedData?.add(data) == true
     }
-
-    protected abstract fun decrypt(encrypted: String, encryption: Encryption<String, String>): T
 
     private fun executeSending(executedFrom: String = "") {
 
