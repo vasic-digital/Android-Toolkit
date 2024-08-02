@@ -55,6 +55,7 @@ class AlarmScheduler(
 
         alarmIntent.action = ALARM_ACTION
     }
+
     override fun schedule(
 
         what: Int,
@@ -78,16 +79,28 @@ class AlarmScheduler(
 
         Console.log("$tag Scheduling new alarm: What=$what, toWhen=$toWhen")
 
-        alarmManager.setExactAndAllowWhileIdle(
+        var canSchedule = true
 
-            AlarmManager.RTC_WAKEUP,
-            toWhen,
-            pendingIntent
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 
-        Console.log("$tag COMPLETED")
+            canSchedule = alarmManager.canScheduleExactAlarms()
+        }
 
-        return true
+        if (canSchedule) {
+
+            alarmManager.setExactAndAllowWhileIdle(
+
+                AlarmManager.RTC_WAKEUP,
+                toWhen,
+                pendingIntent
+            )
+
+            Console.log("$tag COMPLETED")
+
+            return true
+        }
+
+        return false
     }
 
     fun unSchedule(what: Int, from: String = ""): Boolean {
