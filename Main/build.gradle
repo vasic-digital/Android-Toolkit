@@ -383,21 +383,6 @@ http://${pLocalProdUsername}:${pLocalProdPassword}@${pLocalProd}:${pLocalProdPor
     }
 }
 
-task generateProxiesRemoteTxt {
-    doLast {
-
-        if (proxyRemoteProdEnabled) {
-
-            def content = "http://${pRemoteProdUsername}:${pRemoteProdPassword}@${pRemoteProd}:${pRemoteProdPort}".stripIndent().trim()
-
-            def filePath = "${projectDir}/src/main/res/raw/proxies_remote.txt"
-
-            Files.write(Paths.get(filePath), content.getBytes())
-            println "Generated proxies_remote.txt at: ${filePath}"
-        }
-    }
-}
-
 task startLocalProxyServer {
     doLast {
 
@@ -437,11 +422,6 @@ if (proxyEnabled) {
 if (proxyEnabled || proxyProdEnabled) {
 
     preBuild.dependsOn generateProxiesLocalTxt
-}
-
-if (proxyRemoteProdEnabled) {
-
-    preBuild.dependsOn generateProxiesRemoteTxt
 }
 
 if (proxyEnabled) {

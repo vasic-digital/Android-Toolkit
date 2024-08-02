@@ -62,28 +62,6 @@ abstract class HttpProxiesTest : ProxiesTest() {
     }
 
     @Test
-    fun testAliveProxy() {
-
-        val res = com.redelf.commons.R.string.ob_proxy_local_test
-        val resPort = com.redelf.commons.R.string.ob_proxy_local_test_port
-        val resUsername = com.redelf.commons.R.string.ob_proxy_local_test_username
-        val resPassword = com.redelf.commons.R.string.ob_proxy_local_test_password
-
-        testProxy(res, resPort, resUsername, resPassword)
-    }
-
-    @Test
-    fun testAliveRemoteProxy() {
-
-        val res = com.redelf.commons.R.string.ob_proxy_remote_prod
-        val resPort = com.redelf.commons.R.string.ob_proxy_remote_prod_port
-        val resUsername = com.redelf.commons.R.string.ob_proxy_remote_prod_username
-        val resPassword = com.redelf.commons.R.string.ob_proxy_remote_prod_password
-
-        testProxy(res, resPort, resUsername, resPassword)
-    }
-
-    @Test
     fun testRawSourceProxies() {
 
         try {
@@ -313,7 +291,7 @@ abstract class HttpProxiesTest : ProxiesTest() {
         testHttpSourceProxies(sourceAddress)
     }
 
-    private fun testProxy(res: Int, resPort: Int, resUsername: Int, resPassword: Int) {
+    protected fun testProxy(res: Int, resPort: Int, resUsername: Int, resPassword: Int) {
 
         try {
 
