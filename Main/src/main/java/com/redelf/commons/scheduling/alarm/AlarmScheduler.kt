@@ -88,7 +88,7 @@ class AlarmScheduler(
 
         if (canSchedule) {
 
-            alarmManager.setExactAndAllowWhileIdle(
+            alarmManager.setAndAllowWhileIdle(
 
                 AlarmManager.RTC_WAKEUP,
                 toWhen,
