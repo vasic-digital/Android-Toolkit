@@ -51,6 +51,7 @@ import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import androidx.work.Configuration
+import java.util.concurrent.atomic.AtomicInteger
 
 
 abstract class BaseApplication :
@@ -79,10 +80,10 @@ abstract class BaseApplication :
         const val BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND = "APPLICATION_STATE.BACKGROUND"
         const val BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND = "APPLICATION_STATE.FOREGROUND"
 
-        const val JOB_ID_MIN = 1000
-        const val JOB_ID_MAX = 4000
-        const val ALARM_SERVICE_JOB_ID_MIN = 4001
-        const val ALARM_SERVICE_JOB_ID_MAX = 8000
+        val JOB_ID_MIN = AtomicInteger(1000)
+        val JOB_ID_MAX = AtomicInteger(4000)
+        val ALARM_SERVICE_JOB_ID_MIN = AtomicInteger(4001)
+        val ALARM_SERVICE_JOB_ID_MAX = AtomicInteger(8000)
 
         override fun takeContext() = CONTEXT
 
@@ -169,7 +170,7 @@ abstract class BaseApplication :
     }
 
     override val workManagerConfiguration = Configuration.Builder()
-        .setJobSchedulerJobIdRange(JOB_ID_MIN, JOB_ID_MAX)
+        .setJobSchedulerJobIdRange(JOB_ID_MIN.get(), JOB_ID_MAX.get())
         .build()
 
     open val detectAudioStreamed = false

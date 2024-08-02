@@ -17,8 +17,8 @@ class AlarmService : JobService() {
 
         builder.setJobSchedulerJobIdRange(
 
-            BaseApplication.ALARM_SERVICE_JOB_ID_MIN,
-            BaseApplication.ALARM_SERVICE_JOB_ID_MAX
+            BaseApplication.ALARM_SERVICE_JOB_ID_MIN.get(),
+            BaseApplication.ALARM_SERVICE_JOB_ID_MAX.get()
         )
     }
 
