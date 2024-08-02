@@ -429,7 +429,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
     private fun executeSending(data: D): Boolean {
 
-        if (currentSendingStrategy == sendingDefaultStrategy) {
+        if (currentSendingStrategy === sendingDefaultStrategy) {
 
             val default = "DEFAULT SENDING STRATEGY"
 
