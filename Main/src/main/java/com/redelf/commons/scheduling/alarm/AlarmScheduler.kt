@@ -1,7 +1,5 @@
 package com.redelf.commons.scheduling.alarm
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
@@ -25,11 +23,6 @@ class AlarmScheduler(
     }
 
     private val context = ctx.applicationContext
-
-    private val flags = PendingIntent.FLAG_UPDATE_CURRENT or
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
-
-    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     override fun schedule(
 
@@ -84,7 +77,6 @@ class AlarmScheduler(
         Console.log("$tag Cancelling scheduled alarm (if any)")
 
         val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler?
-
         jobScheduler?.cancel(what)
 
         Console.log("$tag COMPLETED")

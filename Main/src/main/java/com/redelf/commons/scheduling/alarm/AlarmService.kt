@@ -4,10 +4,23 @@ import android.app.job.JobParameters
 import android.app.job.JobService
 import android.content.Intent
 import com.redelf.commons.logging.Console
+import androidx.work.Configuration
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.scheduling.alarm.AlarmScheduler.Companion.ALARM_ACTION
 import com.redelf.commons.scheduling.alarm.AlarmScheduler.Companion.ALARM_VALUE
 
 class AlarmService : JobService() {
+
+    init {
+
+        val builder: Configuration.Builder = Configuration.Builder()
+
+        builder.setJobSchedulerJobIdRange(
+
+            BaseApplication.ALARM_SERVICE_JOB_ID_MIN,
+            BaseApplication.ALARM_SERVICE_JOB_ID_MAX
+        )
+    }
 
     override fun onStartJob(params: JobParameters?): Boolean {
 
