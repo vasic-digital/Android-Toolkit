@@ -32,7 +32,11 @@ class AlarmScheduler(
 
             if (alarmManager?.canScheduleExactAlarms() == false) {
 
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+
                 localCtx.startActivity(intent)
             }
         }
