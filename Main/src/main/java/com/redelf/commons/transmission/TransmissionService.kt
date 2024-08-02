@@ -20,8 +20,7 @@ class TransmissionService : BaseService() {
     companion object {
 
         var DEBUG: Boolean? = null
-
-        const val BROADCAST_EXTRA_CODE = 1
+        val BROADCAST_EXTRA_CODE: Int = BaseApplication.ALARM_SERVICE_JOB_ID_MIN.get() + 1
     }
 
     private val binder = TransmissionServiceBinder()
@@ -169,6 +168,7 @@ class TransmissionService : BaseService() {
             registerAlarmCallback()
 
             val time = getAlarmInterval()
+
             AlarmScheduler(applicationContext).schedule(BROADCAST_EXTRA_CODE, time)
         }
 

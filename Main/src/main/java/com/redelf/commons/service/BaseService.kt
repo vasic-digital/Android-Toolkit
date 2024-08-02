@@ -11,6 +11,7 @@ abstract class BaseService : Service() {
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 
         receiver?.let { r ->
+
             filter?.let { f ->
 
                 LocalBroadcastManager.getInstance(applicationContext).registerReceiver(r, f)

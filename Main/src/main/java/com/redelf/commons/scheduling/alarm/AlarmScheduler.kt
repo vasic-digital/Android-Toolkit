@@ -5,6 +5,7 @@ import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
 import android.os.PersistableBundle
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
 import com.redelf.commons.scheduling.Schedule
@@ -30,6 +31,21 @@ class AlarmScheduler(
         toWhen: Long
 
     ): Boolean {
+
+        val condition = what < BaseApplication.ALARM_SERVICE_JOB_ID_MIN.get() ||
+                what > BaseApplication.ALARM_SERVICE_JOB_ID_MAX.get()
+
+        if (condition) {
+
+            Console.error(
+
+                "$logTag :: Cannot schedule, the Job ID is out of " +
+                    "expected boundaries (${BaseApplication.ALARM_SERVICE_JOB_ID_MIN} - " +
+                        "${BaseApplication.ALARM_SERVICE_JOB_ID_MAX})"
+            )
+
+            return false
+        }
 
         unSchedule(what, "schedule")
 
