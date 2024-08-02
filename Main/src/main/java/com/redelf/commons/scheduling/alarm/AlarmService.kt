@@ -33,6 +33,7 @@ class AlarmService : JobService() {
 
             val alarmIntent = Intent(applicationContext, AlarmReceiver::class.java)
             alarmIntent.action = ALARM_ACTION
+            alarmIntent.putExtra(ALARM_VALUE, what)
 
             sendBroadcast(alarmIntent)
         }
