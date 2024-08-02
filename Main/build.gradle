@@ -390,7 +390,7 @@ task generateProxiesRemoteTxt {
 
             def content = "http://${pRemoteProdUsername}:${pRemoteProdPassword}@${pRemoteProd}:${pRemoteProdPort}".stripIndent().trim()
 
-            def filePath = "${projectDir}/src/androidTest/res/raw/proxies_remote.txt"
+            def filePath = "${projectDir}/src/main/res/raw/proxies_remote.txt"
 
             Files.write(Paths.get(filePath), content.getBytes())
             println "Generated proxies_remote.txt at: ${filePath}"
