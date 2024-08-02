@@ -12,7 +12,6 @@ import java.nio.file.Paths
 /*
     TODO: Use the JObfuscator from the Toolkit source code
 */
-
 class Obfuscator {
 
     private final String salt;
@@ -72,6 +71,7 @@ def obfuscator = new Obfuscator(salt)
 
 def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "false").toBoolean()
 def proxyProdEnabled = (System.getenv("PROXY_LOCAL_PROD_ENABLED") ?: "false").toBoolean()
+def proxyRemoteProdEnabled = (System.getenv("PROXY_REMOTE_PROD_ENABLED") ?: "false").toBoolean()
 
 def pLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
 def pLocalTestPort = System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080"
@@ -92,6 +92,16 @@ def proxyLocalProd = obfuscator.obfuscate(pLocalProd)
 def proxyLocalProdPort = obfuscator.obfuscate(pLocalProdPort)
 def proxyLocalProdUsername = obfuscator.obfuscate(pLocalProdUsername)
 def proxyLocalProdPassword = obfuscator.obfuscate(pLocalProdPassword)
+
+def pRemoteProd = System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1"
+def pRemoteProdPort = System.getenv("PROXY_LOCAL_PROD_PORT") ?: "8080"
+def pRemoteProdUsername = System.getenv("PROXY_LOCAL_PROD_USERNAME") ?: "admin"
+def pRemoteProdPassword = System.getenv("PROXY_LOCAL_PROD_PASSWORD") ?: "admin"
+
+def proxyRemoteProd = obfuscator.obfuscate(pRemoteProd)
+def proxyRemoteProdPort = obfuscator.obfuscate(pRemoteProdPort)
+def proxyRemoteProdUsername = obfuscator.obfuscate(pRemoteProdUsername)
+def proxyRemoteProdPassword = obfuscator.obfuscate(pRemoteProdPassword)
 
 android {
 
@@ -119,6 +129,14 @@ android {
             resValue "string", "ob_proxy_local_prod_port", proxyLocalProdPort
             resValue "string", "ob_proxy_local_prod_username", proxyLocalProdUsername
             resValue "string", "ob_proxy_local_prod_password", proxyLocalProdPassword
+        }
+
+        if (proxyRemoteProdEnabled) {
+
+            resValue "string", "ob_proxy_remote_prod", proxyRemoteProd
+            resValue "string", "ob_proxy_remote_prod_port", proxyRemoteProdPort
+            resValue "string", "ob_proxy_remote_prod_username", proxyRemoteProdUsername
+            resValue "string", "ob_proxy_remote_prod_password", proxyRemoteProdPassword
         }
 
         resValue "string", "ob_test", obfuscator.obfuscate(test)
@@ -307,8 +325,7 @@ task downloadProxies(type: Exec) {
 
     - Localhost dev (current dev. machine)
     - Localhost prod (current dev. machine)
-    - Local prod (external machine) // TODO: Implement this
-    - Remote prod (external machine, exposed or entirely dedicated remote server) // TODO: Implement this
+    - Remote prod (external machine, exposed or entirely dedicated remote server)
 */
 task generateProxiesLocalTxt {
     doLast {
@@ -327,38 +344,56 @@ http://${pLocalProdUsername}:${pLocalProdPassword}@${pLocalProd}:${pLocalProdPor
 """.stripIndent().trim()
         }
 
-        def filePath = "${projectDir}/src/androidTest/res/raw/proxies_local.txt"
+        if (proxyEnabled || proxyProdEnabled) {
 
-        Files.write(Paths.get(filePath), content.getBytes())
-        println "Generated proxies_local.txt at: ${filePath}"
+            def filePath = "${projectDir}/src/androidTest/res/raw/proxies_local.txt"
 
-        exec {
-
-            commandLine 'git', 'add', filePath
-        }
-
-        try {
+            Files.write(Paths.get(filePath), content.getBytes())
+            println "Generated proxies_local.txt at: ${filePath}"
 
             exec {
 
-                commandLine 'git', 'commit', '-m', 'Auto-generated proxies_local.txt'
+                commandLine 'git', 'add', filePath
             }
 
-        } catch (Exception e) {
+            try {
 
-            println "Git commit command failed: ${e.message}"
+                exec {
+
+                    commandLine 'git', 'commit', '-m', 'Auto-generated proxies_local.txt'
+                }
+
+            } catch (Exception e) {
+
+                println "Git commit command failed: ${e.message}"
+            }
+
+            try {
+
+                exec {
+
+                    commandLine 'git', 'push'
+                }
+
+            } catch (Exception e) {
+
+                println "Git push command failed: ${e.message}"
+            }
         }
+    }
+}
 
-        try {
+task generateProxiesRemoteTxt {
+    doLast {
 
-            exec {
+        if (proxyRemoteProdEnabled) {
 
-                commandLine 'git', 'push'
-            }
+            def content = "http://${pRemoteProdUsername}:${pRemoteProdPassword}@${pRemoteProd}:${pRemoteProdPort}".stripIndent().trim()
 
-        } catch (Exception e) {
+            def filePath = "${projectDir}/src/androidTest/res/raw/proxies_remote.txt"
 
-            println "Git push command failed: ${e.message}"
+            Files.write(Paths.get(filePath), content.getBytes())
+            println "Generated proxies_remote.txt at: ${filePath}"
         }
     }
 }
@@ -402,6 +437,11 @@ if (proxyEnabled) {
 if (proxyEnabled || proxyProdEnabled) {
 
     preBuild.dependsOn generateProxiesLocalTxt
+}
+
+if (proxyRemoteProdEnabled) {
+
+    preBuild.dependsOn generateProxiesRemoteTxt
 }
 
 if (proxyEnabled) {
