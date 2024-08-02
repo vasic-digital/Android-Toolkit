@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Proxy: -->
-    <integer name="proxy_timeout_in_milliseconds">500</integer>
+    <integer name="proxy_timeout_in_milliseconds">5000</integer>
     <integer name="endpoint_timeout_in_milliseconds">5000</integer>
 
 </resources>
