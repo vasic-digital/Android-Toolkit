@@ -64,48 +64,23 @@ abstract class HttpProxiesTest : ProxiesTest() {
     @Test
     fun testAliveProxy() {
 
-        try {
+        val res = com.redelf.commons.R.string.ob_proxy_local_test
+        val resPort = com.redelf.commons.R.string.ob_proxy_local_test_port
+        val resUsername = com.redelf.commons.R.string.ob_proxy_local_test_username
+        val resPassword = com.redelf.commons.R.string.ob_proxy_local_test_password
 
-            val res = com.redelf.commons.R.string.ob_proxy_local_test
-            val resPort = com.redelf.commons.R.string.ob_proxy_local_test_port
-            val resUsername = com.redelf.commons.R.string.ob_proxy_local_test_username
-            val resPassword = com.redelf.commons.R.string.ob_proxy_local_test_password
+        testProxy(res, resPort, resUsername, resPassword)
+    }
 
-            val plTest = applicationContext.deobfuscateString(res)
-            val plTestPort = applicationContext.deobfuscateString(resPort)
-            val plTestUsername = applicationContext.deobfuscateString(resUsername)
-            val plTestPassword = applicationContext.deobfuscateString(resPassword)
+    @Test
+    fun testAliveRemoteProxy() {
 
-            listOf(
+        val res = com.redelf.commons.R.string.ob_proxy_remote_prod
+        val resPort = com.redelf.commons.R.string.ob_proxy_remote_prod_port
+        val resUsername = com.redelf.commons.R.string.ob_proxy_remote_prod_username
+        val resPassword = com.redelf.commons.R.string.ob_proxy_remote_prod_password
 
-                Pair("http://google.com:80", false),
-                Pair("http://$plTestUsername:$plTestPassword@$plTest:$plTestPort", true)
-
-            ).forEach { pair ->
-
-                val address = pair.first
-                val checkAliveAndCredentials = pair.second
-
-                val proxy = HttpProxy(applicationContext, address)
-
-                Assert.assertNotNull(proxy)
-                Assert.assertTrue(proxy.address.isNotBlank())
-                Assert.assertTrue(proxy.port > 0)
-
-                Assert.assertTrue(proxy.ping())
-
-                if (checkAliveAndCredentials) {
-
-                    Assert.assertTrue(isNotEmpty(proxy.username))
-                    Assert.assertTrue(isNotEmpty(proxy.password))
-                    Assert.assertTrue(proxy.isAlive(applicationContext))
-                }
-            }
-
-        } catch (e: Exception) {
-
-            Assert.fail(e.message)
-        }
+        testProxy(res, resPort, resUsername, resPassword)
     }
 
     @Test
@@ -336,5 +311,46 @@ abstract class HttpProxiesTest : ProxiesTest() {
         val sourceAddress = endpoint.address
 
         testHttpSourceProxies(sourceAddress)
+    }
+
+    private fun testProxy(res: Int, resPort: Int, resUsername: Int, resPassword: Int) {
+
+        try {
+
+            val plTest = applicationContext.deobfuscateString(res)
+            val plTestPort = applicationContext.deobfuscateString(resPort)
+            val plTestUsername = applicationContext.deobfuscateString(resUsername)
+            val plTestPassword = applicationContext.deobfuscateString(resPassword)
+
+            listOf(
+
+                Pair("http://google.com:80", false),
+                Pair("http://$plTestUsername:$plTestPassword@$plTest:$plTestPort", true)
+
+            ).forEach { pair ->
+
+                val address = pair.first
+                val checkAliveAndCredentials = pair.second
+
+                val proxy = HttpProxy(applicationContext, address)
+
+                Assert.assertNotNull(proxy)
+                Assert.assertTrue(proxy.address.isNotBlank())
+                Assert.assertTrue(proxy.port > 0)
+
+                Assert.assertTrue(proxy.ping())
+
+                if (checkAliveAndCredentials) {
+
+                    Assert.assertTrue(isNotEmpty(proxy.username))
+                    Assert.assertTrue(isNotEmpty(proxy.password))
+                    Assert.assertTrue(proxy.isAlive(applicationContext))
+                }
+            }
+
+        } catch (e: Exception) {
+
+            Assert.fail(e.message)
+        }
     }
 }
