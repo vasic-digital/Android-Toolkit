@@ -220,6 +220,8 @@ dependencies {
     final String lifecycleVersion = "2.8.4"
     final String retrofitHttpVersion = "2.11.0"
 
+    api project(":Toolkit:JCommons")
+
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
@@ -442,3 +444,4 @@ if (proxyEnabled) {
 
     preBuild.dependsOn startLocalProxyServer
 }
+

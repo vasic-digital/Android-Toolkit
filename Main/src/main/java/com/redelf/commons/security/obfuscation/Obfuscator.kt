@@ -1,6 +1,7 @@
 package com.redelf.commons.security.obfuscation
 
 import com.redelf.commons.extensions.recordException
+import com.redelf.jcommons.JObfuscator
 
 
 class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltProvider) {
