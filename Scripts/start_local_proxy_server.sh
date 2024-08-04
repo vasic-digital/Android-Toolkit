@@ -31,7 +31,7 @@ if cd "$1" && docker login && docker-compose up -d && docker ps; then
 
   # FIXME: Do not check if already under the Proxy environment
 
-  if curl -x "http://127.0.0.1:$PROXY_LOCAL_TEST_PORT" -U "$PROXY_LOCAL_TEST_USERNAME:$PROXY_LOCAL_TEST_PASSWORD" https://www.github.com; then
+  if sleep 10 && curl -x "http://127.0.0.1:$PROXY_LOCAL_TEST_PORT" -U "$PROXY_LOCAL_TEST_USERNAME:$PROXY_LOCAL_TEST_PASSWORD" https://www.github.com; then
 
     echo "Squid proxy is running and accessible at http://127.0.0.1:$PROXY_LOCAL_TEST_PORT"
 
