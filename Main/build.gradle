@@ -6,6 +6,19 @@ plugins {
     id 'kotlin-kapt'
 }
 
+if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
+
+    throw new IllegalArgumentException(
+
+            "The 'toolkit_project_name' ext. variable has to be set from the main " +
+                    "root project build.gradle file"
+    )
+
+} else {
+
+    println("The 'toolkit_project_name' is: '$toolkit_project_name'")
+}
+
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -46,8 +59,9 @@ class Obfuscator {
 
      export OBFUSCATION_SALT="your_secret_salt"
 
-     export PROXY_LOCAL_ENABLED=true
-     export PROXY_LOCAL_PROD_ENABLED=true
+     export PROXY_LOCAL_ENABLED="BOBA;"
+     export PROXY_LOCAL_PROD_ENABLED="BOBA;"
+     export PROXY_REMOTE_PROD_ENABLED="BOBA;"
 
      export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
      export PROXY_LOCAL_PROD="milosvasic.local"
@@ -69,9 +83,9 @@ def test = System.getenv("OBFUSCATION_TEST") ?: ""
 def salt = System.getenv("OBFUSCATION_SALT") ?: ""
 def obfuscator = new Obfuscator(salt)
 
-def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "false").toBoolean()
-def proxyProdEnabled = (System.getenv("PROXY_LOCAL_PROD_ENABLED") ?: "false").toBoolean()
-def proxyRemoteProdEnabled = (System.getenv("PROXY_REMOTE_PROD_ENABLED") ?: "false").toBoolean()
+def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "").contains("$toolkit_project_name;")
+def proxyProdEnabled = (System.getenv("PROXY_LOCAL_PROD_ENABLED") ?: "").contains("$toolkit_project_name;")
+def proxyRemoteProdEnabled = (System.getenv("PROXY_REMOTE_PROD_ENABLED") ?: "").contains("$toolkit_project_name;")
 
 def pLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
 def pLocalTestPort = System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080"
