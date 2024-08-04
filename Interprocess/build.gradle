@@ -38,11 +38,11 @@ android {
 
 dependencies {
 
-    implementation project(':Toolkit:Main')
+    implementation project("${toolkit_context}:Main")
 
-    testImplementation project(":Toolkit:Main")
-    testImplementation project(":Toolkit:Test")
+    testImplementation project("${toolkit_context}:Main")
+    testImplementation project("${toolkit_context}:Test")
 
-    androidTestImplementation project(":Toolkit:Main")
-    androidTestImplementation project(":Toolkit:Test")
+    androidTestImplementation project("${toolkit_context}:Main")
+    androidTestImplementation project("${toolkit_context}:Test")
 }

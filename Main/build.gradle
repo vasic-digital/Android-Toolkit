@@ -190,7 +190,7 @@ dependencies {
     final String lifecycleVersion = "2.8.4"
     final String retrofitHttpVersion = "2.11.0"
 
-    api project(":Toolkit:JCommons")
+    api project("${toolkit_context}:JCommons")
 
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
@@ -266,11 +266,11 @@ dependencies {
     api "androidx.navigation:navigation-fragment-ktx:2.7.7"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
-    testImplementation project(":Toolkit:Test")
+    testImplementation project("${toolkit_context}:Test")
 
     testImplementation "junit:junit:4.13.2"
 
-    androidTestImplementation project(":Toolkit:Test")
+    androidTestImplementation project("${toolkit_context}:Test")
     androidTestImplementation "androidx.test:rules:1.6.1"
     androidTestImplementation "androidx.test.ext:junit:1.2.1"
 

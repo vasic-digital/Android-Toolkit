@@ -14,10 +14,7 @@ sourceSets {
     }
 }
 
-dependencies {
-
-
-}
+dependencies {}
 
 java {
 
@@ -27,8 +24,10 @@ java {
 
 task createJar(type: Jar) {
 
-    archiveBaseName.set("toolkit-main")
+    println("Creating the JCommons JAR archive")
+
+    archiveBaseName.set("toolkit-jcommons")
     from sourceSets.main.output
 }
 
-tasks.build.finalizedBy(':Toolkit:Main:createJar')
+tasks.build.finalizedBy("${toolkit_context}:JCommons:createJar")
