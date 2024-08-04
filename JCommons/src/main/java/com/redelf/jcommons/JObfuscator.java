@@ -54,4 +54,9 @@ public class JObfuscator {
 
         return data;
     }
+
+    public void hello() {
+
+        System.out.println("Hello from JObfuscator class :: " + obfuscate("Hello"));
+    }
 }

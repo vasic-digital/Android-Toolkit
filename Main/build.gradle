@@ -22,37 +22,7 @@ if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$
 import java.nio.file.Files
 import java.nio.file.Paths
 
-/*
-    TODO: Use the JObfuscator from the Toolkit source code
-*/
-class Obfuscator {
-
-    private final String salt;
-
-    Obfuscator(String salt) {
-
-        this.salt = salt;
-    }
-
-    String obfuscate(String what) {
-
-        String concatenated = what + salt
-        return bytesToHex(concatenated.getBytes())
-    }
-
-    private static String bytesToHex(byte[] bytes) {
-
-        StringBuilder hexString = new StringBuilder(2 * bytes.length)
-        for (byte b : bytes) {
-            String hex = Integer.toHexString(0xff & b)
-            if (hex.length() == 1) {
-                hexString.append('0')
-            }
-            hexString.append(hex)
-        }
-        return hexString.toString()
-    }
-}
+import com.redelf.jcommons.JObfuscator
 
 /*
      The .zshrc / .bashrc example:
@@ -81,7 +51,7 @@ class Obfuscator {
 def test = System.getenv("OBFUSCATION_TEST") ?: ""
 
 def salt = System.getenv("OBFUSCATION_SALT") ?: ""
-def obfuscator = new Obfuscator(salt)
+def obfuscator = new JObfuscator(salt)
 
 def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "").contains("$toolkit_project_name;")
 def proxyProdEnabled = (System.getenv("PROXY_LOCAL_PROD_ENABLED") ?: "").contains("$toolkit_project_name;")
