@@ -310,6 +310,11 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         return managedData?.add(data) == true
     }
 
+    protected open fun onAtLeastOneSuccess() {
+
+        Console.log("$logTag We have at least one success")
+    }
+
     private fun executeSending(executedFrom: String = "") {
 
         val now = System.currentTimeMillis()
@@ -354,6 +359,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
             return
         }
 
+        val hasFailed = AtomicBoolean()
+        val atLeastOneSuccess = AtomicBoolean()
         val iterator = managedData?.getIterator()
 
         while (iterator?.hasNext() == true) {
@@ -381,14 +388,31 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
                     Console.info("$logTag Data has been sent")
 
+                    if (!atLeastOneSuccess.get()) {
+
+                        atLeastOneSuccess.get()
+                    }
+
                 } else {
 
                     Console.error("$logTag Data has not been sent")
+
+                    if (!hasFailed.get()) {
+
+                        hasFailed.set(true)
+                    }
                 }
 
                 onSent(data, success)
             }
         }
+
+        if (atLeastOneSuccess.get()) {
+
+            onAtLeastOneSuccess()
+        }
+
+        onSent(!hasFailed.get())
 
         setSending(false)
 
@@ -499,15 +523,25 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         Console.error("$logTag Shutdown failure")
     }
 
-    private fun onSent(data: D, success: Boolean) {
+    private fun onSent(success: Boolean) {
+
+        if (success) {
+
+            Console.log("$logTag BROADCAST_ACTION_RESULT on sent :: SUCCESS")
+
+        } else {
+
+            Console.error("$logTag BROADCAST_ACTION_RESULT on sent :: FAILURE")
+        }
 
         val intent = Intent(BROADCAST_ACTION_RESULT)
         intent.putExtra(BROADCAST_EXTRA_RESULT, success)
 
         val ctx = takeContext()
         ctx.sendBroadcast(intent)
+    }
 
-        Console.log("$logTag BROADCAST_ACTION_RESULT on sent")
+    private fun onSent(data: D, success: Boolean) {
 
         val operation = object : CallbackOperation<TransmissionSendingCallback<D>> {
 
