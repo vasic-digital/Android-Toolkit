@@ -26,8 +26,16 @@ task createJar(type: Jar) {
 
     println("Creating the JCommons JAR archive")
 
-    archiveBaseName.set("toolkit-jcommons")
+    archiveBaseName.set("toolkit-jcommons-${toolkit_version}")
     from sourceSets.main.output
 }
 
 tasks.build.finalizedBy("${toolkit_context}:JCommons:createJar")
+
+task copyJar(type: Copy) {
+    
+    from createJar.archiveFile
+    into 'jar'
+}
+
+createJar.finalizedBy(copyJar)

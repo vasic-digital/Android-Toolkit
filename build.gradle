@@ -1,8 +1,12 @@
 buildscript {
 
-    ext.toolkit_context = ''
-    ext.kotlin_version = '2.0.0'
-    ext.toolkit_version = '2.0.2'
+    def default_toolkit_context = ""
+    def default_kotlin_version = "2.0.0"
+    def default_toolkit_version = "2.0.2"
+
+    ext.toolkit_context = project.hasProperty('toolkit_context') ? "$toolkit_context" : default_toolkit_context
+    ext.kotlin_version = project.hasProperty('kotlin_version') ? "$kotlin_version" : default_kotlin_version
+    ext.toolkit_version = project.hasProperty('toolkit_version') ? "$toolkit_version" : default_toolkit_version
 
     repositories {
 
@@ -13,7 +17,7 @@ buildscript {
 
         flatDir {
 
-            dirs 'JCommons/build/libs'
+            dirs 'JCommons/jar'
         }
     }
 
@@ -23,8 +27,6 @@ buildscript {
         classpath "com.google.gms:google-services:4.4.2"
         classpath "com.google.firebase:firebase-crashlytics-gradle:3.0.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
-        classpath(group: 'com.redelf', name: 'jcommons', version: toolkit_version, ext: 'jar')
     }
 }
 
@@ -43,7 +45,7 @@ buildscript {
 
     dependencies {
 
-        classpath files('JCommons/build/libs/JCommons.jar')
+        classpath files("JCommons/jar/toolkit-jcommons-${toolkit_version}.jar")
     }
 }
 
