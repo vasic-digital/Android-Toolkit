@@ -3,10 +3,15 @@ buildscript {
     def default_toolkit_context = ""
     def default_kotlin_version = "2.0.0"
     def default_toolkit_version = "2.0.2"
+    def default_toolkit_obfuscator_jar_home = 'JCommons/jar'
+    def default_toolkit_obfuscator_jar = "$toolkit_obfuscator_jar_home/toolkit-jcommons-${toolkit_version}.jar"
 
     ext.toolkit_context = project.hasProperty('toolkit_context') ? "$toolkit_context" : default_toolkit_context
     ext.kotlin_version = project.hasProperty('kotlin_version') ? "$kotlin_version" : default_kotlin_version
     ext.toolkit_version = project.hasProperty('toolkit_version') ? "$toolkit_version" : default_toolkit_version
+
+    ext.toolkit_obfuscator_jar_home = project.hasProperty('toolkit_obfuscator_jar_home') ? "$toolkit_obfuscator_jar_home" : default_toolkit_obfuscator_jar_home
+    ext.toolkit_obfuscator_jar = project.hasProperty('toolkit_obfuscator_jar') ? "$toolkit_obfuscator_jar" : default_toolkit_obfuscator_jar
 
     repositories {
 
@@ -17,7 +22,7 @@ buildscript {
 
         flatDir {
 
-            dirs 'JCommons/jar'
+            dirs "$toolkit_obfuscator_jar_home"
         }
     }
 
@@ -45,7 +50,7 @@ buildscript {
 
     dependencies {
 
-        classpath files("JCommons/jar/toolkit-jcommons-${toolkit_version}.jar")
+        classpath files("$toolkit_obfuscator_jar")
     }
 }
 

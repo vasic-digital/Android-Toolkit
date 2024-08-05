@@ -190,6 +190,7 @@ dependencies {
     final String lifecycleVersion = "2.8.4"
     final String retrofitHttpVersion = "2.11.0"
 
+    // FIXME: Must be dynamic
     api project("${toolkit_context}:JCommons")
 
     api "com.squareup.okio:okio:$okioVersion"
