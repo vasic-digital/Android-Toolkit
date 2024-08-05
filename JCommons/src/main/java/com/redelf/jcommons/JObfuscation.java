@@ -1,2 +1,8 @@
-package com.redelf.jcommons;public interface JObfuscation {
+package com.redelf.jcommons;
+
+public interface JObfuscation {
+
+    String obfuscate(String what);
+
+    String deobfuscate(String what);
 }

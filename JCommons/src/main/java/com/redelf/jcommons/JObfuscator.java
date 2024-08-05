@@ -1,6 +1,6 @@
 package com.redelf.jcommons;
 
-public class JObfuscator {
+public class JObfuscator implements JObfuscation {
 
     private final String salt;
 
@@ -8,12 +8,14 @@ public class JObfuscator {
         this.salt = salt;
     }
 
+    @Override
     public String obfuscate(String what) {
 
         String concatenated = what + salt;
         return bytesToHex(concatenated.getBytes());
     }
 
+    @Override
     public String deobfuscate(String what) {
 
         byte[] decodedBytes = hexToBytes(what);
