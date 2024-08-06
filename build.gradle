@@ -13,6 +13,10 @@ buildscript {
     ext.toolkit_obfuscator_jar_home = project.hasProperty('toolkit_obfuscator_jar_home') ? "$toolkit_obfuscator_jar_home" : default_toolkit_obfuscator_jar_home
     ext.toolkit_obfuscator_jar = project.hasProperty('toolkit_obfuscator_jar') ? "$toolkit_obfuscator_jar" : default_toolkit_obfuscator_jar
 
+    def default_toolkit_obfuscator_project = "${toolkit_context}:JCommons"
+
+    ext.toolkit_obfuscator_project = project.hasProperty('toolkit_obfuscator_project') ? "$toolkit_obfuscator_project" : default_toolkit_obfuscator_project
+
     repositories {
 
         mavenLocal()
