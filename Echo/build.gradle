@@ -1,0 +1,67 @@
+plugins {
+
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+}
+
+android {
+
+    compileSdk 34
+    namespace 'com.redelf.commons.interprocess.echo'
+
+    defaultConfig {
+
+        minSdk 28
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+        applicationId "com.redelf.commons.interprocess.echo"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+
+        release {
+
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+
+        jvmTarget = '1.8'
+    }
+
+    packagingOptions {
+
+        exclude 'META-INF/*'
+        exclude 'LICENSE-2.0.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+    }
+}
+
+dependencies {
+
+    implementation project(":Toolkit:Main")
+    implementation project(":Toolkit:Test")
+    implementation project(":Toolkit:Interprocess")
+
+    testImplementation project(":Toolkit:Main")
+    testImplementation project(":Toolkit:Test")
+
+    androidTestImplementation project(":Toolkit:Main")
+    androidTestImplementation project(":Toolkit:Test")
+}
