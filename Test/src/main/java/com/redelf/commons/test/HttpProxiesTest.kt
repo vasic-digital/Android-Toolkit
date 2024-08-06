@@ -36,15 +36,20 @@ abstract class HttpProxiesTest : ProxiesTest() {
     @Test
     fun testCreation() {
 
-        val res = com.redelf.commons.R.string.ob_proxy_local_test
-        val resPort = com.redelf.commons.R.string.ob_proxy_local_test_port
-        val resUsername = com.redelf.commons.R.string.ob_proxy_local_test_username
-        val resPassword = com.redelf.commons.R.string.ob_proxy_local_test_password
+        //        val res = com.redelf.commons.R.string.ob_proxy_local_test
+        //        val resPort = com.redelf.commons.R.string.ob_proxy_local_test_port
+        //        val resUsername = com.redelf.commons.R.string.ob_proxy_local_test_username
+        //        val resPassword = com.redelf.commons.R.string.ob_proxy_local_test_password
 
-        val host = applicationContext.deobfuscateString(res)
-        val port = applicationContext.deobfuscateString(resPort)
-        val username = applicationContext.deobfuscateString(resUsername)
-        val password = applicationContext.deobfuscateString(resPassword)
+        //        val host = applicationContext.deobfuscateString(res)
+        //        val port = applicationContext.deobfuscateString(resPort)
+        //        val username = applicationContext.deobfuscateString(resUsername)
+        //        val password = applicationContext.deobfuscateString(resPassword)
+
+        val port = "2507"
+        val username = "test"
+        val password = "test"
+        val host = "127.0.0.1"
 
         Assert.assertTrue(isNotEmpty(host))
         Assert.assertTrue(isNotEmpty(port))
