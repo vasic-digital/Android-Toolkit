@@ -26,7 +26,7 @@ public class JObfuscator implements JObfuscation {
     @Override
     public String identityObfuscator() {
 
-        return "Boba Obfuscator";
+        return "Boba";
     }
 
     private String bytesToHex(byte[] bytes) {
