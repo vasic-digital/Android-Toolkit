@@ -190,7 +190,9 @@ dependencies {
     final String lifecycleVersion = "2.8.4"
     final String retrofitHttpVersion = "2.11.0"
 
-    implementation project("$toolkit_obfuscator_project")
+    api project("$toolkit_obfuscator_project")
+    testApi project("$toolkit_obfuscator_project")
+    androidTestApi project("$toolkit_obfuscator_project")
 
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
