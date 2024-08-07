@@ -2,7 +2,7 @@ package com.redelf.commons.security.obfuscation
 
 interface Obfuscation {
 
-    fun identityObfuscator(): String
+    fun name(): String
 
     fun obfuscate(input: String): String
 

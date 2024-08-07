@@ -6,5 +6,5 @@ public interface JObfuscation {
 
     String deobfuscate(String what);
 
-    String identityObfuscator();
+    String name();
 }

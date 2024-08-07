@@ -40,10 +40,10 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
         return ""
     }
 
-    override fun identityObfuscator(): String {
+    override fun name(): String {
 
         val salt = saltProvider.obtain()?.takeValue() ?: ""
 
-        return JObfuscator(salt).identityObfuscator()
+        return JObfuscator(salt).name()
     }
 }

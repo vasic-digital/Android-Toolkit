@@ -24,7 +24,7 @@ public class JObfuscator implements JObfuscation {
     }
 
     @Override
-    public String identityObfuscator() {
+    public String name() {
 
         return "Boba";
     }
@@ -65,6 +65,6 @@ public class JObfuscator implements JObfuscation {
 
     public void hello() {
 
-        System.out.println("Hello from JObfuscator class :: " + obfuscate("Hello"));
+        System.out.println("Hello from " + name() + " JObfuscator class :: " + obfuscate("Hello"));
     }
 }

@@ -102,7 +102,7 @@ abstract class DeobfuscationTest : BaseTest() {
         val obfuscator = DefaultObfuscator.getStrategy()
 
         Assert.assertNotNull(obfuscator)
-        Assert.assertEquals(expectedObfuscatorIdentity, obfuscator.identityObfuscator())
+        Assert.assertEquals(expectedObfuscatorIdentity, obfuscator.name())
 
         var salt = getSalt()
         val id = salt?.identifier
