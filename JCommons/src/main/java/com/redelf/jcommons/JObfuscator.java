@@ -23,6 +23,12 @@ public class JObfuscator implements JObfuscation {
         return decodedString.replace(salt, "");
     }
 
+    @Override
+    public String identityObfuscator() {
+
+        return "Boba Obfuscator";
+    }
+
     private String bytesToHex(byte[] bytes) {
 
         StringBuilder hexString = new StringBuilder(2 * bytes.length);

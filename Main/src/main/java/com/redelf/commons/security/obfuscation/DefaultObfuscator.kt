@@ -35,4 +35,9 @@ object DefaultObfuscator : Obfuscation {
 
         return STRATEGY.deobfuscate(input)
     }
+
+    override fun identityObfuscator(): String {
+
+        return STRATEGY.identityObfuscator()
+    }
 }

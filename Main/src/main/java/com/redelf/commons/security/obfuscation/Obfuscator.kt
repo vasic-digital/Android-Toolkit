@@ -39,4 +39,11 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
 
         return ""
     }
+
+    override fun identityObfuscator(): String {
+
+        val salt = saltProvider.obtain()?.takeValue() ?: ""
+
+        return JObfuscator(salt).identityObfuscator()
+    }
 }

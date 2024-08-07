@@ -92,11 +92,17 @@ abstract class DeobfuscationTest : BaseTest() {
 
         expectedSalt: String,
         expectedDeobfuscatedData: String,
+        expectedObfuscatorIdentity: String,
         timeoutInMilliseconds: Long = 5000L
 
     ) {
 
         waitForObfuscator(timeoutInMilliseconds)
+
+        val obfuscator = DefaultObfuscator.getStrategy()
+
+        Assert.assertNotNull(obfuscator)
+        Assert.assertEquals(expectedObfuscatorIdentity, obfuscator.identityObfuscator())
 
         var salt = getSalt()
         val id = salt?.identifier
