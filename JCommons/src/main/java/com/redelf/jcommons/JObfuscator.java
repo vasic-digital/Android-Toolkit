@@ -26,7 +26,7 @@ public class JObfuscator implements JObfuscation {
     @Override
     public String name() {
 
-        return "Boba";
+        return "Common";
     }
 
     private String bytesToHex(byte[] bytes) {
