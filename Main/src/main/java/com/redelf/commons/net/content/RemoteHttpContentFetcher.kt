@@ -10,10 +10,12 @@ import java.io.IOException
 class RemoteHttpContentFetcher(
 
     private val endpoint: String,
-    private val token: String = ""
+    private val token: String = "",
+    private val throwOnError: Boolean = false
 
 ) : RemoteContent<String> {
 
+    @Throws(IOException::class, IllegalStateException::class)
     override fun fetch(): String {
 
         val data = fetchContentFromRemote(endpoint, token)
@@ -26,6 +28,7 @@ class RemoteHttpContentFetcher(
         return ""
     }
 
+    @Throws(IOException::class, IllegalStateException::class)
     private fun fetchContentFromRemote(url: String, token: String): String? {
 
         /*
@@ -53,12 +56,23 @@ class RemoteHttpContentFetcher(
             } else {
 
                 val e = IOException("Failed to fetch content: ${response.code}")
+
+                if (throwOnError) {
+
+                    throw e
+                }
+
                 recordException(e)
 
                 null
             }
 
         } catch (e: IOException) {
+
+            if (throwOnError) {
+
+                throw e
+            }
 
             recordException(e)
 

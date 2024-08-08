@@ -2,6 +2,7 @@ package com.redelf.commons.data.list
 
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
+import com.redelf.commons.net.content.RemoteHttpContentFetcher
 import com.redelf.commons.obtain.Obtain
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -10,6 +11,7 @@ import java.io.IOException
 class HttpStringsListDataSource(
 
     private val url: Obtain<String>,
+    private val token: Obtain<String>? = null,
     private val throwOnError: Boolean = false
 
 ) : ListDataSource<String> {
@@ -17,37 +19,18 @@ class HttpStringsListDataSource(
     @Throws(IOException::class, IllegalStateException::class)
     override fun getList(): List<String> {
 
-        /*
-        * TODO: Use Retrofit
-        */
-        val client = OkHttpClient()
+        val fetcher = RemoteHttpContentFetcher(
 
-        val request = Request.Builder()
-            .url(url.obtain())
-            .build()
+            endpoint = url.obtain(),
+            token = token?.obtain() ?: "",
+            throwOnError = throwOnError
+        )
 
-        try {
+        val raw = fetcher.fetch()
 
-            val response = client.newCall(request).execute()
+        if (isNotEmpty(raw)) {
 
-            if (response.isSuccessful) {
-
-                val raw = response.body?.string()
-
-                if (isNotEmpty(raw)) {
-
-                    return raw?.split("\n") ?: emptyList()
-                }
-            }
-
-        } catch (e: IOException) {
-
-            if (throwOnError) {
-
-                throw e
-            }
-
-            Console.error(e)
+            return raw.split("\n")
         }
 
         return emptyList()
