@@ -1,5 +1,6 @@
 package com.redelf.commons.net.content
 
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -9,7 +10,7 @@ import java.io.IOException
 class RemoteHttpContentFetcher(
 
     private val endpoint: String,
-    private val token: String
+    private val token: String = ""
 
 ) : RemoteContent<String> {
 
@@ -32,10 +33,14 @@ class RemoteHttpContentFetcher(
         */
         val client = OkHttpClient()
 
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "token $token")
-            .build()
+        val builder = Request.Builder().url(url)
+
+        if (isNotEmpty(token)) {
+
+            builder.addHeader("Authorization", "token $token")
+        }
+
+        val request = builder.build()
 
         return try {
 
@@ -56,6 +61,7 @@ class RemoteHttpContentFetcher(
         } catch (e: IOException) {
 
             recordException(e)
+
             null
         }
     }
