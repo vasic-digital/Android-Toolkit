@@ -2,6 +2,7 @@ package com.redelf.commons.test
 
 import com.redelf.commons.data.list.HttpStringsListDataSource
 import com.redelf.commons.net.proxy.http.HttpProxies
+import com.redelf.commons.obtain.Obtain
 import org.junit.Assert
 import java.util.concurrent.atomic.AtomicLong
 
@@ -11,7 +12,12 @@ abstract class ProxiesTest : EndpointsTest() {
 
         try {
 
-            val source = HttpStringsListDataSource(sourceAddress)
+            val urlObtain = object : Obtain<String> {
+
+                override fun obtain() = sourceAddress
+            }
+
+            val source = HttpStringsListDataSource(urlObtain)
             var proxies = HttpProxies(applicationContext, sources = listOf(source), alive = false)
             var obtained = proxies.obtain()
 

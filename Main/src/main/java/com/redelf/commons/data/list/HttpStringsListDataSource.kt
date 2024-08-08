@@ -2,13 +2,14 @@ package com.redelf.commons.data.list
 
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.Obtain
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 
 class HttpStringsListDataSource(
 
-    private val url: String,
+    private val url: Obtain<String>,
     private val throwOnError: Boolean = false
 
 ) : ListDataSource<String> {
@@ -22,7 +23,7 @@ class HttpStringsListDataSource(
         val client = OkHttpClient()
 
         val request = Request.Builder()
-            .url(url)
+            .url(url.obtain())
             .build()
 
         try {

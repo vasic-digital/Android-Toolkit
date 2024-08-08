@@ -8,6 +8,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.net.endpoint.http.HttpEndpoint
 import com.redelf.commons.net.proxy.http.HttpProxies
 import com.redelf.commons.net.proxy.http.HttpProxy
+import com.redelf.commons.obtain.Obtain
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong
@@ -170,12 +171,13 @@ abstract class HttpProxiesTest : ProxiesTest() {
 
             val sourceRaw = RawStringsListDataSource(applicationContext, rawRes, throwOnError = true)
 
-            val sourceHttp = HttpStringsListDataSource(
+            val urlObtain = object : Obtain<String> {
 
-                    "https://raw.githubusercontent.com/red-elf/" +
-                            "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt"
-            )
+                override fun obtain() = "https://raw.githubusercontent.com/red-elf/" +
+                        "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt"
+            }
 
+            val sourceHttp = HttpStringsListDataSource(urlObtain)
             val source = listOf(sourceRaw, sourceHttp)
 
             var proxies = HttpProxies(applicationContext, sources = source, alive = false)
@@ -228,11 +230,13 @@ abstract class HttpProxiesTest : ProxiesTest() {
 
             val sourceRaw = RawStringsListDataSource(applicationContext, rawRes, throwOnError = true)
 
-            val sourceHttp =
-                HttpStringsListDataSource(
-                    "https://raw.githubusercontent.com/red-elf/" +
-                            "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt"
-                )
+            val urlObtain = object : Obtain<String> {
+
+                override fun obtain() = "https://raw.githubusercontent.com/red-elf/" +
+                        "Android-Toolkit/main/Main/src/androidTest/res/raw/proxies_local.txt"
+            }
+
+            val sourceHttp = HttpStringsListDataSource(urlObtain)
 
             val source = listOf(sourceRaw, sourceHttp)
 

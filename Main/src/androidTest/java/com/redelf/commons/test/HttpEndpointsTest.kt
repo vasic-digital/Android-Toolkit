@@ -4,6 +4,7 @@ import com.redelf.commons.data.list.HttpStringsListDataSource
 import com.redelf.commons.data.list.RawStringsListDataSource
 import com.redelf.commons.net.endpoint.http.HttpEndpoint
 import com.redelf.commons.net.endpoint.http.HttpEndpoints
+import com.redelf.commons.obtain.Obtain
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong
@@ -98,11 +99,13 @@ class HttpEndpointsTest : EndpointsTest() {
 
         try {
 
-            val sourceAddress =
-                "https://raw.githubusercontent.com/proxifly/free-proxy-list/main" +
-                        "/proxies/protocols/http/data.txt"
+            val urlObtain = object : Obtain<String> {
 
-            val source = HttpStringsListDataSource(sourceAddress)
+                override fun obtain() = "https://raw.githubusercontent.com/proxifly/" +
+                        "free-proxy-list/main/proxies/protocols/http/data.txt"
+            }
+
+            val source = HttpStringsListDataSource(urlObtain)
 
             var endpoints =
                 HttpEndpoints(applicationContext, sources = listOf(source), alive = false)
