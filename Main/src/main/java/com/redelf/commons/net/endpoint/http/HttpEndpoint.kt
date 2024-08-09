@@ -2,6 +2,7 @@ package com.redelf.commons.net.endpoint.http
 
 import android.content.Context
 import com.google.android.gms.net.CronetProviderInstaller
+import com.google.net.cronet.okhttptransport.CronetInterceptor
 import com.redelf.commons.R
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
@@ -130,90 +131,8 @@ class HttpEndpoint(
                 if (task.isSuccessful) {
 
                     // TODO: Make sure that Cronet engine is shared
-                    val cronetEngine = CronetEngine.Builder(ctx).build()
-
-                    val cronetInterceptor = object : Interceptor {
-
-                        @Throws(IOException::class)
-                        private fun proceedWithCronet(request: Request, call: Call): Response {
-
-                            val responseBuilder = Response.Builder()
-
-                            // TODO: Build the response using Cronet engine
-                            val callback = object : UrlRequest.Callback() {
-
-                                override fun onRedirectReceived(
-
-                                    request: UrlRequest?,
-                                    info: UrlResponseInfo?,
-                                    newLocationUrl: String?
-
-                                ) {
-
-                                    TODO("Not yet implemented")
-                                }
-
-                                override fun onResponseStarted(
-
-                                    request: UrlRequest?,
-                                    info: UrlResponseInfo?
-
-                                ) {
-
-                                    TODO("Not yet implemented")
-                                }
-
-                                override fun onReadCompleted(
-
-                                    request: UrlRequest?,
-                                    info: UrlResponseInfo?,
-                                    byteBuffer: ByteBuffer?
-
-                                ) {
-
-                                    TODO("Not yet implemented")
-                                }
-
-                                override fun onSucceeded(
-
-                                    request: UrlRequest?,
-                                    info: UrlResponseInfo?
-
-                                ) {
-
-                                    TODO("Not yet implemented")
-                                }
-
-                                override fun onFailed(
-
-                                    request: UrlRequest?,
-                                    info: UrlResponseInfo?,
-                                    error: CronetException?
-
-                                ) {
-
-                                    TODO("Not yet implemented")
-                                }
-                            }
-
-                            val urlRequest = cronetEngine.newUrlRequestBuilder(
-
-                                request.url.toString(),
-                                callback,
-                                Executor.MAIN.getPerformer()
-
-                            ).build()
-
-                            urlRequest.start()
-
-                            return responseBuilder.build()
-                        }
-
-                        override fun intercept(chain: Interceptor.Chain): Response {
-
-                            return proceedWithCronet(chain.request(), chain.call());
-                        }
-                    }
+                    val engine = CronetEngine.Builder(ctx).build()
+                    val cronetInterceptor = CronetInterceptor.newBuilder(engine).build()
 
                     builder.addInterceptor(cronetInterceptor)
                 }
