@@ -10,7 +10,7 @@ import java.util.concurrent.FutureTask
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
-enum class Executor : Execution, ExecutionPerformer<Executor> {
+enum class Executor : Execution, Performer<Executor> {
 
     MAIN {
 
