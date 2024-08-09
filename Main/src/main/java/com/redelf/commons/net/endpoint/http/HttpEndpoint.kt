@@ -126,6 +126,9 @@ class HttpEndpoint(
 
             val latch = CountDownLatch(1)
 
+            /*
+            * TODO: Do this on the Application level (only once)
+            */
             CronetProviderInstaller.installProvider(ctx).addOnCompleteListener { task ->
 
                 if (task.isSuccessful) {
