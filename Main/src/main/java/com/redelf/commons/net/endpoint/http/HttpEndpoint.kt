@@ -4,11 +4,15 @@ import android.content.Context
 import com.redelf.commons.R
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.endpoint.Endpoint
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
@@ -98,27 +102,32 @@ class HttpEndpoint(
     }
 
     override fun getSpeed(ctx: Context): Long {
-
         return try {
 
             val url = getUrl()
-            val connection = url?.openConnection() as HttpURLConnection?
 
-            connection?.readTimeout = timeoutInMilliseconds.get()
-            connection?.connectTimeout = timeoutInMilliseconds.get()
-            connection?.requestMethod = "GET"
+            val client = OkHttpClient.Builder()
+                .readTimeout(timeoutInMilliseconds.get().toLong(), TimeUnit.MILLISECONDS)
+                .connectTimeout(timeoutInMilliseconds.get().toLong(), TimeUnit.MILLISECONDS)
+                .build()
+
+            if (url == null) {
+
+                throw IllegalArgumentException("URL is null or empty")
+            }
+
+            val request = Request.Builder()
+                .url(url)
+                .build()
 
             val startTime = System.currentTimeMillis()
-            connection?.connect()
+            val response: Response = client.newCall(request).execute()
 
-            val responseCode = connection?.responseCode
-            val endTime = System.currentTimeMillis()
+            response.close()
 
-            connection?.disconnect()
+            if (response.isSuccessful) {
 
-            if (responseCode in 200..299) {
-
-                endTime - startTime
+                System.currentTimeMillis() - startTime
 
             } else {
 
