@@ -130,6 +130,8 @@ class HttpEndpoint(
 
                 if (task.isSuccessful) {
 
+                    Console.log("Cronet :: Provider installed successfully")
+
                     // TODO: Make sure that Cronet engine is shared
                     val engine = CronetEngine.Builder(ctx).build()
                     val cronetInterceptor = CronetInterceptor.newBuilder(engine).build()
