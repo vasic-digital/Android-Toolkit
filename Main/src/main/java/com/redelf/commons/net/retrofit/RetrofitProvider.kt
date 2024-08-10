@@ -20,6 +20,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import useCronet
 import java.util.concurrent.TimeUnit
 
 object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
@@ -75,6 +76,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             connTime = cTime ?: 0,
             writeTime = wTime ?: 0,
 
+            useCronet = param.useCronet?: true,
             verbose = param.bodyLog == true || param.verbose == true
         )
 
@@ -135,7 +137,8 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         readTime: Long,
         connTime: Long,
         writeTime: Long = -1L,
-        verbose: Boolean = false
+        verbose: Boolean = false,
+        useCronet: Boolean = true
 
     ): OkHttpClient {
 
@@ -148,6 +151,13 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         val builder = OkHttpClient
             .Builder()
+
+        if (useCronet) {
+
+            builder.useCronet()
+        }
+
+        builder
             .readTimeout(readTime, TimeUnit.SECONDS)
             .connectTimeout(connTime, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)

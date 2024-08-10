@@ -1,5 +1,4 @@
 import com.google.net.cronet.okhttptransport.CronetInterceptor
-import com.redelf.commons.logging.Console
 import com.redelf.commons.net.cronet.Cronet
 import okhttp3.OkHttpClient
 
