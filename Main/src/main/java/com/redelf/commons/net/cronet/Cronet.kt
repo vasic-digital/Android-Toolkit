@@ -27,9 +27,7 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
 
         Console.log("$tag START")
 
-        val latch = CountDownLatch(1)
-
-        Executor.MAIN.execute {
+        try {
 
             CronetProviderInstaller.installProvider(param).addOnCompleteListener { task ->
 
@@ -51,34 +49,20 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
                 }
 
                 ready.set(true)
-
-                latch.countDown()
             }
-        }
 
-        try {
+            ready.set(true)
 
-            latch.await(30, TimeUnit.SECONDS)
+        } catch (e: Exception) {
 
-        } catch (e: InterruptedException) {
+            Console.error("$tag ERROR: ${e.message}")
 
             recordException(e)
 
-            Console.error("$tag Timeout")
+            ready.set(false)
         }
 
-        val success = engine != null
-
-        if (success) {
-
-            Console.log("$tag Completed with success")
-
-        } else {
-
-            Console.error("$tag Completed with failure")
-        }
-
-        return success
+        return ready.get()
     }
 
     override fun obtain() = engine
