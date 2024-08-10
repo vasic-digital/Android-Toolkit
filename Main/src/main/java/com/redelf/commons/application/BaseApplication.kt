@@ -51,6 +51,9 @@ import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import androidx.work.Configuration
+import com.redelf.commons.lifecycle.LifecycleCallback
+import com.redelf.commons.net.cronet.Cronet
+import org.chromium.net.CronetEngine
 import java.util.concurrent.atomic.AtomicInteger
 
 
@@ -472,6 +475,8 @@ abstract class BaseApplication :
             enableStrictMode()
         }
 
+
+        Cronet.initialize(applicationContext)
         DataManagement.initialize(applicationContext)
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
