@@ -65,7 +65,14 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
 
         val success = engine != null
 
-        Console.log("$tag Completed :: Success = $success")
+        if (success) {
+
+            Console.log("$tag Completed with success")
+
+        } else {
+
+            Console.error("$tag Completed with failure")
+        }
 
         return success
     }
