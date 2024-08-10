@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.chromium.net.CronetEngine
+import useCronet
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.MalformedURLException
@@ -113,21 +114,11 @@ class HttpEndpoint(
 
             val url = getUrl()
 
-            val builder = OkHttpClient.Builder()
+            val client = OkHttpClient.Builder()
                 .readTimeout(timeoutInMilliseconds.get().toLong(), TimeUnit.MILLISECONDS)
                 .connectTimeout(timeoutInMilliseconds.get().toLong(), TimeUnit.MILLISECONDS)
-
-            Cronet.obtain()?.let {
-
-                // TODO: Make sure that Cronet engine is shared
-                val cronetInterceptor = CronetInterceptor.newBuilder(it).build()
-
-                builder.addInterceptor(cronetInterceptor)
-
-                Console.log("Using the Cronet engine")
-            }
-
-            val client = builder.build()
+                .useCronet()
+                .build()
 
             if (url == null) {
 
