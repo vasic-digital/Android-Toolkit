@@ -54,7 +54,7 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
 
         try {
 
-            latch.await(5, TimeUnit.SECONDS)
+            latch.await(30, TimeUnit.SECONDS)
 
         } catch (e: InterruptedException) {
 
