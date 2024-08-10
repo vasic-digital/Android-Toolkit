@@ -22,6 +22,7 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
     override fun initialize(param: Context) : Boolean {
 
         val tag = "$tag INIT ::"
+        val start = System.currentTimeMillis()
 
         Console.log("$tag START")
 
@@ -29,7 +30,11 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
 
         CronetProviderInstaller.installProvider(param).addOnCompleteListener { task ->
 
-            Console.log("$tag Provider installation task completed")
+            Console.log(
+
+                "$tag Provider installation task completed after" +
+                        " ${System.currentTimeMillis() - start} ms"
+            )
 
             if (task.isSuccessful) {
 
