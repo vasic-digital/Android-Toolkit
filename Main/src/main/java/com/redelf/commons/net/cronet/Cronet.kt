@@ -2,6 +2,7 @@ package com.redelf.commons.net.cronet
 
 import android.content.Context
 import com.google.android.gms.net.CronetProviderInstaller
+import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationParametrized
 import com.redelf.commons.lifecycle.InitializationParametrizedSync
@@ -28,28 +29,31 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
 
         val latch = CountDownLatch(1)
 
-        CronetProviderInstaller.installProvider(param).addOnCompleteListener { task ->
+        Executor.MAIN.execute {
 
-            Console.log(
+            CronetProviderInstaller.installProvider(param).addOnCompleteListener { task ->
 
-                "$tag Provider installation task completed after" +
-                        " ${System.currentTimeMillis() - start} ms"
-            )
+                Console.log(
 
-            if (task.isSuccessful) {
+                    "$tag Provider installation task completed after" +
+                            " ${System.currentTimeMillis() - start} ms"
+                )
 
-                Console.log("$tag Provider has been installed")
+                if (task.isSuccessful) {
 
-                engine = CronetEngine.Builder(param).build()
+                    Console.log("$tag Provider has been installed")
 
-            } else {
+                    engine = CronetEngine.Builder(param).build()
 
-                Console.error("$tag Provider was not installed")
+                } else {
+
+                    Console.error("$tag Provider was not installed")
+                }
+
+                ready.set(true)
+
+                latch.countDown()
             }
-
-            ready.set(true)
-
-            latch.countDown()
         }
 
         try {
