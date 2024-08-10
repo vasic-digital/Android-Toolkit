@@ -10,24 +10,36 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import org.chromium.net.CronetEngine
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetEngine?> {
 
     private val ready = AtomicBoolean()
     private var engine: CronetEngine? = null
+    private val tag = "Cronet ::"
 
     override fun initialize(param: Context) : Boolean {
+
+        val tag = "$tag INIT ::"
+
+        Console.log("$tag START")
 
         val latch = CountDownLatch(1)
 
         CronetProviderInstaller.installProvider(param).addOnCompleteListener { task ->
 
+            Console.log("$tag Provider installation task completed")
+
             if (task.isSuccessful) {
 
-                Console.log("Cronet :: Provider installed successfully")
+                Console.log("$tag Provider has been installed")
 
                 engine = CronetEngine.Builder(param).build()
+
+            } else {
+
+                Console.error("$tag Provider was not installed")
             }
 
             ready.set(true)
@@ -35,9 +47,22 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
             latch.countDown()
         }
 
-        latch.await()
+        try {
 
-        return engine != null
+            latch.await(5, TimeUnit.SECONDS)
+
+        } catch (e: InterruptedException) {
+
+            recordException(e)
+
+            Console.error("$tag Timeout")
+        }
+
+        val success = engine != null
+
+        Console.log("$tag Completed :: Success = $success")
+
+        return success
     }
 
     override fun obtain() = engine
