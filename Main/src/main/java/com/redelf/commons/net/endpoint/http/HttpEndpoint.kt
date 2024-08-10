@@ -5,6 +5,7 @@ import com.google.android.gms.net.CronetProviderInstaller
 import com.google.net.cronet.okhttptransport.CronetInterceptor
 import com.redelf.commons.R
 import com.redelf.commons.logging.Console
+import com.redelf.commons.net.cronet.Cronet
 import com.redelf.commons.net.endpoint.Endpoint
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -116,28 +117,15 @@ class HttpEndpoint(
                 .readTimeout(timeoutInMilliseconds.get().toLong(), TimeUnit.MILLISECONDS)
                 .connectTimeout(timeoutInMilliseconds.get().toLong(), TimeUnit.MILLISECONDS)
 
-            val latch = CountDownLatch(1)
+            Cronet.obtain()?.let {
 
-            /*
-            * TODO: Do this on the Application level (only once)
-            */
-            CronetProviderInstaller.installProvider(ctx).addOnCompleteListener { task ->
+                // TODO: Make sure that Cronet engine is shared
+                val cronetInterceptor = CronetInterceptor.newBuilder(it).build()
 
-                if (task.isSuccessful) {
+                builder.addInterceptor(cronetInterceptor)
 
-                    Console.log("Cronet :: Provider installed successfully")
-
-                    // TODO: Make sure that Cronet engine is shared
-                    val engine = CronetEngine.Builder(ctx).build()
-                    val cronetInterceptor = CronetInterceptor.newBuilder(engine).build()
-
-                    builder.addInterceptor(cronetInterceptor)
-                }
-
-                latch.countDown()
+                Console.log("Using the Cronet engine")
             }
-
-            latch.await(5, TimeUnit.SECONDS)
 
             val client = builder.build()
 
@@ -192,11 +180,11 @@ class HttpEndpoint(
         return super.equals(other)
     }
 
-    override fun hashCode() : Int {
+    override fun hashCode(): Int {
 
         val thisUri = getUri()
 
-        return thisUri?.hashCode()?: 0
+        return thisUri?.hashCode() ?: 0
     }
 
     fun getUri(): URI? {
@@ -210,7 +198,15 @@ class HttpEndpoint(
                 val normalizedPath = if (uri.path.endsWith("/")) uri.path.dropLast(1) else uri.path
                 val normalizedPort = if (uri.port == 80) -1 else uri.port
 
-                URI(uri.scheme, uri.userInfo, uri.host, normalizedPort, normalizedPath, uri.query, uri.fragment)
+                URI(
+                    uri.scheme,
+                    uri.userInfo,
+                    uri.host,
+                    normalizedPort,
+                    normalizedPath,
+                    uri.query,
+                    uri.fragment
+                )
             }
 
         } catch (e: MalformedURLException) {
