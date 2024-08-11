@@ -1,23 +1,18 @@
 package com.redelf.commons.net.endpoint.http
 
 import android.content.Context
-import com.google.android.gms.net.CronetProviderInstaller
-import com.google.net.cronet.okhttptransport.CronetInterceptor
 import com.redelf.commons.R
 import com.redelf.commons.logging.Console
-import com.redelf.commons.net.cronet.Cronet
 import com.redelf.commons.net.endpoint.Endpoint
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.chromium.net.CronetEngine
 import useCronet
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong

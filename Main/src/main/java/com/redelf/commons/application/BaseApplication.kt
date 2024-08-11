@@ -24,6 +24,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
+import androidx.work.Configuration
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
@@ -41,6 +42,7 @@ import com.redelf.commons.management.managers.ManagersInitializer
 import com.redelf.commons.messaging.firebase.FcmService
 import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.migration.MigrationNotReadyException
+import com.redelf.commons.net.cronet.Cronet
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager
@@ -50,10 +52,6 @@ import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
-import androidx.work.Configuration
-import com.redelf.commons.lifecycle.LifecycleCallback
-import com.redelf.commons.net.cronet.Cronet
-import org.chromium.net.CronetEngine
 import java.util.concurrent.atomic.AtomicInteger
 
 

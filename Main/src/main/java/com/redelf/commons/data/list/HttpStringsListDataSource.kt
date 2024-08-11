@@ -1,11 +1,8 @@
 package com.redelf.commons.data.list
 
 import com.redelf.commons.extensions.isNotEmpty
-import com.redelf.commons.logging.Console
 import com.redelf.commons.net.content.RemoteHttpContentFetcher
 import com.redelf.commons.obtain.Obtain
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.IOException
 
 class HttpStringsListDataSource(
