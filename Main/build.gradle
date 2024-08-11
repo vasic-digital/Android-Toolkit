@@ -394,12 +394,19 @@ task startLocalProxyServer {
 task obtainAndWriteSalt {
     doLast {
 
-        def content = "${salt}"
-        def filePath = "${getRootDir()}/salt.txt"
+        if (!salt.isEmpty() && !salt.isBlank()) {
 
-        Files.write(Paths.get(filePath), content.getBytes())
+            def content = "${salt}"
+            def filePath = "${getRootDir()}/salt.txt"
 
-        println "Generated salt.txt at: ${filePath}"
+            Files.write(Paths.get(filePath), content.getBytes())
+
+            println "Generated salt.txt at: ${filePath}"
+
+        } else {
+
+            println "No salt.txt was generated"
+        }
     }
 }
 
