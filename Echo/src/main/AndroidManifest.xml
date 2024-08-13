@@ -2,10 +2,13 @@
 <manifest
 
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
->
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <permission
+        android:name="com.redelf.commons.permission.INTERPROCESS_WORKER"
+        android:protectionLevel="signature" />
 
     <application
 
@@ -16,8 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Boba"
-        tools:replace="android:name"
-    >
+        tools:replace="android:name">
 
         <activity
 
@@ -35,10 +37,9 @@
 
         <receiver
 
-            android:enabled="true"
-            android:exported="true"
             android:name=".BootReceiver"
-        >
+            android:enabled="true"
+            android:exported="true">
 
             <intent-filter>
 
@@ -47,6 +48,13 @@
             </intent-filter>
 
         </receiver>
+
+        <service
+
+            android:exported="true"
+            android:name=".EchoService"
+            android:permission="com.redelf.commons.interprocess.echo"
+        />
 
     </application>
 

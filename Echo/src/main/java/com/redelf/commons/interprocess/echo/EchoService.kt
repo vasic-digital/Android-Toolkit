@@ -1,19 +1,17 @@
 package com.redelf.commons.interprocess.echo
 
-import android.content.Context
 import android.content.Intent
-import androidx.work.WorkerParameters
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.yieldWhile
-import com.redelf.commons.interprocess.InterprocessWorker
+import com.redelf.commons.interprocess.InterprocessService
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 
-class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ctx, params) {
+class EchoService : InterprocessService() {
 
-    companion object : Obtain<EchoWorker> {
+    companion object : Obtain<EchoService> {
 
-        private var WORKER: EchoWorker? = null
+        private var WORKER: EchoService? = null
 
         const val EXTRA_DATA = "data"
         const val ACTION_ECHO = "com.redelf.commons.interprocess.echo"
@@ -21,7 +19,7 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
         const val ACTION_ECHO_RESPONSE = "com.redelf.commons.interprocess.echo.response"
 
         @Throws(IllegalStateException::class)
-        override fun obtain(): EchoWorker {
+        override fun obtain(): EchoService {
 
             if (isOnMainThread()) {
 
@@ -68,11 +66,6 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
 
             ACTION_ECHO -> echo(intent)
         }
-    }
-
-    override fun doWork(): Result {
-
-        return Result.success()
     }
 
     private fun echo(intent: Intent) {

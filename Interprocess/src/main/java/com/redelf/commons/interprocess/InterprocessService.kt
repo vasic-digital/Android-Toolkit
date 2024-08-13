@@ -1,19 +1,19 @@
 package com.redelf.commons.interprocess
 
+import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.IBinder
 
-import androidx.work.Worker
-import androidx.work.WorkerParameters
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
+abstract class InterprocessService : Service() {
 
     protected abstract val tag: String
 
@@ -32,7 +32,10 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
         }
     }
 
-    init {
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onCreate() {
+        super.onCreate()
 
         val filter = IntentFilter()
 
@@ -46,10 +49,13 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
         ready.set(true)
     }
 
-    open fun isReady(): Boolean = ready.get()
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-    override fun onStopped() {
-        super.onStopped()
+        return START_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
 
         applicationContext.unregisterReceiver(broadcastReceiver)
     }
@@ -60,6 +66,8 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
 
         sendMessage(intent, callback)
     }
+
+    open fun isReady(): Boolean = ready.get()
 
     open fun sendMessage(intent: Intent, callback: OnObtain<Boolean>? = null) {
 
