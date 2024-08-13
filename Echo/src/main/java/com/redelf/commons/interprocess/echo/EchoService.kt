@@ -36,7 +36,7 @@ class EchoService : InterprocessService() {
     }
 
     private val echo = "Echo"
-    override val tag = "IPC Worker :: $echo ::"
+    override val tag = "IPC service :: $echo ::"
 
     init {
 

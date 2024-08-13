@@ -11,12 +11,12 @@ class WelcomeActivity : BaseActivity() {
 
         exec {
 
-            val worker = EchoService.obtain()
+            val echo = EchoService.obtain()
 
-            Assert.assertNotNull(worker)
-            Assert.assertTrue(worker.isReady())
+            Assert.assertNotNull(echo)
+            Assert.assertTrue(echo.isReady())
 
-            worker.sendMessage(EchoService.ACTION_HELLO)
+            echo.sendMessage(EchoService.ACTION_HELLO)
         }
     }
 }
