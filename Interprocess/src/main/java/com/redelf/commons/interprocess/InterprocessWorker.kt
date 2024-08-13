@@ -11,6 +11,8 @@ import com.redelf.commons.logging.Console
 
 abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
+    protected abstract val tag: String
+
     protected lateinit var actions: List<String>
 
     private val broadcastReceiver = object : BroadcastReceiver() {
@@ -42,12 +44,17 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
         LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(broadcastReceiver)
     }
 
-    private fun onIntentReceived(intent: Intent) {
+    protected open fun hello() {
 
-        Console.log("Received intent: ${intent.action}")
-
-        onIntent(intent)
+        Console.log("$tag Hello")
     }
 
     protected abstract fun onIntent(intent: Intent)
+
+    private fun onIntentReceived(intent: Intent) {
+
+        Console.log("$tag Received intent: ${intent.action}")
+
+        onIntent(intent)
+    }
 }

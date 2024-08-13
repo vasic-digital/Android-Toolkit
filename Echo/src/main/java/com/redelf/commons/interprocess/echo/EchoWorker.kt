@@ -9,24 +9,30 @@ import com.redelf.commons.logging.Console
 
 class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ctx, params) {
 
-    private val tag = "Echo ::"
+    override val tag = "Echo ::"
 
     init {
 
         actions = listOf("com.redelf.commons.interprocess.echo")
     }
 
+    override fun hello() {
+        super.hello()
+
+        Console.log("$tag Supported actions: ${actions.joinToString()}")
+    }
+
     override fun onIntent(intent: Intent) {
 
         val message = intent.getStringExtra("data")
 
-        Console.log("Received echo request :: $message")
+        Console.log("$tag Received echo request :: $message")
 
         val responseIntent = Intent(actions.first())
         responseIntent.putExtra("data", "Echo :: $message")
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(responseIntent)
 
-        Console.log("Sent echo response :: $message")
+        Console.log("$tag Sent echo response :: $message")
     }
 
     override fun doWork(): Result {
