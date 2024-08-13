@@ -38,7 +38,7 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
     }
 
     private val echo = "Echo"
-    override val tag = "$echo ::"
+    override val tag = "IPC Worker :: $echo ::"
 
     init {
 
