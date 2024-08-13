@@ -1,7 +1,7 @@
 package com.redelf.commons.interprocess.echo
 
-import android.content.Intent
 import com.redelf.commons.activity.BaseActivity
+import com.redelf.commons.extensions.exec
 import org.junit.Assert
 
 class WelcomeActivity : BaseActivity() {
@@ -9,8 +9,14 @@ class WelcomeActivity : BaseActivity() {
     override fun onPostResume() {
         super.onPostResume()
 
-        Assert.assertNotNull(EchoWorker.WORKER)
+        exec {
 
-        EchoWorker.WORKER?.sendMessage(EchoWorker.ACTION_HELLO)
+            val worker = EchoWorker.obtain()
+
+            Assert.assertNotNull(worker)
+            Assert.assertTrue(worker.isReady())
+
+            worker.sendMessage(EchoWorker.ACTION_HELLO)
+        }
     }
 }
