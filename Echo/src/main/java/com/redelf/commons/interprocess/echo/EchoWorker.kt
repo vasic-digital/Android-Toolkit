@@ -2,24 +2,23 @@ package com.redelf.commons.interprocess.echo
 
 import android.content.Context
 import android.content.Intent
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.WorkerParameters
 import com.redelf.commons.interprocess.InterprocessWorker
 
 class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ctx, params) {
 
-    override fun actions(): List<String> {
-
-        TODO("Not yet implemented")
-    }
+    override fun actions() = listOf("com.redelf.commons.interprocess.echo")
 
     override fun onIntent(intent: Intent) {
 
-        TODO("Not yet implemented")
+        val message = intent.getStringExtra("data")
+        val responseIntent = Intent(actions().first())
+        responseIntent.putExtra("data", "Echo :: $message")
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(responseIntent)
     }
 
     override fun doWork(): Result {
-
-        // TODO: Your work logic here
 
         return Result.success()
     }
