@@ -2,18 +2,23 @@ package com.redelf.commons.interprocess.echo
 
 import android.content.Context
 import android.content.Intent
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.WorkerParameters
 import com.redelf.commons.interprocess.InterprocessWorker
 import com.redelf.commons.logging.Console
 
 class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ctx, params) {
 
+    companion object {
+
+        const val ACTION_ECHO = "com.redelf.commons.interprocess.echo"
+        const val ACTION_HELLO = "com.redelf.commons.interprocess.echo.hello"
+    }
+
     override val tag = "Echo ::"
 
     init {
 
-        actions = listOf("com.redelf.commons.interprocess.echo")
+        actions = listOf(ACTION_ECHO, ACTION_HELLO)
     }
 
     override fun hello() {
@@ -30,7 +35,8 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
 
         val responseIntent = Intent(actions.first())
         responseIntent.putExtra("data", "Echo :: $message")
-        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(responseIntent)
+
+        applicationContext.sendBroadcast(responseIntent)
 
         Console.log("$tag Sent echo response :: $message")
     }

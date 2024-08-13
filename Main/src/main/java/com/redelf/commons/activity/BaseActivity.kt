@@ -1259,6 +1259,13 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
     }
 
+    fun sendBroadcast(action: String) {
+
+        val intent = Intent(action)
+
+        sendBroadcast(intent)
+    }
+
     override fun sendBroadcast(intent: Intent?) {
 
         intent?.let {

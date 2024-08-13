@@ -4,16 +4,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.redelf.commons.logging.Console
+import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
     protected abstract val tag: String
 
     protected lateinit var actions: List<String>
+
+    private val ready = AtomicBoolean()
 
     private val broadcastReceiver = object : BroadcastReceiver() {
 
@@ -28,20 +31,24 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
 
     init {
 
+        val filter = IntentFilter()
+
         actions.forEach {
 
-            LocalBroadcastManager.getInstance(ctx).registerReceiver(
-
-                broadcastReceiver,
-                IntentFilter(it)
-            )
+            filter.addAction(it)
         }
+
+        applicationContext.registerReceiver(broadcastReceiver, filter)
+
+        ready.set(true)
     }
+
+    fun isReady(): Boolean = ready.get()
 
     override fun onStopped() {
         super.onStopped()
 
-        LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(broadcastReceiver)
+        applicationContext.unregisterReceiver(broadcastReceiver)
     }
 
     protected open fun hello() {
@@ -53,7 +60,7 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
 
     private fun onIntentReceived(intent: Intent) {
 
-        Console.log("$tag Received intent: ${intent.action}")
+        Console.log("$tag Received intent :: ${intent.action}")
 
         onIntent(intent)
     }
