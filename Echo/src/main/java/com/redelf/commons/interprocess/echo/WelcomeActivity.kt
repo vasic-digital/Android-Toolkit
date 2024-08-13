@@ -2,14 +2,15 @@ package com.redelf.commons.interprocess.echo
 
 import android.content.Intent
 import com.redelf.commons.activity.BaseActivity
+import org.junit.Assert
 
 class WelcomeActivity : BaseActivity() {
 
     override fun onPostResume() {
         super.onPostResume()
 
-        val intent = Intent(EchoWorker.ACTION_HELLO)
+        Assert.assertNotNull(EchoWorker.WORKER)
 
-        applicationContext.sendBroadcast(intent)
+        EchoWorker.WORKER?.sendMessage(EchoWorker.ACTION_HELLO)
     }
 }

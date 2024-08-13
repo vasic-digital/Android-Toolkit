@@ -10,6 +10,8 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
 
     companion object {
 
+        var WORKER: EchoWorker? = null
+
         const val ACTION_ECHO = "com.redelf.commons.interprocess.echo"
         const val ACTION_HELLO = "com.redelf.commons.interprocess.echo.hello"
     }
@@ -19,6 +21,13 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
     init {
 
         actions = listOf(ACTION_ECHO, ACTION_HELLO)
+
+        WORKER = this
+    }
+
+    override fun isReady(): Boolean {
+
+        return super.isReady() && WORKER != null
     }
 
     override fun hello() {
