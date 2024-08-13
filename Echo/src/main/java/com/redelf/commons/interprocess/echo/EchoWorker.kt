@@ -8,7 +8,6 @@ import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.interprocess.InterprocessWorker
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.persistance.base.get.Get
 
 class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ctx, params) {
 
@@ -16,8 +15,10 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
 
         private var WORKER: EchoWorker? = null
 
+        const val EXTRA_DATA = "data"
         const val ACTION_ECHO = "com.redelf.commons.interprocess.echo"
         const val ACTION_HELLO = "com.redelf.commons.interprocess.echo.hello"
+        const val ACTION_ECHO_RESPONSE = "com.redelf.commons.interprocess.echo.response"
 
         @Throws(IllegalStateException::class)
         override fun obtain(): EchoWorker {
@@ -36,7 +37,8 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
         }
     }
 
-    override val tag = "Echo ::"
+    private val echo = "Echo"
+    override val tag = "$echo ::"
 
     init {
 
@@ -58,20 +60,30 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
 
     override fun onIntent(intent: Intent) {
 
-        val message = intent.getStringExtra("data")
+        when (intent.action) {
 
-        Console.log("$tag Received echo request :: $message")
+            ACTION_HELLO -> hello()
 
-        val responseIntent = Intent(actions.first())
-        responseIntent.putExtra("data", "Echo :: $message")
-
-        applicationContext.sendBroadcast(responseIntent)
-
-        Console.log("$tag Sent echo response :: $message")
+            ACTION_ECHO -> echo(intent)
+        }
     }
 
     override fun doWork(): Result {
 
         return Result.success()
+    }
+
+    private fun echo(intent: Intent) {
+
+        val message = intent.getStringExtra(EXTRA_DATA)
+
+        Console.log("$tag Received echo request :: $message")
+
+        val responseIntent = Intent(ACTION_ECHO_RESPONSE)
+        responseIntent.putExtra(EXTRA_DATA, "$echo = $message")
+
+        applicationContext.sendBroadcast(responseIntent)
+
+        Console.log("$tag Sent echo response :: $message")
     }
 }
