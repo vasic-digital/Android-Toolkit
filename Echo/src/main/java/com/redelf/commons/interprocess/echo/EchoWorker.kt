@@ -45,6 +45,8 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
         actions = listOf(ACTION_ECHO, ACTION_HELLO)
 
         WORKER = this
+
+        Console.log("$tag Initialized")
     }
 
     override fun isReady(): Boolean {
