@@ -8,15 +8,5 @@ class EchoApplication : BaseApplication() {
 
     override fun isProduction() = false
 
-    override fun takeSalt(): String {
-
-        return "echo_salt"
-    }
-
-    override fun onDoCreate() {
-        super.onDoCreate()
-
-        val echoWorkerRequest = OneTimeWorkRequest.Builder(EchoWorker::class.java).build()
-        WorkManager.getInstance(applicationContext).enqueue(echoWorkerRequest)
-    }
+    override fun takeSalt() = "echo_salt"
 }
