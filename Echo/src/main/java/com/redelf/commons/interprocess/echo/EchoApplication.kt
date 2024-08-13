@@ -1,7 +1,5 @@
 package com.redelf.commons.interprocess.echo
 
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
 import com.redelf.commons.application.BaseApplication
 
 class EchoApplication : BaseApplication() {
