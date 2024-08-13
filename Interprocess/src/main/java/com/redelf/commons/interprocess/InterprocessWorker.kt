@@ -34,6 +34,12 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
         }
     }
 
+    override fun onStopped() {
+        super.onStopped()
+
+        LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(broadcastReceiver)
+    }
+
     private fun onIntentReceived(intent: Intent) {
 
         Console.log("Received intent: ${intent.action}")

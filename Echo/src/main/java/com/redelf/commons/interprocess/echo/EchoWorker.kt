@@ -7,6 +7,11 @@ import com.redelf.commons.interprocess.InterprocessWorker
 
 class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ctx, params) {
 
+    override fun actions(): List<String> {
+
+        TODO("Not yet implemented")
+    }
+
     override fun onIntent(intent: Intent) {
 
         TODO("Not yet implemented")
@@ -14,6 +19,8 @@ class EchoWorker(ctx: Context, params: WorkerParameters) : InterprocessWorker(ct
 
     override fun doWork(): Result {
 
-        TODO("Not yet implemented")
+        // TODO: Your work logic here
+
+        return Result.success()
     }
 }
