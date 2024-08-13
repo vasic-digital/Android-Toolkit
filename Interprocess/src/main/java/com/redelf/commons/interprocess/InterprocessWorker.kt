@@ -11,6 +11,8 @@ import com.redelf.commons.logging.Console
 
 abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
+    protected lateinit var actions: List<String>
+
     private val broadcastReceiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -24,7 +26,7 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
 
     init {
 
-        actions().forEach {
+        actions.forEach {
 
             LocalBroadcastManager.getInstance(ctx).registerReceiver(
 
@@ -46,8 +48,6 @@ abstract class InterprocessWorker(ctx: Context, params: WorkerParameters) : Work
 
         onIntent(intent)
     }
-
-    protected abstract fun actions(): List<String>
 
     protected abstract fun onIntent(intent: Intent)
 }
