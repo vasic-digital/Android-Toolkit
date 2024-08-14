@@ -1,10 +1,10 @@
 package com.redelf.commons.test
 
-import com.redelf.commons.execution.Retryable
+import com.redelf.commons.execution.Retrying
 import org.junit.Assert
 import org.junit.Test
 
-class RetryableTest : BaseTest() {
+class RetryingTest : BaseTest() {
 
     private fun failure(): Boolean = false
 
@@ -14,18 +14,18 @@ class RetryableTest : BaseTest() {
     fun testRetryable() {
 
         val expected = 10
-        val retryable = Retryable(expected)
+        val retrying = Retrying(expected)
 
-        var count = retryable.execute(this::failure)
+        var count = retrying.execute(this::failure)
         Assert.assertEquals(count, expected)
 
-        count = retryable.execute(this::success)
+        count = retrying.execute(this::success)
         Assert.assertEquals(0, count)
 
         var current = 0
         val countUntil = 3
 
-        count = retryable.execute {
+        count = retrying.execute {
 
             current++
             current == countUntil

@@ -22,6 +22,8 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.measure.Size
 import com.redelf.commons.modification.Add
+import com.redelf.commons.net.connectivity.ConnectivityStateChanges
+import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import java.security.GeneralSecurityException
@@ -89,6 +91,19 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         }
     }
 
+    private val connectionHandler = DefaultConnectivityHandler(dataManager.obtain().takeContext())
+
+    private val connectionCallback = object : ConnectivityStateChanges {
+
+        override fun onConnectivityStateChanged() {
+
+            if (connectionHandler.isNetworkAvailable(takeContext())) {
+
+                send(executedFrom = "onConnectivityStateChanged")
+            }
+        }
+    }
+
     fun setSendingStrategy(sendingStrategy: TransmissionManagerSendingStrategy<D>): Boolean {
 
         currentSendingStrategy = sendingStrategy
@@ -117,6 +132,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
                 val dManager = dataManager.obtain()
                 managedData = dManager.obtain()
+
+                connectionHandler.register(connectionCallback)
 
             } catch (e: Exception) {
 
@@ -613,6 +630,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
             Console.error("$logTag ERROR: ${e.message}")
             Console.error(e)
         }
+
+        connectionHandler.unregister(connectionCallback)
 
         clear()
 

@@ -1,6 +1,6 @@
 package com.redelf.commons.execution
 
-class Retryable(private val count: Int = 5) {
+class Retrying(private val count: Int = 5) {
 
     fun execute(operation: () -> Boolean): Int {
 

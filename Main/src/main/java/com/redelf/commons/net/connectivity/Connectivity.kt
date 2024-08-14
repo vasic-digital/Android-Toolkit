@@ -13,11 +13,13 @@ class Connectivity : ConnectivityCheck {
             val name = Context.CONNECTIVITY_SERVICE
 
             val connectivityManager = ctx.getSystemService(name) as ConnectivityManager?
+
             connectivityManager?.let {
 
                 val activeNetworkInfo = it.activeNetworkInfo
                 return activeNetworkInfo != null && activeNetworkInfo.isConnected
             }
+
             return false
         }
     }
