@@ -9,14 +9,14 @@ class InterprocessService : Service() {
 
     private val tag = "Interprocess service ::"
 
-    private val binder = EchoBinder()
+    private val binder = InterprocessBinder()
 
     override fun onBind(intent: Intent?): IBinder {
 
         return binder
     }
 
-    inner class EchoBinder : Binder() {
+    inner class InterprocessBinder : Binder() {
 
         fun getService(): InterprocessService = this@InterprocessService
     }
@@ -24,13 +24,6 @@ class InterprocessService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         return START_STICKY
-    }
-
-    fun sendBroadcast(action: String) {
-
-        val intent = Intent(action)
-
-        applicationContext.sendBroadcast(intent)
     }
 
     fun onIntent(intent: Intent) {
