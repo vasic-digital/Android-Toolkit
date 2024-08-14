@@ -6,10 +6,6 @@
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <permission
-        android:name="com.redelf.commons.permission.INTERPROCESS_WORKER"
-        android:protectionLevel="signature" />
-
     <application
 
         android:name=".EchoApplication"
@@ -49,12 +45,22 @@
 
         </receiver>
 
-        <service
-
+        <receiver
+            android:name="com.redelf.commons.interprocess.InterprocessReceiver"
             android:exported="true"
+            android:permission="com.redelf.commons.interprocess">
+
+            <intent-filter>
+
+                <action android:name="com.redelf.commons.interprocess.echo" />
+
+            </intent-filter>
+
+        </receiver>
+
+        <service
             android:name=".EchoService"
-            android:permission="com.redelf.commons.interprocess.echo"
-        />
+            android:exported="false" />
 
     </application>
 

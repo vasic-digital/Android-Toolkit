@@ -1,52 +1,24 @@
 package com.redelf.commons.interprocess
 
 import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
+import android.os.Binder
 import android.os.IBinder
 
-import com.redelf.commons.extensions.exec
-import com.redelf.commons.extensions.yieldWhile
-import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.atomic.AtomicBoolean
+class InterprocessService : Service() {
 
-abstract class InterprocessService : Service() {
+    private val tag = "Interprocess service ::"
 
-    protected abstract val tag: String
+    private val binder = EchoBinder()
 
-    protected lateinit var actions: List<String>
+    override fun onBind(intent: Intent?): IBinder {
 
-    private val ready = AtomicBoolean()
-
-    private val broadcastReceiver = object : BroadcastReceiver() {
-
-        override fun onReceive(context: Context?, intent: Intent?) {
-
-            intent?.let {
-
-                onIntentReceived(it)
-            }
-        }
+        return binder
     }
 
-    override fun onBind(intent: Intent?): IBinder? = null
+    inner class EchoBinder : Binder() {
 
-    override fun onCreate() {
-        super.onCreate()
-
-        val filter = IntentFilter()
-
-        actions.forEach {
-
-            filter.addAction(it)
-        }
-
-        applicationContext.registerReceiver(broadcastReceiver, filter)
-
-        ready.set(true)
+        fun getService(): InterprocessService = this@InterprocessService
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -54,56 +26,15 @@ abstract class InterprocessService : Service() {
         return START_STICKY
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        applicationContext.unregisterReceiver(broadcastReceiver)
-    }
-
-    fun sendMessage(action: String, callback: OnObtain<Boolean>? = null) {
+    fun sendBroadcast(action: String) {
 
         val intent = Intent(action)
 
-        sendMessage(intent, callback)
+        applicationContext.sendBroadcast(intent)
     }
 
-    open fun isReady(): Boolean = ready.get()
+    fun onIntent(intent: Intent) {
 
-    open fun sendMessage(intent: Intent, callback: OnObtain<Boolean>? = null) {
-
-        exec(
-
-            onRejected = { err ->
-
-                callback?.onFailure(err)
-
-                if (callback == null) {
-
-                    Console.error("$tag Failed to send message :: ${err.message}")
-                }
-            }
-
-        ) {
-
-            yieldWhile { !isReady() }
-
-            applicationContext.sendBroadcast(intent)
-
-            callback?.onCompleted(true)
-        }
-    }
-
-    protected open fun hello() {
-
-        Console.log("$tag Hello")
-    }
-
-    protected abstract fun onIntent(intent: Intent)
-
-    private fun onIntentReceived(intent: Intent) {
-
-        Console.log("$tag Received intent :: ${intent.action}")
-
-        onIntent(intent)
+        // TODO: Connect with registered parties
     }
 }
