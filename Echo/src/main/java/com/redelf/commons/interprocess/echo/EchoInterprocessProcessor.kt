@@ -27,6 +27,8 @@ class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcesso
 
     override fun onData(data: InterprocessData) {
 
+        Console.log("$tag Received data: $data")
+
         val function = data.function
 
         when (function) {

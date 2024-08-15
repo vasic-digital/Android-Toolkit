@@ -59,11 +59,13 @@ class InterprocessReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
 
+        Console.log("$tag Received intent")
+
         intent?.let {
 
             if (it.action == ACTION) {
 
-                Console.log("$tag Received intent :: ${it.action}")
+                Console.log("$tag Intent action :: ${it.action}")
 
                 context?.let { ctx ->
 
