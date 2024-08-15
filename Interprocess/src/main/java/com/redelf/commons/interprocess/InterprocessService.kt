@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import com.google.gson.Gson
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -23,6 +24,8 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
             val json = Gson().toJson(data)
 
             intent.putExtra(InterprocessProcessor.EXTRA_DATA, json)
+
+            BaseApplication.takeContext().sendBroadcast(intent)
         }
     }
 
