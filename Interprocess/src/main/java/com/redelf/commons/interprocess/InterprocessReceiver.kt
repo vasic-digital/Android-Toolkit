@@ -47,6 +47,11 @@ class InterprocessReceiver : BroadcastReceiver() {
         }
     }
 
+    init {
+
+        Console.log("$tag Created")
+    }
+
     override fun onReceive(context: Context?, intent: Intent?) {
 
         intent?.let {
