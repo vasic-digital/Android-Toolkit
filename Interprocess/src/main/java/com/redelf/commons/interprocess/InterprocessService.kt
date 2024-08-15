@@ -4,14 +4,22 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.recordException
+import com.redelf.commons.logging.Console
+import com.redelf.commons.registration.Registration
 
-class InterprocessService : Service() {
+class InterprocessService : Service(), Registration<InterprocessProcessor<*>> {
 
     private val tag = "Interprocess service ::"
 
     private val binder = InterprocessBinder()
 
+    private val processors = mutableSetOf<InterprocessProcessor<*>>()
+
     override fun onBind(intent: Intent?): IBinder {
+
+        Console.log("$tag Bound to client")
 
         return binder
     }
@@ -23,11 +31,38 @@ class InterprocessService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
+        Console.log("$tag Service started")
+
         return START_STICKY
+    }
+
+    override fun register(subscriber: InterprocessProcessor<*>) {
+
+        processors.add(subscriber)
+    }
+
+    override fun unregister(subscriber: InterprocessProcessor<*>) {
+
+        processors.remove(subscriber)
+    }
+
+    override fun isRegistered(subscriber: InterprocessProcessor<*>): Boolean {
+
+        return processors.contains(subscriber)
     }
 
     fun onIntent(intent: Intent) {
 
-        // TODO: Connect with registered parties
+        exec(
+
+            onRejected = { err -> recordException(err) }
+
+        ) {
+
+            processors.forEach { processor ->
+
+                processor.process(intent)
+            }
+        }
     }
 }
