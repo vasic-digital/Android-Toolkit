@@ -9,6 +9,7 @@ class WelcomeActivity : BaseActivity() {
     override fun onPostResume() {
         super.onPostResume()
 
+        // TODO: Create button for this
         val hello = EchoInterprocessProcessor.ACTION_HELLO
         InterprocessService.send(function = hello)
     }
