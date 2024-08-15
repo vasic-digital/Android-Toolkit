@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import com.google.gson.Gson
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -11,7 +12,19 @@ import com.redelf.commons.registration.Registration
 
 class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
-    private val tag = "Interprocess service ::"
+    companion object {
+
+        private const val tag = "Interprocess service ::"
+
+        fun send(function: String, content: String? = null) {
+
+            val intent = Intent(InterprocessReceiver.ACTION)
+            val data = InterprocessData(function, content)
+            val json = Gson().toJson(data)
+
+            intent.putExtra(InterprocessProcessor.EXTRA_DATA, json)
+        }
+    }
 
     private val binder = InterprocessBinder()
 
