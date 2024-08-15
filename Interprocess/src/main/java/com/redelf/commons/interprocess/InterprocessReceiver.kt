@@ -12,6 +12,11 @@ import java.util.concurrent.LinkedBlockingQueue
 
 class InterprocessReceiver : BroadcastReceiver() {
 
+    companion object {
+
+        const val ACTION = "com.redelf.commons.interprocess.action"
+    }
+
     private val tag = "IPC :: Receiver ::"
     private val queue = LinkedBlockingQueue<Intent>()
 
@@ -56,16 +61,19 @@ class InterprocessReceiver : BroadcastReceiver() {
 
         intent?.let {
 
-            Console.log("$tag Received intent :: ${it.action}")
+            if (it.action == ACTION) {
 
-            context?.let { ctx ->
+                Console.log("$tag Received intent :: ${it.action}")
 
-                queue.put(it)
+                context?.let { ctx ->
 
-                val serviceIntent = Intent(ctx, InterprocessService::class.java)
+                    queue.put(it)
 
-                ctx.startService(serviceIntent)
-                ctx.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+                    val serviceIntent = Intent(ctx, InterprocessService::class.java)
+
+                    ctx.startService(serviceIntent)
+                    ctx.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+                }
             }
         }
     }

@@ -2,15 +2,16 @@ package com.redelf.commons.interprocess.echo
 
 import android.content.Context
 import android.content.Intent
+import com.google.gson.Gson
 import com.redelf.commons.extensions.toast
+import com.redelf.commons.interprocess.InterprocessData
 import com.redelf.commons.interprocess.InterprocessProcessor
 import com.redelf.commons.logging.Console
 
-class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcessor {
+class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcessor() {
 
     companion object {
 
-        const val EXTRA_DATA = "data"
         const val ACTION_ECHO = "com.redelf.commons.interprocess.echo"
         const val ACTION_HELLO = "com.redelf.commons.interprocess.echo.hello"
         const val ACTION_ECHO_RESPONSE = "com.redelf.commons.interprocess.echo.response"
@@ -24,13 +25,15 @@ class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcesso
         Console.log("$tag Created")
     }
 
-    override fun process(input: Intent) {
+    override fun onData(data: InterprocessData) {
 
-        when (input.action) {
+        val function = data.function
+
+        when (function) {
 
             ACTION_HELLO -> hello()
 
-            ACTION_ECHO -> echo(input)
+            ACTION_ECHO -> echo(data.content ?: "")
         }
     }
 
@@ -43,9 +46,7 @@ class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcesso
         ctx.toast(msg)
     }
 
-    private fun echo(intent: Intent) {
-
-        val message = intent.getStringExtra(EXTRA_DATA)
+    private fun echo(message: String) {
 
         Console.log("$tag Request :: $message")
 

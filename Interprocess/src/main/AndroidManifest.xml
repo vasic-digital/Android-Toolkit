@@ -3,7 +3,20 @@
 
     <application>
 
-        <service android:name=".InterprocessService"  />
+        <receiver
+            android:name="com.redelf.commons.interprocess.InterprocessReceiver"
+            android:exported="true"
+            android:permission="com.redelf.commons.interprocess">
+
+            <intent-filter>
+
+                <action android:name="com.redelf.commons.interprocess.action" />
+
+            </intent-filter>
+
+        </receiver>
+
+        <service android:name=".InterprocessService" android:exported="false" />
 
     </application>
 
