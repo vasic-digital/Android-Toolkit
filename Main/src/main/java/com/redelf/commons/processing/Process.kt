@@ -1,6 +1,6 @@
 package com.redelf.commons.processing
 
-interface Process<in WHAT, out RESULT> {
+interface Process<in WHAT> {
 
-    fun process(input: WHAT): RESULT
+    fun process(input: WHAT)
 }

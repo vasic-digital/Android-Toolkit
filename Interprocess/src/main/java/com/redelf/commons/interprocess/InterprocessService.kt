@@ -9,13 +9,13 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
 
-class InterprocessService : Service(), Registration<InterprocessProcessor<*>> {
+class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
     private val tag = "Interprocess service ::"
 
     private val binder = InterprocessBinder()
 
-    private val processors = mutableSetOf<InterprocessProcessor<*>>()
+    private val processors = mutableSetOf<InterprocessProcessor>()
 
     override fun onBind(intent: Intent?): IBinder {
 
@@ -36,17 +36,17 @@ class InterprocessService : Service(), Registration<InterprocessProcessor<*>> {
         return START_STICKY
     }
 
-    override fun register(subscriber: InterprocessProcessor<*>) {
+    override fun register(subscriber: InterprocessProcessor) {
 
         processors.add(subscriber)
     }
 
-    override fun unregister(subscriber: InterprocessProcessor<*>) {
+    override fun unregister(subscriber: InterprocessProcessor) {
 
         processors.remove(subscriber)
     }
 
-    override fun isRegistered(subscriber: InterprocessProcessor<*>): Boolean {
+    override fun isRegistered(subscriber: InterprocessProcessor): Boolean {
 
         return processors.contains(subscriber)
     }
