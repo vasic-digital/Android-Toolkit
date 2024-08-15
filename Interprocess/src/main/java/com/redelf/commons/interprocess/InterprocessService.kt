@@ -15,7 +15,7 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
     companion object {
 
-        private const val tag = "Interprocess service ::"
+        private const val TAG = "Interprocess service ::"
 
         fun send(function: String, content: String? = null) {
 
@@ -35,7 +35,7 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
     override fun onBind(intent: Intent?): IBinder {
 
-        Console.log("$tag Bound to client")
+        Console.log("$TAG Bound to client")
 
         return binder
     }
@@ -47,7 +47,7 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        Console.log("$tag Service started")
+        Console.log("$TAG Service started")
 
         return START_STICKY
     }

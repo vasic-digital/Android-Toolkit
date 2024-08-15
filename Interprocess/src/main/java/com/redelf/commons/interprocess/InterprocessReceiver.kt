@@ -59,6 +59,9 @@ class InterprocessReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
 
+        /*
+        * FIXME: Nothing is received here
+        */
         Console.log("$tag Received intent")
 
         intent?.let {
