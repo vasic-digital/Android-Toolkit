@@ -41,7 +41,10 @@ abstract class InterprocessApplication : BaseApplication() {
     override fun onDoCreate() {
         super.onDoCreate()
 
-        val serviceIntent = Intent(applicationContext, InterprocessService::class.java)
-        applicationContext.bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE)
+        val ctx = applicationContext
+        val serviceIntent = Intent(ctx, InterprocessService::class.java)
+
+        ctx.startService(serviceIntent)
+        ctx.bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE)
     }
 }

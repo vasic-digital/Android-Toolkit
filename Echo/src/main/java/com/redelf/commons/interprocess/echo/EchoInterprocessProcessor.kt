@@ -16,7 +16,12 @@ class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcesso
     }
 
     private val echo = "Echo"
-    private val tag = "IPC service :: $echo ::"
+    private val tag = "IPC processor :: $echo ::"
+
+    init {
+
+        Console.log("$tag Created")
+    }
 
     override fun process(input: Intent) {
 
