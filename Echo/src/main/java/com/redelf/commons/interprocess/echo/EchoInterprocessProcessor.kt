@@ -2,6 +2,7 @@ package com.redelf.commons.interprocess.echo
 
 import android.content.Context
 import android.content.Intent
+import com.redelf.commons.extensions.toast
 import com.redelf.commons.interprocess.InterprocessProcessor
 import com.redelf.commons.logging.Console
 
@@ -16,7 +17,7 @@ class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcesso
     }
 
     private val echo = "Echo"
-    private val tag = "IPC processor :: $echo ::"
+    private val tag = "IPC :: Processor :: $echo ::"
 
     init {
 
@@ -35,7 +36,11 @@ class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcesso
 
     private fun hello() {
 
-        Console.log("$tag Hello from the Echo IPC")
+        val msg = "Hello from the Echo IPC"
+
+        Console.log("$tag $msg")
+
+        ctx.toast(msg)
     }
 
     private fun echo(intent: Intent) {

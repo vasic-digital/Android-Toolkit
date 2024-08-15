@@ -12,29 +12,14 @@ import java.util.concurrent.LinkedBlockingQueue
 
 class InterprocessReceiver : BroadcastReceiver() {
 
+    private val tag = "IPC :: Receiver ::"
     private val queue = LinkedBlockingQueue<Intent>()
-
-    override fun onReceive(context: Context?, intent: Intent?) {
-
-        intent?.let {
-
-            Console.log("Received intent :: ${it.action}")
-
-            context?.let { ctx ->
-
-                queue.put(it)
-
-                val serviceIntent = Intent(ctx, InterprocessService::class.java)
-                ctx.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-            }
-        }
-    }
 
     private val serviceConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 
-            Console.log("Service connected")
+            Console.log("$tag Service connected")
 
             val context = BaseApplication.takeContext()
 
@@ -58,7 +43,25 @@ class InterprocessReceiver : BroadcastReceiver() {
 
         override fun onServiceDisconnected(name: ComponentName?) {
 
-            Console.log("Service disconnected")
+            Console.log("$tag Service disconnected")
+        }
+    }
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+
+        intent?.let {
+
+            Console.log("$tag Received intent :: ${it.action}")
+
+            context?.let { ctx ->
+
+                queue.put(it)
+
+                val serviceIntent = Intent(ctx, InterprocessService::class.java)
+
+                ctx.startService(serviceIntent)
+                ctx.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+            }
         }
     }
 }
