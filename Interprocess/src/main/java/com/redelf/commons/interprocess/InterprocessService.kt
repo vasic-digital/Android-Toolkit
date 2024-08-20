@@ -31,7 +31,7 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
             intent.putExtra(InterprocessProcessor.EXTRA_DATA, json)
 
-            if (BaseApplication.takeContext().sendBroadcastWithResult(intent)) {
+            if (BaseApplication.takeContext().sendBroadcastWithResult(intent, local = false)) {
 
                 Console.log("$TAG Sending intent :: END")
 

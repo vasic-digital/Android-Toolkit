@@ -912,11 +912,19 @@ abstract class BaseApplication :
         }
     }
 
-    fun sendBroadcastWithResult(intent: Intent?) : Boolean {
+    fun sendBroadcastWithResult(intent: Intent?, local: Boolean = true) : Boolean {
 
         intent?.let {
 
-            return LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
+            if (local) {
+
+                return LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
+
+            } else {
+
+                super.sendBroadcast(it)
+                return true
+            }
         }
 
         return false
