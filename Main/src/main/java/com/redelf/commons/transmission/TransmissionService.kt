@@ -71,7 +71,6 @@ class TransmissionService : BaseService() {
                     val key = TransmissionManager.BROADCAST_EXTRA_RESULT
                     val result = it.getBooleanExtra(key, true)
 
-                    // FIXME: GBXPT-1436
                     scheduleAlarm(result)
                 }
             }
