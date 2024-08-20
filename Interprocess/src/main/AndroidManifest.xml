@@ -21,7 +21,7 @@
         </receiver>
 
         <service
-            android:name=".InterprocessService"
+            android:name=".Interprocessor"
             android:exported="false" />
 
     </application>

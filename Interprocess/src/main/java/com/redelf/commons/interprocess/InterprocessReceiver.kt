@@ -35,7 +35,7 @@ class InterprocessReceiver : BroadcastReceiver() {
 
             service?.let {
 
-                if (it is InterprocessService.InterprocessBinder) {
+                if (it is Interprocessor.InterprocessBinder) {
 
                     val interprocessService = it.getService()
                     val iterator = queue.iterator()
@@ -79,7 +79,7 @@ class InterprocessReceiver : BroadcastReceiver() {
 
                     queue.put(it)
 
-                    val serviceIntent = Intent(ctx, InterprocessService::class.java)
+                    val serviceIntent = Intent(ctx, Interprocessor::class.java)
 
                     ctx.startService(serviceIntent)
                     ctx.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)

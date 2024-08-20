@@ -20,7 +20,7 @@ abstract class InterprocessApplication : BaseApplication() {
 
             service?.let {
 
-                if (it is InterprocessService.InterprocessBinder) {
+                if (it is Interprocessor.InterprocessBinder) {
 
                     val processors = getProcessors()
                     val interprocessService = it.getService()
@@ -42,7 +42,7 @@ abstract class InterprocessApplication : BaseApplication() {
         super.onDoCreate()
 
         val ctx = applicationContext
-        val serviceIntent = Intent(ctx, InterprocessService::class.java)
+        val serviceIntent = Intent(ctx, Interprocessor::class.java)
 
         ctx.startService(serviceIntent)
         ctx.bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE)
