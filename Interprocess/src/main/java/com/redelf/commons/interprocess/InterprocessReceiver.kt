@@ -20,6 +20,11 @@ class InterprocessReceiver : BroadcastReceiver() {
     private val tag = "IPC :: Receiver ::"
     private val queue = LinkedBlockingQueue<Intent>()
 
+    init {
+
+        Console.log("$tag Created")
+    }
+
     private val serviceConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
