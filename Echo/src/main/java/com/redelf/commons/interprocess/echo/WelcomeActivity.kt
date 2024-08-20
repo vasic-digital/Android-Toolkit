@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import com.redelf.commons.activity.BaseActivity
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.interprocess.InterprocessService
 import com.redelf.commons.logging.Console
 
@@ -21,8 +22,10 @@ class WelcomeActivity : BaseActivity() {
             Console.log("$tag Button clicked")
 
             val hello = EchoInterprocessProcessor.ACTION_HELLO
+            val receiver = BaseApplication.takeContext().packageName
+            val sent = InterprocessService.send(receiver = receiver, function = hello)
 
-            if (InterprocessService.send(function = hello)) {
+            if (sent) {
 
                 Console.log("$tag Sent echo intent")
             }

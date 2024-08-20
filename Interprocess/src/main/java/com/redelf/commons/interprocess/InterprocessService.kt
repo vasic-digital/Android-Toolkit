@@ -19,7 +19,13 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
         private const val TAG = "IPC :: Service ::"
 
-        fun send(function: String, content: String? = null): Boolean {
+        fun send(
+
+            receiver: String,
+            function: String,
+            content: String? = null
+
+        ): Boolean {
 
             Console.log("$TAG Sending intent :: START")
 
@@ -34,8 +40,8 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
             intent.putExtra(InterprocessProcessor.EXTRA_DATA, json)
 
             val clazz: KClass<InterprocessReceiver> = InterprocessReceiver::class
-            val sName = clazz.simpleName ?: ""
             val cName = clazz.qualifiedName ?: ""
+
 
             if (isEmpty(cName)) {
 
@@ -44,26 +50,17 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
                 return false
             }
 
-            if (isEmpty(sName)) {
-
-                Console.error("$TAG Sending intent :: Failed :: Simple name is empty")
-
-                return false
-            }
-
-            val pName = cName.replace(".$sName", "")
-
-            if (isEmpty(pName)) {
+            if (isEmpty(receiver)) {
 
                 Console.error("$TAG Sending intent :: Failed :: Package name is empty")
 
                 return false
             }
 
-            Console.log("$TAG Sending intent :: Package = $pName")
             Console.log("$TAG Sending intent :: Class = $cName")
+            Console.log("$TAG Sending intent :: Target receiver = $receiver")
 
-            intent.setClassName(pName, cName)
+            intent.setClassName(receiver, cName)
 
             if (BaseApplication.takeContext().sendBroadcastWithResult(intent, local = false)) {
 
