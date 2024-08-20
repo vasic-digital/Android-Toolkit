@@ -5,8 +5,6 @@
         android:name="com.redelf.commons.interprocess"
         android:protectionLevel="normal" />
 
-    <uses-permission android:name="com.redelf.commons.interprocess" />
-
     <application>
 
         <receiver
