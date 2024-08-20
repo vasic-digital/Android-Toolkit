@@ -2,7 +2,6 @@ package com.redelf.commons.interprocess.echo
 
 import android.content.Context
 import android.content.Intent
-import com.google.gson.Gson
 import com.redelf.commons.extensions.toast
 import com.redelf.commons.interprocess.InterprocessData
 import com.redelf.commons.interprocess.InterprocessProcessor
@@ -53,7 +52,7 @@ class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcesso
         Console.log("$tag Request :: $message")
 
         val responseIntent = Intent(ACTION_ECHO_RESPONSE)
-        responseIntent.putExtra(EXTRA_DATA, "$echo = $message")
+        responseIntent.putExtra(InterprocessData.BUNDLE_KEY, "$echo = $message")
         ctx.applicationContext.sendBroadcast(responseIntent)
 
         Console.log("$tag Response :: $message")

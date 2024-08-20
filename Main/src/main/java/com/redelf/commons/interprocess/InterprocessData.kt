@@ -12,4 +12,11 @@ data class InterprocessData(
     @JsonProperty("content")
     @SerializedName("content")
     var content: String? = ""
-)
+
+) {
+
+    companion object {
+
+        const val BUNDLE_KEY = "data"
+    }
+}

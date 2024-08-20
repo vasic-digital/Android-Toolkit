@@ -14,7 +14,6 @@ import kotlin.reflect.KClass
 
 object Interprocessor : Interprocessing, Registration<InterprocessProcessor> {
 
-    private const val TAG = "IPC :: Interprocessor ::"
     private val processors = ConcurrentHashMap<Int, InterprocessProcessor>()
 
     fun send(
@@ -25,55 +24,15 @@ object Interprocessor : Interprocessing, Registration<InterprocessProcessor> {
 
     ): Boolean {
 
-        Console.log("$TAG Sending intent :: START")
+        return BaseApplication.takeContext().sendBroadcastIPC(
 
-        val intent = Intent()
-        val data = InterprocessData(function, content)
-        val json = Gson().toJson(data)
-
-        intent.setAction(InterprocessReceiver.ACTION)
-
-        Console.log("$TAG Sending intent :: Action = ${intent.action}")
-        Console.log("$TAG Sending intent :: Data = $data")
-        Console.log("$TAG Sending intent :: JSON = $json")
-
-        intent.putExtra(InterprocessProcessor.EXTRA_DATA, json)
-
-        val clazz: KClass<InterprocessReceiver> = InterprocessReceiver::class
-        val cName = clazz.qualifiedName ?: ""
-
-
-        if (isEmpty(cName)) {
-
-            Console.error("$TAG Sending intent :: Failed :: Class name is empty")
-
-            return false
-        }
-
-        if (isEmpty(receiver)) {
-
-            Console.error("$TAG Sending intent :: Failed :: Package name is empty")
-
-            return false
-        }
-
-        Console.log("$TAG Sending intent :: Class = $cName")
-        Console.log("$TAG Sending intent :: Target receiver = $receiver")
-
-        intent.setClassName(receiver, cName)
-
-        if (BaseApplication.takeContext().sendBroadcastWithResult(intent, local = false)) {
-
-            Console.log("$TAG Sending intent :: END")
-
-            return true
-
-        } else {
-
-            Console.error("$TAG Sending intent :: Failed")
-        }
-
-        return false
+            content = content,
+            function = function,
+            receiver = receiver,
+            action = InterprocessReceiver.ACTION,
+            tag = "IPC :: Interprocessor :: Send ::",
+            receiverClass = InterprocessReceiver::class
+        )
     }
 
     override fun register(subscriber: InterprocessProcessor) {

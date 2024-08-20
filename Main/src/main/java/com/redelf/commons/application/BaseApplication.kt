@@ -28,6 +28,7 @@ import androidx.work.Configuration
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
@@ -36,6 +37,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.interprocess.InterprocessData
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
@@ -53,6 +55,7 @@ import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.reflect.KClass
 
 
 abstract class BaseApplication :
@@ -912,7 +915,67 @@ abstract class BaseApplication :
         }
     }
 
-    fun sendBroadcastWithResult(intent: Intent?, local: Boolean = true) : Boolean {
+    fun sendBroadcastIPC(
+
+        action: String,
+        receiver: String,
+        receiverClass: KClass<*>,
+        function: String,
+        content: String? = null,
+        tag: String = "IPC :: Send ::"
+
+    ): Boolean {
+
+        Console.log("$tag Sending intent :: START")
+
+        val intent = Intent()
+        val data = InterprocessData(function, content)
+        val json = Gson().toJson(data)
+
+        intent.setAction(action)
+
+        Console.log("$tag Sending intent :: Action = ${intent.action}")
+        Console.log("$tag Sending intent :: Data = $data")
+        Console.log("$tag Sending intent :: JSON = $json")
+
+        intent.putExtra(InterprocessData.BUNDLE_KEY, json)
+
+        val cName = receiverClass.qualifiedName ?: ""
+
+        if (isEmpty(cName)) {
+
+            Console.error("$tag Sending intent :: Failed :: Class name is empty")
+
+            return false
+        }
+
+        if (isEmpty(receiver)) {
+
+            Console.error("$tag Sending intent :: Failed :: Package name is empty")
+
+            return false
+        }
+
+        Console.log("$tag Sending intent :: Class = $cName")
+        Console.log("$tag Sending intent :: Target receiver = $receiver")
+
+        intent.setClassName(receiver, cName)
+
+        if (takeContext().sendBroadcastWithResult(intent, local = false)) {
+
+            Console.log("$tag Sending intent :: END")
+
+            return true
+
+        } else {
+
+            Console.error("$tag Sending intent :: Failed")
+        }
+
+        return false
+    }
+
+    fun sendBroadcastWithResult(intent: Intent?, local: Boolean = true): Boolean {
 
         intent?.let {
 

@@ -55,6 +55,7 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.reflect.KClass
 
 abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
@@ -1272,6 +1273,28 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
             LocalBroadcastManager.getInstance(getActivityContext()).sendBroadcast(intent);
         }
+    }
+
+    fun sendBroadcastIPC(
+
+        action: String,
+        receiver: String,
+        receiverClass: KClass<*>,
+        function: String,
+        content: String? = null,
+        tag: String = "IPC :: Send ::"
+
+    ): Boolean {
+
+        return BaseApplication.takeContext().sendBroadcastIPC(
+
+            content = content,
+            function = function,
+            receiver = receiver,
+            action = action,
+            tag = tag,
+            receiverClass = receiverClass
+        )
     }
 
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
