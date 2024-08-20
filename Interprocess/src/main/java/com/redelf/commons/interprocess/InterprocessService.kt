@@ -29,11 +29,13 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
             Console.log("$TAG Sending intent :: START")
 
-            val intent = Intent(InterprocessReceiver.ACTION)
+            val intent = Intent()
             val data = InterprocessData(function, content)
             val json = Gson().toJson(data)
 
-            Console.log("$TAG Sending intent :: Action = ${InterprocessReceiver.ACTION}")
+            intent.setAction(InterprocessReceiver.ACTION)
+
+            Console.log("$TAG Sending intent :: Action = ${intent.action}")
             Console.log("$TAG Sending intent :: Data = $data")
             Console.log("$TAG Sending intent :: JSON = $json")
 
