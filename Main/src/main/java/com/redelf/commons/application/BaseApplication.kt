@@ -922,7 +922,7 @@ abstract class BaseApplication :
 
             } else {
 
-                applicationContext.sendBroadcast(it)
+                super.sendBroadcast(it)
 
                 return true
             }
