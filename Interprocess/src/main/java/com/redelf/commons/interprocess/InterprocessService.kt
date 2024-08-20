@@ -17,7 +17,7 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
     companion object {
 
-        private const val TAG = "Interprocess service ::"
+        private const val TAG = "IPC :: Service ::"
 
         fun send(function: String, content: String? = null): Boolean {
 
@@ -34,7 +34,7 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
             intent.putExtra(InterprocessProcessor.EXTRA_DATA, json)
 
             val clazz: KClass<InterprocessReceiver> = InterprocessReceiver::class
-            val pName = BaseApplication.takeContext().packageName
+            val sName = clazz.simpleName ?: ""
             val cName = clazz.qualifiedName ?: ""
 
             if (isEmpty(cName)) {
@@ -43,6 +43,25 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
                 return false
             }
+
+            if (isEmpty(sName)) {
+
+                Console.error("$TAG Sending intent :: Failed :: Simple name is empty")
+
+                return false
+            }
+
+            val pName = cName.replace(".$sName", "")
+
+            if (isEmpty(pName)) {
+
+                Console.error("$TAG Sending intent :: Failed :: Package name is empty")
+
+                return false
+            }
+
+            Console.log("$TAG Sending intent :: Package = $pName")
+            Console.log("$TAG Sending intent :: Class = $cName")
 
             intent.setClassName(pName, cName)
 
