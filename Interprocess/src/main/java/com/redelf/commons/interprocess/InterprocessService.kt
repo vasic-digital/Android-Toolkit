@@ -7,9 +7,11 @@ import android.os.IBinder
 import com.google.gson.Gson
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
+import kotlin.reflect.KClass
 
 class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
@@ -17,7 +19,7 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
         private const val TAG = "Interprocess service ::"
 
-        fun send(function: String, content: String? = null) : Boolean {
+        fun send(function: String, content: String? = null): Boolean {
 
             Console.log("$TAG Sending intent :: START")
 
@@ -30,6 +32,19 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
             Console.log("$TAG Sending intent :: JSON = $json")
 
             intent.putExtra(InterprocessProcessor.EXTRA_DATA, json)
+
+            val clazz: KClass<InterprocessReceiver> = InterprocessReceiver::class
+            val pName = BaseApplication.takeContext().packageName
+            val cName = clazz.qualifiedName ?: ""
+
+            if (isEmpty(cName)) {
+
+                Console.error("$TAG Sending intent :: Failed :: Class name is empty")
+
+                return false
+            }
+
+            intent.setClassName(pName, cName)
 
             if (BaseApplication.takeContext().sendBroadcastWithResult(intent, local = false)) {
 
