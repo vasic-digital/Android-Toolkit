@@ -17,15 +17,32 @@ class InterprocessService : Service(), Registration<InterprocessProcessor> {
 
         private const val TAG = "Interprocess service ::"
 
-        fun send(function: String, content: String? = null) {
+        fun send(function: String, content: String? = null) : Boolean {
+
+            Console.log("$TAG Sending intent :: START")
 
             val intent = Intent(InterprocessReceiver.ACTION)
             val data = InterprocessData(function, content)
             val json = Gson().toJson(data)
 
+            Console.log("$TAG Sending intent :: Action = ${InterprocessReceiver.ACTION}")
+            Console.log("$TAG Sending intent :: Data = $data")
+            Console.log("$TAG Sending intent :: JSON = $json")
+
             intent.putExtra(InterprocessProcessor.EXTRA_DATA, json)
 
-            BaseApplication.takeContext().sendBroadcast(intent)
+            if (BaseApplication.takeContext().sendBroadcastWithResult(intent)) {
+
+                Console.log("$TAG Sending intent :: END")
+
+                return true
+
+            } else {
+
+                Console.error("$TAG Sending intent :: Failed")
+            }
+
+            return false
         }
     }
 

@@ -21,9 +21,11 @@ class WelcomeActivity : BaseActivity() {
             Console.log("$tag Button clicked")
 
             val hello = EchoInterprocessProcessor.ACTION_HELLO
-            InterprocessService.send(function = hello)
 
-            Console.log("$tag Sent echo intent")
+            if (InterprocessService.send(function = hello)) {
+
+                Console.log("$tag Sent echo intent")
+            }
         }
     }
 }
