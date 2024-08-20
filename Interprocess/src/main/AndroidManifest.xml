@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <permission
+        android:name="com.redelf.commons.interprocess"
+        android:protectionLevel="normal" />
+
     <uses-permission android:name="com.redelf.commons.interprocess" />
 
     <application>
@@ -18,7 +22,9 @@
 
         </receiver>
 
-        <service android:name=".InterprocessService" android:exported="false" />
+        <service
+            android:name=".InterprocessService"
+            android:exported="false" />
 
     </application>
 
