@@ -220,9 +220,9 @@ dependencies {
     api "com.google.firebase:firebase-core:21.1.1"
     api "com.google.firebase:firebase-auth:23.0.0"
     api "com.google.firebase:firebase-config:22.0.0"
-    api "com.google.firebase:firebase-analytics:22.0.2"
-    api "com.google.firebase:firebase-analytics-ktx:22.0.2"
-    api "com.google.firebase:firebase-messaging:24.0.0"
+    api "com.google.firebase:firebase-analytics:22.1.0"
+    api "com.google.firebase:firebase-analytics-ktx:22.1.0"
+    api "com.google.firebase:firebase-messaging:24.0.1"
     api "com.google.firebase:firebase-crashlytics:19.0.3"
     api "com.google.android.gms:play-services-auth:21.2.0"
 
@@ -255,7 +255,7 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
 
-    api platform("com.google.firebase:firebase-bom:33.1.2")
+    api platform("com.google.firebase:firebase-bom:33.2.0")
 
     api "io.github.nefilim.kjwt:kjwt-core:0.9.0"
     api "io.github.nefilim.kjwt:kjwt-jwks:0.9.0"

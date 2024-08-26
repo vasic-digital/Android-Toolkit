@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
-
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="com.redelf.commons.interprocess" />
+    <permission
+        android:name="${interprocess_permission}"
+        android:protectionLevel="normal" />
+
+    <uses-permission android:name="${interprocess_permission}" />
 
     <application
 
@@ -16,6 +19,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Boba"
         tools:replace="android:name">
+
+        <receiver
+            android:name="com.redelf.commons.interprocess.InterprocessReceiver"
+            android:exported="true"
+            android:permission="${interprocess_permission}">
+
+            <intent-filter>
+
+                <action android:name="com.redelf.commons.interprocess.action" />
+
+            </intent-filter>
+
+        </receiver>
 
         <activity
 

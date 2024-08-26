@@ -5,10 +5,15 @@ plugins {
     id 'kotlin-kapt'
 }
 
+ext {
+
+    interprocess_permission = "com.redelf.commons.interprocess.echo"
+}
+
 android {
 
     compileSdk 34
-    namespace 'com.redelf.commons.interprocess.echo'
+    namespace "${interprocess_permission}"
 
     defaultConfig {
 
@@ -19,6 +24,13 @@ android {
         applicationId "com.redelf.commons.interprocess.echo"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders = [
+
+                interprocess_permission: interprocess_permission
+        ]
+
+        resValue "string", "interprocess_permission", interprocess_permission
     }
 
     buildTypes {
