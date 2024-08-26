@@ -5,7 +5,7 @@ import com.redelf.commons.logging.Console
 
 abstract class InterprocessApplication : BaseApplication() {
 
-    protected abstract val interprocessPermission: String
+    protected abstract val interprocessPermission: Int
 
     protected abstract fun getProcessors(): List<InterprocessProcessor>
 
@@ -16,7 +16,7 @@ abstract class InterprocessApplication : BaseApplication() {
 
         Console.log(
 
-            "IPC :: Permission :: $interprocessPermission"
+            "IPC :: Permission :: ${getString(interprocessPermission)}"
         )
     }
 }
