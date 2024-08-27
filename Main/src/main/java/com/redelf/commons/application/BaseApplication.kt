@@ -926,6 +926,22 @@ abstract class BaseApplication :
 
     ): Boolean {
 
+        val cName = receiverClass.qualifiedName ?: ""
+
+        return sendBroadcastIPC(action, receiver, cName, function, content, tag)
+    }
+
+    fun sendBroadcastIPC(
+
+        action: String,
+        receiver: String,
+        cName: String,
+        function: String,
+        content: String?,
+        tag: String
+
+    ): Boolean {
+
         Console.log("$tag Sending intent :: START")
 
         val intent = Intent()
@@ -939,8 +955,6 @@ abstract class BaseApplication :
         Console.log("$tag Sending intent :: JSON = $json")
 
         intent.putExtra(InterprocessData.BUNDLE_KEY, json)
-
-        val cName = receiverClass.qualifiedName ?: ""
 
         if (isEmpty(cName)) {
 

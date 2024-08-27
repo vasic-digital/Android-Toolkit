@@ -1297,6 +1297,28 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         )
     }
 
+    fun sendBroadcastIPC(
+
+        action: String,
+        receiver: String,
+        component: String,
+        function: String,
+        content: String? = null,
+        tag: String = "IPC :: Send ::"
+
+    ): Boolean {
+
+        return BaseApplication.takeContext().sendBroadcastIPC(
+
+            content = content,
+            function = function,
+            receiver = receiver,
+            action = action,
+            tag = tag,
+            cName = component
+        )
+    }
+
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 
         receiver?.let { r ->
