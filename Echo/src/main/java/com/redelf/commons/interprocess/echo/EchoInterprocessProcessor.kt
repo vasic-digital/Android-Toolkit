@@ -40,11 +40,7 @@ class EchoInterprocessProcessor(private val ctx: Context) : InterprocessProcesso
 
     private fun hello() {
 
-        val msg = "Hello from the Echo IPC"
-
-        Console.log("$tag $msg")
-
-        ctx.toast(msg)
+        Console.log("$tag Hello from the Echo IPC")
     }
 
     private fun echo(message: String) {
