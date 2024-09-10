@@ -8,4 +8,4 @@ if [ -n "$1" ]; then
 fi
 
 git add . && git commit -m "$MESSAGE"
-git push github && git push gitflic && git push gitee && git push && git log -n 1
+git push github && git push gitflic && git push gitee git push GitVerse && git push && git log -n 1
