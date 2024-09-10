@@ -19,4 +19,7 @@ abstract class InterprocessApplication : BaseApplication() {
             "IPC :: Permission :: ${getString(interprocessPermission)}"
         )
     }
+
+    protected fun getInterprocessPermissionValue() =
+        applicationContext.getString(interprocessPermission)
 }
