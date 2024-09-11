@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Echo</string>
+    <string name="echo_self_test">Echo self-test</string>
+</resources>

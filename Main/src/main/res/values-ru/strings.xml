@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Default: -->
+    <string name="attach_file_from_camera" >Прикрепите файл с камеры</string>
+    <string name="attach_file_from_gallery">Прикрепите файл из галереи</string>
+    <string name="attach_file_from_documents">Прикрепите файл из документов</string>
+
+    <!-- Errors: -->
+    <string name="error_attaching_file">Произошла ошибка при прикреплении файла</string>
+
+    <!-- Proxy: -->
+    <string name="proxy_alive_check_url">https://www.yandex.com</string>
+
+</resources>

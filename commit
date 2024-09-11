@@ -1,0 +1,12 @@
+#!/bin/sh
+
+MESSAGE="Auto-commit."
+
+if [ -n "$1" ]; then
+
+  MESSAGE="$1"
+fi
+
+git add . && git commit -m "$MESSAGE"
+git push github && git push gitflic && git push gitee && git push gitverse && git push && \
+git log -n 1

@@ -1,0 +1,39 @@
+plugins {
+
+    id 'java'
+}
+
+sourceSets {
+
+    main {
+
+        java {
+
+            srcDirs = ['src/main/java']
+        }
+    }
+}
+
+dependencies {}
+
+java {
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+task createJar(type: Jar) {
+
+    println("Creating the JCommons JAR archive")
+
+    archiveBaseName.set("toolkit-jcommons-${toolkit_version}")
+    from sourceSets.main.output
+}
+
+task copyJar(type: Copy) {
+    
+    from createJar.archiveFile
+    into 'jar'
+}
+
+createJar.finalizedBy(copyJar)

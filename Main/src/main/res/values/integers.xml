@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Proxy: -->
+    <integer name="proxy_timeout_in_milliseconds">5000</integer>
+    <integer name="endpoint_timeout_in_milliseconds">5000</integer>
+
+</resources>

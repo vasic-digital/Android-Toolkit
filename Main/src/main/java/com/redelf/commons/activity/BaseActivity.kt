@@ -29,20 +29,20 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.redelf.commons.Broadcast
 import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.dialog.AttachFileDialog
-import com.redelf.commons.dialog.OnPickFromCameraCallback
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.initRegistrationWithGoogle
 import com.redelf.commons.extensions.isServiceRunning
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.logging.Console
+import com.redelf.commons.messaging.broadcast.Broadcast
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
+import com.redelf.commons.ui.dialog.AttachFileDialog
+import com.redelf.commons.ui.dialog.OnPickFromCameraCallback
 import com.redelf.commons.util.UriUtil
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.Unregistrar
@@ -55,6 +55,7 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.reflect.KClass
 
 abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
@@ -113,7 +114,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
             }
         }
 
-        // FIXME: ?
         onBackPressedDispatcher.addCallback(this, backPressedCallback)
 
         created = true
@@ -389,6 +389,20 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     open fun showError(
 
+        error: String,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return showError(error, null, positiveAction, dismissAction, style)
+    }
+
+    open fun showError(
+
         error: Int,
         title: Int? = null,
 
@@ -403,6 +417,40 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
             title = title ?: android.R.string.dialog_alert_title,
             message = error,
+            action = {
+
+                dismissDialogs()
+                positiveAction?.run()
+
+            },
+            dismissAction = {
+
+                dismissDialogs()
+                dismissAction?.run()
+            },
+            actionLabel = android.R.string.ok,
+            dismissible = false,
+            cancellable = true,
+            style = style ?: 0
+        )
+    }
+
+    open fun showError(
+
+        error: String,
+        title: Int? = null,
+
+        positiveAction: Runnable? = null,
+        dismissAction: Runnable? = null,
+
+        style: Int? = null
+
+    ): AlertDialog? {
+
+        return alert(
+
+            title = title ?: android.R.string.dialog_alert_title,
+            messageString = error,
             action = {
 
                 dismissDialogs()
@@ -770,7 +818,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
     }
 
-    protected open fun getTransmissionManager(callback: OnObtain<TransmissionManager<*>>) {
+    protected open fun getTransmissionManager(callback: OnObtain<TransmissionManager<*, *>>) {
 
         val e = IllegalArgumentException("No transmission manager available")
         callback.onFailure(e)
@@ -780,9 +828,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         Console.log("Transmission manager :: INIT :: START")
 
-        val callback = object : OnObtain<TransmissionManager<*>> {
+        val callback = object : OnObtain<TransmissionManager<*, *>> {
 
-            override fun onCompleted(data: TransmissionManager<*>) {
+            override fun onCompleted(data: TransmissionManager<*, *>) {
 
                 Console.log("Sending manager :: Ready: $data")
 
@@ -1212,12 +1260,63 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
     }
 
+    fun sendBroadcast(action: String) {
+
+        val intent = Intent(action)
+
+        sendBroadcast(intent)
+    }
+
     override fun sendBroadcast(intent: Intent?) {
 
         intent?.let {
 
             LocalBroadcastManager.getInstance(getActivityContext()).sendBroadcast(intent);
         }
+    }
+
+    fun sendBroadcastIPC(
+
+        action: String,
+        receiver: String,
+        receiverClass: KClass<*>,
+        function: String,
+        content: String? = null,
+        tag: String = "IPC :: Send ::"
+
+    ): Boolean {
+
+        return BaseApplication.takeContext().sendBroadcastIPC(
+
+            content = content,
+            function = function,
+            receiver = receiver,
+            action = action,
+            tag = tag,
+            receiverClass = receiverClass
+        )
+    }
+
+    fun sendBroadcastIPC(
+
+        action: String,
+        receiver: String,
+        component: String,
+        function: String,
+        content: String? = null,
+        tag: String = "IPC :: Send ::"
+
+    ): Boolean {
+
+        return BaseApplication.takeContext().sendBroadcastIPC(
+
+            content = content,
+            function = function,
+            receiver = receiver,
+            action = action,
+            tag = tag,
+            cName = component
+        )
     }
 
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {

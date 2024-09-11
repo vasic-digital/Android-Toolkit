@@ -4,12 +4,13 @@ import android.os.Handler
 import android.os.Looper
 import com.redelf.commons.logging.Console
 import java.util.concurrent.Callable
+import java.util.concurrent.Executor
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
-enum class Executor : Execution {
+enum class Executor : Execution, Performer<Executor> {
 
     MAIN {
 
@@ -27,7 +28,9 @@ enum class Executor : Execution {
             cores * 3 * 10
         }
 
-        private val executor = TaskExecutor.instantiate(capacity)
+        val executor = TaskExecutor.instantiate(capacity)
+
+        override fun getPerformer() = executor
 
         override fun execute(what: Runnable) {
 
@@ -91,6 +94,8 @@ enum class Executor : Execution {
 
             Exec.execute(action, delayInMillis, executor)
         }
+
+        override fun getPerformer() = executor
     },
 
     UI {
@@ -124,6 +129,13 @@ enum class Executor : Execution {
                 throw IllegalStateException("Could not accept action")
             }
         }
+
+        /*
+        * TODO: Think about more proper solution for this
+        * */
+        @Throws(UnsupportedOperationException::class)
+        override fun getPerformer() =
+            throw UnsupportedOperationException("Cannot get performer for UI executor")
     };
 
     private object Exec {

@@ -1,7 +1,7 @@
 package com.redelf.commons.test.data.wrapper
 
 import com.google.gson.reflect.TypeToken
-import com.redelf.commons.model.Wrapper
+import com.redelf.commons.data.model.Wrapper
 import com.redelf.commons.partition.Partitional
 import org.junit.Assert
 import java.lang.reflect.Type

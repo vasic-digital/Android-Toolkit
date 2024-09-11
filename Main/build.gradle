@@ -6,6 +6,87 @@ plugins {
     id 'kotlin-kapt'
 }
 
+if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
+
+    throw new IllegalArgumentException(
+
+            "The 'toolkit_project_name' ext. variable has to be set from the main " +
+                    "root project build.gradle file"
+    )
+
+} else {
+
+    println("The 'toolkit_project_name' is: '$toolkit_project_name'")
+}
+
+import java.nio.file.Files
+import java.nio.file.Paths
+
+import com.redelf.jcommons.JObfuscator
+
+/*
+     The .zshrc / .bashrc example:
+
+     export OBFUSCATION_SALT="your_secret_salt"
+
+     export PROXY_LOCAL_ENABLED="BOBA;"
+     export PROXY_LOCAL_PROD_ENABLED="BOBA;"
+     export PROXY_REMOTE_PROD_ENABLED="BOBA;"
+
+     export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
+     export PROXY_LOCAL_PROD="milosvasic.local"
+
+     export PROXY_LOCAL_TEST_PORT="8080"
+     export PROXY_LOCAL_PROD_PORT="8080"
+
+     export PROXY_LOCAL_TEST_USERNAME="test"
+     export PROXY_LOCAL_PROD_USERNAME="admin"
+
+     export PROXY_LOCAL_TEST_PASSWORD="test"
+     export PROXY_LOCAL_PROD_PASSWORD="admin"
+
+     export OBFUSCATION_TEST="test"
+*/
+
+def test = System.getenv("OBFUSCATION_TEST") ?: ""
+
+def salt = System.getenv("OBFUSCATION_SALT") ?: ""
+def obfuscator = new JObfuscator(salt)
+
+def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "").contains("$toolkit_project_name;")
+def proxyProdEnabled = (System.getenv("PROXY_LOCAL_PROD_ENABLED") ?: "").contains("$toolkit_project_name;")
+def proxyRemoteProdEnabled = (System.getenv("PROXY_REMOTE_PROD_ENABLED") ?: "").contains("$toolkit_project_name;")
+
+def pLocalTest = System.getenv("PROXY_LOCAL_TEST") ?: "127.0.0.1"
+def pLocalTestPort = System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080"
+def pLocalTestUsername = System.getenv("PROXY_LOCAL_TEST_USERNAME") ?: "test"
+def pLocalTestPassword = System.getenv("PROXY_LOCAL_TEST_PASSWORD") ?: "test"
+
+def proxyLocalTest = obfuscator.obfuscate(pLocalTest)
+def proxyLocalTestPort = obfuscator.obfuscate(pLocalTestPort)
+def proxyLocalTestUsername = obfuscator.obfuscate(pLocalTestUsername)
+def proxyLocalTestPassword = obfuscator.obfuscate(pLocalTestPassword)
+
+def pLocalProd = System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1"
+def pLocalProdPort = System.getenv("PROXY_LOCAL_PROD_PORT") ?: "8080"
+def pLocalProdUsername = System.getenv("PROXY_LOCAL_PROD_USERNAME") ?: "admin"
+def pLocalProdPassword = System.getenv("PROXY_LOCAL_PROD_PASSWORD") ?: "admin"
+
+def proxyLocalProd = obfuscator.obfuscate(pLocalProd)
+def proxyLocalProdPort = obfuscator.obfuscate(pLocalProdPort)
+def proxyLocalProdUsername = obfuscator.obfuscate(pLocalProdUsername)
+def proxyLocalProdPassword = obfuscator.obfuscate(pLocalProdPassword)
+
+def pRemoteProd = System.getenv("PROXY_REMOTE_PROD") ?: "127.0.0.1"
+def pRemoteProdPort = System.getenv("PROXY_REMOTE_PROD_PORT") ?: "8080"
+def pRemoteProdUsername = System.getenv("PROXY_REMOTE_PROD_USERNAME") ?: "admin"
+def pRemoteProdPassword = System.getenv("PROXY_REMOTE_PROD_PASSWORD") ?: "admin"
+
+def proxyRemoteProd = obfuscator.obfuscate(pRemoteProd)
+def proxyRemoteProdPort = obfuscator.obfuscate(pRemoteProdPort)
+def proxyRemoteProdUsername = obfuscator.obfuscate(pRemoteProdUsername)
+def proxyRemoteProdPassword = obfuscator.obfuscate(pRemoteProdPassword)
+
 android {
 
     // FIXME:
@@ -23,6 +104,32 @@ android {
         targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        if (proxyEnabled) {
+
+            resValue "string", "ob_proxy_local_test", proxyLocalTest
+            resValue "string", "ob_proxy_local_test_port", proxyLocalTestPort
+            resValue "string", "ob_proxy_local_test_username", proxyLocalTestUsername
+            resValue "string", "ob_proxy_local_test_password", proxyLocalTestPassword
+        }
+
+        if (proxyProdEnabled) {
+
+            resValue "string", "ob_proxy_local_prod", proxyLocalProd
+            resValue "string", "ob_proxy_local_prod_port", proxyLocalProdPort
+            resValue "string", "ob_proxy_local_prod_username", proxyLocalProdUsername
+            resValue "string", "ob_proxy_local_prod_password", proxyLocalProdPassword
+        }
+
+        if (proxyRemoteProdEnabled) {
+
+            resValue "string", "ob_proxy_remote_prod", proxyRemoteProd
+            resValue "string", "ob_proxy_remote_prod_port", proxyRemoteProdPort
+            resValue "string", "ob_proxy_remote_prod_username", proxyRemoteProdUsername
+            resValue "string", "ob_proxy_remote_prod_password", proxyRemoteProdPassword
+        }
+
+        resValue "string", "ob_test", obfuscator.obfuscate(test)
     }
 
     compileOptions {
@@ -53,10 +160,15 @@ android {
         }
     }
 
+
     packagingOptions {
 
-        resources.excludes.add("META-INF/*")
-        resources.excludes.add("LICENSE-2.0.txt")
+        resources {
+            excludes += ['META-INF/*, LICENSE-2.0.txt, META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0', 'META-INF/*.kotlin_module', 'META-INF/*', 'LICENSE-2.0.txt', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt']
+        }
+        jniLibs {
+            excludes += ['META-INF/*']
+        }
     }
 
     lint {
@@ -73,8 +185,12 @@ dependencies {
     final String okioVersion = "3.9.0"
     final String okHttpVersion = "4.12.0"
     final String jacksonVersion = "2.12.5"
-    final String lifecycleVersion = "2.8.2"
+    final String lifecycleVersion = "2.8.4"
     final String retrofitHttpVersion = "2.11.0"
+
+    api project("$toolkit_obfuscator_project")
+    testApi project("$toolkit_obfuscator_project")
+    androidTestApi project("$toolkit_obfuscator_project")
 
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
@@ -102,10 +218,10 @@ dependencies {
     api "com.google.firebase:firebase-core:21.1.1"
     api "com.google.firebase:firebase-auth:23.0.0"
     api "com.google.firebase:firebase-config:22.0.0"
-    api "com.google.firebase:firebase-analytics:22.0.2"
-    api "com.google.firebase:firebase-analytics-ktx:22.0.2"
-    api "com.google.firebase:firebase-messaging:24.0.0"
-    api "com.google.firebase:firebase-crashlytics:19.0.2"
+    api "com.google.firebase:firebase-analytics:22.1.0"
+    api "com.google.firebase:firebase-analytics-ktx:22.1.0"
+    api "com.google.firebase:firebase-messaging:24.0.1"
+    api "com.google.firebase:firebase-crashlytics:19.0.3"
     api "com.google.android.gms:play-services-auth:21.2.0"
 
     api "com.google.android.play:app-update:2.1.0"
@@ -123,7 +239,7 @@ dependencies {
     api "androidx.lifecycle:lifecycle-extensions:2.2.0"
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
     api "androidx.profileinstaller:profileinstaller:1.3.1"
-    api "androidx.activity:activity-ktx:1.9.0"
+    api "androidx.activity:activity-ktx:1.9.1"
 
     api "commons-codec:commons-codec:1.16.0"
 
@@ -137,25 +253,29 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
 
-    api platform("com.google.firebase:firebase-bom:33.1.1")
+    api platform("com.google.firebase:firebase-bom:33.2.0")
 
     api "io.github.nefilim.kjwt:kjwt-core:0.9.0"
     api "io.github.nefilim.kjwt:kjwt-jwks:0.9.0"
 
     api "com.airbnb.android:lottie:5.2.0"
+    api "androidx.work:work-runtime-ktx:2.9.1"
     api "androidx.preference:preference-ktx:1.2.1"
-    api "com.google.android.material:material:1.11.0"
+    api "com.google.android.material:material:1.12.0"
     api "androidx.navigation:navigation-ui-ktx:2.7.7"
     api "androidx.navigation:navigation-fragment-ktx:2.7.7"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
-    testImplementation project(":Toolkit:Test")
+    api "com.google.net.cronet:cronet-okhttp:0.1.0"
+    api "com.google.android.gms:play-services-cronet:18.1.0"
+
+    testImplementation project("${toolkit_context}:Test")
 
     testImplementation "junit:junit:4.13.2"
 
-    androidTestImplementation project(":Toolkit:Test")
-    androidTestImplementation "androidx.test:rules:1.5.0"
-    androidTestImplementation "androidx.test.ext:junit:1.2.0"
+    androidTestImplementation project("${toolkit_context}:Test")
+    androidTestImplementation "androidx.test:rules:1.6.1"
+    androidTestImplementation "androidx.test.ext:junit:1.2.1"
 
     implementation "com.jakewharton.timber:timber:5.0.1"
     testImplementation "com.jakewharton.timber:timber:5.0.1"
@@ -164,3 +284,144 @@ dependencies {
     testApi "com.google.code.gson:gson:2.10.1"
     androidTestApi "com.google.code.gson:gson:2.10.1"
 }
+
+task downloadProxies(type: Exec) {
+
+    def outputDir = file("$projectDir/src/main/res/raw")
+    def outputFile = file("$outputDir/proxies.txt")
+
+    doFirst {
+
+        if (!outputDir.exists()) {
+
+            outputDir.mkdirs()
+        }
+    }
+
+    // FIXME: Obtain with NO proxy, ignore any if set
+
+    commandLine 'curl', '-sL', 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt', '-o', outputFile
+}
+
+/*
+    Generate proxies_local.txt file with local test and prod proxies.
+
+    This task is intended to be executed locally and will create a new file named "proxies_local.txt"
+    in the "src/androidTest/res/raw" directory.
+    The content of this file will be the concatenation of local test and prod proxies, if enabled.
+    Generated entries are created based on the values from the dev. environment (variables).
+    We could have the following proxy entries:
+
+    - Localhost dev (current dev. machine)
+    - Localhost prod (current dev. machine)
+    - Remote prod (external machine, exposed or entirely dedicated remote server)
+*/
+task generateProxiesLocalTxt {
+    doLast {
+
+        def content = ""
+
+        if (proxyEnabled) {
+
+            content = "http://${pLocalTestUsername}:${pLocalTestPassword}@${pLocalTest}:${pLocalTestPort}".stripIndent().trim()
+        }
+
+        if (proxyProdEnabled) {
+
+            content = """http://${pLocalTestUsername}:${pLocalTestPassword}@${pLocalTest}:${pLocalTestPort}
+http://${pLocalProdUsername}:${pLocalProdPassword}@${pLocalProd}:${pLocalProdPort}
+""".stripIndent().trim()
+        }
+
+        if (proxyEnabled || proxyProdEnabled) {
+
+            def filePath = "${projectDir}/src/androidTest/res/raw/proxies_local.txt"
+
+            Files.write(Paths.get(filePath), content.getBytes())
+            println "Generated proxies_local.txt at: ${filePath}"
+
+            exec {
+
+                commandLine 'git', 'add', filePath
+            }
+
+            try {
+
+                exec {
+
+                    commandLine 'git', 'commit', '-m', 'Auto-generated proxies_local.txt'
+                }
+
+            } catch (Exception e) {
+
+                println "Git commit command failed: ${e.message}"
+            }
+
+            try {
+
+                exec {
+
+                    commandLine 'git', 'push'
+                }
+
+            } catch (Exception e) {
+
+                println "Git push command failed: ${e.message}"
+            }
+        }
+    }
+}
+
+task startLocalProxyServer {
+    doLast {
+
+        try {
+
+            exec {
+
+                commandLine 'sh', "${rootDir}/Toolkit/Scripts/start_local_proxy_server.sh", "${rootDir}/Toolkit/Squid"
+            }
+
+        } catch (Exception e) {
+
+            println "Shell script execution failed: ${e.message}"
+        }
+    }
+}
+
+task obtainAndWriteSalt {
+    doLast {
+
+        if (!salt.isEmpty() && !salt.isBlank()) {
+
+            def content = "${salt}"
+            def filePath = "${getRootDir()}/salt.txt"
+
+            Files.write(Paths.get(filePath), content.getBytes())
+
+            println "Generated salt.txt at: ${filePath}"
+
+        } else {
+
+            println "No salt.txt was generated"
+        }
+    }
+}
+
+preBuild.dependsOn obtainAndWriteSalt
+
+if (proxyEnabled) {
+
+    preBuild.dependsOn downloadProxies
+}
+
+if (proxyEnabled || proxyProdEnabled) {
+
+    preBuild.dependsOn generateProxiesLocalTxt
+}
+
+if (proxyEnabled) {
+
+    preBuild.dependsOn startLocalProxyServer
+}
+

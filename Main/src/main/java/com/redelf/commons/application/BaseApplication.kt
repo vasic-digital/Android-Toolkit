@@ -24,9 +24,11 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
+import androidx.work.Configuration
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
@@ -35,20 +37,31 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.fcm.FcmService
-import com.redelf.commons.firebase.FirebaseConfigurationManager
+import com.redelf.commons.interprocess.InterprocessData
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
+import com.redelf.commons.messaging.firebase.FcmService
+import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.migration.MigrationNotReadyException
+import com.redelf.commons.net.cronet.Cronet
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
+import com.redelf.commons.security.management.SecretsManager
+import com.redelf.commons.security.obfuscation.DefaultObfuscator
+import com.redelf.commons.security.obfuscation.Obfuscator
+import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.reflect.KClass
+
 
 abstract class BaseApplication :
 
     Application(),
+    Configuration.Provider,
     ContextAvailability<BaseApplication>,
     ActivityLifecycleCallbacks,
     ActivityCount,
@@ -70,6 +83,11 @@ abstract class BaseApplication :
         const val BROADCAST_ACTION_APPLICATION_SCREEN_OFF = "APPLICATION_STATE.SCREEN_OFF"
         const val BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND = "APPLICATION_STATE.BACKGROUND"
         const val BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND = "APPLICATION_STATE.FOREGROUND"
+
+        val JOB_ID_MIN = AtomicInteger(1000)
+        val JOB_ID_MAX = AtomicInteger(4000)
+        val ALARM_SERVICE_JOB_ID_MIN = AtomicInteger(4001)
+        val ALARM_SERVICE_JOB_ID_MAX = AtomicInteger(8000)
 
         override fun takeContext() = CONTEXT
 
@@ -155,15 +173,34 @@ abstract class BaseApplication :
         }
     }
 
+    override val workManagerConfiguration = Configuration.Builder()
+        .setJobSchedulerJobIdRange(JOB_ID_MIN.get(), JOB_ID_MAX.get())
+        .build()
+
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
+    open val secretsKey = "com.redelf.commons.security.secrets"
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
     protected open val firebaseEnabled = true
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
-        listOf(FirebaseConfigurationManager)
+        listOf(
+
+            FirebaseConfigurationManager
+        )
+    )
+
+    protected open val contextDependentManagers = mutableListOf<Obtain<DataManagement<*>>>(
+
+        object : Obtain<DataManagement<*>> {
+
+            override fun obtain(): DataManagement<*> {
+
+                return SecretsManager.obtain()
+            }
+        }
     )
 
     protected val managersReady = AtomicBoolean()
@@ -179,9 +216,9 @@ abstract class BaseApplication :
 
     protected abstract fun isProduction(): Boolean
 
-    protected abstract fun onDoCreate()
-
     protected abstract fun takeSalt(): String
+
+    protected open fun onDoCreate() = Unit
 
     protected open fun populateManagers() = listOf<List<DataManagement<*>>>()
 
@@ -439,12 +476,24 @@ abstract class BaseApplication :
             enableStrictMode()
         }
 
+
+        Cronet.initialize(applicationContext)
         DataManagement.initialize(applicationContext)
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerActivityLifecycleCallbacks(this)
 
         managers.addAll(populateManagers())
+
+        val contextDependableManagers = mutableListOf<DataManagement<*>>()
+
+        contextDependentManagers.forEach { contextDependentManager ->
+
+            contextDependableManagers.add(contextDependentManager.obtain())
+        }
+
+        managers.addAll(listOf(contextDependableManagers))
+
         defaultManagerResources.putAll(populateDefaultManagerResources())
 
         doCreate()
@@ -455,6 +504,8 @@ abstract class BaseApplication :
         try {
 
             exec {
+
+                onPreCreate()
 
                 onDoCreate()
 
@@ -864,6 +915,99 @@ abstract class BaseApplication :
         }
     }
 
+    fun sendBroadcastIPC(
+
+        action: String,
+        receiver: String,
+        receiverClass: KClass<*>,
+        function: String,
+        content: String? = null,
+        tag: String = "IPC :: Send ::"
+
+    ): Boolean {
+
+        val cName = receiverClass.qualifiedName ?: ""
+
+        return sendBroadcastIPC(action, receiver, cName, function, content, tag)
+    }
+
+    fun sendBroadcastIPC(
+
+        action: String,
+        receiver: String,
+        cName: String,
+        function: String,
+        content: String?,
+        tag: String
+
+    ): Boolean {
+
+        Console.log("$tag Sending intent :: START")
+
+        val intent = Intent()
+        val data = InterprocessData(function, content)
+        val json = Gson().toJson(data)
+
+        intent.setAction(action)
+
+        Console.log("$tag Sending intent :: Action = ${intent.action}")
+        Console.log("$tag Sending intent :: Data = $data")
+        Console.log("$tag Sending intent :: JSON = $json")
+
+        intent.putExtra(InterprocessData.BUNDLE_KEY, json)
+
+        if (isEmpty(cName)) {
+
+            Console.error("$tag Sending intent :: Failed :: Class name is empty")
+
+            return false
+        }
+
+        if (isEmpty(receiver)) {
+
+            Console.error("$tag Sending intent :: Failed :: Package name is empty")
+
+            return false
+        }
+
+        Console.log("$tag Sending intent :: Class = $cName")
+        Console.log("$tag Sending intent :: Target receiver = $receiver")
+
+        intent.setClassName(receiver, cName)
+
+        if (takeContext().sendBroadcastWithResult(intent, local = false)) {
+
+            Console.log("$tag Sending intent :: END")
+
+            return true
+
+        } else {
+
+            Console.error("$tag Sending intent :: Failed")
+        }
+
+        return false
+    }
+
+    fun sendBroadcastWithResult(intent: Intent?, local: Boolean = true): Boolean {
+
+        intent?.let {
+
+            if (local) {
+
+                return LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
+
+            } else {
+
+                super.sendBroadcast(it)
+
+                return true
+            }
+        }
+
+        return false
+    }
+
     override fun sendBroadcast(intent: Intent?) {
 
         intent?.let {
@@ -957,6 +1101,28 @@ abstract class BaseApplication :
 
     override fun isUpdateApplied(identifier: Long) = !isUpdateAvailable(identifier)
 
+    protected open fun setupObfuscator(): Boolean {
+
+        val tag = "Obfuscator ::"
+
+        Console.log("$tag Setting up :: START")
+
+        val endpoint = getObfuscatorEndpoint()
+        val ghToken = getObfuscatorEndpointToken()
+        val saltObtain = RemoteObfuscatorSaltProvider(endpoint, ghToken)
+        val obfuscation = Obfuscator(saltObtain)
+
+        DefaultObfuscator.setStrategy(obfuscation)
+
+        Console.log("$tag Setting up :: END")
+
+        return true
+    }
+
+    protected open fun getObfuscatorEndpoint() = ""
+
+    protected open fun getObfuscatorEndpointToken() = ""
+
     protected fun isUpdateAvailable(identifier: Long): Boolean {
 
         val key = "$prefsKeyUpdate.$identifier"
@@ -983,5 +1149,17 @@ abstract class BaseApplication :
         sendBroadcast(intent)
 
         Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
+    }
+
+    private fun onPreCreate() {
+
+        val success = setupObfuscator()
+        DefaultObfuscator.setReady(success)
+
+        if (!success) {
+
+            val e = IllegalStateException("Failed to setup obfuscator")
+            recordException(e)
+        }
     }
 }

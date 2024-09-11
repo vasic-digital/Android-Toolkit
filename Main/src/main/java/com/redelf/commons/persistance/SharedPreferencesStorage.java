@@ -53,6 +53,7 @@ public final class SharedPreferencesStorage implements Storage<String> {
 
     @Override
     public String get(String key) {
+
         return preferences.getString(key, "");
     }
 

@@ -1,20 +1,40 @@
 buildscript {
 
-    /*
-        TODO: Kotlin 2.0
-    */
-    ext.kotlin_version = '1.9.23'
+    def default_toolkit_context = ""
+    def default_kotlin_version = "2.0.0"
+    def default_toolkit_version = "2.0.2"
+    def default_toolkit_obfuscator_jar_home = 'JCommons/jar'
+
+    ext.toolkit_context = project.hasProperty('toolkit_context') ? "$toolkit_context" : default_toolkit_context
+    ext.kotlin_version = project.hasProperty('kotlin_version') ? "$kotlin_version" : default_kotlin_version
+    ext.toolkit_version = project.hasProperty('toolkit_version') ? "$toolkit_version" : default_toolkit_version
+
+    ext.toolkit_obfuscator_jar_home = project.hasProperty('toolkit_obfuscator_jar_home') ? "$toolkit_obfuscator_jar_home" : default_toolkit_obfuscator_jar_home
+
+    def default_toolkit_obfuscator_jar = "$toolkit_obfuscator_jar_home/toolkit-jcommons-${toolkit_version}.jar"
+
+    ext.toolkit_obfuscator_jar = project.hasProperty('toolkit_obfuscator_jar') ? "$toolkit_obfuscator_jar" : default_toolkit_obfuscator_jar
+
+    def default_toolkit_obfuscator_project = "${toolkit_context}:JCommons"
+
+    ext.toolkit_obfuscator_project = project.hasProperty('toolkit_obfuscator_project') ? "$toolkit_obfuscator_project" : default_toolkit_obfuscator_project
 
     repositories {
 
         mavenLocal()
         google()
         mavenCentral()
+        maven { url "https://jitpack.io" }
+
+        flatDir {
+
+            dirs "$toolkit_obfuscator_jar_home"
+        }
     }
 
     dependencies {
 
-        classpath "com.android.tools.build:gradle:8.3.2"
+        classpath "com.android.tools.build:gradle:8.6.0"
         classpath "com.google.gms:google-services:4.4.2"
         classpath "com.google.firebase:firebase-crashlytics-gradle:3.0.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -28,10 +48,18 @@ allprojects {
         mavenLocal()
         google()
         mavenCentral()
+        maven { url "https://jitpack.io" }
     }
 }
 
-task clean(type: Delete) {
+buildscript {
 
-    delete rootProject.buildDir
+    dependencies {
+
+        classpath files("$toolkit_obfuscator_jar")
+    }
 }
+
+import com.redelf.jcommons.JObfuscator
+
+new JObfuscator("build.gradle").hello()

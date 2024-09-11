@@ -7,9 +7,8 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
 import com.redelf.commons.application.BaseApplication
-
-import com.redelf.commons.connectivity.Connectivity
 import com.redelf.commons.logging.Console
+import com.redelf.commons.net.connectivity.Connectivity
 import com.redelf.commons.scheduling.alarm.AlarmReceiver
 import com.redelf.commons.scheduling.alarm.AlarmScheduler
 import com.redelf.commons.service.BaseService
@@ -21,8 +20,7 @@ class TransmissionService : BaseService() {
     companion object {
 
         var DEBUG: Boolean? = null
-
-        const val BROADCAST_EXTRA_CODE = 1
+        val BROADCAST_EXTRA_CODE: Int = BaseApplication.ALARM_SERVICE_JOB_ID_MIN.get() + 1
     }
 
     private val binder = TransmissionServiceBinder()
@@ -163,16 +161,15 @@ class TransmissionService : BaseService() {
 
             unregisterAlarmCallback()
 
-            // FIXME: ... Also add proper manifest permissions!
-            //            AlarmScheduler(applicationContext).unSchedule(BROADCAST_EXTRA_CODE)
+            AlarmScheduler(applicationContext).unSchedule(BROADCAST_EXTRA_CODE)
 
         } else {
 
             registerAlarmCallback()
 
-            // FIXME: ... Also add proper manifest permissions!
-            //            val time = getAlarmInterval()
-            //            AlarmScheduler(applicationContext).schedule(BROADCAST_EXTRA_CODE, time)
+            val time = getAlarmInterval()
+
+            AlarmScheduler(applicationContext).schedule(BROADCAST_EXTRA_CODE, time)
         }
 
         Console.log("$tag End")
