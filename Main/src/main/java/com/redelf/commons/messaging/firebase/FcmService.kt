@@ -39,13 +39,13 @@ open class FcmService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
 
-        super.onNewToken(token)
-
         Console.info("New token available: $token")
 
         val intent = Intent(BROADCAST_ACTION_TOKEN)
         intent.putExtra(BROADCAST_KEY_TOKEN, token)
         sendBroadcast(intent)
+
+        super.onNewToken(token)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
