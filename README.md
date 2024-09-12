@@ -15,9 +15,12 @@ git submodule add "GIT_REPO_URL" ./Toolkit
 ```groovy
 include ':Toolkit:Main'
 include ':Toolkit:Test'
+include ':Toolkit:Echo'
 include ':Toolkit:Access'
+include ':Toolkit:JCommons'
 include ':Toolkit:RootTools'
 include ':Toolkit:RootShell'
+include ':Toolkit:Interprocess'
 include ':Toolkit:CircleImageView'
 include ':Toolkit:FastscrollerAlphabet'
 ```
@@ -27,12 +30,18 @@ include ':Toolkit:FastscrollerAlphabet'
 ```groovy
 dependencies {
 
-    api project(":Toolkit:Main")
-    api project(":Toolkit:Access")
-    api project(":Toolkit:RootShell")
-    api project(":Toolkit:RootTools")
-    api project(":Toolkit:CircleImageView")
-    api project(":Toolkit:FastscrollerAlphabet")
+    implementation project(":Toolkit:Main")
+    implementation project(":Toolkit:Test")
+    implementation project(":Toolkit:Access")
+    implementation project(":Toolkit:RootShell")
+    implementation project(":Toolkit:RootTools")
+    implementation project(':Toolkit:Interprocess')
+
+    testImplementation project(":Toolkit:Main")
+    testImplementation project(":Toolkit:Test")
+
+    androidTestImplementation project(":Toolkit:Main")
+    androidTestImplementation project(":Toolkit:Test")
 }
 ```
 
