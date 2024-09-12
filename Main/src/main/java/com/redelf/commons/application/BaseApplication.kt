@@ -61,12 +61,13 @@ import kotlin.reflect.KClass
 abstract class BaseApplication :
 
     Application(),
-    Configuration.Provider,
     ContextAvailability<BaseApplication>,
     ActivityLifecycleCallbacks,
     ActivityCount,
     LifecycleObserver,
-    Updatable<Long> {
+    Updatable<Long>
+
+{
 
     companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
 
@@ -84,8 +85,6 @@ abstract class BaseApplication :
         const val BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND = "APPLICATION_STATE.BACKGROUND"
         const val BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND = "APPLICATION_STATE.FOREGROUND"
 
-        val JOB_ID_MIN = AtomicInteger(1000)
-        val JOB_ID_MAX = AtomicInteger(4000)
         val ALARM_SERVICE_JOB_ID_MIN = AtomicInteger(4001)
         val ALARM_SERVICE_JOB_ID_MAX = AtomicInteger(8000)
 
@@ -172,10 +171,6 @@ abstract class BaseApplication :
             return ""
         }
     }
-
-    override val workManagerConfiguration = Configuration.Builder()
-        .setJobSchedulerJobIdRange(JOB_ID_MIN.get(), JOB_ID_MAX.get())
-        .build()
 
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
