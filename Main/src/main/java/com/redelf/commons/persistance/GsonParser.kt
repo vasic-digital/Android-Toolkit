@@ -54,6 +54,15 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
 
     override fun toJson(body: Any?): String? {
 
-        return provider.obtain().toJson(body)
+        try {
+
+            return provider.obtain().toJson(body)
+
+        } catch (e: ConcurrentModificationException) {
+
+            recordException(e)
+        }
+
+        return null
     }
 }
