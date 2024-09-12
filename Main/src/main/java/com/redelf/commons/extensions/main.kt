@@ -1226,3 +1226,10 @@ fun <F, S> getPair(map: LinkedTreeMap<String, Any>): Pair<F, S> {
 
     return Pair((map["first"] as String) as F, (map["second"] as String) as S)
 }
+
+@Suppress("UNCHECKED_CAST")
+@Throws(ClassCastException::class)
+fun <T> Any.wrapToList(): List<T> {
+
+    return mutableListOf(this as T)
+}
