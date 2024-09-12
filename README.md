@@ -10,7 +10,7 @@ Commonly used set of abstractions, implementations and tools.
 git submodule add "GIT_REPO_URL" ./Toolkit  
 ```
 
-- Add the following to your `settings.gradle`:
+- Add the following to your `settings.gradle` (only the modules that you need from this list):
 
 ```groovy
 include ':Toolkit:Main'
@@ -25,7 +25,7 @@ include ':Toolkit:CircleImageView'
 include ':Toolkit:FastscrollerAlphabet'
 ```
 
-- Add the following to your `build.gradle`:
+- And, add the modules to your `build.gradle` as the dependencies (the ones that you are going to use):
 
 ```groovy
 dependencies {
