@@ -19,10 +19,11 @@ if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$
     println("The 'toolkit_project_name' is: '$toolkit_project_name'")
 }
 
-import java.nio.file.Files
-import java.nio.file.Paths
 
 import com.redelf.jcommons.JObfuscator
+
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /*
      The .zshrc / .bashrc example:
