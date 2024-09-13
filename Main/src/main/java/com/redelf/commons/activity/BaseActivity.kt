@@ -39,6 +39,7 @@ import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.broadcast.Broadcast
 import com.redelf.commons.obtain.OnObtain
+import com.redelf.commons.transmission.TransmissionManagement
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
 import com.redelf.commons.ui.dialog.AttachFileDialog
@@ -818,7 +819,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
     }
 
-    protected open fun getTransmissionManager(callback: OnObtain<TransmissionManager<*, *>>) {
+    protected open fun getTransmissionManager(callback: OnObtain<TransmissionManagement>) {
 
         val e = IllegalArgumentException("No transmission manager available")
         callback.onFailure(e)
@@ -828,9 +829,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         Console.log("Transmission manager :: INIT :: START")
 
-        val callback = object : OnObtain<TransmissionManager<*, *>> {
+        val callback = object : OnObtain<TransmissionManagement> {
 
-            override fun onCompleted(data: TransmissionManager<*, *>) {
+            override fun onCompleted(data: TransmissionManagement) {
 
                 Console.log("Sending manager :: Ready: $data")
 

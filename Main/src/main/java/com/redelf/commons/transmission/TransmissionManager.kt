@@ -35,6 +35,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
     Add<D>,
     Management,
+    TransmissionManagement,
     Contextual<BaseApplication> where T : Empty, T : Clearing,
                                       T : Size, T : Add<D>, T : Iterable<D>,
                                       T : Contain<D>, T : Removal<D> {
