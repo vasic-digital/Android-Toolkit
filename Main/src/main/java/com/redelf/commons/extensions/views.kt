@@ -10,12 +10,12 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 
 fun TextView.textAsHtml(htmlCode: String) {
 
-    text = Html.fromHtml(htmlCode, Html.FROM_HTML_MODE_COMPACT)
+    text = Html.fromHtml(htmlCode, Html.FROM_HTML_MODE_COMPACT).trim()
 }
 
 fun TextView.textAsHtml(htmlCode: Int) {
 
-    text = Html.fromHtml(context.getString(htmlCode), Html.FROM_HTML_MODE_COMPACT)
+    this.textAsHtml(context.getString(htmlCode))
 }
 
 fun ImageView.circularImage(imgUrl: String, cornerRadius: Int) {
