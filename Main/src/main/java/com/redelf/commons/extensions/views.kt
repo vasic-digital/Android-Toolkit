@@ -18,6 +18,34 @@ fun TextView.textAsHtml(htmlCode: Int) {
     this.textAsHtml(context.getString(htmlCode))
 }
 
+fun ImageView.rectImage(imgRes: Int) {
+
+    try {
+
+        Glide.with(this)
+            .load(imgRes)
+            .into(this)
+
+    } catch (e: Exception) {
+
+        Console.error(e)
+    }
+}
+
+fun ImageView.rectImage(imgUrl: String) {
+
+    try {
+
+        Glide.with(this)
+            .load(imgUrl)
+            .into(this)
+
+    } catch (e: Exception) {
+
+        Console.error(e)
+    }
+}
+
 fun ImageView.circularImage(imgUrl: String, cornerRadius: Int) {
 
     try {
