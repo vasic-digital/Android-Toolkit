@@ -1,5 +1,6 @@
 package com.redelf.commons.extensions
 
+import android.app.Activity
 import android.text.Html
 import android.widget.ImageView
 import android.widget.TextView
@@ -20,53 +21,92 @@ fun TextView.textAsHtml(htmlCode: Int) {
 
 fun ImageView.rectImage(imgRes: Int) {
 
-    try {
+    onUiThread {
 
-        Glide.with(this)
-            .load(imgRes)
-            .into(this)
+        val ctx = this.context
 
-    } catch (e: Exception) {
+        if (ctx is Activity) {
 
-        Console.error(e)
+            if (ctx.isFinishing || ctx.isDestroyed) {
+
+                return@onUiThread
+            }
+        }
+
+        try {
+
+            Glide.with(this)
+                .load(imgRes)
+                .into(this)
+
+        } catch (e: Exception) {
+
+            Console.error(e)
+        }
     }
 }
 
 fun ImageView.rectImage(imgUrl: String) {
 
-    try {
+    onUiThread {
 
-        Glide.with(this)
-            .load(imgUrl)
-            .into(this)
+        val ctx = this.context
 
-    } catch (e: Exception) {
+        if (ctx is Activity) {
 
-        Console.error(e)
+            if (ctx.isFinishing || ctx.isDestroyed) {
+
+                return@onUiThread
+            }
+        }
+
+        try {
+
+            Glide.with(this)
+                .load(imgUrl)
+                .into(this)
+
+        } catch (e: Exception) {
+
+            Console.error(e)
+        }
     }
 }
 
 fun ImageView.circularImage(imgUrl: String, cornerRadius: Int) {
 
-    try {
+    onUiThread {
 
-        Glide.with(this)
-            .load(imgUrl)
-            .apply(
+        try {
 
-                bitmapTransform(
+            val ctx = this.context
 
-                    RoundedCornersTransformation(
+            if (ctx is Activity) {
 
-                        cornerRadius, 0,
-                        RoundedCornersTransformation.CornerType.ALL
+                if (ctx.isFinishing || ctx.isDestroyed) {
+
+                    return@onUiThread
+                }
+            }
+
+            Glide.with(this)
+                .load(imgUrl)
+                .apply(
+
+                    bitmapTransform(
+
+                        RoundedCornersTransformation(
+
+                            cornerRadius, 0,
+                            RoundedCornersTransformation.CornerType.ALL
+                        )
                     )
                 )
-            )
-            .into(this)
+                .into(this)
 
-    } catch (e: Exception) {
+        } catch (e: Exception) {
 
-        Console.error(e)
+            Console.error(e)
+        }
     }
 }
