@@ -59,6 +59,9 @@ fun randomInteger(max: Int = 1000, min: Int = 300) =
 fun randomBigInteger(max: Int = 10000, min: Int = 300) =
     Random().nextInt((max - min) + 1) + min
 
+fun randomFloat(max: Float = 1000f, min: Float = 300f) =
+    Random().nextFloat() * (max - min) + min
+
 fun generateValidColumnName(length: Int): String {
 
     val random = Random()
