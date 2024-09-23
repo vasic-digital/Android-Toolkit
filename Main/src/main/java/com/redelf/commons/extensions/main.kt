@@ -1236,3 +1236,9 @@ fun <T> Any.wrapToList(): List<T> {
 
     return mutableListOf(this as T)
 }
+
+fun Context.dpToPx(dp: Float): Float {
+
+    val density = resources?.displayMetrics?.density
+    return dp * (density ?: 0f)
+}
