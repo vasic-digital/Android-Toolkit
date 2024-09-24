@@ -1244,6 +1244,18 @@ fun Context.dpToPx(dp: Float): Float {
     return dp * (density ?: 0f)
 }
 
+fun String.snakeCase(): String {
+
+    val regex = Regex("([a-z])([A-Z])")
+
+    val result = regex.replace(this) {
+
+            matchResult -> matchResult.groupValues[1] + "_" + matchResult.groupValues[2]
+    }
+
+    return result.lowercase()
+}
+
 @SuppressLint("DiscouragedApi")
 fun String.localized(): String {
 
@@ -1251,7 +1263,8 @@ fun String.localized(): String {
 
         val ctx = BaseApplication.takeContext()
         val res = ctx.resources
-        val resId = res.getIdentifier(this, "values", ctx.packageName)
+        val snakeCase = this.snakeCase()
+        val resId = res.getIdentifier(snakeCase, "values", ctx.packageName)
 
         return res.getString(resId)
 
@@ -1262,3 +1275,4 @@ fun String.localized(): String {
 
     return this
 }
+
