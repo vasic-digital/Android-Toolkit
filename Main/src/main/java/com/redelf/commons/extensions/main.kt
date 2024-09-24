@@ -1307,3 +1307,9 @@ fun String.localized(): String {
     return this
 }
 
+fun string(format: String, arg1: Int, arg2: Int): String{
+
+    // TODO: Implement String.format
+
+    return ""
+}
