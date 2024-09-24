@@ -257,7 +257,6 @@ fun Context.obfuscateString(resId: Int): String {
 }
 
 
-
 fun String.deobfuscate(deobfuscator: Obfuscation = DefaultObfuscator): String {
 
     try {
@@ -1250,7 +1249,8 @@ fun String.snakeCase(): String {
 
     val result = regex.replace(this) {
 
-            matchResult -> matchResult.groupValues[1] + "_" + matchResult.groupValues[2]
+            matchResult ->
+        matchResult.groupValues[1] + "_" + matchResult.groupValues[2]
     }
 
     return result.lowercase()
@@ -1307,9 +1307,49 @@ fun String.localized(): String {
     return this
 }
 
-fun string(format: String, arg1: Int, arg2: Int): String{
+fun String.format(vararg args: Any): String {
 
-    // TODO: Implement String.format
+    return string(this.localized(), *args)
+}
 
-    return ""
+fun string(format: String, vararg args: Any): String {
+
+    var value = format.localized()
+
+    args.forEach {
+
+        var oldValue = ""
+
+        if (it is Number) {
+
+            oldValue = "%d"
+        }
+
+        if (it is String) {
+
+            oldValue = "%s"
+        }
+
+        if (it is Boolean) {
+
+            oldValue = "%b"
+        }
+
+        if (it is Char) {
+
+            oldValue = "%c"
+        }
+
+        if (isNotEmpty(oldValue)) {
+
+            value = value.replaceFirst(
+
+                oldValue = oldValue,
+                newValue = it.toString(),
+                ignoreCase = true
+            )
+        }
+    }
+
+    return value
 }
