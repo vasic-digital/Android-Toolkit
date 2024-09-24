@@ -28,6 +28,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.internal.LinkedTreeMap
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
@@ -1241,4 +1242,23 @@ fun Context.dpToPx(dp: Float): Float {
 
     val density = resources?.displayMetrics?.density
     return dp * (density ?: 0f)
+}
+
+@SuppressLint("DiscouragedApi")
+fun String.localized(): String {
+
+    try {
+
+        val ctx = BaseApplication.takeContext()
+        val res = ctx.resources
+        val resId = res.getIdentifier(this, "values", ctx.packageName)
+
+        return res.getString(resId)
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return this
 }
