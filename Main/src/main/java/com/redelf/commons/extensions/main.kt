@@ -1277,7 +1277,6 @@ fun String.toResource(): Int {
     return 0
 }
 
-@SuppressLint("DiscouragedApi")
 fun String.localized(): String {
 
     try {
