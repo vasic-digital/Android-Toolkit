@@ -1256,17 +1256,35 @@ fun String.snakeCase(): String {
     return result.lowercase()
 }
 
+fun String.toResourceName() = this.snakeCase()
+
+@SuppressLint("DiscouragedApi")
+fun String.toResource(): Int {
+
+    try {
+
+        val ctx = BaseApplication.takeContext()
+        val res = ctx.resources
+        val snakeCase = this.toResourceName()
+
+        return res.getIdentifier(snakeCase, "values", ctx.packageName)
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return 0
+}
+
 @SuppressLint("DiscouragedApi")
 fun String.localized(): String {
 
     try {
 
         val ctx = BaseApplication.takeContext()
-        val res = ctx.resources
-        val snakeCase = this.snakeCase()
-        val resId = res.getIdentifier(snakeCase, "values", ctx.packageName)
 
-        return res.getString(resId)
+        return ctx.getString(this.toResource())
 
     } catch (e: Exception) {
 
