@@ -1259,7 +1259,7 @@ fun String.snakeCase(): String {
 fun String.toResourceName() = this.snakeCase()
 
 @SuppressLint("DiscouragedApi")
-fun String.toResource(): Int {
+fun String.toResource(type: String): Int {
 
     try {
 
@@ -1267,7 +1267,7 @@ fun String.toResource(): Int {
         val res = ctx.resources
         val snakeCase = this.toResourceName()
 
-        return res.getIdentifier(snakeCase, "values", ctx.packageName)
+        return res.getIdentifier(snakeCase, type, ctx.packageName)
 
     } catch (e: Exception) {
 
@@ -1277,13 +1277,27 @@ fun String.toResource(): Int {
     return 0
 }
 
+fun String.toDrawableResource() = this.toResource("drawable")
+
+fun String.toColorResource() = this.toResource("color")
+
+fun String.toDimenResource() = this.toResource("dimen")
+
+fun String.toFontResource() = this.toResource("font")
+
+fun String.toStringResource() = this.toResource("string")
+
+fun String.toStyleResource() = this.toResource("style")
+
+fun String.toXmlResource() = this.toResource("xml")
+
 fun String.localized(): String {
 
     try {
 
         val ctx = BaseApplication.takeContext()
 
-        return ctx.getString(this.toResource())
+        return ctx.getString(this.toStringResource())
 
     } catch (e: Exception) {
 
