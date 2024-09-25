@@ -166,15 +166,21 @@ fun String.localized(fallback: String = ""): String {
 
             if (isEmpty(str)) {
 
+                Console.warning("String.localized :: Empty :: Key = $this")
+
                 return fallback
             }
 
             return str
+
+        } else {
+
+            Console.error("String.localized :: Not found :: Key = $this")
         }
 
     } catch (e: Exception) {
 
-        Console.error("String.localized :: Failed :: Key = $this")
+        Console.error("String.localized :: Failed :: Key = $this, Error = ${e.message}")
 
         recordException(e)
     }
