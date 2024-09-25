@@ -157,9 +157,13 @@ fun String.localized(): String {
 
     try {
 
+        val res = this.toStringResource()
         val ctx = BaseApplication.takeContext()
 
-        return ctx.getString(this.toStringResource())
+        if (res > 0) {
+
+            return ctx.getString(res)
+        }
 
     } catch (e: Exception) {
 
