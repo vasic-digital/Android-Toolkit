@@ -155,6 +155,15 @@ fun String.toXmlResource() = this.toResource("xml")
 
 fun String.localized(fallback: String = ""): String {
 
+    val tag = "String.localized ::"
+
+    if (isEmpty(this)) {
+
+        Console.error("$tag Empty :: Key is empty")
+
+        return fallback
+    }
+
     try {
 
         val res = this.toStringResource()
@@ -166,7 +175,7 @@ fun String.localized(fallback: String = ""): String {
 
             if (isEmpty(str)) {
 
-                Console.warning("String.localized :: Empty :: Key = $this")
+                Console.warning("$tag Empty :: Key = $this")
 
                 return fallback
             }
@@ -175,12 +184,12 @@ fun String.localized(fallback: String = ""): String {
 
         } else {
 
-            Console.error("String.localized :: Not found :: Key = $this")
+            Console.error("$tag Not found :: Key = $this")
         }
 
     } catch (e: Exception) {
 
-        Console.error("String.localized :: Failed :: Key = $this, Error = ${e.message}")
+        Console.error("$tag Failed :: Key = $this, Error = ${e.message}")
 
         recordException(e)
     }
