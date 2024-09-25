@@ -153,7 +153,7 @@ fun String.toStyleResource() = this.toResource("style")
 
 fun String.toXmlResource() = this.toResource("xml")
 
-fun String.localized(): String {
+fun String.localized(fallback: String = ""): String {
 
     try {
 
@@ -162,15 +162,24 @@ fun String.localized(): String {
 
         if (res > 0) {
 
-            return ctx.getString(res)
+            val str = ctx.getString(res)
+
+            if (isEmpty(str)) {
+
+                return fallback
+            }
+
+            return str
         }
 
     } catch (e: Exception) {
 
+        Console.error("String.localized :: Failed :: Key = $this")
+
         recordException(e)
     }
 
-    return this
+    return fallback
 }
 
 fun String.format(vararg args: Any): String {
