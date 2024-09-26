@@ -132,11 +132,13 @@ fun String.toResource(type: String, fallback: Int = 0): Int {
         return fallback
     }
 
+    val snakeCase = this.toResourceName()
+    val logKey = "Key = $this ( $snakeCase )"
+
     try {
 
         val ctx = BaseApplication.takeContext()
         val res = ctx.resources
-        val snakeCase = this.toResourceName()
 
         val resId = res.getIdentifier(snakeCase, type, ctx.packageName)
 
@@ -146,12 +148,12 @@ fun String.toResource(type: String, fallback: Int = 0): Int {
 
         } else {
 
-            Console.error("$tag Not found :: Key = $this")
+            Console.error("$tag Not found :: $logKey")
         }
 
     } catch (e: Exception) {
 
-        Console.error("$tag Failed :: Key = $this, Error = ${e.message}")
+        Console.error("$tag Failed :: $logKey, Error = ${e.message}")
 
         recordException(e)
     }
