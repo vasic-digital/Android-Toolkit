@@ -121,7 +121,16 @@ fun String.snakeCase(): String {
 fun String.toResourceName() = this.snakeCase()
 
 @SuppressLint("DiscouragedApi")
-fun String.toResource(type: String): Int {
+fun String.toResource(type: String, fallback: Int = 0): Int {
+
+    val tag = "String.toResource :: $type ::"
+
+    if (isEmpty(this)) {
+
+        Console.error("$tag Empty :: Key is empty")
+
+        return fallback
+    }
 
     try {
 
@@ -129,14 +138,25 @@ fun String.toResource(type: String): Int {
         val res = ctx.resources
         val snakeCase = this.toResourceName()
 
-        return res.getIdentifier(snakeCase, type, ctx.packageName)
+        val resId = res.getIdentifier(snakeCase, type, ctx.packageName)
+
+        if (resId > 0) {
+
+            return resId
+
+        } else {
+
+            Console.error("$tag Not found :: Key = $this")
+        }
 
     } catch (e: Exception) {
+
+        Console.error("$tag Failed :: Key = $this, Error = ${e.message}")
 
         recordException(e)
     }
 
-    return 0
+    return fallback
 }
 
 fun String.toDrawableResource() = this.toResource("drawable")
