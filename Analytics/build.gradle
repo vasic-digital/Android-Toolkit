@@ -6,6 +6,13 @@ plugins {
     id 'kotlin-kapt'
 }
 
+def facebookApplicationId = System.getenv("ANALYTICS_FACEBOOK_APP_ID") ?: ""
+
+if (facebookApplicationId != "") {
+
+    println("The 'ANALYTICS_FACEBOOK_APP_ID' env. variable is available")
+}
+
 android {
 
     compileSdk 34
@@ -17,6 +24,8 @@ android {
 
         consumerProguardFiles "consumer-rules.pro"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        resValue "string", "facebook_app_id", facebookApplicationId
     }
 
     buildTypes {
@@ -81,4 +90,6 @@ dependencies {
 
     androidTestImplementation project("${toolkit_context}:Main")
     androidTestImplementation project("${toolkit_context}:Test")
+
+    implementation 'com.facebook.android:facebook-android-sdk:17.0.2'
 }
