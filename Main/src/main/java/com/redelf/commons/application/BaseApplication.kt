@@ -25,7 +25,10 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.analytics
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.redelf.commons.R
@@ -177,6 +180,7 @@ abstract class BaseApplication :
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
     protected open val firebaseEnabled = true
+    protected open val firebaseAnalyticsEnabled = true
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
@@ -203,6 +207,7 @@ abstract class BaseApplication :
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null
+    private var firebaseAnalytics: FirebaseAnalytics? = null
     private val registeredForPhoneCallsDetection = AtomicBoolean()
     private val registeredForAudioFocusDetection = AtomicBoolean()
 
@@ -451,6 +456,11 @@ abstract class BaseApplication :
         if (firebaseEnabled) {
 
             FirebaseApp.initializeApp(applicationContext)
+
+            if (firebaseAnalyticsEnabled) {
+
+                firebaseAnalytics = Firebase.analytics
+            }
         }
 
         prefs = SharedPreferencesStorage(applicationContext)
