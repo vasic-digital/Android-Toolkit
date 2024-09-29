@@ -6,17 +6,20 @@ class AnalyticsBuilder(private val backend: Analytics) : Sending {
 
     private var parameters: AnalyticsParameters = AnalyticsParameters()
 
-    fun category(value: AnalyticsParameter<*>): AnalyticsBuilder {
+    @Throws(IllegalArgumentException::class)
+    fun category(value: AnalyticsParameter<*>?): AnalyticsBuilder {
 
         return map(AnalyticsArgument.CATEGORY, value)
     }
 
-    fun event(value: AnalyticsParameter<*>): AnalyticsBuilder {
+    @Throws(IllegalArgumentException::class)
+    fun event(value: AnalyticsParameter<*>?): AnalyticsBuilder {
 
         return map(AnalyticsArgument.EVENT, value)
     }
 
-    fun value(value: AnalyticsParameter<*>): AnalyticsBuilder {
+    @Throws(IllegalArgumentException::class)
+    fun value(value: AnalyticsParameter<*>?): AnalyticsBuilder {
 
         return map(AnalyticsArgument.VALUE, value)
     }
@@ -38,9 +41,20 @@ class AnalyticsBuilder(private val backend: Analytics) : Sending {
         throw IllegalArgumentException("Category, Event and Value parameters are required")
     }
 
-    private fun map(key: AnalyticsArgument, value: AnalyticsParameter<*>): AnalyticsBuilder {
+    @Throws(IllegalArgumentException::class)
+    private fun map(key: AnalyticsArgument?, value: AnalyticsParameter<*>?): AnalyticsBuilder {
 
-        parameters[key] = value
+        key?.let { k ->
+            value?.let { v ->
+
+                parameters[k] = v
+            }
+        }
+
+        if (key == null || value == null) {
+
+            throw IllegalArgumentException("Key and Value parameters are required")
+        }
 
         return this
     }
