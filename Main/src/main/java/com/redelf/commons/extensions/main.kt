@@ -28,13 +28,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.internal.LinkedTreeMap
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.PropertiesHash
-import com.redelf.commons.security.obfuscation.DefaultObfuscator
-import com.redelf.commons.security.obfuscation.Obfuscation
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -46,8 +43,6 @@ import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
 
 
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
