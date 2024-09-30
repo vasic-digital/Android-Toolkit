@@ -1,4 +1,4 @@
-package com.redelf.analytics.implementation
+package com.redelf.analytics.implementation.facebook
 
 import com.redelf.analytics.Analytics
 import com.redelf.analytics.AnalyticsParameter

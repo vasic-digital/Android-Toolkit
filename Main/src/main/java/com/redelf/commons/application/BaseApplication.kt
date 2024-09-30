@@ -453,15 +453,7 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
-        if (firebaseEnabled) {
-
-            FirebaseApp.initializeApp(applicationContext)
-
-            if (firebaseAnalyticsEnabled) {
-
-                firebaseAnalytics = Firebase.analytics
-            }
-        }
+        initFirebaseWithAnalytics()
 
         prefs = SharedPreferencesStorage(applicationContext)
 
@@ -534,6 +526,19 @@ abstract class BaseApplication :
             recordException(e)
 
             throw e
+        }
+    }
+
+    protected open fun initFirebaseWithAnalytics() {
+
+        if (firebaseEnabled) {
+
+            FirebaseApp.initializeApp(applicationContext)
+
+            if (firebaseAnalyticsEnabled) {
+
+                firebaseAnalytics = Firebase.analytics
+            }
         }
     }
 
