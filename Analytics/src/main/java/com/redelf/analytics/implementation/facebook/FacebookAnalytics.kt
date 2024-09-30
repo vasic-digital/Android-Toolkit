@@ -7,6 +7,11 @@ class FacebookAnalytics : Analytics {
 
     override fun log(vararg params: AnalyticsParameter<*>) {
 
+        if (params.size < 3) {
+
+            throw IllegalArgumentException("Firebase analytics parameters must be at least 3")
+        }
+
         TODO("Not yet implemented")
     }
 }

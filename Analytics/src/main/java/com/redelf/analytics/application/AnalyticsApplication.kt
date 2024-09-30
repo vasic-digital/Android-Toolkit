@@ -17,5 +17,7 @@ abstract class AnalyticsApplication : BaseApplication() {
         super.initFirebaseWithAnalytics()
 
         Console.log("Analytics :: Init :: END")
+
+        // TODO: Add analytics initialization
     }
 }
