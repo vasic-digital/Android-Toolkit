@@ -1,5 +1,7 @@
 package com.redelf.analytics.application
 
+import com.facebook.FacebookSdk
+import com.facebook.LoggingBehavior
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 
@@ -18,6 +20,10 @@ abstract class AnalyticsApplication : BaseApplication() {
 
         Console.log("Analytics :: Init :: END")
 
-        // TODO: Add analytics initialization
+        if (DEBUG.get()) {
+
+            FacebookSdk.setIsDebugEnabled(true)
+            FacebookSdk.addLoggingBehavior(LoggingBehavior.APP_EVENTS)
+        }
     }
 }
