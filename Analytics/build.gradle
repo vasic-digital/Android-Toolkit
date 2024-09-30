@@ -19,17 +19,29 @@ def facebookProtocolScheme = System.getenv("FB_LOGIN_PROTOCOL_SCHEME") ?: ""
 
 if (facebookApplicationId != "") {
 
-    println("The 'ANALYTICS_FACEBOOK_APP_ID' env. variable is available")
+    println(
+
+            "Facebook :: The 'ANALYTICS_FACEBOOK_APP_ID' env. variable is available :: Hash = " +
+            facebookApplicationId.hashCode()
+    )
 }
 
 if (facebookClientToken != "") {
 
-    println("The 'FACEBOOK_CLIENT_TOKEN' env. variable is available")
+    println(
+
+            "Facebook :: The 'FACEBOOK_CLIENT_TOKEN' env. variable is available :: Hash = " +
+            facebookClientToken.hashCode()
+    )
 }
 
 if (facebookProtocolScheme != "") {
 
-    println("The 'FB_LOGIN_PROTOCOL_SCHEME' env. variable is available")
+    println(
+
+            "Facebook :: The 'FB_LOGIN_PROTOCOL_SCHEME' env. variable is available :: Hash = " +
+            facebookProtocolScheme.hashCode()
+    )
 }
 
 android {
