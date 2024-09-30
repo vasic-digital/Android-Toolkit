@@ -180,7 +180,7 @@ abstract class BaseApplication :
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
     protected open val firebaseEnabled = true
-    protected open val firebaseAnalyticsEnabled = true
+    protected open val firebaseAnalyticsEnabled = false
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
