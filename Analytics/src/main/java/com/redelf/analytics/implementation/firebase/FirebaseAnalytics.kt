@@ -5,6 +5,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
 import com.redelf.analytics.Analytics
 import com.redelf.analytics.AnalyticsParameter
+import com.redelf.analytics.exception.AnalyticsParametersCountException
 import com.redelf.commons.logging.Console
 
 class FirebaseAnalytics : Analytics {
@@ -16,7 +17,7 @@ class FirebaseAnalytics : Analytics {
 
         if (params.size < 3) {
 
-            throw IllegalArgumentException("Firebase analytics parameters must be at least 3")
+            throw AnalyticsParametersCountException()
         }
 
         val bundle = Bundle()

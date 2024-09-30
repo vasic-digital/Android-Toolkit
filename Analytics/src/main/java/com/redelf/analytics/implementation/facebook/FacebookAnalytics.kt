@@ -5,6 +5,7 @@ import com.redelf.analytics.Analytics
 import com.redelf.analytics.AnalyticsParameter
 
 import com.facebook.appevents.AppEventsLogger
+import com.redelf.analytics.exception.AnalyticsParametersCountException
 import com.redelf.analytics.implementation.firebase.FirebaseAnalyticsEvent
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
@@ -13,11 +14,12 @@ class FacebookAnalytics : Analytics {
 
     private val tag = "Analytics :: Facebook ::"
 
+    @Throws(IllegalArgumentException::class)
     override fun log(vararg params: AnalyticsParameter<*>) {
 
         if (params.size < 3) {
 
-            throw IllegalArgumentException("Firebase analytics parameters must be at least 3")
+            throw AnalyticsParametersCountException()
         }
 
         val bundle = Bundle()
