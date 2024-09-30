@@ -6,11 +6,30 @@ plugins {
     id 'kotlin-kapt'
 }
 
-def facebookApplicationId = System.getenv("ANALYTICS_FACEBOOK_APP_ID") ?: ""
+/*
+
+    FACEBOOK_APP_ID
+    FACEBOOK_CLIENT_TOKEN
+    FB_LOGIN_PROTOCOL_SCHEME
+
+*/
+def facebookApplicationId = System.getenv("FACEBOOK_APP_ID") ?: ""
+def facebookClientToken = System.getenv("FACEBOOK_CLIENT_TOKEN") ?: ""
+def facebookProtocolScheme = System.getenv("FB_LOGIN_PROTOCOL_SCHEME") ?: ""
 
 if (facebookApplicationId != "") {
 
     println("The 'ANALYTICS_FACEBOOK_APP_ID' env. variable is available")
+}
+
+if (facebookClientToken != "") {
+
+    println("The 'FACEBOOK_CLIENT_TOKEN' env. variable is available")
+}
+
+if (facebookProtocolScheme != "") {
+
+    println("The 'FB_LOGIN_PROTOCOL_SCHEME' env. variable is available")
 }
 
 android {
@@ -26,6 +45,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         resValue "string", "facebook_app_id", facebookApplicationId
+        resValue "string", "facebook_client_token", facebookClientToken
+        resValue "string", "fb_login_protocol_scheme", facebookProtocolScheme
     }
 
     buildTypes {
