@@ -1040,6 +1040,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     protected open fun registerWithGoogle(clientId: Int) {
 
         val code = initRegistrationWithGoogle(defaultWebClientId = clientId)
+
         googleSignInRequestCode.set(code)
     }
 
