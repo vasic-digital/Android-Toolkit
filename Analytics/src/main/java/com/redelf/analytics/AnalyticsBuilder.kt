@@ -25,20 +25,26 @@ class AnalyticsBuilder(private val backend: Analytics) : Sending {
     }
 
     @Throws(IllegalArgumentException::class)
+    fun multiple(vararg values: AnalyticsParameter<*>?): AnalyticsBuilder {
+
+        return map(AnalyticsArgument.MULTIPLE, *values)
+    }
+
+    @Throws(IllegalArgumentException::class)
+    fun multiple(values: List<AnalyticsParameter<*>?>?): AnalyticsBuilder {
+
+        return map(AnalyticsArgument.MULTIPLE, values)
+    }
+
+    @Throws(IllegalArgumentException::class, IllegalStateException::class)
     override fun send() {
 
-        parameters[AnalyticsArgument.CATEGORY]?.let { category ->
-            parameters[AnalyticsArgument.EVENT]?.let { event ->
-                parameters[AnalyticsArgument.VALUE]?.let { value ->
+        val value = parameters[AnalyticsArgument.VALUE]
+        val event = parameters[AnalyticsArgument.EVENT]
+        val category = parameters[AnalyticsArgument.CATEGORY]
+        val multiple = parameters[AnalyticsArgument.MULTIPLE]
 
-                    backend.log(category, event, value)
-
-                    return
-                }
-            }
-        }
-
-        throw IllegalArgumentException("Category, Event and Value parameters are required")
+        backend.log(category, event, value, multiple)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -54,6 +60,64 @@ class AnalyticsBuilder(private val backend: Analytics) : Sending {
         if (key == null || value == null) {
 
             throw IllegalArgumentException("Key and Value parameters are required")
+        }
+
+        return this
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun map(
+
+        key: AnalyticsArgument?,
+        values: List<AnalyticsParameter<*>?>?
+
+    ): AnalyticsBuilder {
+
+        key?.let { k ->
+            values?.let { v ->
+
+                parameters[k] = object : AnalyticsParameter<List<AnalyticsParameter<*>?>> {
+
+                    override fun obtain(): List<AnalyticsParameter<*>?> {
+
+                        return v
+                    }
+                }
+            }
+        }
+
+        if (key == null || values == null) {
+
+            throw IllegalArgumentException("Key and Values parameters are required")
+        }
+
+        return this
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun map(
+
+        key: AnalyticsArgument?,
+        vararg values: AnalyticsParameter<*>?
+
+    ): AnalyticsBuilder {
+
+        key?.let { k ->
+            values.let { v ->
+
+                parameters[k] = object : AnalyticsParameter<List<AnalyticsParameter<*>?>> {
+
+                    override fun obtain(): List<AnalyticsParameter<*>?> {
+
+                        return v.toList()
+                    }
+                }
+            }
+        }
+
+        if (key == null) {
+
+            throw IllegalArgumentException("Key and Values parameters are required")
         }
 
         return this

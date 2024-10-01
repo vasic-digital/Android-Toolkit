@@ -5,6 +5,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
 import com.redelf.analytics.Analytics
 import com.redelf.analytics.AnalyticsParameter
+import com.redelf.analytics.exception.AnalyticsNullParameterException
 import com.redelf.analytics.exception.AnalyticsParametersCountException
 import com.redelf.commons.logging.Console
 
@@ -13,7 +14,7 @@ class FirebaseAnalytics : Analytics {
     private val tag = "Analytics :: Firebase ::"
 
     @Throws(IllegalArgumentException::class)
-    override fun log(vararg params: AnalyticsParameter<*>) {
+    override fun log(vararg params: AnalyticsParameter<*>?) {
 
         if (params.size < 3) {
 
@@ -22,22 +23,34 @@ class FirebaseAnalytics : Analytics {
 
         val bundle = Bundle()
 
-        val name = params[0].obtain() as String
-        val key = params[1].obtain() as String
-        val value = params[2].obtain() as String
+        val name = params[0]?.obtain() as String?
+        val key = params[1]?.obtain() as String?
+        val value = params[2]?.obtain() as String?
 
-        val analyticEvent = FirebaseAnalyticsEvent(name = name, param = Pair(key, value))
+        name?.let {
+            key?.let {
+                value?.let {
 
-        val paramLog = "Name = $name, Bundle :: Key: = '${analyticEvent.param?.first}', " +
-                "Value = '${analyticEvent.param?.second}'"
+                    val analyticEvent = FirebaseAnalyticsEvent(name = name, param = Pair(key, value))
 
-        analyticEvent.param?.let {
+                    val paramLog = "Name = $name, Bundle :: Key: = '${analyticEvent.param?.first}', " +
+                            "Value = '${analyticEvent.param?.second}'"
 
-            bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
+                    analyticEvent.param?.let {
+
+                        bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
+                    }
+
+                    Firebase.analytics.logEvent(analyticEvent.name, bundle)
+
+                    Console.log("$tag Logged event :: $paramLog")
+                }
+            }
         }
 
-        Firebase.analytics.logEvent(analyticEvent.name, bundle)
+        if (name == null || key == null || value == null) {
 
-        Console.log("$tag Logged event :: $paramLog")
+            throw AnalyticsNullParameterException()
+        }
     }
 }

@@ -10,5 +10,5 @@ interface Analytics {
         }
     }
 
-    fun log(vararg params: AnalyticsParameter<*>)
+    fun log(vararg params: AnalyticsParameter<*>?)
 }

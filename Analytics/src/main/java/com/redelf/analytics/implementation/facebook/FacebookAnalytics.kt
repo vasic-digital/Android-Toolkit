@@ -5,6 +5,8 @@ import com.redelf.analytics.Analytics
 import com.redelf.analytics.AnalyticsParameter
 
 import com.facebook.appevents.AppEventsLogger
+import com.redelf.analytics.exception.AnalyticsIllegalArgumentsException
+import com.redelf.analytics.exception.AnalyticsNullParameterException
 import com.redelf.analytics.exception.AnalyticsParametersCountException
 import com.redelf.analytics.implementation.firebase.FirebaseAnalyticsEvent
 import com.redelf.commons.application.BaseApplication
@@ -15,7 +17,7 @@ class FacebookAnalytics : Analytics {
     private val tag = "Analytics :: Facebook ::"
 
     @Throws(IllegalArgumentException::class)
-    override fun log(vararg params: AnalyticsParameter<*>) {
+    override fun log(vararg params: AnalyticsParameter<*>?) {
 
         if (params.size < 3) {
 
@@ -26,22 +28,34 @@ class FacebookAnalytics : Analytics {
         val ctx = BaseApplication.takeContext()
         val logger = AppEventsLogger.newLogger(ctx)
 
-        val name = params[0].obtain() as String
-        val key = params[1].obtain() as String
-        val value = params[2].obtain() as String
+        val name = params[0]?.obtain() as String?
+        val key = params[1]?.obtain() as String?
+        val value = params[2]?.obtain() as String?
 
-        val analyticEvent = FirebaseAnalyticsEvent(name = name, param = Pair(key, value))
+        name?.let {
+            key?.let {
+                value?.let {
 
-        val paramLog = "Name = $name, Bundle :: Key: = '${analyticEvent.param?.first}', " +
-                "Value = '${analyticEvent.param?.second}'"
+                    val analyticEvent = FirebaseAnalyticsEvent(name = name, param = Pair(key, value))
 
-        analyticEvent.param?.let {
+                    val paramLog = "Name = $name, Bundle :: Key: = '${analyticEvent.param?.first}', " +
+                            "Value = '${analyticEvent.param?.second}'"
 
-            bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
+                    analyticEvent.param?.let {
+
+                        bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
+                    }
+
+                    logger.logEvent(name, bundle)
+
+                    Console.log("$tag Logged event :: $paramLog")
+                }
+            }
         }
 
-        logger.logEvent(name, bundle)
+        if (name == null || key == null || value == null) {
 
-        Console.log("$tag Logged event :: $paramLog")
+            throw AnalyticsNullParameterException()
+        }
     }
 }
