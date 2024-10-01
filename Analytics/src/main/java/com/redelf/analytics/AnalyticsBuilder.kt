@@ -54,15 +54,38 @@ class AnalyticsBuilder(private val backend: Analytics) : Sending {
         return map(AnalyticsArgument.MULTIPLE, values)
     }
 
+    @Throws(IllegalArgumentException::class)
+    fun stringPair(value: Pair<String, String>): AnalyticsBuilder {
+
+        return pair(
+
+            Pair(value.first, value.second.toAnalyticsParameter())
+        )
+    }
+
+    @Throws(IllegalArgumentException::class)
+    fun pair(value: Pair<String, AnalyticsParameter<*>>?): AnalyticsBuilder {
+
+        return mapPair(AnalyticsArgument.PAIR, value)
+    }
+
+    @Throws(IllegalArgumentException::class)
+    fun listPair(values: Pair<String, List<AnalyticsParameter<*>>?>?): AnalyticsBuilder {
+
+        return mapListPair(AnalyticsArgument.PAIR, values)
+    }
+
+
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     override fun send() {
 
+        val pair = parameters[AnalyticsArgument.PAIR]
         val value = parameters[AnalyticsArgument.VALUE]
         val event = parameters[AnalyticsArgument.EVENT]
         val category = parameters[AnalyticsArgument.CATEGORY]
         val multiple = parameters[AnalyticsArgument.MULTIPLE]
 
-        backend.log(category, event, value, multiple)
+        backend.log(category, event, value, multiple, pair)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -136,6 +159,65 @@ class AnalyticsBuilder(private val backend: Analytics) : Sending {
         if (key == null) {
 
             throw IllegalArgumentException("Key and Values parameters are required")
+        }
+
+        return this
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun mapPair(
+
+        key: AnalyticsArgument?,
+        pair: Pair<String, AnalyticsParameter<*>>?
+
+    ): AnalyticsBuilder {
+
+        key?.let { k ->
+            pair?.let { v ->
+
+                parameters[k] = object : AnalyticsParameter<Pair<String, AnalyticsParameter<*>>?> {
+
+                    override fun obtain(): Pair<String, AnalyticsParameter<*>>? {
+
+                        return v
+                    }
+                }
+            }
+        }
+
+        if (key == null || pair == null) {
+
+            throw IllegalArgumentException("Key and Pair parameters are required")
+        }
+
+        return this
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun mapListPair(
+
+        key: AnalyticsArgument?,
+        pair: Pair<String, List<AnalyticsParameter<*>?>?>?
+
+    ): AnalyticsBuilder {
+
+        key?.let { k ->
+            pair?.let { v ->
+
+                parameters[k] =
+                    object : AnalyticsParameter<Pair<String, List<AnalyticsParameter<*>?>?>?> {
+
+                        override fun obtain(): Pair<String, List<AnalyticsParameter<*>?>?>? {
+
+                            return v
+                        }
+                    }
+            }
+        }
+
+        if (key == null || pair == null) {
+
+            throw IllegalArgumentException("Key and Pair parameters are required")
         }
 
         return this
