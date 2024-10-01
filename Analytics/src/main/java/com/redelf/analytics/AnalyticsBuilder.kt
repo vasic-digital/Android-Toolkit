@@ -7,6 +7,24 @@ class AnalyticsBuilder(private val backend: Analytics) : Sending {
     private var parameters: AnalyticsParameters = AnalyticsParameters()
 
     @Throws(IllegalArgumentException::class)
+    fun category(value: String): AnalyticsBuilder {
+
+        return map(AnalyticsArgument.CATEGORY, value.toAnalyticsParameter())
+    }
+
+    @Throws(IllegalArgumentException::class)
+    fun event(value: String): AnalyticsBuilder {
+
+        return map(AnalyticsArgument.EVENT, value.toAnalyticsParameter())
+    }
+
+    @Throws(IllegalArgumentException::class)
+    fun value(value: String): AnalyticsBuilder {
+
+        return map(AnalyticsArgument.VALUE, value.toAnalyticsParameter())
+    }
+
+    @Throws(IllegalArgumentException::class)
     fun category(value: AnalyticsParameter<*>?): AnalyticsBuilder {
 
         return map(AnalyticsArgument.CATEGORY, value)
