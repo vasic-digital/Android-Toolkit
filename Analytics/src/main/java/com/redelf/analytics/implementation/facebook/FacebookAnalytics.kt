@@ -10,6 +10,8 @@ import com.redelf.analytics.exception.AnalyticsNullParameterException
 import com.redelf.analytics.exception.AnalyticsParametersCountException
 import com.redelf.analytics.implementation.firebase.FirebaseAnalyticsEvent
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 
 class FacebookAnalytics : Analytics {
@@ -46,9 +48,16 @@ class FacebookAnalytics : Analytics {
                         bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
                     }
 
-                    logger.logEvent(name, bundle)
+                    exec(
 
-                    Console.log("$tag Logged event :: $paramLog")
+                        onRejected = { e -> recordException(e) }
+
+                    ) {
+
+                        logger.logEvent(name, bundle)
+
+                        Console.log("$tag Logged event :: $paramLog")
+                    }
                 }
             }
         }
