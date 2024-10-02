@@ -9,6 +9,7 @@ import com.redelf.commons.net.retrofit.RetrofitApiParameters
 abstract class ApiService<T> (
 
     endpoint: Int,
+    serviceName: String,
     logApiCalls: Boolean = false,
     logApiCallsVerbose: Boolean = false,
 
@@ -20,6 +21,7 @@ abstract class ApiService<T> (
     protected open val retrofitApiParameters: RetrofitApiParameters = retrofitApiParameters(
 
         ctx = ctx,
+        name = serviceName,
         endpoint = endpoint,
 
         bodyLog = logApiCalls,

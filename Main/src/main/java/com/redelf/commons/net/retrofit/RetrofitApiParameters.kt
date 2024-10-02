@@ -10,6 +10,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 data class RetrofitApiParameters @JsonCreator constructor(
 
+    @JsonProperty("name")
+    @SerializedName("name")
+    val name: String? = "",
+
     @JsonIgnore
     @Transient
     @JsonProperty("ctx")

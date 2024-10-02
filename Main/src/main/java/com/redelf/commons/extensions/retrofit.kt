@@ -1,10 +1,12 @@
 package com.redelf.commons.extensions
 
 import android.content.Context
+import com.redelf.commons.logging.Console
 import com.redelf.commons.net.retrofit.RetrofitApiParameters
 
 fun retrofitApiParameters(
 
+    name: String,
     ctx: Context,
     endpoint: Int,
 
@@ -18,17 +20,26 @@ fun retrofitApiParameters(
     verbose: Boolean? = false,
     bodyLog: Boolean? = false
 
-) = RetrofitApiParameters(
+): RetrofitApiParameters {
 
-    ctx = ctx,
-    readTimeoutInSeconds = readTimeoutInSeconds,
-    writeTimeoutInSeconds = writeTimeoutInSeconds,
-    connectTimeoutInSeconds = connectTimeoutInSeconds,
-    endpoint = endpoint,
+    val params = RetrofitApiParameters(
 
-    bodyLog = bodyLog ?: false,
-    verbose = verbose ?: false,
+        ctx = ctx,
+        name = name,
+        useCronet = false,
+        endpoint = endpoint,
+        readTimeoutInSeconds = readTimeoutInSeconds,
+        writeTimeoutInSeconds = writeTimeoutInSeconds,
+        connectTimeoutInSeconds = connectTimeoutInSeconds,
 
-    scalar = scalar ?: false,
-    jackson = jackson ?: false
-)
+        bodyLog = bodyLog ?: false,
+        verbose = verbose ?: false,
+
+        scalar = scalar ?: false,
+        jackson = jackson ?: false
+    )
+
+    Console.log("Retrofit :: Parameters :: Service = '${params.name}' :: $params")
+
+    return params
+}

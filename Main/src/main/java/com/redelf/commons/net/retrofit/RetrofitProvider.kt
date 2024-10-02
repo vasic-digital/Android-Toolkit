@@ -22,6 +22,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import useCronet
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
@@ -31,8 +32,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
     //  https://github.com/proxifly/free-proxy-list/blob/main/proxies/protocols/http/data.txt
     //  Proxy to be picked dynamically!
 
-    var DEBUG: Boolean? = null
-
+    val DEBUG: AtomicBoolean = AtomicBoolean()
     val PINNED_CERTIFICATES = mutableMapOf<String, String>()
 
     override fun obtain(param: RetrofitApiParameters): Retrofit {
@@ -41,7 +41,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         var interceptor: HttpLoggingInterceptor? = null
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) {
+        if (DEBUG.get()) {
 
             if (param.verbose == true) Console.log("Retrofit :: Debug :: ON")
 
@@ -66,7 +66,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         val wTime = param.writeTimeoutInSeconds
         val cTime = param.connectTimeoutInSeconds
 
-        val baseUrl = ctx.getString(param.endpoint ?: 0)
+        val baseUrl = ctx.getString(param.endpoint)
 
         val client = newHttpClient(
 
@@ -168,7 +168,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             builder.addInterceptor(it)
         }
 
-        if (DEBUG ?: BaseApplication.DEBUG.get() && verbose) {
+        if (DEBUG.get() && verbose) {
 
             val benchInterceptor = SerializationBenchmarkLoggingInterceptor()
             builder.addInterceptor(benchInterceptor)
