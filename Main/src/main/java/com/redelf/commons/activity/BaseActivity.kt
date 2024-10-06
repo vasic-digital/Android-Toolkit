@@ -606,7 +606,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        val tag = "Google registration :: On act. result ::"
+        val tag = "Google :: Account :: Registration :: On act. result ::"
 
         Console.log("$tag requestCode: $requestCode")
 
@@ -1214,6 +1214,11 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     private fun firebaseAuthWithGoogle(tokenId: String) {
 
+        val start = System.currentTimeMillis()
+        val tag = "Google :: Account :: Authenticate::"
+
+        Console.log("$tag START")
+
         val mAuth = FirebaseAuth.getInstance()
         val credential = GoogleAuthProvider.getCredential(tokenId, null)
 
@@ -1226,6 +1231,10 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
                     user?.let {
 
                         onRegistrationWithGoogleCompleted(tokenId)
+
+                        val end = System.currentTimeMillis()
+
+                        Console.log("$tag END, Time = ${(end - start) / 1000.0} seconds")
                     }
 
                     if (user == null) {
