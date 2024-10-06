@@ -1215,7 +1215,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     private fun firebaseAuthWithGoogle(tokenId: String) {
 
         val start = System.currentTimeMillis()
-        val tag = "Google :: Account :: Authenticate::"
+        val tag = "Google :: Account :: Authenticate ::"
 
         Console.log("$tag START")
 
