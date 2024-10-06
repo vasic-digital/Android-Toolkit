@@ -606,7 +606,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        val tag = "Google :: Account :: Registration :: On act. result ::"
+        val tag = "Google account :: Registration :: On act. result ::"
 
         Console.log("$tag requestCode: $requestCode")
 
@@ -1215,7 +1215,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     private fun firebaseAuthWithGoogle(tokenId: String) {
 
         val start = System.currentTimeMillis()
-        val tag = "Google :: Account :: Authenticate ::"
+        val tag = "Google account :: Authenticate ::"
 
         Console.log("$tag START")
 

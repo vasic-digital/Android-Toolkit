@@ -265,7 +265,7 @@ fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_
 
 fun Activity.initRegistrationWithGoogle(defaultWebClientId: Int): Int {
 
-    val tag = "Google :: Account :: Registration init ::"
+    val tag = "Google account :: Registration init. ::"
 
 
     val requestCode = randomInteger()
