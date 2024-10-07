@@ -1,7 +1,10 @@
 package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Base64
+import androidx.core.content.ContextCompat
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
@@ -264,4 +267,35 @@ fun string(format: String, vararg args: Any): String {
     }
 
     return value
+}
+
+fun String.color(what: String, color: Int): SpannableString? {
+
+    try {
+
+        val startIndex = indexOf(what)
+
+        if (startIndex != -1) {
+
+            val ss = SpannableString(this)
+            val endIndex = startIndex + what.length
+            val ctx = BaseApplication.takeContext()
+            val c = ContextCompat.getColor(ctx, color)
+
+            ss.setSpan(
+
+                ForegroundColorSpan(c),
+                startIndex,
+                endIndex,
+                0
+            )
+
+            return ss
+        }
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return null
 }
