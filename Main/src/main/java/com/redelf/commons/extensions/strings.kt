@@ -269,33 +269,38 @@ fun string(format: String, vararg args: Any): String {
     return value
 }
 
-fun String.color(what: String, color: Int): SpannableString? {
+fun String.color(color: Int, vararg words: String): SpannableString {
 
-    try {
+    val ss = SpannableString(this)
 
-        val startIndex = indexOf(what)
+    words.forEach { word ->
 
-        if (startIndex != -1) {
+        try {
 
-            val ss = SpannableString(this)
-            val endIndex = startIndex + what.length
-            val ctx = BaseApplication.takeContext()
-            val c = ContextCompat.getColor(ctx, color)
+            val startIndex = indexOf(word)
 
-            ss.setSpan(
+            if (startIndex != -1) {
 
-                ForegroundColorSpan(c),
-                startIndex,
-                endIndex,
-                0
-            )
+                val endIndex = startIndex + word.length
+                val ctx = BaseApplication.takeContext()
+                val c = ContextCompat.getColor(ctx, color)
 
-            return ss
+                ss.setSpan(
+
+                    ForegroundColorSpan(c),
+                    startIndex,
+                    endIndex,
+                    0
+                )
+
+                return ss
+            }
+
+        } catch (e: Exception) {
+
+            recordException(e)
         }
-    } catch (e: Exception) {
-
-        recordException(e)
     }
 
-    return null
+    return ss
 }
