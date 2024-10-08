@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
-import com.redelf.commons.extensions.ColoredText.Companion.convert
 import com.redelf.commons.logging.Console
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 
@@ -81,7 +80,8 @@ fun TextView.coloredText(coloredText: ColoredText) {
 
     coloredText.words.forEach {
 
-        raw.append(it.text).append(" ")
+        val current = it.text
+        raw.append(current).append(" ")
     }
 
     val spannableString = SpannableStringBuilder("")
