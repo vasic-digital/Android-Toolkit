@@ -1,6 +1,7 @@
 package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Base64
@@ -269,9 +270,13 @@ fun string(format: String, vararg args: Any): String {
     return value
 }
 
-fun String.color(color: Int, vararg words: String): SpannableString {
+fun String.color(
 
-    val ss = SpannableString(this)
+    color: Int,
+    words: List<String>,
+    ss: SpannableString = SpannableString(this)
+
+): SpannableString {
 
     words.forEach { word ->
 
@@ -304,3 +309,44 @@ fun String.color(color: Int, vararg words: String): SpannableString {
 
     return ss
 }
+
+fun String.color(
+
+    color: String,
+    words: List<String>,
+    ss: SpannableString = SpannableString(this)
+
+): SpannableString {
+
+    words.forEach { word ->
+
+        try {
+
+            val startIndex = indexOf(word)
+
+            if (startIndex != -1 && isNotEmpty(color)) {
+
+                val endIndex = startIndex + word.length
+                val c = Color.parseColor(color)
+
+                ss.setSpan(
+
+                    ForegroundColorSpan(c),
+                    startIndex,
+                    endIndex,
+                    0
+                )
+
+                return ss
+            }
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+    }
+
+    return ss
+}
+
+
