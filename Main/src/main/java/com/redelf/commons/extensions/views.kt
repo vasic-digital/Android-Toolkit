@@ -9,12 +9,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.bitmapTransform
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
+import com.google.gson.internal.LinkedTreeMap
+import com.redelf.commons.extensions.ColoredText.Companion.convert
 import com.redelf.commons.logging.Console
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 
-data class ColoredWord(
+data class ColoredWord @JsonCreator constructor(
 
     @SerializedName("text")
     @JsonProperty("text")
@@ -23,9 +26,18 @@ data class ColoredWord(
     @SerializedName("color")
     @JsonProperty("color")
     val color: String? = null
-)
 
-data class ColoredText(
+) {
+
+    @Throws(ClassCastException::class)
+    constructor(treeMap: LinkedTreeMap<String, Any>) : this(
+
+        text = treeMap["text"].toString(),
+        color = treeMap["color"].toString()
+    )
+}
+
+data class ColoredText @JsonCreator constructor(
 
     @SerializedName("words")
     @JsonProperty("words")
@@ -34,7 +46,34 @@ data class ColoredText(
     @SerializedName("defaultColor")
     @JsonProperty("defaultColor")
     val defaultColor: String = "#000000"
-)
+
+) {
+
+    companion object {
+
+        fun convert (what: ArrayList<LinkedTreeMap<String, Any>>): List<ColoredWord> {
+
+            val items = mutableListOf<ColoredWord>()
+
+            what.forEach {
+
+                val meta = ColoredWord(it)
+
+                items.add(meta)
+            }
+
+            return items
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(ClassCastException::class)
+    constructor(treeMap: LinkedTreeMap<String, Any>) : this(
+
+        defaultColor = treeMap["defaultColor"].toString(),
+        words = convert(treeMap["words"] as ArrayList<LinkedTreeMap<String, Any>>),
+    )
+}
 
 fun TextView.coloredText(coloredText: ColoredText) {
 
@@ -47,7 +86,7 @@ fun TextView.coloredText(coloredText: ColoredText) {
 
     val spannableString = SpannableStringBuilder("")
 
-    coloredText.words.forEach {
+    coloredText.words.forEachIndexed { index, it ->
 
         val word = it.text
         val rawColor = it.color
@@ -59,7 +98,12 @@ fun TextView.coloredText(coloredText: ColoredText) {
 
         ).let { spannable ->
 
-            spannableString.append(spannable).append(SpannableString(" "))
+            spannableString.append(spannable)
+
+            if (index < coloredText.words.lastIndex && word != ".") {
+
+                spannableString.append(SpannableString(" "))
+            }
         }
     }
 
