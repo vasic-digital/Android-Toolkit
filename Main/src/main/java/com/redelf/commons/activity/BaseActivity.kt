@@ -631,8 +631,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                     Console.error("$tag We have no token")
 
-                    val e = IllegalStateException("Obtained null Google token ID")
-                    onRegistrationWithGoogleFailed(e)
+                    onRegistrationWithGoogleFailed()
                 }
 
             } catch (e: ApiException) {
@@ -643,7 +642,7 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
                             "Message: ${e.message ?: "no message"}"
                 )
 
-                onRegistrationWithGoogleFailed(e)
+                onRegistrationWithGoogleFailed()
             }
 
             return
@@ -779,11 +778,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         Console.log("Registration with Google completed: $tokenId")
     }
 
-    protected open fun onRegistrationWithGoogleFailed(error: Throwable) {
+    protected open fun onRegistrationWithGoogleFailed() {
 
         Console.error("Registration with Google failed")
-
-        Console.error(error)
     }
 
     protected open fun isTransmissionServiceSupported(): Boolean {
@@ -1239,14 +1236,12 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
                     if (user == null) {
 
-                        val e = IllegalStateException("Obtained null Google user")
-                        onRegistrationWithGoogleFailed(e)
+                        onRegistrationWithGoogleFailed()
                     }
 
                 } else {
 
-                    val e = task.exception ?: IllegalStateException("Unknown exception")
-                    onRegistrationWithGoogleFailed(e)
+                    onRegistrationWithGoogleFailed()
                 }
             }
     }
