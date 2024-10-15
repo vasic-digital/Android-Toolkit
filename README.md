@@ -22,6 +22,7 @@ include ':Toolkit:RootTools'
 include ':Toolkit:RootShell'
 include ':Toolkit:Interprocess'
 include ':Toolkit:CircleImageView'
+include ':Toolkit:ConnectionIndicator'
 include ':Toolkit:FastscrollerAlphabet'
 ```
 
