@@ -1,6 +1,7 @@
 package com.redelf.analytics.implementation.facebook
 
 import android.os.Bundle
+import com.facebook.appevents.AppEventsConstants
 import com.redelf.analytics.Analytics
 import com.redelf.analytics.AnalyticsParameter
 
@@ -21,7 +22,7 @@ class FacebookAnalytics : Analytics {
     @Throws(IllegalArgumentException::class)
     override fun log(vararg params: AnalyticsParameter<*>?) {
 
-        if (params.size < 3) {
+        if (params.size < 2) {
 
             throw AnalyticsParametersCountException()
         }
@@ -30,39 +31,36 @@ class FacebookAnalytics : Analytics {
         val ctx = BaseApplication.takeContext()
         val logger = AppEventsLogger.newLogger(ctx)
 
-        val name = params[0]?.obtain() as String?
-        val key = params[1]?.obtain() as String?
-        val value = params[2]?.obtain() as String?
+        val key = params[0]?.obtain() as String?
+        val value = params[1]?.obtain() as String?
 
-        name?.let {
-            key?.let {
-                value?.let {
+        key?.let {
+            value?.let {
 
-                    val analyticEvent = FirebaseAnalyticsEvent(name = name, param = Pair(key, value))
+                val analyticEvent = FirebaseAnalyticsEvent(param = Pair(key, value))
 
-                    val paramLog = "Name = $name, Bundle :: Key: = '${analyticEvent.param?.first}', " +
-                            "Value = '${analyticEvent.param?.second}'"
+                val paramLog = "Bundle :: Key: = '${analyticEvent.param?.first}', " +
+                        "Value = '${analyticEvent.param?.second}'"
 
-                    analyticEvent.param?.let {
+                analyticEvent.param?.let {
 
-                        bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
-                    }
+                    bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
+                }
 
-                    exec(
+                exec(
 
-                        onRejected = { e -> recordException(e) }
+                    onRejected = { e -> recordException(e) }
 
-                    ) {
+                ) {
 
-                        logger.logEvent(name, bundle)
+                    logger.logEvent(key, bundle)
 
-                        Console.log("$tag Logged event :: $paramLog")
-                    }
+                    Console.log("$tag Logged event :: $paramLog")
                 }
             }
         }
 
-        if (name == null || key == null || value == null) {
+        if (key == null || value == null) {
 
             throw AnalyticsNullParameterException()
         }
