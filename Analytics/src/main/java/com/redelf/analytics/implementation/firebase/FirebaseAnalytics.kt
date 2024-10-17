@@ -25,8 +25,8 @@ class FirebaseAnalytics : Analytics {
 
         val bundle = Bundle()
 
-        val key = params[1]?.obtain() as String?
-        val value = params[2]?.obtain() as String?
+        val key = params[0]?.obtain() as String?
+        val value = params[1]?.obtain() as String?
 
         key?.let {
 
