@@ -18,9 +18,9 @@ class FirebaseAnalytics : Analytics {
     @Throws(IllegalArgumentException::class)
     override fun log(vararg params: AnalyticsParameter<*>?) {
 
-        if (params.size < 2) {
+        if (params.isNotEmpty()) {
 
-            throw AnalyticsParametersCountException()
+            throw AnalyticsParametersCountException(1)
         }
 
         val bundle = Bundle()
