@@ -35,32 +35,30 @@ class FacebookAnalytics : Analytics {
         val value = params[1]?.obtain() as String?
 
         key?.let {
-            value?.let {
 
-                val analyticEvent = FirebaseAnalyticsEvent(param = Pair(key, value))
+            val analyticEvent = FirebaseAnalyticsEvent(param = Pair(key, value ?: ""))
 
-                val paramLog = "Bundle :: Key: = '${analyticEvent.param?.first}', " +
-                        "Value = '${analyticEvent.param?.second}'"
+            val paramLog = "Bundle :: Key: = '${analyticEvent.param?.first}', " +
+                    "Value = '${analyticEvent.param?.second}'"
 
-                analyticEvent.param?.let {
+            analyticEvent.param?.let {
 
-                    bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
-                }
+                bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
+            }
 
-                exec(
+            exec(
 
-                    onRejected = { e -> recordException(e) }
+                onRejected = { e -> recordException(e) }
 
-                ) {
+            ) {
 
-                    logger.logEvent(key, bundle)
+                logger.logEvent(key, bundle)
 
-                    Console.log("$tag Logged event :: $paramLog")
-                }
+                Console.log("$tag Logged event :: $paramLog")
             }
         }
 
-        if (key == null || value == null) {
+        if (key == null) {
 
             throw AnalyticsNullParameterException()
         }
