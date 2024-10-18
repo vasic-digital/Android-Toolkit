@@ -12,6 +12,8 @@ import com.redelf.analytics.exception.AnalyticsParametersCountException
 import com.redelf.analytics.implementation.firebase.FirebaseAnalyticsEvent
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 
@@ -45,17 +47,19 @@ class FacebookAnalytics : Analytics {
 
                 value?.let {
 
-                    val bundle = Bundle()
-                    bundle.putString(key, value)
+                    if (isNotEmpty(it)) {
 
-                    logger.logEvent(key, bundle)
+                        val bundle = Bundle()
+                        bundle.putString(key, value)
+
+                        logger.logEvent(key, bundle)
+                    }
                 }
 
-                if (value == null) {
+                if (value == null || isEmpty(value)) {
 
                     logger.logEvent(key)
                 }
-
 
                 Console.log("$tag Logged event :: $paramLog")
             }
