@@ -27,7 +27,6 @@ class FacebookAnalytics : Analytics {
             throw AnalyticsParametersCountException(1)
         }
 
-        val bundle = Bundle()
         val ctx = BaseApplication.takeContext()
         val logger = AppEventsLogger.newLogger(ctx)
 
@@ -36,15 +35,7 @@ class FacebookAnalytics : Analytics {
 
         key?.let {
 
-            val analyticEvent = FirebaseAnalyticsEvent(param = Pair(key, value ?: ""))
-
-            val paramLog = "Bundle :: Key: = '${analyticEvent.param?.first}', " +
-                    "Value = '${analyticEvent.param?.second}'"
-
-            analyticEvent.param?.let {
-
-                bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
-            }
+            val paramLog = "Bundle :: Key: = '$key', Value = '$value'"
 
             exec(
 
@@ -52,7 +43,19 @@ class FacebookAnalytics : Analytics {
 
             ) {
 
-                logger.logEvent(key, bundle)
+                value?.let {
+
+                    val bundle = Bundle()
+                    bundle.putString(key, value)
+
+                    logger.logEvent(key, bundle)
+                }
+
+                if (value == null) {
+
+                    logger.logEvent(key)
+                }
+
 
                 Console.log("$tag Logged event :: $paramLog")
             }
