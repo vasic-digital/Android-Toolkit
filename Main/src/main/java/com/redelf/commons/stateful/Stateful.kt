@@ -1,12 +1,12 @@
 package com.redelf.commons.stateful
 
-interface Stateful {
+interface Stateful<T> {
 
     fun onStateChanged()
 
-    fun onState(state: State)
+    fun onState(state: State<T>)
 
-    fun getState(): State
+    fun getState(): State<T>
 
-    fun setState(state: State)
+    fun setState(state: State<T>)
 }
