@@ -24,7 +24,7 @@ import com.redelf.commons.measure.Size
 import com.redelf.commons.modification.Add
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
-import com.redelf.commons.net.connectivity.STATE
+import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.stateful.State
@@ -106,22 +106,22 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
             }
         }
 
-        override fun onState(state: State) {
+        override fun onState(state: State<Int>) {
 
             Console.log("On state: $state")
         }
 
-        override fun getState(): State {
+        override fun getState(): State<Int> {
 
             if (connectionHandler.isNetworkAvailable(takeContext())) {
 
-                return STATE.Connected
+                return ConnectionState.Connected
             }
 
-            return STATE.Disconnected
+            return ConnectionState.Disconnected
         }
 
-        override fun setState(state: State) = Unit
+        override fun setState(state: State<Int>) = Unit
     }
 
     fun setSendingStrategy(sendingStrategy: TransmissionManagerSendingStrategy<D>): Boolean {
