@@ -37,8 +37,6 @@ class FacebookAnalytics : Analytics {
 
         key?.let {
 
-            val paramLog = "Bundle :: Key = '$key', Value = '$value'"
-
             exec(
 
                 onRejected = { e -> recordException(e) }
@@ -65,7 +63,11 @@ class FacebookAnalytics : Analytics {
                     }
                 }
 
+                var paramLog = "Bundle :: Key = '$key', Value = '$value'"
+
                 if (value == null) {
+
+                    paramLog = "Bundle :: Key = '$key'"
 
                     logger.logEvent(key)
                 }
