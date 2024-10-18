@@ -1,6 +1,5 @@
 package com.redelf.commons.net.connectivity
 
-interface ConnectivityStateChanges {
+import com.redelf.commons.stateful.Stateful
 
-    fun onConnectivityStateChanged()
-}
+interface ConnectivityStateChanges : Stateful
