@@ -5,6 +5,7 @@ import com.redelf.commons.extensions.retrofitApiParameters
 import com.redelf.commons.net.connectivity.Connectivity
 import com.redelf.commons.net.connectivity.ConnectivityCheck
 import com.redelf.commons.net.retrofit.RetrofitApiParameters
+import com.redelf.commons.service.Serving
 
 abstract class ApiService<T> (
 
@@ -16,7 +17,7 @@ abstract class ApiService<T> (
     protected val ctx: Context,
     protected val connectivity: ConnectivityCheck = Connectivity(),
 
-) {
+) : Serving {
 
     protected open val retrofitApiParameters: RetrofitApiParameters = retrofitApiParameters(
 

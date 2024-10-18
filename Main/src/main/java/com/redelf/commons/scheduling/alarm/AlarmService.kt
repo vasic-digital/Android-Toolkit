@@ -8,8 +8,9 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.scheduling.alarm.AlarmScheduler.Companion.ALARM_ACTION
 import com.redelf.commons.scheduling.alarm.AlarmScheduler.Companion.ALARM_VALUE
+import com.redelf.commons.service.Serving
 
-class AlarmService : JobService() {
+class AlarmService : JobService(), Serving {
 
     init {
 

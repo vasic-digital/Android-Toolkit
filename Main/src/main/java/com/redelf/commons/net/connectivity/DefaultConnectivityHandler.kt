@@ -128,7 +128,7 @@ class DefaultConnectivityHandler(
 
                 override fun perform(callback: ConnectivityStateChanges) {
 
-                    callback.onConnectivityStateChanged()
+                    callback.onStateChanged()
                 }
             },
 

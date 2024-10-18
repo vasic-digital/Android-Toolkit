@@ -24,8 +24,10 @@ import com.redelf.commons.measure.Size
 import com.redelf.commons.modification.Add
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
+import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
+import com.redelf.commons.stateful.State
 import java.security.GeneralSecurityException
 import java.util.*
 import java.util.concurrent.RejectedExecutionException
@@ -96,13 +98,30 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
-        override fun onConnectivityStateChanged() {
+        override fun onStateChanged() {
 
             if (connectionHandler.isNetworkAvailable(takeContext())) {
 
                 send(executedFrom = "onConnectivityStateChanged")
             }
         }
+
+        override fun onState(state: State<Int>) {
+
+            Console.log("On state: $state")
+        }
+
+        override fun getState(): State<Int> {
+
+            if (connectionHandler.isNetworkAvailable(takeContext())) {
+
+                return ConnectionState.Connected
+            }
+
+            return ConnectionState.Disconnected
+        }
+
+        override fun setState(state: State<Int>) = Unit
     }
 
     fun setSendingStrategy(sendingStrategy: TransmissionManagerSendingStrategy<D>): Boolean {
