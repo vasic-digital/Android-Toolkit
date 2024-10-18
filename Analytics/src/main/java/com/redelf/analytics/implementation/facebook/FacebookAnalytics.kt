@@ -35,7 +35,7 @@ class FacebookAnalytics : Analytics {
 
         key?.let {
 
-            val paramLog = "Bundle :: Key: = '$key', Value = '$value'"
+            val paramLog = "Bundle :: Key = '$key', Value = '$value'"
 
             exec(
 
