@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
-abstract class BaseService : Service() {
+abstract class BaseService : Service(), Serving {
 
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 

@@ -9,8 +9,9 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.redelf.commons.logging.Console
+import com.redelf.commons.service.Serving
 
-open class FcmService : FirebaseMessagingService() {
+open class FcmService : FirebaseMessagingService(), Serving {
 
     companion object {
 
