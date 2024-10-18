@@ -33,7 +33,7 @@ class FacebookAnalytics : Analytics {
         val logger = AppEventsLogger.newLogger(ctx)
 
         val key = params[0]?.obtain() as String?
-        val value = params[1]?.obtain() as String?
+        val value = params[1]?.obtain() as Pair<*, *>?
 
         key?.let {
 
@@ -47,16 +47,25 @@ class FacebookAnalytics : Analytics {
 
                 value?.let {
 
-                    if (isNotEmpty(it)) {
+                    if (it.first is String && it.second is String) {
+
+                        val first = it.first as String
+                        val second = it.second as String
 
                         val bundle = Bundle()
-                        bundle.putString(key, value)
+
+                        bundle.putString(first, second)
 
                         logger.logEvent(key, bundle)
+
+                    } else {
+
+                        val e = IllegalArgumentException("Value must be a Pair<String, String>")
+                        recordException(e)
                     }
                 }
 
-                if (value == null || isEmpty(value)) {
+                if (value == null) {
 
                     logger.logEvent(key)
                 }
