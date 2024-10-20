@@ -13,7 +13,7 @@ import com.redelf.commons.stateful.State
 
 class InternetConnectionAvailabilityService :
 
-    ConnectionAvailableService(),
+    ConnectionAvailableService(identifier = "Internet connection availability"),
     ContextAvailability<Context>,
     TerminationSynchronized
 
@@ -67,13 +67,11 @@ class InternetConnectionAvailabilityService :
 
     override fun onStateChanged() {
 
-        // TODO: Implement onStateChanged()
+        Console.log("$tag State changed")
     }
 
     override fun onState(state: State<Int>) {
 
         setState(state)
-
-        // TODO: Implement onState()
     }
 }
