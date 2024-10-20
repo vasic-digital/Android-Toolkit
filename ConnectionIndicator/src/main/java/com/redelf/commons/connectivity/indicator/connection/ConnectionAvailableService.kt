@@ -3,6 +3,8 @@ package com.redelf.commons.connectivity.indicator.connection
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.connectivity.indicator.AvailableService
+import com.redelf.commons.lifecycle.TerminationAsync
+import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.registration.Registration
@@ -12,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 abstract class ConnectionAvailableService(identifier: String) :
 
     AvailableService,
+    TerminationAsync,
     ConnectivityStateChanges,
     Registration<ConnectivityStateChanges>
 
@@ -26,7 +29,30 @@ abstract class ConnectionAvailableService(identifier: String) :
 
     override fun setState(state: State<Int>) {
 
-        this.state.set(state.getState())
+        Console.log("$tag Set state :: START :: State = $state, Received")
+
+        val stateValue = state.getState()
+
+        if (this.state.get() != stateValue) {
+
+            this.state.set(stateValue)
+
+            notifyStateSubscribers(state)
+
+            Console.log("$tag Set state :: START :: State = $state, Set")
+
+        } else {
+
+            Console.log("$tag Set state :: START :: State = $state, Skipped")
+        }
+    }
+
+    override fun terminate() {
+
+        callbacks.clear()
+    }
+
+    protected open fun notifyStateSubscribers(state: State<Int>) {
 
         notifyState(state)
         notifyStateChanged()

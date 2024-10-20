@@ -20,9 +20,8 @@ import java.util.concurrent.TimeUnit
 
 class InternetConnectionAvailabilityService private constructor() :
 
-    ConnectionAvailableService(identifier = "Internet connection availability"),
     ContextAvailability<Context>,
-    TerminationAsync
+    ConnectionAvailableService(identifier = "Internet connection availability")
 
 {
 
@@ -86,16 +85,20 @@ class InternetConnectionAvailabilityService private constructor() :
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
+        private val tag = "${this@InternetConnectionAvailabilityService.tag} Connection callback ::"
+
         override fun onStateChanged() {
+
+            Console.log("$tag On state changed")
 
             this@InternetConnectionAvailabilityService.onStateChanged()
         }
 
         override fun onState(state: State<Int>) {
 
-            Console.log("On state: $state")
+            Console.log("$tag On state, calling the change callback")
 
-            this@InternetConnectionAvailabilityService.onState(state)
+            this@InternetConnectionAvailabilityService.onStateChanged()
         }
 
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
@@ -148,22 +151,49 @@ class InternetConnectionAvailabilityService private constructor() :
 
     override fun terminate() {
 
+        super.terminate()
+
+        val tag = "$tag Termination ::"
+
+        Console.log("$tag START")
+
         withConnectionHandler {
+
+            Console.log("$tag Handler available :: ${it.hashCode()}")
 
             if (it is DefaultConnectivityHandler) {
 
+                Console.log("$tag Type ok")
+
                 it.unregister(connectionCallback)
+
+                Console.log("$tag END")
             }
         }
     }
 
     override fun onStateChanged() {
 
-        Console.log("$tag State changed")
+        withConnectionHandler {
+
+            if (it.isNetworkAvailable(takeContext())) {
+
+                onState(ConnectionState.Connected)
+
+            } else {
+
+                onState(ConnectionState.Disconnected)
+            }
+        }
     }
 
     override fun onState(state: State<Int>) {
 
         setState(state)
+    }
+
+    override fun notifyStateSubscribers(state: State<Int>) {
+
+        onState(state)
     }
 }
