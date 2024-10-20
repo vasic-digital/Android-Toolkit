@@ -4,6 +4,7 @@ import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
@@ -11,13 +12,21 @@ import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
 import com.redelf.commons.stateful.State
 
-class InternetConnectionAvailabilityService :
+class InternetConnectionAvailabilityService private constructor() :
 
     ConnectionAvailableService(identifier = "Internet connection availability"),
     ContextAvailability<Context>,
     TerminationSynchronized
 
 {
+
+    companion object : SingleInstance<ConnectionAvailableService>() {
+
+        override fun instantiate(): ConnectionAvailableService {
+
+            return InternetConnectionAvailabilityService()
+        }
+    }
 
     private val connectionHandler = DefaultConnectivityHandler(takeContext())
 
