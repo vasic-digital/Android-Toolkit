@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 abstract class ConnectionAvailableService : AvailableService, ConnectivityStateChanges {
 
+    // TODO: Listeners (subscribers)
+
     private val state: AtomicInteger = AtomicInteger(ConnectionState.Disconnected.getState())
 
     override fun getState() = ConnectionState.getState(state.get())
