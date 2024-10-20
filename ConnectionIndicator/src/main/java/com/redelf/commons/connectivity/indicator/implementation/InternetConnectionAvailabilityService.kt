@@ -5,18 +5,24 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.creation.instantiation.SingleInstance
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isOnMainThread
+import com.redelf.commons.extensions.recordException
+import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
+import com.redelf.commons.net.connectivity.ConnectivityHandler
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
 import com.redelf.commons.stateful.State
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class InternetConnectionAvailabilityService private constructor() :
 
     ConnectionAvailableService(identifier = "Internet connection availability"),
     ContextAvailability<Context>,
-    TerminationSynchronized
+    TerminationAsync
 
 {
 
@@ -35,7 +41,40 @@ class InternetConnectionAvailabilityService private constructor() :
         }
     }
 
-    private val connectionHandler = DefaultConnectivityHandler(takeContext())
+    private var cHandler: DefaultConnectivityHandler? = null
+
+    private fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
+
+        exec(
+
+            onRejected = { err -> recordException(err) }
+
+        ) {
+
+            if (cHandler == null) {
+
+                cHandler = DefaultConnectivityHandler(takeContext())
+
+                val state = if (cHandler?.isNetworkAvailable(takeContext()) == true) {
+
+                    ConnectionState.Connected
+
+                } else {
+
+                    ConnectionState.Disconnected
+                }
+
+                setState(state)
+
+                cHandler?.register(connectionCallback)
+            }
+
+            cHandler?.let {
+
+                doWhat(it)
+            }
+        }
+    }
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
@@ -51,14 +90,44 @@ class InternetConnectionAvailabilityService private constructor() :
             this@InternetConnectionAvailabilityService.onState(state)
         }
 
+        @Throws(IllegalArgumentException::class, IllegalStateException::class)
         override fun getState(): State<Int> {
 
-            if (connectionHandler.isNetworkAvailable(takeContext())) {
+            if (isOnMainThread()) {
 
-                return ConnectionState.Connected
+                throw IllegalArgumentException("Cannot get state from main thread")
             }
 
-            return ConnectionState.Disconnected
+            val latch = CountDownLatch(1)
+            var state  = ConnectionState.Disconnected
+
+            withConnectionHandler {
+
+                if (it.isNetworkAvailable(takeContext())) {
+
+                    state = ConnectionState.Connected
+
+                    latch.countDown()
+                }
+            }
+
+            try {
+
+                val result = latch.await(30, TimeUnit.SECONDS)
+
+                if (!result) {
+
+                    throw IllegalStateException("Get state timeout")
+                }
+
+            } catch (e: Exception) {
+
+                recordException(e)
+
+                throw IllegalStateException("Cannot get state")
+            }
+
+            return state
         }
 
         override fun setState(state: State<Int>) {
@@ -67,18 +136,17 @@ class InternetConnectionAvailabilityService private constructor() :
         }
     }
 
-    init {
-
-        connectionHandler.register(connectionCallback)
-    }
-
     override fun takeContext() = BaseApplication.takeContext()
 
-    override fun terminate(): Boolean {
+    override fun terminate() {
 
-        connectionHandler.unregister(connectionCallback)
+        withConnectionHandler {
 
-        return true
+            if (it is DefaultConnectivityHandler) {
+
+                it.unregister(connectionCallback)
+            }
+        }
     }
 
     override fun onStateChanged() {
