@@ -12,6 +12,8 @@ import com.redelf.analytics.exception.AnalyticsParametersCountException
 import com.redelf.analytics.implementation.firebase.FirebaseAnalyticsEvent
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 
@@ -27,24 +29,13 @@ class FacebookAnalytics : Analytics {
             throw AnalyticsParametersCountException(1)
         }
 
-        val bundle = Bundle()
         val ctx = BaseApplication.takeContext()
         val logger = AppEventsLogger.newLogger(ctx)
 
         val key = params[0]?.obtain() as String?
-        val value = params[1]?.obtain() as String?
+        val value = params[1]?.obtain() as Pair<*, *>?
 
         key?.let {
-
-            val analyticEvent = FirebaseAnalyticsEvent(param = Pair(key, value ?: ""))
-
-            val paramLog = "Bundle :: Key: = '${analyticEvent.param?.first}', " +
-                    "Value = '${analyticEvent.param?.second}'"
-
-            analyticEvent.param?.let {
-
-                bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
-            }
 
             exec(
 
@@ -52,7 +43,34 @@ class FacebookAnalytics : Analytics {
 
             ) {
 
-                logger.logEvent(key, bundle)
+                value?.let {
+
+                    if (it.first is String && it.second is String) {
+
+                        val first = it.first as String
+                        val second = it.second as String
+
+                        val bundle = Bundle()
+
+                        bundle.putString(first, second)
+
+                        logger.logEvent(key, bundle)
+
+                    } else {
+
+                        val e = IllegalArgumentException("Value must be a Pair<String, String>")
+                        recordException(e)
+                    }
+                }
+
+                var paramLog = "Bundle :: Key = '$key', Value = '$value'"
+
+                if (value == null) {
+
+                    paramLog = "Bundle :: Key = '$key'"
+
+                    logger.logEvent(key)
+                }
 
                 Console.log("$tag Logged event :: $paramLog")
             }
