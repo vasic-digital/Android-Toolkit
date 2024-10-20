@@ -20,6 +20,13 @@ class InternetConnectionAvailabilityService private constructor() :
 
 {
 
+    abstract class ConnectivityStateCallback : ConnectivityStateChanges {
+
+        final override fun setState(state: State<Int>) = Unit
+
+        final override fun getState() = ConnectionState.Disconnected
+    }
+
     companion object : SingleInstance<ConnectionAvailableService>() {
 
         override fun instantiate(): ConnectionAvailableService {

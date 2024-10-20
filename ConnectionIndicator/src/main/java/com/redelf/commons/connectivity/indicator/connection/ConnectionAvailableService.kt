@@ -5,10 +5,17 @@ import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
+import com.redelf.commons.registration.Registration
 import com.redelf.commons.stateful.State
 import java.util.concurrent.atomic.AtomicInteger
 
-abstract class ConnectionAvailableService(identifier: String) : AvailableService, ConnectivityStateChanges {
+abstract class ConnectionAvailableService(identifier: String) :
+
+    AvailableService,
+    ConnectivityStateChanges,
+    Registration<ConnectivityStateChanges>
+
+{
 
     protected val tag = "$identifier ::"
 
@@ -55,5 +62,20 @@ abstract class ConnectionAvailableService(identifier: String) : AvailableService
 
             operationName = "stateChanged"
         )
+    }
+
+    override fun register(subscriber: ConnectivityStateChanges) {
+
+        callbacks.register(subscriber)
+    }
+
+    override fun unregister(subscriber: ConnectivityStateChanges) {
+
+        callbacks.unregister(subscriber)
+    }
+
+    override fun isRegistered(subscriber: ConnectivityStateChanges): Boolean {
+
+        return callbacks.isRegistered(subscriber)
     }
 }
