@@ -4,6 +4,7 @@ import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
@@ -13,7 +14,8 @@ import com.redelf.commons.stateful.State
 class InternetConnectionAvailabilityService :
 
     ConnectionAvailableService(),
-    ContextAvailability<Context>
+    ContextAvailability<Context>,
+    TerminationSynchronized
 
 {
 
@@ -49,7 +51,19 @@ class InternetConnectionAvailabilityService :
         }
     }
 
+    init {
+
+        connectionHandler.register(connectionCallback)
+    }
+
     override fun takeContext() = BaseApplication.takeContext()
+
+    override fun terminate(): Boolean {
+
+        connectionHandler.unregister(connectionCallback)
+
+        return true
+    }
 
     override fun onStateChanged() {
 
