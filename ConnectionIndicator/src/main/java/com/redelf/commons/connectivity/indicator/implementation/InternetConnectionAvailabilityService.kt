@@ -41,6 +41,14 @@ class InternetConnectionAvailabilityService private constructor() :
         }
     }
 
+    init {
+
+        withConnectionHandler {
+
+            Console.log("$tag Instantiated :: ${hashCode()}")
+        }
+    }
+
     private var cHandler: DefaultConnectivityHandler? = null
 
     private fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
