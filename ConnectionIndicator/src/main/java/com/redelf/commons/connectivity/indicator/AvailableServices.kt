@@ -4,14 +4,23 @@ import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
+import java.util.concurrent.CopyOnWriteArraySet
 
-class AvailableServices(private val services: MutableSet<AvailableService>) :
+class AvailableServices(builder: AvailableServicesBuilder) :
 
     AvailableService,
     TerminationAsync,
     Stateful<Any> // TODO: <---
 
 {
+
+    private val services: CopyOnWriteArraySet<AvailableService> = CopyOnWriteArraySet()
+
+    init {
+
+        services.clear()
+        services.addAll(builder.build())
+    }
 
     override fun onStateChanged() {
 
