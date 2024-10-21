@@ -4,9 +4,9 @@ import com.redelf.commons.connectivity.indicator.implementation.InternetConnecti
 import com.redelf.commons.creation.Builder
 import com.redelf.commons.extensions.isOnMainThread
 
-class AvailableServicesBuilder : Builder<Set<AvailableService>> {
+class AvailableServicesBuilder : Builder<Set<AvailableStatefulService<Int>>> {
 
-    private val services = mutableSetOf<AvailableService>()
+    private val services = mutableSetOf<AvailableStatefulService<Int>>()
 
     @Suppress("DEPRECATION")
     @Throws(
@@ -15,9 +15,9 @@ class AvailableServicesBuilder : Builder<Set<AvailableService>> {
         IllegalAccessException::class,
         InstantiationException::class
     )
-    fun <T> addService(clazz: Class<out T>): Builder<Set<AvailableService>>
+    fun <T> addService(clazz: Class<out T>): Builder<Set<AvailableStatefulService<Int>>>
 
-        where T : AvailableService
+        where T : AvailableStatefulService<Int>
 
     {
 
@@ -35,7 +35,7 @@ class AvailableServicesBuilder : Builder<Set<AvailableService>> {
         InstantiationException::class,
         IllegalArgumentException::class
     )
-    fun addService(set: AvailableServiceSet): Builder<Set<AvailableService>> {
+    fun addService(set: AvailableServiceSet): Builder<Set<AvailableStatefulService<Int>>> {
 
         when (set) {
 
@@ -55,7 +55,7 @@ class AvailableServicesBuilder : Builder<Set<AvailableService>> {
     }
 
     @Throws(IllegalArgumentException::class)
-    override fun build(): Set<AvailableService> {
+    override fun build(): Set<AvailableStatefulService<Int>> {
 
         if (isOnMainThread()) {
 

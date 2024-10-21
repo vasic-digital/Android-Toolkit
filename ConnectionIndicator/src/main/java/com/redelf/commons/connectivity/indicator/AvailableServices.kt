@@ -16,31 +16,31 @@ constructor(builder: AvailableServicesBuilder) :
 
 {
 
-    private class LocalStateful(val service: AvailableStatefulService<*>) : Stateful<Any> {
+    private class LocalStateful(val service: AvailableStatefulService<Int>) : Stateful<Int> {
 
         override fun onStateChanged() {
 
             TODO("Not yet implemented")
         }
 
-        override fun getState(): State<Any> {
+        override fun getState(): State<Int> {
 
             TODO("Not yet implemented")
         }
 
-        override fun setState(state: State<Any>) {
+        override fun setState(state: State<Int>) {
 
             TODO("Not yet implemented")
         }
 
-        override fun onState(state: State<Any>) {
+        override fun onState(state: State<Int>) {
 
             TODO("Not yet implemented")
         }
     }
 
     private val services:
-            ConcurrentHashMap<AvailableStatefulService<*>, Stateful<Any>> = ConcurrentHashMap()
+            ConcurrentHashMap<AvailableStatefulService<Int>, Stateful<Int>> = ConcurrentHashMap()
 
     init {
 
@@ -48,14 +48,11 @@ constructor(builder: AvailableServicesBuilder) :
 
         builder.build().forEach {
 
-            if (it is AvailableStatefulService<*>) {
-
-                addService(it)
-            }
+            addService(it)
         }
     }
 
-    fun addService(service: AvailableStatefulService<*>) {
+    fun addService(service: AvailableStatefulService<Int>) {
 
         val listener = LocalStateful(service)
 
@@ -64,7 +61,7 @@ constructor(builder: AvailableServicesBuilder) :
         service.register(listener)
     }
 
-    fun removeService(service: AvailableStatefulService<Any>) {
+    fun removeService(service: AvailableStatefulService<Int>) {
 
         services.remove(service)?.let {
 
