@@ -20,7 +20,7 @@ abstract class ConnectionAvailableService :
 
 {
 
-    private val callbacks = Callbacks<ConnectivityStateChanges>(identifier())
+    private var stateChangesListeners: Callbacks<ConnectivityStateChanges>? = null
     private val state: AtomicInteger = AtomicInteger(ConnectionState.Disconnected.getState())
 
     protected abstract fun identifier(): String
@@ -49,7 +49,7 @@ abstract class ConnectionAvailableService :
 
     override fun terminate() {
 
-        callbacks.clear()
+        callbacks().clear()
     }
 
     protected fun tag() = "${identifier()} ::"
@@ -62,7 +62,7 @@ abstract class ConnectionAvailableService :
 
     private fun notifyState(state: State<Int>) {
 
-        callbacks.doOnAll(
+        callbacks().doOnAll(
 
             object : CallbackOperation<ConnectivityStateChanges> {
 
@@ -78,7 +78,7 @@ abstract class ConnectionAvailableService :
 
     private fun notifyStateChanged() {
 
-        callbacks.doOnAll(
+        callbacks().doOnAll(
 
             object : CallbackOperation<ConnectivityStateChanges> {
 
@@ -94,16 +94,27 @@ abstract class ConnectionAvailableService :
 
     override fun register(subscriber: ConnectivityStateChanges) {
 
-        callbacks.register(subscriber)
+        callbacks().register(subscriber)
     }
 
     override fun unregister(subscriber: ConnectivityStateChanges) {
 
-        callbacks.unregister(subscriber)
+        callbacks().unregister(subscriber)
     }
 
     override fun isRegistered(subscriber: ConnectivityStateChanges): Boolean {
 
-        return callbacks.isRegistered(subscriber)
+        return callbacks().isRegistered(subscriber)
+    }
+
+    @Synchronized
+    private fun callbacks() : Callbacks<ConnectivityStateChanges> {
+
+        if (stateChangesListeners == null) {
+
+            stateChangesListeners = Callbacks(identifier())
+        }
+
+        return stateChangesListeners!!
     }
 }
