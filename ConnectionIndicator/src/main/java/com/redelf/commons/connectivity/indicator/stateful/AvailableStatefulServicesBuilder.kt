@@ -1,28 +1,23 @@
-package com.redelf.commons.connectivity.indicator
+package com.redelf.commons.connectivity.indicator.stateful
 
+import com.redelf.commons.connectivity.indicator.AvailableServiceSet
 import com.redelf.commons.connectivity.indicator.implementation.InternetConnectionAvailabilityService
 import com.redelf.commons.creation.Builder
 import com.redelf.commons.extensions.isOnMainThread
 
-class AvailableServicesBuilder : Builder<Set<AvailableStatefulService<Int>>> {
+class AvailableStatefulServicesBuilder<T> : Builder<Set<AvailableStatefulService<T>>> {
 
-    private val services = mutableSetOf<AvailableStatefulService<Int>>()
+    private val factory = AvailableStatefulServiceFactory<T>()
+    private val services = mutableSetOf<AvailableStatefulService<T>>()
 
-    @Suppress("DEPRECATION")
     @Throws(
 
-        IllegalStateException::class,
-        IllegalAccessException::class,
-        InstantiationException::class
+        IllegalArgumentException::class
     )
-    fun <T> addService(clazz: Class<out T>): Builder<Set<AvailableStatefulService<Int>>>
+    fun addService(clazz: Class<*>): Builder<Set<AvailableStatefulService<T>>> {
 
-        where T : AvailableStatefulService<Int>
 
-    {
-
-        val instance = clazz.newInstance()
-
+        val instance = factory.build(clazz) // TODO: Add exception handling for upcoming changes
         services.add(instance)
 
         return this
@@ -30,12 +25,9 @@ class AvailableServicesBuilder : Builder<Set<AvailableStatefulService<Int>>> {
 
     @Throws(
 
-        IllegalStateException::class,
-        IllegalAccessException::class,
-        InstantiationException::class,
         IllegalArgumentException::class
     )
-    fun addService(set: AvailableServiceSet): Builder<Set<AvailableStatefulService<Int>>> {
+    fun addService(set: AvailableServiceSet): Builder<Set<AvailableStatefulService<T>>> {
 
         when (set) {
 
@@ -55,7 +47,7 @@ class AvailableServicesBuilder : Builder<Set<AvailableStatefulService<Int>>> {
     }
 
     @Throws(IllegalArgumentException::class)
-    override fun build(): Set<AvailableStatefulService<Int>> {
+    override fun build(): Set<AvailableStatefulService<T>> {
 
         if (isOnMainThread()) {
 

@@ -1,6 +1,6 @@
 package com.redelf.commons.creation
 
-interface Builder<T> {
+interface Builder<T> : Building {
 
     fun build(): T
 }

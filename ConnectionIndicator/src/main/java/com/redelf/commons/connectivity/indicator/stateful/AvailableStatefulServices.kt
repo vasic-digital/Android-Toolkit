@@ -1,46 +1,47 @@
-package com.redelf.commons.connectivity.indicator
+package com.redelf.commons.connectivity.indicator.stateful
 
+import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.ConcurrentHashMap
 
-class AvailableServices
+class AvailableStatefulServices<T>
 
 @Throws(IllegalArgumentException::class)
-constructor(builder: AvailableServicesBuilder) :
+constructor(builder: AvailableStatefulServicesBuilder<T>) :
 
     AvailableService,
     TerminationAsync
 
 {
 
-    private class LocalStateful(val service: AvailableStatefulService<Int>) : Stateful<Int> {
+    private class LocalStateful<T> (val service: AvailableStatefulService<T>) : Stateful<T> {
 
         override fun onStateChanged() {
 
             TODO("Not yet implemented")
         }
 
-        override fun getState(): State<Int> {
+        override fun getState(): State<T> {
 
             TODO("Not yet implemented")
         }
 
-        override fun setState(state: State<Int>) {
+        override fun setState(state: State<T>) {
 
             TODO("Not yet implemented")
         }
 
-        override fun onState(state: State<Int>) {
+        override fun onState(state: State<T>) {
 
             TODO("Not yet implemented")
         }
     }
 
     private val services:
-            ConcurrentHashMap<AvailableStatefulService<Int>, Stateful<Int>> = ConcurrentHashMap()
+            ConcurrentHashMap<AvailableStatefulService<T>, Stateful<T>> = ConcurrentHashMap()
 
     init {
 
@@ -52,7 +53,7 @@ constructor(builder: AvailableServicesBuilder) :
         }
     }
 
-    fun addService(service: AvailableStatefulService<Int>) {
+    fun addService(service: AvailableStatefulService<T>) {
 
         val listener = LocalStateful(service)
 
@@ -61,7 +62,7 @@ constructor(builder: AvailableServicesBuilder) :
         service.register(listener)
     }
 
-    fun removeService(service: AvailableStatefulService<Int>) {
+    fun removeService(service: AvailableStatefulService<T>) {
 
         services.remove(service)?.let {
 
