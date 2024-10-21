@@ -59,7 +59,7 @@ constructor(private val builder: AvailableServicesBuilder) :
         if (service is Stateful<*> && service is Registration<*>) {
 
             // TODO / FIXME: Continue here
-            service.register(listener)
+            // service.register(listener)
         }
     }
 
