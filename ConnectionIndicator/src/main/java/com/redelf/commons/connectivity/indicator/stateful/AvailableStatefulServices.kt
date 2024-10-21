@@ -19,7 +19,7 @@ constructor(builder: AvailableStatefulServicesBuilder<T>) :
 
     private class LocalStateful<T> (val service: AvailableStatefulService<T>) : Stateful<T> {
 
-        override fun onStateChanged() {
+        override fun onStateChanged() { // TODO: Implement notifying mechanism
 
             TODO("Not yet implemented")
         }
