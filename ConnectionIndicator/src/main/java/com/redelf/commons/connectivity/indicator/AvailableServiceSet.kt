@@ -2,5 +2,5 @@ package com.redelf.commons.connectivity.indicator
 
 enum class AvailableServiceSet {
 
-    DEFAULT
+    DEFAULT, INTERNET, UNKNOWN
 }

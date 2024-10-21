@@ -8,9 +8,14 @@ class AvailableServicesBuilder : Builder<Set<AvailableService>> {
 
     private val services = mutableSetOf<AvailableService>()
 
-    @Throws(IllegalStateException::class)
     @Suppress("DEPRECATION")
-    fun <T> addService(clazz: Class<out AvailableService>): Builder<Set<AvailableService>>
+    @Throws(
+
+        IllegalStateException::class,
+        IllegalAccessException::class,
+        InstantiationException::class
+    )
+    fun <T> addService(clazz: Class<out T>): Builder<Set<AvailableService>>
 
         where T : AvailableService
 
@@ -23,18 +28,26 @@ class AvailableServicesBuilder : Builder<Set<AvailableService>> {
         return this
     }
 
+    @Throws(
+
+        IllegalStateException::class,
+        IllegalAccessException::class,
+        InstantiationException::class,
+        IllegalArgumentException::class
+    )
     fun addService(set: AvailableServiceSet): Builder<Set<AvailableService>> {
 
         when (set) {
 
-            AvailableServiceSet.DEFAULT -> {
+            AvailableServiceSet.DEFAULT,
+            AvailableServiceSet.INTERNET -> {
 
                 addService(InternetConnectionAvailabilityService::class.java)
             }
 
             else -> {
 
-                addService(InternetConnectionAvailabilityService::class.java)
+                throw IllegalArgumentException("Unsupported service set: ${set.name}")
             }
         }
 
