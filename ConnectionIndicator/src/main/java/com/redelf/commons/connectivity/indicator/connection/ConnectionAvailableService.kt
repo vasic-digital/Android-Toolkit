@@ -2,25 +2,22 @@ package com.redelf.commons.connectivity.indicator.connection
 
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
-import com.redelf.commons.connectivity.indicator.AvailableService
+import com.redelf.commons.connectivity.indicator.AvailableStatefulService
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
-import com.redelf.commons.net.connectivity.ConnectivityStateChanges
-import com.redelf.commons.registration.Registration
 import com.redelf.commons.stateful.State
+import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.atomic.AtomicInteger
 
 abstract class ConnectionAvailableService :
 
-    AvailableService,
-    TerminationAsync,
-    ConnectivityStateChanges,
-    Registration<ConnectivityStateChanges>
+    AvailableStatefulService<Int>,
+    TerminationAsync
 
 {
 
-    private var stateChangesListeners: Callbacks<ConnectivityStateChanges>? = null
+    private var stateChangesListeners: Callbacks<Stateful<Int>>? = null
     private val state: AtomicInteger = AtomicInteger(ConnectionState.Disconnected.getState())
 
     protected abstract fun identifier(): String
@@ -64,9 +61,9 @@ abstract class ConnectionAvailableService :
 
         callbacks().doOnAll(
 
-            object : CallbackOperation<ConnectivityStateChanges> {
+            object : CallbackOperation<Stateful<Int>> {
 
-                override fun perform(callback: ConnectivityStateChanges) {
+                override fun perform(callback: Stateful<Int>) {
 
                     callback.onState(state)
                 }
@@ -80,9 +77,9 @@ abstract class ConnectionAvailableService :
 
         callbacks().doOnAll(
 
-            object : CallbackOperation<ConnectivityStateChanges> {
+            object : CallbackOperation<Stateful<Int>> {
 
-                override fun perform(callback: ConnectivityStateChanges) {
+                override fun perform(callback: Stateful<Int>) {
 
                     callback.onStateChanged()
                 }
@@ -92,23 +89,23 @@ abstract class ConnectionAvailableService :
         )
     }
 
-    override fun register(subscriber: ConnectivityStateChanges) {
+    override fun register(subscriber: Stateful<Int>) {
 
         callbacks().register(subscriber)
     }
 
-    override fun unregister(subscriber: ConnectivityStateChanges) {
+    override fun unregister(subscriber: Stateful<Int>) {
 
         callbacks().unregister(subscriber)
     }
 
-    override fun isRegistered(subscriber: ConnectivityStateChanges): Boolean {
+    override fun isRegistered(subscriber: Stateful<Int>): Boolean {
 
         return callbacks().isRegistered(subscriber)
     }
 
     @Synchronized
-    private fun callbacks() : Callbacks<ConnectivityStateChanges> {
+    private fun callbacks(): Callbacks<Stateful<Int>> {
 
         if (stateChangesListeners == null) {
 

@@ -2,7 +2,6 @@ package com.redelf.commons.connectivity.indicator
 
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
-import com.redelf.commons.registration.Registration
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.ConcurrentHashMap
@@ -10,14 +9,14 @@ import java.util.concurrent.ConcurrentHashMap
 class AvailableServices
 
 @Throws(IllegalArgumentException::class)
-constructor(private val builder: AvailableServicesBuilder) :
+constructor(builder: AvailableServicesBuilder) :
 
     AvailableService,
     TerminationAsync
 
 {
 
-    private class LocalStateful(val service: AvailableService) : Stateful<Any> {
+    private class LocalStateful(val service: AvailableStatefulService<*>) : Stateful<Any> {
 
         override fun onStateChanged() {
 
@@ -40,7 +39,8 @@ constructor(private val builder: AvailableServicesBuilder) :
         }
     }
 
-    private val services: ConcurrentHashMap<AvailableService, Stateful<*>> = ConcurrentHashMap()
+    private val services:
+            ConcurrentHashMap<AvailableStatefulService<*>, Stateful<Any>> = ConcurrentHashMap()
 
     init {
 
@@ -48,25 +48,28 @@ constructor(private val builder: AvailableServicesBuilder) :
 
         builder.build().forEach {
 
-            addService(it)
+            if (it is AvailableStatefulService<*>) {
+
+                addService(it)
+            }
         }
     }
 
-    fun addService(service: AvailableService) {
+    fun addService(service: AvailableStatefulService<*>) {
 
         val listener = LocalStateful(service)
 
         services[service] = listener
 
-        if (service is Stateful<*> && service is Registration<*>) {
-
-            service.register(listener)
-        }
+        service.register(listener)
     }
 
-    fun removeService(service: AvailableService) {
+    fun removeService(service: AvailableStatefulService<Any>) {
 
-        services.remove(service)
+        services.remove(service)?.let {
+
+            service.unregister(it)
+        }
     }
 
     fun hasService(service: AvailableService): Boolean {
