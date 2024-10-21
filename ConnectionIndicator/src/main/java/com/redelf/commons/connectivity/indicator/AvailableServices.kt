@@ -2,52 +2,65 @@ package com.redelf.commons.connectivity.indicator
 
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.registration.Registration
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
-import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.ConcurrentHashMap
 
 class AvailableServices
 
 @Throws(IllegalArgumentException::class)
-constructor(builder: AvailableServicesBuilder) :
+constructor(private val builder: AvailableServicesBuilder) :
 
     AvailableService,
-    TerminationAsync,
-    Stateful<Any> // TODO: <---
+    TerminationAsync
 
 {
 
-    private val services: CopyOnWriteArraySet<AvailableService> = CopyOnWriteArraySet()
+    private val services: ConcurrentHashMap<AvailableService, Stateful<*>> = ConcurrentHashMap()
 
     init {
 
         services.clear()
-        services.addAll(builder.build())
-    }
 
-    override fun onStateChanged() {
+        builder.build().forEach {
 
-        TODO("Not yet implemented")
-    }
-
-    override fun getState(): State<Any> {
-
-        TODO("Not yet implemented")
-    }
-
-    override fun setState(state: State<Any>) {
-
-        TODO("Not yet implemented")
-    }
-
-    override fun onState(state: State<Any>) {
-
-        TODO("Not yet implemented")
+            addService(it)
+        }
     }
 
     fun addService(service: AvailableService) {
 
-        services.add(service)
+        val listener = object : Stateful<Any> {
+
+            override fun onStateChanged() {
+
+                TODO("Not yet implemented")
+            }
+
+            override fun getState(): State<Any> {
+
+                TODO("Not yet implemented")
+            }
+
+            override fun setState(state: State<Any>) {
+
+                TODO("Not yet implemented")
+            }
+
+            override fun onState(state: State<Any>) {
+
+                TODO("Not yet implemented")
+            }
+        }
+
+        services[service] = listener
+
+        if (service is Stateful<*> && service is Registration<*>) {
+
+            // TODO / FIXME: Continue here
+            service.register(listener)
+        }
     }
 
     fun removeService(service: AvailableService) {
@@ -62,7 +75,7 @@ constructor(builder: AvailableServicesBuilder) :
 
     fun getServices(): List<AvailableService> {
 
-        return services.toList()
+        return services.keys().toList()
     }
 
     override fun terminate() {
