@@ -17,6 +17,29 @@ constructor(private val builder: AvailableServicesBuilder) :
 
 {
 
+    private class LocalStateful(val service: AvailableService) : Stateful<Any> {
+
+        override fun onStateChanged() {
+
+            TODO("Not yet implemented")
+        }
+
+        override fun getState(): State<Any> {
+
+            TODO("Not yet implemented")
+        }
+
+        override fun setState(state: State<Any>) {
+
+            TODO("Not yet implemented")
+        }
+
+        override fun onState(state: State<Any>) {
+
+            TODO("Not yet implemented")
+        }
+    }
+
     private val services: ConcurrentHashMap<AvailableService, Stateful<*>> = ConcurrentHashMap()
 
     init {
@@ -31,35 +54,13 @@ constructor(private val builder: AvailableServicesBuilder) :
 
     fun addService(service: AvailableService) {
 
-        val listener = object : Stateful<Any> {
-
-            override fun onStateChanged() {
-
-                TODO("Not yet implemented")
-            }
-
-            override fun getState(): State<Any> {
-
-                TODO("Not yet implemented")
-            }
-
-            override fun setState(state: State<Any>) {
-
-                TODO("Not yet implemented")
-            }
-
-            override fun onState(state: State<Any>) {
-
-                TODO("Not yet implemented")
-            }
-        }
+        val listener = LocalStateful(service)
 
         services[service] = listener
 
         if (service is Stateful<*> && service is Registration<*>) {
 
-            // TODO / FIXME: Continue here
-            // service.register(listener)
+            service.register(listener)
         }
     }
 
