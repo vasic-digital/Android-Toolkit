@@ -52,7 +52,7 @@ abstract class ConnectionAvailableService :
         callbacks.clear()
     }
 
-    protected fun tag() = "$identifier ::"
+    protected fun tag() = "${identifier()} ::"
 
     protected open fun notifyStateSubscribers(state: State<Int>) {
 
