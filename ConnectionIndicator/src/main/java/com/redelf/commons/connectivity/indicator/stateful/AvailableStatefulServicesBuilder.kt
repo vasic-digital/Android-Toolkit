@@ -17,7 +17,7 @@ class AvailableStatefulServicesBuilder<T> : Builder<Set<AvailableStatefulService
     fun addService(clazz: Class<*>): Builder<Set<AvailableStatefulService<T>>> {
 
 
-        val instance = factory.build(clazz) // TODO: Add exception handling for upcoming changes
+        val instance = factory.build(clazz) // TODO: Add exception handling for upcoming changes - #Availability
         services.add(instance)
 
         return this
