@@ -21,11 +21,7 @@ import java.util.concurrent.TimeUnit
 class InternetConnectionAvailabilityService private constructor() :
 
     ContextAvailability<Context>,
-    ConnectionAvailableService()
-
-{
-
-    override val identifier = "Internet connection availability"
+    ConnectionAvailableService() {
 
     abstract class ConnectivityStateCallback : ConnectivityStateChanges {
 
@@ -51,6 +47,8 @@ class InternetConnectionAvailabilityService private constructor() :
     }
 
     private var cHandler: DefaultConnectivityHandler? = null
+
+    override fun identifier() = "Internet connection availability"
 
     private fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
 
@@ -87,7 +85,8 @@ class InternetConnectionAvailabilityService private constructor() :
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
-        private val tag = "${this@InternetConnectionAvailabilityService.tag} Connection callback ::"
+        private val tag = this@InternetConnectionAvailabilityService.tag() +
+                " Connection callback ::"
 
         override fun onStateChanged() {
 
@@ -112,7 +111,7 @@ class InternetConnectionAvailabilityService private constructor() :
             }
 
             val latch = CountDownLatch(1)
-            var state  = ConnectionState.Disconnected
+            var state = ConnectionState.Disconnected
 
             withConnectionHandler {
 
@@ -155,7 +154,7 @@ class InternetConnectionAvailabilityService private constructor() :
 
         super.terminate()
 
-        val tag = "$tag Termination ::"
+        val tag = "${tag()} Termination ::"
 
         Console.log("$tag START")
 
