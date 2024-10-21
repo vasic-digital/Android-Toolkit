@@ -6,7 +6,10 @@ import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.CopyOnWriteArraySet
 
-class AvailableServices(builder: AvailableServicesBuilder) :
+class AvailableServices
+
+@Throws(IllegalArgumentException::class)
+constructor(builder: AvailableServicesBuilder) :
 
     AvailableService,
     TerminationAsync,

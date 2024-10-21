@@ -21,9 +21,11 @@ import java.util.concurrent.TimeUnit
 class InternetConnectionAvailabilityService private constructor() :
 
     ContextAvailability<Context>,
-    ConnectionAvailableService(identifier = "Internet connection availability")
+    ConnectionAvailableService()
 
 {
+
+    override val identifier = "Internet connection availability"
 
     abstract class ConnectivityStateCallback : ConnectivityStateChanges {
 
@@ -44,7 +46,7 @@ class InternetConnectionAvailabilityService private constructor() :
 
         withConnectionHandler {
 
-            Console.log("$tag Instantiated :: ${hashCode()}")
+            Console.log("${tag()} Instantiated :: ${hashCode()}")
         }
     }
 

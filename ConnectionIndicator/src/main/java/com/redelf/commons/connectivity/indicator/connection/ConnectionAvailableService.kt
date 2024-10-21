@@ -11,7 +11,7 @@ import com.redelf.commons.registration.Registration
 import com.redelf.commons.stateful.State
 import java.util.concurrent.atomic.AtomicInteger
 
-abstract class ConnectionAvailableService(identifier: String) :
+abstract class ConnectionAvailableService :
 
     AvailableService,
     TerminationAsync,
@@ -20,16 +20,16 @@ abstract class ConnectionAvailableService(identifier: String) :
 
 {
 
-    protected val tag = "$identifier ::"
-
-    private val callbacks = Callbacks<ConnectivityStateChanges>(identifier)
+    private val callbacks = Callbacks<ConnectivityStateChanges>(identifier())
     private val state: AtomicInteger = AtomicInteger(ConnectionState.Disconnected.getState())
+
+    protected abstract fun identifier(): String
 
     override fun getState() = ConnectionState.getState(state.get())
 
     override fun setState(state: State<Int>) {
 
-        Console.log("$tag Set state :: START :: State = $state, Received")
+        Console.log("${tag()} Set state :: START :: State = $state, Received")
 
         val stateValue = state.getState()
 
@@ -39,11 +39,11 @@ abstract class ConnectionAvailableService(identifier: String) :
 
             notifyStateSubscribers(state)
 
-            Console.log("$tag Set state :: START :: State = $state, Set")
+            Console.log("${tag()} Set state :: START :: State = $state, Set")
 
         } else {
 
-            Console.log("$tag Set state :: START :: State = $state, Skipped")
+            Console.log("${tag()} Set state :: START :: State = $state, Skipped")
         }
     }
 
@@ -51,6 +51,8 @@ abstract class ConnectionAvailableService(identifier: String) :
 
         callbacks.clear()
     }
+
+    protected fun tag() = "$identifier ::"
 
     protected open fun notifyStateSubscribers(state: State<Int>) {
 
