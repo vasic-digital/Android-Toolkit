@@ -1,5 +1,6 @@
 package com.redelf.commons.connectivity.indicator.stateful
 
+import com.redelf.commons.connectivity.indicator.implementation.FCMConnectionAvailabilityService
 import com.redelf.commons.connectivity.indicator.implementation.InternetConnectionAvailabilityService
 import com.redelf.commons.creation.BuilderParametrized
 import com.redelf.commons.extensions.isEmpty
@@ -25,6 +26,15 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
                 InternetConnectionAvailabilityService::class.java,
                 InternetConnectionAvailabilityService.getObtainer()
+            )
+        )
+
+        register(
+
+            AvailableStatefulServiceFactoryRecipe(
+
+                FCMConnectionAvailabilityService::class.java,
+                FCMConnectionAvailabilityService.getObtainer()
             )
         )
     }

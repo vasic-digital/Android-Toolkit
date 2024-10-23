@@ -1,6 +1,7 @@
 package com.redelf.commons.connectivity.indicator.stateful
 
 import com.redelf.commons.connectivity.indicator.AvailableServiceSet
+import com.redelf.commons.connectivity.indicator.implementation.FCMConnectionAvailabilityService
 import com.redelf.commons.connectivity.indicator.implementation.InternetConnectionAvailabilityService
 import com.redelf.commons.creation.Builder
 import com.redelf.commons.extensions.isOnMainThread
@@ -24,7 +25,12 @@ class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService<*>
 
         when (set) {
 
-            AvailableServiceSet.DEFAULT,
+            AvailableServiceSet.DEFAULT -> {
+
+                addService(InternetConnectionAvailabilityService::class.java)
+                addService(FCMConnectionAvailabilityService::class.java)
+            }
+
             AvailableServiceSet.INTERNET -> {
 
                 addService(InternetConnectionAvailabilityService::class.java)
