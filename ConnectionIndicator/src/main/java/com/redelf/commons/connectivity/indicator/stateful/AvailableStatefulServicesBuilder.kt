@@ -5,29 +5,22 @@ import com.redelf.commons.connectivity.indicator.implementation.InternetConnecti
 import com.redelf.commons.creation.Builder
 import com.redelf.commons.extensions.isOnMainThread
 
-class AvailableStatefulServicesBuilder<T> : Builder<Set<AvailableStatefulService<T>>> {
+class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService<*>>> {
 
-    private val factory = AvailableStatefulServiceFactory<T>()
-    private val services = mutableSetOf<AvailableStatefulService<T>>()
+    private val factory = AvailableStatefulServiceFactory()
+    private val services = mutableSetOf<AvailableStatefulService<*>>()
 
-    @Throws(
+    @Throws(IllegalArgumentException::class)
+    fun addService(clazz: Class<*>): Builder<Set<AvailableStatefulService<*>>> {
 
-        IllegalArgumentException::class
-    )
-    fun addService(clazz: Class<*>): Builder<Set<AvailableStatefulService<T>>> {
-
-
-        val instance = factory.build(clazz) // TODO: Add exception handling for upcoming changes - #Availability
+        val instance = factory.build(clazz)
         services.add(instance)
 
         return this
     }
 
-    @Throws(
-
-        IllegalArgumentException::class
-    )
-    fun addService(set: AvailableServiceSet): Builder<Set<AvailableStatefulService<T>>> {
+    @Throws(IllegalArgumentException::class)
+    fun addService(set: AvailableServiceSet): Builder<Set<AvailableStatefulService<*>>> {
 
         when (set) {
 
@@ -47,7 +40,7 @@ class AvailableStatefulServicesBuilder<T> : Builder<Set<AvailableStatefulService
     }
 
     @Throws(IllegalArgumentException::class)
-    override fun build(): Set<AvailableStatefulService<T>> {
+    override fun build(): Set<AvailableStatefulService<*>> {
 
         if (isOnMainThread()) {
 

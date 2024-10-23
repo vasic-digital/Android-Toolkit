@@ -7,17 +7,12 @@ import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.ConcurrentHashMap
 
-class AvailableStatefulServices<T>
+class AvailableStatefulServices
 
-@Throws(IllegalArgumentException::class) // TODO: Add exception handling for upcoming changes - #Availability
-constructor(builder: AvailableStatefulServicesBuilder<T>) :
+@Throws(IllegalArgumentException::class)
+constructor(builder: AvailableStatefulServicesBuilder) : AvailableService, TerminationAsync {
 
-    AvailableService,
-    TerminationAsync
-
-{
-
-    private class LocalStateful<T> (val service: AvailableStatefulService<T>) : Stateful<T> {
+    private class LocalStateful<T>(val service: AvailableStatefulService<T>) : Stateful<T> {
 
         override fun onStateChanged() { // TODO: Implement notifying mechanism - #Availability
 
@@ -41,7 +36,7 @@ constructor(builder: AvailableStatefulServicesBuilder<T>) :
     }
 
     private val services:
-            ConcurrentHashMap<AvailableStatefulService<T>, Stateful<T>> = ConcurrentHashMap()
+            ConcurrentHashMap<AvailableStatefulService<*>, Stateful<*>> = ConcurrentHashMap()
 
     init {
 
@@ -53,20 +48,22 @@ constructor(builder: AvailableStatefulServicesBuilder<T>) :
         }
     }
 
-    fun addService(service: AvailableStatefulService<T>) {
+    fun addService(service: AvailableStatefulService<*>) {
 
         val listener = LocalStateful(service)
 
         services[service] = listener
 
-        service.register(listener)
+        // FIXME: #Availability
+        //        service.register(listener)
     }
 
-    fun removeService(service: AvailableStatefulService<T>) {
+    fun removeService(service: AvailableStatefulService<*>) {
 
         services.remove(service)?.let {
 
-            service.unregister(it)
+            // FIXME: #Availability
+            //            service.unregister(it)
         }
     }
 

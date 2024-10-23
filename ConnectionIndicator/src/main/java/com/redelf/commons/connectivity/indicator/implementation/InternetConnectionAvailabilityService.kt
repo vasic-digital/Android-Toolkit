@@ -3,17 +3,19 @@ package com.redelf.commons.connectivity.indicator.implementation
 import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
+import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityHandler
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
+import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.Obtainer
 import com.redelf.commons.stateful.State
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -21,7 +23,9 @@ import java.util.concurrent.TimeUnit
 class InternetConnectionAvailabilityService private constructor() :
 
     ContextAvailability<Context>,
-    ConnectionAvailableService() {
+    ConnectionAvailableService()
+
+{
 
     abstract class ConnectivityStateCallback : ConnectivityStateChanges {
 
@@ -30,11 +34,24 @@ class InternetConnectionAvailabilityService private constructor() :
         final override fun getState() = ConnectionState.Disconnected
     }
 
-    companion object : SingleInstance<ConnectionAvailableService>() {
+    companion object :
+
+        SingleInstance<ConnectionAvailableService>(),
+        Obtainer<AvailableStatefulService<*>>
+
+    {
 
         override fun instantiate(): ConnectionAvailableService {
 
             return InternetConnectionAvailabilityService()
+        }
+
+        override fun getObtainer(): Obtain<AvailableStatefulService<*>> {
+
+            return object : Obtain<AvailableStatefulService<*>> {
+
+                override fun obtain() = instantiate()
+            }
         }
     }
 
