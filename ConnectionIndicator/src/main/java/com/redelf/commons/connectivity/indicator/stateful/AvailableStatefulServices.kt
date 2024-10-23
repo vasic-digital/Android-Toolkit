@@ -48,6 +48,11 @@ constructor(builder: AvailableStatefulServicesBuilder) : AvailableService, Termi
 
             addService(it)
         }
+
+        if (services.isEmpty()) {
+
+            throw IllegalArgumentException("No services provided")
+        }
     }
 
     fun <T> addService(service: AvailableStatefulService<T>) {
