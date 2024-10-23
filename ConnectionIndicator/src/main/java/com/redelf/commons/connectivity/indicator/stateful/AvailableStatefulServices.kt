@@ -1,6 +1,7 @@
 package com.redelf.commons.connectivity.indicator.stateful
 
 import com.redelf.commons.connectivity.indicator.AvailableService
+import com.redelf.commons.creation.Builder
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
@@ -10,7 +11,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 class AvailableStatefulServices
 @Throws(IllegalArgumentException::class)
-constructor(builder: AvailableStatefulServicesBuilder) : AvailableService, TerminationAsync {
+constructor(
+
+    builder: Builder<Set<AvailableStatefulService<*>>>
+
+) : AvailableService, TerminationAsync {
 
     private class LocalStateful<T>(val service: AvailableStatefulService<T>) : Stateful<T> {
 
