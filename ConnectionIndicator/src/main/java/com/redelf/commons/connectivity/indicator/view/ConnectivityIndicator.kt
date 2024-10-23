@@ -4,11 +4,28 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.RelativeLayout
 
-class ConnectivityIndicator(ctx: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int)
+class ConnectivityIndicator : RelativeLayout {
 
-    : RelativeLayout(ctx, attrs, defStyleAttr, defStyleRes) {
+    // TODO: Implement the custom view here - #Availability
 
+    constructor(ctx: Context) : super(ctx)
 
+    constructor(ctx: Context, attrs: AttributeSet?) : super(ctx, attrs)
 
-        // TODO: Implement the custom view here - #Availability
+    constructor(
+
+        ctx: Context,
+        attrs: AttributeSet?,
+        defStyleAttr: Int
+
+    ) : super(ctx, attrs, defStyleAttr)
+
+    constructor(
+
+        ctx: Context,
+        attrs: AttributeSet?,
+        defStyleAttr: Int,
+        defStyleRes: Int
+
+    ) : super(ctx, attrs, defStyleAttr, defStyleRes)
 }
