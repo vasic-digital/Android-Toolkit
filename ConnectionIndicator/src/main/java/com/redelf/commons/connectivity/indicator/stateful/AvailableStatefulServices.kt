@@ -3,35 +3,37 @@ package com.redelf.commons.connectivity.indicator.stateful
 import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.logging.Console
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.ConcurrentHashMap
 
 class AvailableStatefulServices
-
 @Throws(IllegalArgumentException::class)
 constructor(builder: AvailableStatefulServicesBuilder) : AvailableService, TerminationAsync {
 
     private class LocalStateful<T>(val service: AvailableStatefulService<T>) : Stateful<T> {
 
-        override fun onStateChanged() { // TODO: Implement notifying mechanism - #Availability
+        // TODO: Implement notifying mechanism - #Availability
 
-            TODO("Not yet implemented")
+        override fun onStateChanged() {
+
+            Console.log("onStateChanged")
         }
 
         override fun getState(): State<T> {
 
-            TODO("Not yet implemented")
+            return service.getState()
         }
 
         override fun setState(state: State<T>) {
 
-            TODO("Not yet implemented")
+            service.setState(state)
         }
 
         override fun onState(state: State<T>) {
 
-            TODO("Not yet implemented")
+            Console.log("onState")
         }
     }
 
@@ -48,22 +50,20 @@ constructor(builder: AvailableStatefulServicesBuilder) : AvailableService, Termi
         }
     }
 
-    fun addService(service: AvailableStatefulService<*>) {
+    fun <T> addService(service: AvailableStatefulService<T>) {
 
         val listener = LocalStateful(service)
 
         services[service] = listener
 
-        // FIXME: #Availability
-        //        service.register(listener)
+        service.register(listener)
     }
 
-    fun removeService(service: AvailableStatefulService<*>) {
+    fun <T> removeService(service: AvailableStatefulService<T>) {
 
         services.remove(service)?.let {
 
-            // FIXME: #Availability
-            //            service.unregister(it)
+            service.unregister(service)
         }
     }
 
