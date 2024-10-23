@@ -10,6 +10,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
+import com.redelf.commons.messaging.firebase.FcmConnectivityHandler
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityHandler
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
@@ -20,7 +21,7 @@ import com.redelf.commons.stateful.State
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-class InternetConnectionAvailabilityService private constructor() :
+class FCMConnectionAvailabilityService private constructor() :
 
     ContextAvailability<Context>,
     ConnectionAvailableService()
@@ -36,7 +37,7 @@ class InternetConnectionAvailabilityService private constructor() :
 
         override fun instantiate(): ConnectionAvailableService {
 
-            return InternetConnectionAvailabilityService()
+            return FCMConnectionAvailabilityService()
         }
 
         override fun getObtainer(): Obtain<AvailableStatefulService<*>> {
@@ -56,9 +57,11 @@ class InternetConnectionAvailabilityService private constructor() :
         }
     }
 
-    private var cHandler: DefaultConnectivityHandler? = null
+    // TODO: Make sure that all codebase shared between this and Int.Conn.Availability Service is extracted
+    //  to a common class which just instantiates the 'cHandler' - #Availability
+    private var cHandler: FcmConnectivityHandler? = null
 
-    override fun identifier() = "Internet connection availability"
+    override fun identifier() = "FCM connection availability"
 
     private fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
 
@@ -70,7 +73,7 @@ class InternetConnectionAvailabilityService private constructor() :
 
             if (cHandler == null) {
 
-                cHandler = DefaultConnectivityHandler(takeContext())
+                cHandler = FcmConnectivityHandler(takeContext())
 
                 val state = if (cHandler?.isNetworkAvailable(takeContext()) == true) {
 
@@ -95,21 +98,21 @@ class InternetConnectionAvailabilityService private constructor() :
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
-        private val tag = this@InternetConnectionAvailabilityService.tag() +
+        private val tag = this@FCMConnectionAvailabilityService.tag() +
                 " Connection callback ::"
 
         override fun onStateChanged() {
 
             Console.log("$tag On state changed")
 
-            this@InternetConnectionAvailabilityService.onStateChanged()
+            this@FCMConnectionAvailabilityService.onStateChanged()
         }
 
         override fun onState(state: State<Int>) {
 
             Console.log("$tag On state, calling the change callback")
 
-            this@InternetConnectionAvailabilityService.onStateChanged()
+            this@FCMConnectionAvailabilityService.onStateChanged()
         }
 
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
@@ -154,7 +157,7 @@ class InternetConnectionAvailabilityService private constructor() :
 
         override fun setState(state: State<Int>) {
 
-            this@InternetConnectionAvailabilityService.setState(state)
+            this@FCMConnectionAvailabilityService.setState(state)
         }
     }
 

@@ -6,6 +6,7 @@ import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServi
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
+import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.atomic.AtomicInteger
