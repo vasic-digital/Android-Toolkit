@@ -1,41 +1,125 @@
 package com.redelf.commons.messaging.firebase
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.PowerManager
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-
+import com.google.android.gms.tasks.Task
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
+import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.service.Serving
+import java.util.concurrent.atomic.AtomicInteger
+
 
 open class FcmService : FirebaseMessagingService(), Serving {
 
     companion object {
 
+        private val connectivityState = AtomicInteger(ConnectionState.Disconnected.getState())
+
         const val BROADCAST_KEY_TOKEN = "key.token"
         const val BROADCAST_ACTION_TOKEN = "action.token"
         const val BROADCAST_ACTION_EVENT = "action.event"
+        const val BROADCAST_ACTION_TOKEN_APPLIED = "action.token.applied"
+
+        fun getState(): ConnectionState = ConnectionState.getState(connectivityState.get())
+
+        fun isConnected(): Boolean = getState() == ConnectionState.Connected
+
+        fun isDisconnected(): Boolean = !isConnected()
     }
 
+    private val receiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            intent?.let {
+
+                if (it.action == BROADCAST_ACTION_TOKEN_APPLIED) {
+
+                    FirebaseMessaging.getInstance().token.addOnSuccessListener { token: String ->
+
+                        if (isEmpty(token)) {
+
+                            setDisconnected()
+
+                        } else {
+
+                            val recToken = intent.getStringExtra(BROADCAST_KEY_TOKEN)
+
+                            if (token == recToken) {
+
+                                setConnected()
+
+                            } else {
+
+                                setDisconnected()
+                            }
+                        }
+
+                    }.addOnFailureListener { e: Exception? ->
+
+                        e?.let {
+
+                            recordException(it)
+                        }
+
+                        setDisconnected()
+
+                    }.addOnCanceledListener {
+
+                        setDisconnected()
+
+                    }.addOnCompleteListener { task: Task<String> ->
+
+                        val token = task.result
+                        val recToken = intent.getStringExtra(BROADCAST_KEY_TOKEN)
+
+                        if (isNotEmpty(token) && token == recToken) {
+
+                            setConnected()
+
+                        } else {
+
+                            setDisconnected()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate() {
         super.onCreate()
 
         Console.log("onCreate()")
+
+        registerReceiver(receiver, IntentFilter(BROADCAST_ACTION_TOKEN_APPLIED))
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
         Console.log("onDestroy()")
+
+        unregisterReceiver(receiver)
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
 
-        Console.error("onLowMemory()")
+        val e = IllegalStateException("onLowMemory()")
+        recordException(e)
     }
 
     override fun onNewToken(token: String) {
@@ -121,4 +205,8 @@ open class FcmService : FirebaseMessagingService(), Serving {
             LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
         }
     }
+
+    private fun setConnected() = connectivityState.set(ConnectionState.Connected.getState())
+
+    private fun setDisconnected() = connectivityState.set(ConnectionState.Disconnected.getState())
 }
