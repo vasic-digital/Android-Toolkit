@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class AvailableStatefulServices<T>
 
-@Throws(IllegalArgumentException::class)
+@Throws(IllegalArgumentException::class) // TODO: Add exception handling for upcoming changes - #Availability
 constructor(builder: AvailableStatefulServicesBuilder<T>) :
 
     AvailableService,
