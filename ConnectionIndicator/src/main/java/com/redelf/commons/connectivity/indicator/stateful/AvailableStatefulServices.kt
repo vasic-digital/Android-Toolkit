@@ -95,15 +95,27 @@ constructor(
             return ConnectionState.Unavailable
         }
 
+        var failed = 0
+
         services.forEach { (_, service) ->
 
             if (service.getState() != ConnectionState.Connected) {
 
-                return ConnectionState.Warning
+                failed++
             }
         }
 
-        return ConnectionState.Connected
+        if (failed == 0) {
+
+            return ConnectionState.Connected
+        }
+
+        if (failed == services.size) {
+
+            return ConnectionState.Disconnected
+        }
+
+        return ConnectionState.Warning
     }
 
     override fun terminate() {
