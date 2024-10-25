@@ -10,6 +10,7 @@ import com.redelf.commons.extensions.isOnMainThread
 class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService<*>>> {
 
     private val factory = AvailableStatefulServiceFactory()
+    private val callbacks = mutableSetOf<ConnectivityStateCallback>()
     private val services = mutableSetOf<AvailableStatefulService<*>>()
 
     @Throws(IllegalArgumentException::class)
@@ -52,7 +53,7 @@ class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService<*>
 
     ): AvailableStatefulServicesBuilder {
 
-        // TODO: Register callback - #Availability
+        callbacks.add(callback)
 
         return this
     }
@@ -63,6 +64,15 @@ class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService<*>
         if (isOnMainThread()) {
 
             throw IllegalArgumentException("You can't build AvailableServices on main thread")
+        }
+
+        services.forEach { service ->
+
+            callbacks.forEach { callback ->
+
+                // FIXME:
+                // service.register(callback)
+            }
         }
 
         return services
