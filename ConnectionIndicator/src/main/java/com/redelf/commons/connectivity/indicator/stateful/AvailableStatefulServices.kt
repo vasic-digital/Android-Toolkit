@@ -91,9 +91,20 @@ constructor(
 
     override fun getState(): State<Int> {
 
-        // TODO: Implement this - #Availability
+        if (services.isEmpty()) {
 
-        return ConnectionState.Unavailable
+            return ConnectionState.Unavailable
+        }
+
+        services.forEach { (_, service) ->
+
+            if (service.getState() != ConnectionState.Connected) {
+
+                return ConnectionState.Warning
+            }
+        }
+
+        return ConnectionState.Connected
     }
 
     override fun terminate() {
