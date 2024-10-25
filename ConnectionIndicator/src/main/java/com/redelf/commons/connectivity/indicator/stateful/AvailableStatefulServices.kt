@@ -20,26 +20,32 @@ constructor(
 
     private class LocalStateful(val service: AvailableStatefulService) : Stateful {
 
-        // TODO: Implement notifying mechanism - #Availability
+        private val tag = "Local stateful :: ${service::class.simpleName} ${service.hashCode()} ::"
 
         override fun onStateChanged() {
 
-            Console.log("onStateChanged")
+            Console.log("$tag Changed :: State")
         }
 
         override fun getState(): State<Int> {
 
-            return service.getState()
+            val state = service.getState()
+
+            Console.log("$tag Get :: State = $state")
+
+            return state
         }
 
         override fun setState(state: State<Int>) {
+
+            Console.log("$tag Set :: State = $state")
 
             service.setState(state)
         }
 
         override fun onState(state: State<Int>) {
 
-            Console.log("onState")
+            Console.log("$tag On :: State = $state")
         }
     }
 
