@@ -70,7 +70,7 @@ class InternetConnectionAvailabilityService private constructor() :
 
             if (cHandler == null) {
 
-                cHandler = DefaultConnectivityHandler(takeContext())
+                cHandler = DefaultConnectivityHandler.obtain(takeContext())
 
                 val state = if (cHandler?.isNetworkAvailable(takeContext()) == true) {
 
