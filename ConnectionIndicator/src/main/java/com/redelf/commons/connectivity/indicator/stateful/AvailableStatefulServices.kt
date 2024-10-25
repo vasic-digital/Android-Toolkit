@@ -150,16 +150,16 @@ constructor(
 
     override fun terminate() {
 
-        services.forEach {
+        services.forEach { (service, _) ->
 
-            if (it is TerminationAsync) {
+            if (service is TerminationAsync) {
 
-                it.terminate()
+                service.terminate()
             }
 
-            if (it is TerminationSynchronized) {
+            if (service is TerminationSynchronized) {
 
-                it.terminate()
+                service.terminate()
             }
         }
 
