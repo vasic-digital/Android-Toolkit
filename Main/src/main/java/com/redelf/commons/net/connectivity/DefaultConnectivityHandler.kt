@@ -26,13 +26,17 @@ class DefaultConnectivityHandler private constructor(
 
         override fun obtain(param: Context): DefaultConnectivityHandler {
 
-            return obtain(param)
+            return obtain(
+
+                param,
+                ConnectionBlockingBehavior.DO_NOT_BLOCK
+            )
         }
 
         fun obtain(
 
             param: Context,
-            defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
+            defaultConnectionBlockState: ConnectionBlockingBehavior
 
         ): DefaultConnectivityHandler {
 

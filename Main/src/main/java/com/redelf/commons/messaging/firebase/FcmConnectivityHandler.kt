@@ -4,29 +4,30 @@ import android.content.Context
 import com.redelf.commons.net.connectivity.ConnectionBlockingBehavior
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.ObtainParametrized
 
 class FcmConnectivityHandler private constructor(
 
     defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
 
-) : StatefulBasicConnectionHandler(defaultConnectionBlockState)
+) : StatefulBasicConnectionHandler(defaultConnectionBlockState) {
 
-{
-
-    companion object : ObtainParametrized<FcmConnectivityHandler, Context> {
+    companion object : Obtain<FcmConnectivityHandler> {
 
         private var instance: FcmConnectivityHandler? = null
 
-        override fun obtain(param: Context): FcmConnectivityHandler {
+        override fun obtain(): FcmConnectivityHandler {
 
-            return obtain(param)
+            return obtain(
+
+                ConnectionBlockingBehavior.DO_NOT_BLOCK
+            )
         }
 
         fun obtain(
 
-            defaultConnectionBlockState: ConnectionBlockingBehavior =
-                ConnectionBlockingBehavior.DO_NOT_BLOCK
+            defaultConnectionBlockState: ConnectionBlockingBehavior
 
         ): FcmConnectivityHandler {
 
