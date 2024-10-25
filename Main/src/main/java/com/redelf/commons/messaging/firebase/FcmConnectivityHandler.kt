@@ -1,20 +1,16 @@
 package com.redelf.commons.messaging.firebase
 
 import android.content.Context
-import com.redelf.commons.net.connectivity.BasicConnectivityHandler
 import com.redelf.commons.net.connectivity.ConnectionBlockingBehavior
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
+import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.ObtainParametrized
-import com.redelf.commons.registration.Registration
 
 class FcmConnectivityHandler private constructor(
 
     defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
 
-) :
-
-    BasicConnectivityHandler(defaultConnectionBlockState),
-    Registration<ConnectivityStateChanges>
+) : StatefulBasicConnectionHandler(defaultConnectionBlockState)
 
 {
 

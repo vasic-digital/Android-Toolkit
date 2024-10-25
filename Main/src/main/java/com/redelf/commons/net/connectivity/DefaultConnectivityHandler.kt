@@ -16,10 +16,7 @@ class DefaultConnectivityHandler private constructor(
     ctx: Context,
     defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
 
-) :
-
-    BasicConnectivityHandler(defaultConnectionBlockState),
-    Registration<ConnectivityStateChanges>
+) : StatefulBasicConnectionHandler(defaultConnectionBlockState)
 
 {
 
