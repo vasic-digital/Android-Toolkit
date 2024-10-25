@@ -94,7 +94,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         }
     }
 
-    private val connectionHandler = DefaultConnectivityHandler(dataManager.obtain().takeContext())
+    private val connectionHandler = DefaultConnectivityHandler
+        .obtain(dataManager.obtain().takeContext())
 
     private val connectionCallback = object : ConnectivityStateChanges {
 

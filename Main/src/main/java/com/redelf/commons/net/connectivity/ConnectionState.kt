@@ -6,7 +6,9 @@ enum class ConnectionState(private val stateValue: Int) : State<Int> {
 
     Connected(0),
     Connecting(1),
-    Disconnected(-1);
+    Warning(2),
+    Disconnected(-1),
+    Unavailable(-2);
 
     companion object {
 

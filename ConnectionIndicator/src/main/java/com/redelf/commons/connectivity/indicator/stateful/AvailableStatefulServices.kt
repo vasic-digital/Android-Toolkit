@@ -5,6 +5,8 @@ import com.redelf.commons.creation.Builder
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
+import com.redelf.commons.net.connectivity.ConnectionState
+import com.redelf.commons.stateful.GetState
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.ConcurrentHashMap
@@ -15,7 +17,7 @@ constructor(
 
     builder: Builder<Set<AvailableStatefulService<*>>>
 
-) : AvailableService, TerminationAsync {
+) : AvailableService, TerminationAsync, GetState<Int> {
 
     private class LocalStateful<T>(val service: AvailableStatefulService<T>) : Stateful<T> {
 
@@ -85,6 +87,13 @@ constructor(
     fun getServices(): List<AvailableService> {
 
         return services.keys().toList()
+    }
+
+    override fun getState(): State<Int> {
+
+        // TODO: Implement this - #Availability
+
+        return ConnectionState.Unavailable
     }
 
     override fun terminate() {
