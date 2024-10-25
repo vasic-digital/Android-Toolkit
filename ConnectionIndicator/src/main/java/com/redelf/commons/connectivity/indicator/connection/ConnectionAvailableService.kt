@@ -6,7 +6,6 @@ import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServi
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
-import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.atomic.AtomicInteger
@@ -22,6 +21,16 @@ abstract class ConnectionAvailableService :
     private val state: AtomicInteger = AtomicInteger(ConnectionState.Disconnected.getState())
 
     protected abstract fun identifier(): String
+
+    override fun setDebug(debug: Boolean) {
+
+        stateChangesListeners?.setDebug(debug)
+    }
+
+    override fun isDebug(): Boolean {
+
+        return stateChangesListeners?.isDebug() ?: false
+    }
 
     override fun getState() = ConnectionState.getState(state.get())
 

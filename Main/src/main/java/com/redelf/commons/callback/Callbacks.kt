@@ -1,20 +1,21 @@
 package com.redelf.commons.callback
 
+import com.redelf.commons.Debuggable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Callbacks<T>(private val identifier: String) : Registration<T> {
+class Callbacks<T>(private val identifier: String) : Registration<T>, Debuggable {
 
     companion object {
 
         val DEBUG = AtomicBoolean()
     }
 
-    val tag = "Callbacks '${getTagName()}' ::"
-
+    private val debug = AtomicBoolean(DEBUG.get())
     private var callbacks = ConcurrentLinkedQueue<T>()
+    private val tag = "Callbacks '${getTagName()}' ::"
 
     private fun getTagName() = "$identifier ${hashCode()}"
 
@@ -22,7 +23,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         val tag = "$tag ON  ::"
 
-        if (DEBUG.get()) Console.log(
+        if (isDebug()) Console.log(
 
             "$tag Start :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -48,12 +49,12 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         callbacks.add(subscriber)
 
-        if (DEBUG.get()) Console.debug(
+        if (isDebug()) Console.debug(
 
             "$tag Subscriber registered: ${subscriber.hashCode()}"
         )
 
-        if (DEBUG.get()) Console.log(
+        if (isDebug()) Console.log(
 
             "$tag End :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -63,7 +64,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         val tag = "$tag OFF ::"
 
-        if (DEBUG.get()) Console.log(
+        if (isDebug()) Console.log(
 
             "$tag Start :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -82,7 +83,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
                 } else {
 
-                    if (DEBUG.get()) Console.debug(
+                    if (isDebug()) Console.debug(
 
                         "$tag Subscriber unregistered: ${subscriber.hashCode()}"
                     )
@@ -92,7 +93,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
             }
         }
 
-        if (DEBUG.get()) Console.log(
+        if (isDebug()) Console.log(
 
             "$tag End :: ${subscriber.hashCode()} :: ${callbacks.size}"
         )
@@ -132,7 +133,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
             } else {
 
-                if (DEBUG.get()) Console.debug(
+                if (isDebug()) Console.debug(
 
                     "$operationName performing operation for subscriber: ${item.hashCode()}"
                 )
@@ -144,14 +145,14 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
 
         if (count > 0) {
 
-            if (DEBUG.get()) Console.debug(
+            if (isDebug()) Console.debug(
 
                 "$operationName performed for $count subscribers"
             )
 
         } else {
 
-            if (DEBUG.get()) Console.log("$operationName performed for no subscribers")
+            if (isDebug()) Console.log("$operationName performed for no subscribers")
         }
     }
 
@@ -171,5 +172,16 @@ class Callbacks<T>(private val identifier: String) : Registration<T> {
     fun clear() {
 
         callbacks.clear()
+    }
+
+    override fun setDebug(debug: Boolean) {
+
+        this.debug.set(debug)
+    }
+
+    @Synchronized
+    override fun isDebug(): Boolean {
+
+        return debug.get() || DEBUG.get()
     }
 }

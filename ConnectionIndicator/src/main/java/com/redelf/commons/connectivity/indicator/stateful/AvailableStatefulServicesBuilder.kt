@@ -9,6 +9,7 @@ import com.redelf.commons.extensions.isOnMainThread
 
 class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService>> {
 
+    private var debug = false
     private val factory = AvailableStatefulServiceFactory()
     private val services = mutableSetOf<AvailableStatefulService>()
     private val callbacks = mutableSetOf<ConnectivityStateCallback>()
@@ -58,6 +59,13 @@ class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService>> 
         return this
     }
 
+    fun setDebug(value: Boolean): AvailableStatefulServicesBuilder {
+
+        debug = value
+
+        return this
+    }
+
     @Throws(IllegalArgumentException::class)
     override fun build(): Set<AvailableStatefulService> {
 
@@ -72,6 +80,8 @@ class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService>> 
 
                 service.register(callback)
             }
+
+            service.setDebug(debug)
         }
 
         return services
