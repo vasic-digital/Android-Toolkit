@@ -31,6 +31,11 @@ constructor(
             Console.log("$tag Registered")
         }
 
+        fun logUnregistered() {
+
+            Console.log("$tag Unregistered")
+        }
+
         override fun onStateChanged() {
 
             Console.log("$tag Changed :: State")
@@ -89,9 +94,17 @@ constructor(
 
     fun removeService(service: AvailableStatefulService) {
 
-        services.remove(service)?.let {
+        services.remove(service)?.let { removed ->
 
-            service.unregister(service)
+            services[removed]?.let {
+
+                service.unregister(it)
+
+                if (it is LocalStateful) {
+
+                    it.logUnregistered()
+                }
+            }
         }
     }
 
