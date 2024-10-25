@@ -73,7 +73,7 @@ class FCMConnectionAvailabilityService private constructor() :
 
             if (cHandler == null) {
 
-                cHandler = FcmConnectivityHandler(takeContext())
+                cHandler = FcmConnectivityHandler.obtain(takeContext())
 
                 val state = if (cHandler?.isNetworkAvailable(takeContext()) == true) {
 

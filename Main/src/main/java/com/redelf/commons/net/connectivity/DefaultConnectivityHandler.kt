@@ -11,7 +11,7 @@ import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.registration.Registration
 import java.util.concurrent.Callable
 
-class DefaultConnectivityHandler(
+class DefaultConnectivityHandler private constructor(
 
     ctx: Context,
     defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK

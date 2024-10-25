@@ -11,31 +11,51 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.redelf.commons.callback.CallbackOperation
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
+import com.redelf.commons.net.connectivity.ConnectivityStateChanges
+import com.redelf.commons.registration.Registration
 import com.redelf.commons.service.Serving
 import java.util.concurrent.atomic.AtomicInteger
 
 
 open class FcmService : FirebaseMessagingService(), Serving {
 
-    companion object {
+    companion object : Registration<ConnectivityStateChanges> {
 
-        private val connectivityState = AtomicInteger(ConnectionState.Disconnected.getState())
+        private val connState = AtomicInteger(ConnectionState.Disconnected.getState())
+        private val connStateCallbacks = Callbacks<ConnectivityStateChanges>("FCM")
 
         const val BROADCAST_KEY_TOKEN = "key.token"
         const val BROADCAST_ACTION_TOKEN = "action.token"
         const val BROADCAST_ACTION_EVENT = "action.event"
         const val BROADCAST_ACTION_TOKEN_APPLIED = "action.token.applied"
 
-        fun getState(): ConnectionState = ConnectionState.getState(connectivityState.get())
+        fun getState(): ConnectionState = ConnectionState.getState(connState.get())
 
         fun isConnected(): Boolean = getState() == ConnectionState.Connected
 
         fun isDisconnected(): Boolean = !isConnected()
+
+        override fun register(subscriber: ConnectivityStateChanges) {
+
+            connStateCallbacks.register(subscriber)
+        }
+
+        override fun unregister(subscriber: ConnectivityStateChanges) {
+
+            connStateCallbacks.unregister(subscriber)
+        }
+
+        override fun isRegistered(subscriber: ConnectivityStateChanges): Boolean {
+
+            return connStateCallbacks.isRegistered(subscriber)
+        }
     }
 
     private val receiver = object : BroadcastReceiver() {
@@ -206,7 +226,34 @@ open class FcmService : FirebaseMessagingService(), Serving {
         }
     }
 
-    private fun setConnected() = connectivityState.set(ConnectionState.Connected.getState())
+    private fun setConnected() {
 
-    private fun setDisconnected() = connectivityState.set(ConnectionState.Disconnected.getState())
+        connState.set(ConnectionState.Connected.getState())
+
+        notifyCallbacks()
+    }
+
+    private fun setDisconnected() {
+
+        connState.set(ConnectionState.Disconnected.getState())
+
+        notifyCallbacks()
+    }
+
+    private fun notifyCallbacks() {
+
+        connStateCallbacks.doOnAll(
+
+            object : CallbackOperation<ConnectivityStateChanges> {
+
+                override fun perform(callback: ConnectivityStateChanges) {
+
+                    callback.onStateChanged()
+                    callback.onState(ConnectionState.getState(connState.get()))
+                }
+            },
+
+            operationName = "FCM_State_Changed"
+        )
+    }
 }
