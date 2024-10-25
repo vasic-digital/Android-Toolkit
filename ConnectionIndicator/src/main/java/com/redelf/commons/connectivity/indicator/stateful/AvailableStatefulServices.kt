@@ -15,7 +15,7 @@ class AvailableStatefulServices
 @Throws(IllegalArgumentException::class)
 constructor(
 
-    builder: Builder<Set<AvailableStatefulService<*>>>
+    builder: AvailableStatefulServicesBuilder
 
 ) : AvailableService, TerminationAsync, GetState<Int> {
 
