@@ -6,7 +6,4 @@ abstract class StatefulBasicConnectionHandler(
 
     defaultConnectionBlockState: ConnectionBlockingBehavior
 
-) :
-
-    BasicConnectivityHandler(defaultConnectionBlockState),
-    Registration<ConnectivityStateChanges>
+) : BasicConnectivityHandler(defaultConnectionBlockState), Registration<ConnectivityStateChanges>

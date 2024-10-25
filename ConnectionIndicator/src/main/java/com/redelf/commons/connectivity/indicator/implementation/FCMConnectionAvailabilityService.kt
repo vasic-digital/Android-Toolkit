@@ -20,7 +20,6 @@ class FCMConnectionAvailabilityService private constructor() :
             }
         }
     )
-
 {
 
     companion object :
@@ -44,6 +43,7 @@ class FCMConnectionAvailabilityService private constructor() :
         }
     }
 
+    override val tag: String = "${identifier()} ::"
 
     override fun identifier() = "FCM connection availability"
 }

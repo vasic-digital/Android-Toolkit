@@ -23,15 +23,12 @@ class InternetConnectionAvailabilityService private constructor() :
             }
         }
     )
-
 {
 
     companion object :
 
         SingleInstance<ConnectionAvailableService>(),
-        Obtainer<AvailableStatefulService>
-
-    {
+        Obtainer<AvailableStatefulService> {
 
         override fun instantiate(): ConnectionAvailableService {
 
@@ -46,6 +43,9 @@ class InternetConnectionAvailabilityService private constructor() :
             }
         }
     }
+
+
+    override val tag: String = "${identifier()} ::"
 
     override fun identifier() = "Internet connection availability"
 }

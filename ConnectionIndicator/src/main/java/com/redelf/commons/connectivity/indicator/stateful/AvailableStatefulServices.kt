@@ -63,6 +63,8 @@ constructor(
         }
     }
 
+    private val tag: String = "Available stateful services ::"
+
     private val services:
             ConcurrentHashMap<AvailableStatefulService, Stateful> = ConcurrentHashMap()
 
@@ -150,19 +152,29 @@ constructor(
 
     override fun terminate() {
 
+        val tag = "$tag Termination ::"
+
+        Console.log("$tag START")
+
         services.forEach { (service, _) ->
 
             if (service is TerminationAsync) {
+
+                Console.log("$tag Service = ${service::class.simpleName}")
 
                 service.terminate()
             }
 
             if (service is TerminationSynchronized) {
 
+                Console.log("$tag Service = ${service::class.simpleName}")
+
                 service.terminate()
             }
         }
 
         services.clear()
+
+        Console.log("$tag END")
     }
 }

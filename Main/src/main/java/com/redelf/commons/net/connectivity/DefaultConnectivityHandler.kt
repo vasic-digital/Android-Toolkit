@@ -15,9 +15,7 @@ class DefaultConnectivityHandler private constructor(
     ctx: Context,
     defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
 
-) : StatefulBasicConnectionHandler(defaultConnectionBlockState)
-
-{
+) : StatefulBasicConnectionHandler(defaultConnectionBlockState) {
 
     companion object : ObtainParametrized<DefaultConnectivityHandler, Context> {
 

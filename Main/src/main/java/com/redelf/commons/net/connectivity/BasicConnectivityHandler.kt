@@ -6,7 +6,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 open class BasicConnectivityHandler(
 
-    defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
+    defaultConnectionBlockState: ConnectionBlockingBehavior =
+        ConnectionBlockingBehavior.DO_NOT_BLOCK
 
 ) : ConnectivityHandler {
 
