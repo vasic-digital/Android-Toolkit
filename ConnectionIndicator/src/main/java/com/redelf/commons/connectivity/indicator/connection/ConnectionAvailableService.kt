@@ -13,9 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
 abstract class ConnectionAvailableService :
 
     AvailableStatefulService,
-    TerminationAsync
-
-{
+    TerminationAsync {
 
     private var stateChangesListeners: Callbacks<Stateful>? = null
     private val state: AtomicInteger = AtomicInteger(ConnectionState.Disconnected.getState())
@@ -56,7 +54,21 @@ abstract class ConnectionAvailableService :
 
     override fun terminate() {
 
-        callbacks().clear()
+        Console.log("${tag()} Terminate :: START")
+
+        callbacks().doOnAll(
+
+            object : CallbackOperation<Stateful> {
+
+                override fun perform(callback: Stateful) {
+
+                    callbacks().unregister(callback)
+                }
+
+            }, operationName = "Termination"
+        )
+
+        Console.log("${tag()} Terminate :: END")
     }
 
     protected fun tag() = "${identifier()} ::"
