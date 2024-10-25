@@ -13,12 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger
 
 abstract class ConnectionAvailableService :
 
-    AvailableStatefulService<Int>,
+    AvailableStatefulService,
     TerminationAsync
 
 {
 
-    private var stateChangesListeners: Callbacks<Stateful<Int>>? = null
+    private var stateChangesListeners: Callbacks<Stateful>? = null
     private val state: AtomicInteger = AtomicInteger(ConnectionState.Disconnected.getState())
 
     protected abstract fun identifier(): String
@@ -62,9 +62,9 @@ abstract class ConnectionAvailableService :
 
         callbacks().doOnAll(
 
-            object : CallbackOperation<Stateful<Int>> {
+            object : CallbackOperation<Stateful> {
 
-                override fun perform(callback: Stateful<Int>) {
+                override fun perform(callback: Stateful) {
 
                     callback.onState(state)
                 }
@@ -78,9 +78,9 @@ abstract class ConnectionAvailableService :
 
         callbacks().doOnAll(
 
-            object : CallbackOperation<Stateful<Int>> {
+            object : CallbackOperation<Stateful> {
 
-                override fun perform(callback: Stateful<Int>) {
+                override fun perform(callback: Stateful) {
 
                     callback.onStateChanged()
                 }
@@ -90,23 +90,23 @@ abstract class ConnectionAvailableService :
         )
     }
 
-    override fun register(subscriber: Stateful<Int>) {
+    override fun register(subscriber: Stateful) {
 
         callbacks().register(subscriber)
     }
 
-    override fun unregister(subscriber: Stateful<Int>) {
+    override fun unregister(subscriber: Stateful) {
 
         callbacks().unregister(subscriber)
     }
 
-    override fun isRegistered(subscriber: Stateful<Int>): Boolean {
+    override fun isRegistered(subscriber: Stateful): Boolean {
 
         return callbacks().isRegistered(subscriber)
     }
 
     @Synchronized
-    private fun callbacks(): Callbacks<Stateful<Int>> {
+    private fun callbacks(): Callbacks<Stateful> {
 
         if (stateChangesListeners == null) {
 

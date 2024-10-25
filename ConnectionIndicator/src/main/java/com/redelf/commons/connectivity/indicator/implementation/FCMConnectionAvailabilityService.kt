@@ -26,7 +26,7 @@ class FCMConnectionAvailabilityService private constructor() :
     companion object :
 
         SingleInstance<ConnectionAvailableService>(),
-        Obtainer<AvailableStatefulService<*>>
+        Obtainer<AvailableStatefulService>
 
     {
 
@@ -35,9 +35,9 @@ class FCMConnectionAvailabilityService private constructor() :
             return FCMConnectionAvailabilityService()
         }
 
-        override fun getObtainer(): Obtain<AvailableStatefulService<*>> {
+        override fun getObtainer(): Obtain<AvailableStatefulService> {
 
-            return object : Obtain<AvailableStatefulService<*>> {
+            return object : Obtain<AvailableStatefulService> {
 
                 override fun obtain() = instantiate()
             }

@@ -7,11 +7,11 @@ import com.redelf.commons.connectivity.indicator.implementation.InternetConnecti
 import com.redelf.commons.creation.Builder
 import com.redelf.commons.extensions.isOnMainThread
 
-class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService<*>>> {
+class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService>> {
 
     private val factory = AvailableStatefulServiceFactory()
+    private val services = mutableSetOf<AvailableStatefulService>()
     private val callbacks = mutableSetOf<ConnectivityStateCallback>()
-    private val services = mutableSetOf<AvailableStatefulService<*>>()
 
     @Throws(IllegalArgumentException::class)
     fun addService(clazz: Class<*>): AvailableStatefulServicesBuilder {
@@ -59,7 +59,7 @@ class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService<*>
     }
 
     @Throws(IllegalArgumentException::class)
-    override fun build(): Set<AvailableStatefulService<*>> {
+    override fun build(): Set<AvailableStatefulService> {
 
         if (isOnMainThread()) {
 
@@ -70,8 +70,7 @@ class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService<*>
 
             callbacks.forEach { callback ->
 
-                // FIXME:
-                // service.register(callback)
+                service.register(callback)
             }
         }
 

@@ -4,5 +4,5 @@ import com.redelf.commons.obtain.Obtain
 
 data class AvailableStatefulServiceFactoryRecipe(
 
-    val clazz: Class<*>, val obtain: Obtain<AvailableStatefulService<*>>
+    val clazz: Class<*>, val obtain: Obtain<AvailableStatefulService>
 )

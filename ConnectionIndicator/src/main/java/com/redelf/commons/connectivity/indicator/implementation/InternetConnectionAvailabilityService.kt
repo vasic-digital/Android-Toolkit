@@ -29,7 +29,7 @@ class InternetConnectionAvailabilityService private constructor() :
     companion object :
 
         SingleInstance<ConnectionAvailableService>(),
-        Obtainer<AvailableStatefulService<*>>
+        Obtainer<AvailableStatefulService>
 
     {
 
@@ -38,9 +38,9 @@ class InternetConnectionAvailabilityService private constructor() :
             return InternetConnectionAvailabilityService()
         }
 
-        override fun getObtainer(): Obtain<AvailableStatefulService<*>> {
+        override fun getObtainer(): Obtain<AvailableStatefulService> {
 
-            return object : Obtain<AvailableStatefulService<*>> {
+            return object : Obtain<AvailableStatefulService> {
 
                 override fun obtain() = instantiate()
             }

@@ -11,12 +11,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) constructor() :
 
-    BuilderParametrized<Class<*>, AvailableStatefulService<*>>,
+    BuilderParametrized<Class<*>, AvailableStatefulService>,
     Registration<AvailableStatefulServiceFactoryRecipe>
 
 {
 
-    private val recipes = ConcurrentHashMap<String, Obtain<AvailableStatefulService<*>>>()
+    private val recipes = ConcurrentHashMap<String, Obtain<AvailableStatefulService>>()
 
     init {
 
@@ -79,7 +79,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
     }
 
     @Throws(IllegalArgumentException::class)
-    override fun build(input: Class<*>): AvailableStatefulService<*> {
+    override fun build(input: Class<*>): AvailableStatefulService {
 
         val identifier = input.simpleName
 

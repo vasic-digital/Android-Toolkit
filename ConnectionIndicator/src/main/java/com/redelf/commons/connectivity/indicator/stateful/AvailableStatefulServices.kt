@@ -1,7 +1,6 @@
 package com.redelf.commons.connectivity.indicator.stateful
 
 import com.redelf.commons.connectivity.indicator.AvailableService
-import com.redelf.commons.creation.Builder
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
@@ -19,7 +18,7 @@ constructor(
 
 ) : AvailableService, TerminationAsync, GetState<Int> {
 
-    private class LocalStateful<T>(val service: AvailableStatefulService<T>) : Stateful<T> {
+    private class LocalStateful(val service: AvailableStatefulService) : Stateful {
 
         // TODO: Implement notifying mechanism - #Availability
 
@@ -28,24 +27,24 @@ constructor(
             Console.log("onStateChanged")
         }
 
-        override fun getState(): State<T> {
+        override fun getState(): State<Int> {
 
             return service.getState()
         }
 
-        override fun setState(state: State<T>) {
+        override fun setState(state: State<Int>) {
 
             service.setState(state)
         }
 
-        override fun onState(state: State<T>) {
+        override fun onState(state: State<Int>) {
 
             Console.log("onState")
         }
     }
 
     private val services:
-            ConcurrentHashMap<AvailableStatefulService<*>, Stateful<*>> = ConcurrentHashMap()
+            ConcurrentHashMap<AvailableStatefulService, Stateful> = ConcurrentHashMap()
 
     init {
 
@@ -62,7 +61,7 @@ constructor(
         }
     }
 
-    fun <T> addService(service: AvailableStatefulService<T>) {
+    fun addService(service: AvailableStatefulService) {
 
         val listener = LocalStateful(service)
 
@@ -71,7 +70,7 @@ constructor(
         service.register(listener)
     }
 
-    fun <T> removeService(service: AvailableStatefulService<T>) {
+    fun removeService(service: AvailableStatefulService) {
 
         services.remove(service)?.let {
 
