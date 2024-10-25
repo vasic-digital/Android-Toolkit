@@ -26,6 +26,11 @@ constructor(
 
         private val tag = "Local stateful :: ${service::class.simpleName} ${service.hashCode()} ::"
 
+        fun logRegistered() {
+
+            Console.log("$tag Registered")
+        }
+
         override fun onStateChanged() {
 
             Console.log("$tag Changed :: State")
@@ -78,6 +83,8 @@ constructor(
         services[service] = listener
 
         service.register(listener)
+
+        listener.logRegistered()
     }
 
     fun removeService(service: AvailableStatefulService) {
