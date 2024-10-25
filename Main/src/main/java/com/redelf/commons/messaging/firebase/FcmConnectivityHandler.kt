@@ -1,11 +1,9 @@
 package com.redelf.commons.messaging.firebase
 
-import android.content.Context
 import com.redelf.commons.net.connectivity.ConnectionBlockingBehavior
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.obtain.ObtainParametrized
 
 class FcmConnectivityHandler private constructor(
 

@@ -8,7 +8,6 @@ import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.Retrying
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.ObtainParametrized
-import com.redelf.commons.registration.Registration
 import java.util.concurrent.Callable
 
 class DefaultConnectivityHandler private constructor(
