@@ -20,6 +20,10 @@ constructor(
 
     private class LocalStateful(val service: AvailableStatefulService) : Stateful {
 
+        /*
+         * FIXME: Fix callbacks - #Availability
+         */
+
         private val tag = "Local stateful :: ${service::class.simpleName} ${service.hashCode()} ::"
 
         override fun onStateChanged() {
