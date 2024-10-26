@@ -99,7 +99,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
-        override fun onStateChanged() {
+        override fun onStateChanged(whoseState: Class<*>?) {
 
             if (connectionHandler.isNetworkAvailable(takeContext())) {
 
@@ -107,7 +107,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
             }
         }
 
-        override fun onState(state: State<Int>) {
+        override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
             Console.log("On state: $state")
         }

@@ -34,7 +34,7 @@ abstract class ConnectionAvailabilityService(
 
             Console.log("$tag On state changed :: '${whoseState?.simpleName}'")
 
-            this@ConnectionAvailabilityService.onStateChanged()
+            this@ConnectionAvailabilityService.onStateChanged(whoseState)
         }
 
         override fun onState(state: State<Int>, whoseState: Class<*>?) {
@@ -44,7 +44,7 @@ abstract class ConnectionAvailabilityService(
                 "$tag On state, calling the change callback :: '${whoseState?.simpleName}'"
             )
 
-            this@ConnectionAvailabilityService.onStateChanged()
+            this@ConnectionAvailabilityService.onStateChanged(whoseState)
         }
 
         @Throws(IllegalArgumentException::class, IllegalStateException::class)

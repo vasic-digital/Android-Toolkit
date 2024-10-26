@@ -95,7 +95,7 @@ abstract class ConnectionAvailableService :
 
                 override fun perform(callback: Stateful) {
 
-                    callback.onState(state)
+                    callback.onState(state, this@ConnectionAvailableService::class.java)
                 }
             },
 
@@ -119,7 +119,7 @@ abstract class ConnectionAvailableService :
 
                 override fun perform(callback: Stateful) {
 
-                    callback.onStateChanged()
+                    callback.onStateChanged(this@ConnectionAvailableService::class.java)
                 }
             },
 
