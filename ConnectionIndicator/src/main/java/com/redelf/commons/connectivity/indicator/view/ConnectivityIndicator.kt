@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
+import androidx.core.content.ContextCompat
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
@@ -14,6 +15,7 @@ import com.redelf.commons.lifecycle.InitializationAsyncParametrized
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.logging.Console
+import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.stateful.State
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -44,7 +46,7 @@ class ConnectivityIndicator :
 
         override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
-            applyState(state, whoseState)
+            Console.log("$tag State = $state, whoseState = ${whoseState?.simpleName}")
         }
     }
 
@@ -203,16 +205,38 @@ class ConnectivityIndicator :
 
     private fun applyStates() {
 
+        Console.log("$tag Apply states")
 
-    }
+        val state = statefulServices?.getState()
 
-    private fun applyState(state: State<Int>, whoseState: Class<*>?) {
+        val tint = when (state) {
 
-        Console.log(
+            ConnectionState.Connected -> {
 
-            "$tag State has changed :: Who = ${whoseState?.simpleName}, State = $state"
-        )
+                ContextCompat.getColor(context, R.color.connected)
+            }
 
-        // TODO: Implement
+            ConnectionState.Disconnected -> {
+
+                ContextCompat.getColor(context, R.color.disconnected)
+            }
+
+            ConnectionState.Warning -> {
+
+                ContextCompat.getColor(context, R.color.warning)
+            }
+
+            ConnectionState.Unavailable -> {
+
+                ContextCompat.getColor(context, R.color.unavailable)
+            }
+
+            else -> {
+
+                ContextCompat.getColor(context, R.color.disconnected)
+            }
+        }
+
+        Console.log("$tag Tint color: $tint")
     }
 }
