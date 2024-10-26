@@ -81,7 +81,15 @@ abstract class ConnectionAvailableService :
 
     private fun notifyState(state: State<Int>) {
 
-        callbacks().doOnAll(
+        val callbacks = callbacks()
+
+        Console.log(
+
+            "${tag()} Notify state :: State = $state, " +
+                "Callbacks count = ${callbacks.size()}"
+        )
+
+        callbacks.doOnAll(
 
             object : CallbackOperation<Stateful> {
 
@@ -97,7 +105,15 @@ abstract class ConnectionAvailableService :
 
     private fun notifyStateChanged() {
 
-        callbacks().doOnAll(
+        val callbacks = callbacks()
+
+        Console.log(
+
+            "${tag()} Notify state changed :: State = $state, " +
+                    "Callbacks count = ${callbacks.size()}"
+        )
+
+        callbacks.doOnAll(
 
             object : CallbackOperation<Stateful> {
 

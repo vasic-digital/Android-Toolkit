@@ -158,7 +158,9 @@ class Callbacks<T>(private val identifier: String) : Registration<T>, Debuggable
 
     fun hasSubscribers() = callbacks.isNotEmpty()
 
-    fun getSubscribersCount() = callbacks.size
+    fun size() = callbacks.size
+
+    fun getSubscribersCount() = size()
 
     fun getSubscribers() : List<T> {
 
