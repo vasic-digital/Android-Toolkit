@@ -2,7 +2,9 @@ package com.redelf.commons.connectivity.indicator.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.widget.RelativeLayout
+import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServicesBuilder
@@ -10,18 +12,22 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationAsyncParametrized
 import com.redelf.commons.lifecycle.LifecycleCallback
+import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.logging.Console
-import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.stateful.State
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ConnectivityIndicator :
 
     RelativeLayout,
-    InitializationAsyncParametrized<AvailableStatefulServices, AvailableStatefulServicesBuilder> {
+    InitializationAsyncParametrized<AvailableStatefulServices, AvailableStatefulServicesBuilder>,
+    TerminationAsync
+
+{
 
     private val initializing = AtomicBoolean()
     private val tag = "Connectivity Indicator ::"
+    private val layout = R.layout.layout_connectivity_indicator
     private var statefulServices: AvailableStatefulServices? = null
 
     private val connectionStateCallback = object : ConnectivityStateCallback() {
@@ -32,26 +38,13 @@ class ConnectivityIndicator :
 
                 "$tag State has changed :: Who = ${whoseState?.simpleName}"
             )
+
+            applyStates()
         }
 
         override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
-            if (state.getState() == ConnectionState.Connected.getState()) {
-
-                Console.log(
-
-                    "$tag Connected to the internet :: " +
-                            "Who = ${whoseState?.simpleName}"
-                )
-
-            } else {
-
-                Console.log(
-
-                    "$tag Disconnected from the internet :: " +
-                            "Who = ${whoseState?.simpleName}"
-                )
-            }
+            applyState(state, whoseState)
         }
     }
 
@@ -75,6 +68,40 @@ class ConnectivityIndicator :
         defStyleRes: Int
 
     ) : super(ctx, attrs, defStyleAttr, defStyleRes)
+
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+
+        Console.log("$tag On finish inflate")
+
+        LayoutInflater.from(context).inflate(layout, this, true)
+
+        applyStates()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+
+        Console.log("$tag On detached from window")
+
+        terminate()
+    }
+
+    override fun terminate() {
+
+        exec(
+
+            onRejected = { error ->
+
+                recordException(error)
+            }
+
+        ) {
+
+            statefulServices?.terminate()
+            statefulServices = null
+        }
+    }
 
     fun getServices(): AvailableStatefulServices? {
 
@@ -172,5 +199,20 @@ class ConnectivityIndicator :
 
             Console.log("$tag Initialization completed")
         }
+    }
+
+    private fun applyStates() {
+
+
+    }
+
+    private fun applyState(state: State<Int>, whoseState: Class<*>?) {
+
+        Console.log(
+
+            "$tag State has changed :: Who = ${whoseState?.simpleName}, State = $state"
+        )
+
+        // TODO: Implement
     }
 }
