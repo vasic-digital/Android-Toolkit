@@ -59,6 +59,17 @@ class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService>> 
         return this
     }
 
+    fun removeCallback(
+
+        callback: ConnectivityStateCallback
+
+    ): AvailableStatefulServicesBuilder {
+
+        callbacks.remove(callback)
+
+        return this
+    }
+
     fun setDebug(value: Boolean): AvailableStatefulServicesBuilder {
 
         debug = value
