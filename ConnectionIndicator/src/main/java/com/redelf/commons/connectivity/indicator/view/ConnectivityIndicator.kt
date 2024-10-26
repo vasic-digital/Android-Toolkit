@@ -110,6 +110,7 @@ class ConnectivityIndicator :
         return statefulServices
     }
 
+    // TODO: Tint colors to be configurable
     // TODO: Set services method version to inject already build services stack
 
     fun setServices(
