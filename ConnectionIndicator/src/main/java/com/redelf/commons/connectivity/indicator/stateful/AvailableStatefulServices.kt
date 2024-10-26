@@ -115,9 +115,21 @@ constructor(
         return services.contains(service)
     }
 
-    fun getServices(): List<AvailableService> {
+    fun getServiceInstances(): List<AvailableService> {
 
         return services.keys().toList()
+    }
+
+    fun getServiceClasses(): List<Class<*>> {
+
+        val items = mutableSetOf<Class<*>>()
+
+        services.forEach { (service, _) ->
+
+            items.add(service::class.java)
+        }
+
+        return items.toList()
     }
 
     override fun getState(): State<Int> {
