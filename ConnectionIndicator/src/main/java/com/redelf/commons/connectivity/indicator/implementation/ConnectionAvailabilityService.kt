@@ -30,16 +30,19 @@ abstract class ConnectionAvailabilityService(
         private val tag =
             this@ConnectionAvailabilityService.tag() + " Connection callback ::"
 
-        override fun onStateChanged() {
+        override fun onStateChanged(whoseState: Class<*>?) {
 
-            Console.log("$tag On state changed")
+            Console.log("$tag On state changed :: '${whoseState?.simpleName}'")
 
             this@ConnectionAvailabilityService.onStateChanged()
         }
 
-        override fun onState(state: State<Int>) {
+        override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
-            Console.log("$tag On state, calling the change callback")
+            Console.log(
+
+                "$tag On state, calling the change callback :: '${whoseState?.simpleName}'"
+            )
 
             this@ConnectionAvailabilityService.onStateChanged()
         }
@@ -118,22 +121,22 @@ abstract class ConnectionAvailabilityService(
         }
     }
 
-    override fun onStateChanged() {
+    override fun onStateChanged(whoseState: Class<*>?) {
 
         withConnectionHandler {
 
             if (it.isNetworkAvailable(takeContext())) {
 
-                onState(ConnectionState.Connected)
+                onState(ConnectionState.Connected, whoseState)
 
             } else {
 
-                onState(ConnectionState.Disconnected)
+                onState(ConnectionState.Disconnected, whoseState)
             }
         }
     }
 
-    override fun onState(state: State<Int>) {
+    override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
         setState(state)
     }

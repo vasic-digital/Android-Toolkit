@@ -9,6 +9,7 @@ import com.redelf.commons.stateful.GetState
 import com.redelf.commons.stateful.State
 import com.redelf.commons.stateful.Stateful
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 
 class AvailableStatefulServices
 @Throws(IllegalArgumentException::class)
@@ -18,55 +19,9 @@ constructor(
 
 ) : AvailableService, TerminationAsync, GetState<Int> {
 
-    private class LocalStateful(val service: AvailableStatefulService) : Stateful {
-
-        /*
-         * FIXME: Fix callbacks - #Availability
-         */
-
-        private val tag = "Local stateful :: ${service::class.simpleName} ${service.hashCode()} ::"
-
-        fun logRegistered() {
-
-            Console.log("$tag Registered")
-        }
-
-        fun logUnregistered() {
-
-            Console.log("$tag Unregistered")
-        }
-
-        override fun onStateChanged() {
-
-            Console.log("$tag Changed :: State")
-        }
-
-        override fun getState(): State<Int> {
-
-            val state = service.getState()
-
-            Console.log("$tag Get :: State = $state")
-
-            return state
-        }
-
-        override fun setState(state: State<Int>) {
-
-            Console.log("$tag Set :: State = $state")
-
-            service.setState(state)
-        }
-
-        override fun onState(state: State<Int>) {
-
-            Console.log("$tag On :: State = $state")
-        }
-    }
-
     private val tag: String = "Available stateful services ::"
 
-    private val services:
-            ConcurrentHashMap<AvailableStatefulService, Stateful> = ConcurrentHashMap()
+    private val services: CopyOnWriteArraySet<AvailableStatefulService> = CopyOnWriteArraySet()
 
     init {
 
@@ -85,29 +40,12 @@ constructor(
 
     fun addService(service: AvailableStatefulService) {
 
-        val listener = LocalStateful(service)
-
-        services[service] = listener
-
-        service.register(listener)
-
-        listener.logRegistered()
+        services.add(service)
     }
 
     fun removeService(service: AvailableStatefulService) {
 
-        services.remove(service)?.let { removed ->
-
-            services[removed]?.let {
-
-                service.unregister(it)
-
-                if (it is LocalStateful) {
-
-                    it.logUnregistered()
-                }
-            }
-        }
+        services.remove(service)
     }
 
     fun hasService(service: AvailableService): Boolean {
@@ -117,14 +55,14 @@ constructor(
 
     fun getServiceInstances(): List<AvailableService> {
 
-        return services.keys().toList()
+        return services.toList()
     }
 
     fun getServiceClasses(): List<Class<*>> {
 
         val items = mutableSetOf<Class<*>>()
 
-        services.forEach { (service, _) ->
+        services.forEach { service ->
 
             items.add(service::class.java)
         }
@@ -141,7 +79,7 @@ constructor(
 
         var failed = 0
 
-        services.forEach { (_, service) ->
+        services.forEach { service ->
 
             if (service.getState() != ConnectionState.Connected) {
 
@@ -166,7 +104,7 @@ constructor(
 
         val name = clazz.simpleName
 
-        services.forEach { (service, _) ->
+        services.forEach { service ->
 
             if (service::class.simpleName == name) {
 
@@ -183,7 +121,7 @@ constructor(
 
         Console.log("$tag START")
 
-        services.forEach { (service, _) ->
+        services.forEach { service ->
 
             if (service is TerminationAsync) {
 
