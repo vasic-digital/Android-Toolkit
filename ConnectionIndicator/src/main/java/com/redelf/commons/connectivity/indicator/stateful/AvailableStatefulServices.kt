@@ -150,6 +150,21 @@ constructor(
         return ConnectionState.Warning
     }
 
+    fun getState(clazz: Class<*>): State<Int> {
+
+        val name = clazz.simpleName
+
+        services.forEach { (service, _) ->
+
+            if (service::class.simpleName == name) {
+
+                return service.getState()
+            }
+        }
+
+        return ConnectionState.Unavailable
+    }
+
     override fun terminate() {
 
         val tag = "$tag Termination ::"
