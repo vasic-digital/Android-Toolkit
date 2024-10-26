@@ -110,6 +110,8 @@ class ConnectivityIndicator :
         return statefulServices
     }
 
+    // TODO: Set services method version to inject already build services stack
+
     fun setServices(
 
         services: AvailableStatefulServicesBuilder,
