@@ -138,11 +138,6 @@ abstract class ConnectionAvailabilityService(
         setState(state)
     }
 
-    override fun notifyStateSubscribers(state: State<Int>) {
-
-        onState(state)
-    }
-
     protected fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
 
         exec(
