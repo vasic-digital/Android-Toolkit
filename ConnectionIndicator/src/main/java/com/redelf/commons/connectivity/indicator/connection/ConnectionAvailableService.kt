@@ -34,7 +34,7 @@ abstract class ConnectionAvailableService :
 
     override fun setState(state: State<Int>) {
 
-        Console.log("${tag()} Set state :: START :: State = $state, Received")
+        Console.log("${tag()} Set state :: State = $state, Received")
 
         val stateValue = state.getState()
 
@@ -44,11 +44,11 @@ abstract class ConnectionAvailableService :
 
             notifyStateSubscribers(state)
 
-            Console.log("${tag()} Set state :: START :: State = $state, Set")
+            Console.log("${tag()} Set state :: State = $state, Set")
 
         } else {
 
-            Console.log("${tag()} Set state :: START :: State = $state, Skipped")
+            Console.log("${tag()} Set state :: State = $state, Skipped")
         }
     }
 
