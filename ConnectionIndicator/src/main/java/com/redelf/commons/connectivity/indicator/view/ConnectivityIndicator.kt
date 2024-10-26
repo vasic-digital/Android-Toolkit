@@ -47,6 +47,34 @@ class ConnectivityIndicator :
         return statefulServices
     }
 
+    fun setServices(
+
+        services: AvailableStatefulServicesBuilder,
+        callback: LifecycleCallback<AvailableStatefulServices>? = null
+
+    ) {
+
+        val callbackWrapper = object : LifecycleCallback<AvailableStatefulServices> {
+
+            override fun onInitialization(
+
+                success: Boolean,
+                vararg args: AvailableStatefulServices
+
+            ) {
+
+                callback?.onInitialization(success = success, *args)
+            }
+
+            override fun onShutdown(success: Boolean, vararg args: AvailableStatefulServices) {
+
+                callback?.onShutdown(success = success, *args)
+            }
+        }
+
+        initialize(services, callbackWrapper)
+    }
+
     override fun initialize(
 
         param: AvailableStatefulServicesBuilder,
