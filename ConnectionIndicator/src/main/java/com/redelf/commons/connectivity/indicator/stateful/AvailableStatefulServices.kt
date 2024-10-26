@@ -7,8 +7,6 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.stateful.GetState
 import com.redelf.commons.stateful.State
-import com.redelf.commons.stateful.Stateful
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
 class AvailableStatefulServices

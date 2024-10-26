@@ -1,6 +1,6 @@
 package com.redelf.commons.lifecycle
 
-interface InitializationParametrized<T, P> : InitializationCondition {
+interface InitializationAsyncParametrized<T, P> : InitializationCondition {
 
     fun initialize(param: P, callback: LifecycleCallback<T>)
 }
