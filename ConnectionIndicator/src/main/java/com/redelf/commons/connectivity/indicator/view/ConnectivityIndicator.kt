@@ -243,6 +243,11 @@ class ConnectivityIndicator :
         }
     }
 
+    /*
+    *   FIXME:
+    *    - Make sure that there is a repeatable task to refresh the state of the indicator (and the dialog if visible)
+    *    - Make sure that FCM is refreshed with internet connectivity events / connectivity state changes
+    */
     private fun applyStates() {
 
         Console.log("$tag Apply states")
