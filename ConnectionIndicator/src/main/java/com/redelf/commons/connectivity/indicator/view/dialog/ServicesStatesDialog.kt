@@ -10,6 +10,8 @@ class ServicesStatesDialog(
 
     ctx: Activity,
     dialogStyle: Int = 0,
+    dialogLayout: Int = R.layout.dialog_services_states,
+
     private val services: AvailableStatefulServices,
     private val serviceCallback: ServicesStatesDialogCallback
 
@@ -17,9 +19,11 @@ class ServicesStatesDialog(
 
     override val tag = "Services states dialog ::"
 
-    override val layout = R.layout.dialog_services_states
+    override val layout = dialogLayout
 
     override fun onContentView(contentView: View) {
+
+        val items = services.getServiceClasses()
 
         // TODO: Implement
     }

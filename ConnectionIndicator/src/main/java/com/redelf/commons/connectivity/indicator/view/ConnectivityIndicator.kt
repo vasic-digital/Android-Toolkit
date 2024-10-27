@@ -32,6 +32,7 @@ class ConnectivityIndicator :
 {
 
     var dialogStyle = 0
+    var dialogLayout = R.layout.dialog_services_states
 
     var colorStateWarning = R.color.warning
     var colorStateConnected = R.color.connected
@@ -317,6 +318,7 @@ class ConnectivityIndicator :
 
                     ctx,
                     dialogStyle,
+                    dialogLayout,
                     services = it,
                     serviceCallback = serviceCallback
                 )
