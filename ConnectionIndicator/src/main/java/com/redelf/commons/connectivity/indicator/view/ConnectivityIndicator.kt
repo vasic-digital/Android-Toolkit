@@ -1,5 +1,6 @@
 package com.redelf.commons.connectivity.indicator.view
 
+import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -10,6 +11,8 @@ import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServicesBuilder
+import com.redelf.commons.connectivity.indicator.view.dialog.ServicesStatesDialog
+import com.redelf.commons.connectivity.indicator.view.dialog.ServicesStatesDialogCallback
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationAsyncParametrized
@@ -28,6 +31,8 @@ class ConnectivityIndicator :
 
 {
 
+    var dialogStyle = 0
+
     var colorStateWarning = R.color.warning
     var colorStateConnected = R.color.connected
     var colorStateUnavailable = R.color.unavailable
@@ -38,6 +43,7 @@ class ConnectivityIndicator :
 
     private val initializing = AtomicBoolean()
     private val tag = "Connectivity Indicator ::"
+    private var dialog: ServicesStatesDialog? = null
     private val layout = R.layout.layout_connectivity_indicator
     private var statefulServices: AvailableStatefulServices? = null
 
@@ -56,6 +62,18 @@ class ConnectivityIndicator :
         override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
             Console.log("$tag State = $state, whoseState = ${whoseState?.simpleName}")
+        }
+    }
+
+    private val serviceCallback = object : ServicesStatesDialogCallback {
+
+        private val tag = "${this@ConnectivityIndicator.tag} Dialog callback ::"
+
+        override fun onService(service: Class<*>) {
+
+            Console.log("$tag Service = ${service.simpleName}")
+
+            // TODO: Implement
         }
     }
 
@@ -91,6 +109,9 @@ class ConnectivityIndicator :
     }
 
     override fun onDetachedFromWindow() {
+
+        dialog?.dismiss()
+
         super.onDetachedFromWindow()
 
         Console.log("$tag On detached from window")
@@ -285,5 +306,27 @@ class ConnectivityIndicator :
     private fun presentServiceState() {
 
         Console.log("$tag Present service state")
+
+        if (context is Activity) {
+
+            statefulServices?.let {
+
+                val ctx = context as Activity
+
+                dialog = ServicesStatesDialog(
+
+                    ctx,
+                    dialogStyle,
+                    services = it,
+                    serviceCallback = serviceCallback
+                )
+
+                dialog?.show()
+            }
+
+        } else {
+
+            Console.warning("$tag Context is not an Activity")
+        }
     }
 }

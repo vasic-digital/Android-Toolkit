@@ -958,8 +958,16 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         Console.log("Add attachment")
 
         attachmentsDialog?.dismiss()
-        attachmentsDialog = AttachFileDialog(this, onPickFromCameraCallback, multiple = true)
-        attachmentsDialog?.show(style = getAddAttachmentDialogStyle())
+
+        attachmentsDialog = AttachFileDialog(
+
+            this,
+            getAddAttachmentDialogStyle(),
+            multiple = true,
+            onPickFromCameraCallback = onPickFromCameraCallback
+        )
+
+        attachmentsDialog?.show()
     }
 
     protected fun isPaused(): Boolean = paused.get()
