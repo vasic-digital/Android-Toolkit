@@ -2,6 +2,7 @@ package com.redelf.commons.connectivity.indicator.view.dialog
 
 import android.app.Activity
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
 import com.redelf.commons.ui.dialog.BaseDialog
@@ -24,7 +25,11 @@ class ServicesStatesDialog(
     override fun onContentView(contentView: View) {
 
         val items = services.getServiceClasses()
+        val recycler = contentView.findViewById<RecyclerView?>(R.id.services)
 
-        // TODO: Implement
+        recycler?.let {
+
+
+        }
     }
 }
