@@ -49,6 +49,15 @@ class ServicesStatesDialogAdapter(
 
         viewHolder.refresh?.isEnabled = service is Reconnectable
 
+        if (service is Reconnectable) {
+
+            viewHolder.refresh?.visibility = View.VISIBLE
+
+        } else {
+
+            viewHolder.refresh?.visibility = View.INVISIBLE
+        }
+
         viewHolder.title?.text = service.getWho()
 
         val builder = AvailableStatefulServicesBuilder()

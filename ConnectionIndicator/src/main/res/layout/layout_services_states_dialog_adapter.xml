@@ -42,6 +42,7 @@
 
     <View
 
+        android:alpha="0.5"
         tools:visibility="visible"
         android:layout_height="1dp"
         android:visibility="invisible"
