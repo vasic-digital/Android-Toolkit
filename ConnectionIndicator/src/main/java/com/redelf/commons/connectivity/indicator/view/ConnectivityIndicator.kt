@@ -34,6 +34,7 @@ class ConnectivityIndicator :
 {
 
     var dialogStyle = 0
+    var showDetails = false
     var dialogLayout = R.layout.dialog_services_states
     var dialogAdapterItemLayout: Int = R.layout.layout_services_states_dialog_adapter
 
@@ -306,9 +307,12 @@ class ConnectivityIndicator :
         button.setImageResource(icon)
         button?.setColorFilter(tint)
 
-        button.setOnClickListener {
+        if (showDetails) {
 
-            presentServiceState()
+            button.setOnClickListener {
+
+                presentServiceState()
+            }
         }
     }
 
