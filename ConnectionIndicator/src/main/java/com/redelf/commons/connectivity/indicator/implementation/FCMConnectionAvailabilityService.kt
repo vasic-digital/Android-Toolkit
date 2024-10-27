@@ -43,6 +43,8 @@ class FCMConnectionAvailabilityService private constructor() :
         }
     }
 
+    override fun getWho() = "Push notifications"
+
     override val tag: String = "${identifier()} ::"
 
     override fun identifier() = "FCM connection availability"
