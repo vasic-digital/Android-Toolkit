@@ -222,7 +222,7 @@ class ConnectivityIndicator :
 
             ConnectionState.Connected -> {
 
-                ContextCompat.getColor(context, colorStateWarning)
+                ContextCompat.getColor(context, colorStateConnected)
             }
 
             ConnectionState.Disconnected -> {
