@@ -40,4 +40,16 @@
         android:layout_toStartOf="@id/indicator"
     />
 
+    <View
+
+        tools:visibility="visible"
+        android:layout_height="1dp"
+        android:visibility="invisible"
+        android:id="@+id/bottom_separator"
+        android:layout_width="match_parent"
+        tools:background="@android:color/black"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/white"
+    />
+
 </RelativeLayout>

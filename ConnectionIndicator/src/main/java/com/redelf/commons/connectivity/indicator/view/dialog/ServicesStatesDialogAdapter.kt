@@ -24,6 +24,7 @@ class ServicesStatesDialogAdapter(
 
         val title = view.findViewById<TextView?>(R.id.title)
         val refresh = view.findViewById<ImageButton?>(R.id.refresh)
+        val bottomSeparator = view.findViewById<View?>(R.id.bottom_separator)
         val indicator = view.findViewById<ConnectivityIndicator?>(R.id.indicator)
     }
 
@@ -50,6 +51,15 @@ class ServicesStatesDialogAdapter(
             .setDebug(true)
 
         viewHolder.indicator?.setServices(builder)
+
+        if (position < services.size - 1) {
+
+            viewHolder.bottomSeparator?.visibility = View.VISIBLE
+
+        } else {
+
+            viewHolder.bottomSeparator?.visibility = View.INVISIBLE
+        }
     }
 
     override fun getItemCount() = services.size
