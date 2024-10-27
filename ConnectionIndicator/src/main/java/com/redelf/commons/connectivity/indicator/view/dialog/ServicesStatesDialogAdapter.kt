@@ -8,6 +8,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.AvailableService
+import com.redelf.commons.connectivity.indicator.AvailableServiceSet
+import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServicesBuilder
+import com.redelf.commons.connectivity.indicator.view.ConnectivityIndicator
 
 class ServicesStatesDialogAdapter(
 
@@ -21,6 +24,7 @@ class ServicesStatesDialogAdapter(
 
         val title = view.findViewById<TextView?>(R.id.title)
         val refresh = view.findViewById<ImageButton?>(R.id.refresh)
+        val indicator = view.findViewById<ConnectivityIndicator?>(R.id.indicator)
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -40,6 +44,12 @@ class ServicesStatesDialogAdapter(
         }
 
         viewHolder.title?.text = service.getWho()
+
+        val builder = AvailableStatefulServicesBuilder()
+            .addService(service::class.java)
+            .setDebug(true)
+
+        viewHolder.indicator?.setServices(builder)
     }
 
     override fun getItemCount() = services.size
