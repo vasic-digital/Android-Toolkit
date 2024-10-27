@@ -37,9 +37,8 @@ class ServicesStatesDialog(
                 serviceCallback
             )
 
+            recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(takeContext())
             recycler.adapter = adapter
-
-            // TODO: Connect further
         }
     }
 }
