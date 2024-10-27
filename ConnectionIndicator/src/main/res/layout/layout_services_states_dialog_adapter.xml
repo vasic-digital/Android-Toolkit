@@ -9,11 +9,21 @@
 
         android:id="@+id/refresh"
         android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        tools:tint="@android:color/black"
         android:src="@drawable/ic_refresh"
         android:layout_alignParentEnd="true"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_width="@dimen/refresh_button"
         android:background="@android:color/transparent"
+    />
+
+    <com.redelf.commons.connectivity.indicator.view.ConnectivityIndicator
+
+        android:id="@+id/indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toStartOf="@id/refresh"
     />
 
     <TextView
@@ -26,8 +36,8 @@
         android:paddingHorizontal="20dp"
         android:gravity="center_vertical"
         android:layout_height="match_parent"
-        android:layout_toStartOf="@id/refresh"
         android:layout_alignParentStart="true"
+        android:layout_toStartOf="@id/indicator"
     />
 
 </RelativeLayout>
