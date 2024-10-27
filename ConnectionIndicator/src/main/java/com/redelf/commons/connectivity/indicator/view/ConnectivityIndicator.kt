@@ -275,5 +275,15 @@ class ConnectivityIndicator :
 
         button.setImageResource(icon)
         button?.setColorFilter(tint)
+
+        button.setOnClickListener {
+
+            presentServiceState()
+        }
+    }
+
+    private fun presentServiceState() {
+
+        Console.log("$tag Present service state")
     }
 }
