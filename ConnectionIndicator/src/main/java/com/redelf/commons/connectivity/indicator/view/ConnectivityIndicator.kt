@@ -1,8 +1,10 @@
 package com.redelf.commons.connectivity.indicator.view
 
 import android.content.Context
+import android.media.Image
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.widget.ImageButton
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import com.redelf.commons.connectivity.indicator.R
@@ -23,9 +25,7 @@ class ConnectivityIndicator :
 
     RelativeLayout,
     InitializationAsyncParametrized<AvailableStatefulServices, AvailableStatefulServicesBuilder>,
-    TerminationAsync
-
-{
+    TerminationAsync {
 
     private val initializing = AtomicBoolean()
     private val tag = "Connectivity Indicator ::"
@@ -242,5 +242,33 @@ class ConnectivityIndicator :
         }
 
         Console.log("$tag Tint color: $tint")
+
+        val button = findViewById<ImageButton?>(R.id.button)
+
+        val icon = when (state) {
+
+            ConnectionState.Connected -> {
+
+                R.drawable.ic_link_on
+            }
+
+            ConnectionState.Disconnected -> {
+
+                R.drawable.ic_link_off
+            }
+
+            ConnectionState.Warning -> {
+
+                R.drawable.ic_link_on
+            }
+
+            else -> {
+
+                R.drawable.ic_link_off
+            }
+        }
+
+        button.setImageResource(icon)
+        button?.setColorFilter(tint)
     }
 }
