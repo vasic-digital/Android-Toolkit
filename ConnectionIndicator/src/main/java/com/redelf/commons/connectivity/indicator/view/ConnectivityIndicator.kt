@@ -1,7 +1,6 @@
 package com.redelf.commons.connectivity.indicator.view
 
 import android.content.Context
-import android.media.Image
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ImageButton
@@ -25,7 +24,17 @@ class ConnectivityIndicator :
 
     RelativeLayout,
     InitializationAsyncParametrized<AvailableStatefulServices, AvailableStatefulServicesBuilder>,
-    TerminationAsync {
+    TerminationAsync
+
+{
+
+    var colorStateWarning = R.color.warning
+    var colorStateConnected = R.color.connected
+    var colorStateUnavailable = R.color.unavailable
+    var colorStateDisconnected = R.color.disconnected
+
+    var iconConnectedState = R.drawable.ic_link_on
+    var iconDisconnectedState = R.drawable.ic_link_off
 
     private val initializing = AtomicBoolean()
     private val tag = "Connectivity Indicator ::"
@@ -109,10 +118,6 @@ class ConnectivityIndicator :
 
         return statefulServices
     }
-
-    // TODO: Icons to be configurable
-    // TODO: Tint colors to be configurable
-    // TODO: Set services method version to inject already build services stack
 
     fun setServices(
 
@@ -217,27 +222,27 @@ class ConnectivityIndicator :
 
             ConnectionState.Connected -> {
 
-                ContextCompat.getColor(context, R.color.connected)
+                ContextCompat.getColor(context, colorStateWarning)
             }
 
             ConnectionState.Disconnected -> {
 
-                ContextCompat.getColor(context, R.color.disconnected)
+                ContextCompat.getColor(context, colorStateDisconnected)
             }
 
             ConnectionState.Warning -> {
 
-                ContextCompat.getColor(context, R.color.warning)
+                ContextCompat.getColor(context, colorStateWarning)
             }
 
             ConnectionState.Unavailable -> {
 
-                ContextCompat.getColor(context, R.color.unavailable)
+                ContextCompat.getColor(context, colorStateUnavailable)
             }
 
             else -> {
 
-                ContextCompat.getColor(context, R.color.disconnected)
+                ContextCompat.getColor(context, colorStateDisconnected)
             }
         }
 
@@ -249,22 +254,22 @@ class ConnectivityIndicator :
 
             ConnectionState.Connected -> {
 
-                R.drawable.ic_link_on
+                iconConnectedState
             }
 
             ConnectionState.Disconnected -> {
 
-                R.drawable.ic_link_off
+                iconDisconnectedState
             }
 
             ConnectionState.Warning -> {
 
-                R.drawable.ic_link_on
+                iconConnectedState
             }
 
             else -> {
 
-                R.drawable.ic_link_off
+                iconDisconnectedState
             }
         }
 
