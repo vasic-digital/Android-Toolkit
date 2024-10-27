@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.widget.ImageButton
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
+import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
@@ -71,9 +72,9 @@ class ConnectivityIndicator :
 
         private val tag = "${this@ConnectivityIndicator.tag} Dialog callback ::"
 
-        override fun onService(service: Class<*>) {
+        override fun onService(service: AvailableService) {
 
-            Console.log("$tag Service = ${service.simpleName}")
+            Console.log("$tag Service = ${service::class.simpleName}")
 
             // TODO: Implement
         }
