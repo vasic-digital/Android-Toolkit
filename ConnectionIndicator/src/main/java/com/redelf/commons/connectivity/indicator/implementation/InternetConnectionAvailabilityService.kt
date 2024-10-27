@@ -4,7 +4,9 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.creation.instantiation.SingleInstance
+import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
+import com.redelf.commons.net.connectivity.Reconnectable
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.Obtainer
@@ -22,6 +24,7 @@ class InternetConnectionAvailabilityService private constructor() :
                 return DefaultConnectivityHandler.obtain(ctx)
             }
         }
+
     )
 {
 

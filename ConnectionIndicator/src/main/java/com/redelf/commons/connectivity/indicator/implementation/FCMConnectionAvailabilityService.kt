@@ -3,7 +3,9 @@ package com.redelf.commons.connectivity.indicator.implementation
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.creation.instantiation.SingleInstance
+import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.firebase.FcmConnectivityHandler
+import com.redelf.commons.net.connectivity.Reconnectable
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.Obtainer
@@ -19,7 +21,8 @@ class FCMConnectionAvailabilityService private constructor() :
                 return FcmConnectivityHandler.obtain()
             }
         }
-    )
+
+    ), Reconnectable
 {
 
     companion object :
@@ -48,4 +51,11 @@ class FCMConnectionAvailabilityService private constructor() :
     override val tag: String = "${identifier()} ::"
 
     override fun identifier() = "FCM connection availability"
+
+    override fun reconnect() {
+
+        Console.log("$tag Reconnecting...")
+
+        // TODO: Implement
+    }
 }

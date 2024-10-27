@@ -11,10 +11,10 @@
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
         tools:tint="@android:color/black"
-        android:src="@drawable/ic_refresh"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:src="@drawable/ic_refresh_selector"
         android:background="@android:color/transparent"
     />
 

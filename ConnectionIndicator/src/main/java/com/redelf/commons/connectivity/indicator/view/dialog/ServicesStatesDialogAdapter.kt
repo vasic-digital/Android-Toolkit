@@ -11,6 +11,7 @@ import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.connectivity.indicator.AvailableServiceSet
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServicesBuilder
 import com.redelf.commons.connectivity.indicator.view.ConnectivityIndicator
+import com.redelf.commons.net.connectivity.Reconnectable
 
 class ServicesStatesDialogAdapter(
 
@@ -41,8 +42,13 @@ class ServicesStatesDialogAdapter(
 
         viewHolder.refresh?.setOnClickListener {
 
-            serviceCallback.onService(service)
+            if (service is Reconnectable) {
+
+                serviceCallback.onService(service)
+            }
         }
+
+        viewHolder.refresh?.isEnabled = service is Reconnectable
 
         viewHolder.title?.text = service.getWho()
 

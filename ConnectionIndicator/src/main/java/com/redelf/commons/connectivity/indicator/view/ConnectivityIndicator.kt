@@ -21,6 +21,7 @@ import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
+import com.redelf.commons.net.connectivity.Reconnectable
 import com.redelf.commons.stateful.State
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -74,9 +75,12 @@ class ConnectivityIndicator :
 
         override fun onService(service: AvailableService) {
 
-            Console.log("$tag Service = ${service::class.simpleName}")
+            if (service is Reconnectable) {
 
-            // TODO: Implement
+                Console.log("$tag Service = ${service::class.simpleName}")
+
+                service.reconnect()
+            }
         }
     }
 
