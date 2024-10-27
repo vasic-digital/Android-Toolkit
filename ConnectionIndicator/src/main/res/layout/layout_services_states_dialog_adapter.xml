@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/refresh_button"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageButton
+
+        android:id="@+id/refresh"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_refresh"
+        android:layout_alignParentEnd="true"
+        android:layout_height="match_parent"
+        android:layout_width="@dimen/refresh_button"
+        android:background="@android:color/transparent"
+    />
+
+    <TextView
+
+        android:lines="1"
+        android:ellipsize="end"
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        tools:text="Lorem ipsum ..."
+        android:paddingHorizontal="20dp"
+        android:gravity="center_vertical"
+        android:layout_height="match_parent"
+        android:layout_toStartOf="@id/refresh"
+        android:layout_alignParentStart="true"
+    />
+
+</RelativeLayout>
