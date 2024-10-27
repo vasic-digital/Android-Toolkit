@@ -80,6 +80,8 @@ class ConnectivityIndicator :
                 Console.log("$tag Service = ${service::class.simpleName}")
 
                 service.reconnect()
+
+                dialog?.dismiss()
             }
         }
     }

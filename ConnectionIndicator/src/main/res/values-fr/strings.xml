@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="reconnecting">Reconnexion…</string>
+    <string name="push_notifications">Notifications poussées</string>
+    <string name="internet_connection">Connexion Internet</string>
+
+</resources>

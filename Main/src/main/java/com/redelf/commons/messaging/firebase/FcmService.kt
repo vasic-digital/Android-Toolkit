@@ -11,14 +11,17 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
+import com.redelf.commons.net.connectivity.Reconnectable
 import com.redelf.commons.registration.Registration
 import com.redelf.commons.service.Serving
 import java.util.concurrent.atomic.AtomicInteger
@@ -26,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 open class FcmService : FirebaseMessagingService(), Serving {
 
-    companion object : Registration<ConnectivityStateChanges> {
+    companion object : Registration<ConnectivityStateChanges>, Reconnectable {
 
         private val connState = AtomicInteger(ConnectionState.Disconnected.getState())
         private val connStateCallbacks = Callbacks<ConnectivityStateChanges>("FCM")
@@ -55,6 +58,68 @@ open class FcmService : FirebaseMessagingService(), Serving {
         override fun isRegistered(subscriber: ConnectivityStateChanges): Boolean {
 
             return connStateCallbacks.isRegistered(subscriber)
+        }
+
+        override fun reconnect() {
+
+            val tag = "FCM :: Reconnect ::"
+
+            exec(
+
+                onRejected = {
+
+                        err ->
+                    {
+
+                        Console.error("$tag ERROR: ${err.message}")
+                        recordException(err)
+                    }
+
+                }
+            ) {
+
+                fun sendToken(token: String) {
+
+                    if (isEmpty(token)) {
+
+                        Console.error("$tag Token is empty")
+                        return
+                    }
+
+                    Console.log("$tag Sending token: $token")
+
+                    val intent = Intent(BROADCAST_ACTION_TOKEN)
+                    intent.putExtra(BROADCAST_KEY_TOKEN, token)
+
+                    val ctx = BaseApplication.takeContext()
+                    LocalBroadcastManager.getInstance(ctx).sendBroadcast(intent)
+
+                    Console.log("$tag END")
+                }
+
+                Console.log("$tag START")
+
+                FirebaseMessaging.getInstance().token.addOnSuccessListener { token: String ->
+
+                    sendToken(token)
+
+                }.addOnFailureListener { e: Exception? ->
+
+                    e?.let {
+
+                        recordException(it)
+                    }
+
+                }.addOnCanceledListener {
+
+                    Console.log("$tag Reconnect cancelled")
+
+                }.addOnCompleteListener { task: Task<String> ->
+
+                    val token = task.result
+                    sendToken(token)
+                }
+            }
         }
     }
 
