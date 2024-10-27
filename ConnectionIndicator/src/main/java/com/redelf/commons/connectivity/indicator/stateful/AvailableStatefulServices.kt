@@ -70,7 +70,13 @@ constructor(
 
     override fun getState(): State<Int> {
 
-        if (services.isEmpty()) {
+        val tag = "$tag Get state ::"
+
+        Console.log("$tag START")
+
+        if (services.toList().isEmpty()) {
+
+            Console.log("$tag No services")
 
             return ConnectionState.Unavailable
         }
@@ -81,19 +87,27 @@ constructor(
 
             if (service.getState() != ConnectionState.Connected) {
 
+                Console.warning("$tag Service = ${service::class.simpleName} is not connected")
+
                 failed++
             }
         }
 
         if (failed == 0) {
 
+            Console.log("$tag All services are connected")
+
             return ConnectionState.Connected
         }
 
-        if (failed == services.size) {
+        if (failed == services.toList().size) {
+
+            Console.log("$tag All services are disconnected")
 
             return ConnectionState.Disconnected
         }
+
+        Console.log("$tag Some services are disconnected :: Disconnect count = $failed")
 
         return ConnectionState.Warning
     }

@@ -93,7 +93,7 @@ abstract class ConnectionAvailabilityService(
         }
     }
 
-    private var cHandler: StatefulBasicConnectionHandler? = null
+    protected var cHandler: StatefulBasicConnectionHandler? = null
 
     init {
 

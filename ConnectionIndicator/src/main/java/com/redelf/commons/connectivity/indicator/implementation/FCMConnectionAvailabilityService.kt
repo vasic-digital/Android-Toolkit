@@ -6,6 +6,7 @@ import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.firebase.FcmConnectivityHandler
 import com.redelf.commons.messaging.firebase.FcmService
+import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.Reconnectable
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
@@ -45,6 +46,19 @@ class FCMConnectionAvailabilityService private constructor() :
                 override fun obtain() = instantiate()
             }
         }
+    }
+
+    override fun getState(): ConnectionState {
+
+        cHandler?.let {
+
+            if (it.isNetworkAvailable(takeContext())) {
+
+                return ConnectionState.Connected
+            }
+        }
+
+        return ConnectionState.Disconnected
     }
 
     override fun getWho() = "Push notifications"

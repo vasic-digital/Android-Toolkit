@@ -247,7 +247,24 @@ class ConnectivityIndicator :
 
         Console.log("$tag Apply states")
 
+        doApplyStates()
+
+        if (showDetails) {
+
+            val button = findViewById<ImageButton?>(R.id.button)
+
+            button.setOnClickListener {
+
+                doApplyStates()
+                presentServiceState()
+            }
+        }
+    }
+
+    private fun doApplyStates() {
+
         val state = statefulServices?.getState()
+        val button = findViewById<ImageButton?>(R.id.button)
 
         val tint = when (state) {
 
@@ -279,8 +296,6 @@ class ConnectivityIndicator :
 
         Console.log("$tag Tint color: $tint")
 
-        val button = findViewById<ImageButton?>(R.id.button)
-
         val icon = when (state) {
 
             ConnectionState.Connected -> {
@@ -306,14 +321,6 @@ class ConnectivityIndicator :
 
         button.setImageResource(icon)
         button?.setColorFilter(tint)
-
-        if (showDetails) {
-
-            button.setOnClickListener {
-
-                presentServiceState()
-            }
-        }
     }
 
     private fun presentServiceState() {

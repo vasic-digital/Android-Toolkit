@@ -5,6 +5,7 @@ import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableS
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.logging.Console
+import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
 import com.redelf.commons.net.connectivity.Reconnectable
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
@@ -24,14 +25,15 @@ class InternetConnectionAvailabilityService private constructor() :
                 return DefaultConnectivityHandler.obtain(ctx)
             }
         }
-
     )
 {
 
     companion object :
 
         SingleInstance<ConnectionAvailableService>(),
-        Obtainer<AvailableStatefulService> {
+        Obtainer<AvailableStatefulService>
+
+    {
 
         override fun instantiate(): ConnectionAvailableService {
 
@@ -45,6 +47,19 @@ class InternetConnectionAvailabilityService private constructor() :
                 override fun obtain() = instantiate()
             }
         }
+    }
+
+    override fun getState(): ConnectionState {
+
+        cHandler?.let {
+
+            if (it.isNetworkAvailable(takeContext())) {
+
+                return ConnectionState.Connected
+            }
+        }
+
+        return ConnectionState.Disconnected
     }
 
     override fun getWho() = "Internet connection"
