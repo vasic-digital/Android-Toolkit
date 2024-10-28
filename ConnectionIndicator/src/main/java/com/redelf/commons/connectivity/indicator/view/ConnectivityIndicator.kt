@@ -35,6 +35,7 @@ class ConnectivityIndicator :
 
     var dialogStyle = 0
     var showDetails = false
+    var origin = "${hashCode()}"
     var dialogLayout = R.layout.dialog_services_states
     var dialogAdapterItemLayout: Int = R.layout.layout_services_states_dialog_adapter
 
@@ -47,8 +48,8 @@ class ConnectivityIndicator :
     var iconDisconnectedState = R.drawable.ic_link_off
 
     private val initializing = AtomicBoolean()
-    private val tag = "Connectivity Indicator ::"
     private var dialog: ServicesStatesDialog? = null
+    private val tag = "Connectivity Indicator :: $origin ::"
     private val layout = R.layout.layout_connectivity_indicator
     private var statefulServices: AvailableStatefulServices? = null
 
