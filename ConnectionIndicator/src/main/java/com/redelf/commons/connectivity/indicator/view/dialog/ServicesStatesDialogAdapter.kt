@@ -60,7 +60,9 @@ class ServicesStatesDialogAdapter(
 
         viewHolder.title?.text = service.getWho()
 
-        val builder = AvailableStatefulServicesBuilder()
+        val origin = this@ServicesStatesDialogAdapter::class.java.simpleName
+
+        val builder = AvailableStatefulServicesBuilder(origin)
             .addService(service::class.java)
             .setDebug(true)
 

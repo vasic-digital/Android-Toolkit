@@ -131,6 +131,8 @@ class ConnectivityIndicator :
 
     override fun terminate() {
 
+        Console.log("$tag Terminate :: START")
+
         exec(
 
             onRejected = { error ->
@@ -140,8 +142,12 @@ class ConnectivityIndicator :
 
         ) {
 
+            Console.log("$tag Terminate :: TERMINATING, statefulServices = $statefulServices")
+
             statefulServices?.terminate()
             statefulServices = null
+
+            Console.log("$tag Terminate :: END")
         }
     }
 
