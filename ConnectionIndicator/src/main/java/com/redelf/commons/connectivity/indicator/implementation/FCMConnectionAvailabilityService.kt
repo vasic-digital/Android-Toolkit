@@ -13,7 +13,7 @@ import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.Obtainer
 import kotlin.jvm.Throws
 
-class FCMConnectionAvailabilityService private constructor(caller: String) :
+class FCMConnectionAvailabilityService private constructor(origin: String) :
 
     ConnectionAvailabilityService(
 
@@ -25,7 +25,7 @@ class FCMConnectionAvailabilityService private constructor(caller: String) :
             }
         },
 
-        caller = caller,
+        origin = origin,
 
     ), Reconnect
 {

@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class ConnectionAvailabilityService(
 
-    private val caller: String,
+    private val origin: String,
     private val handlerObtain: Obtain<StatefulBasicConnectionHandler>
 
 ) : ContextAvailability<Context>, ConnectionAvailableService(), AutoRefreshing {
@@ -273,5 +273,5 @@ abstract class ConnectionAvailabilityService(
         }
     }
 
-    private fun refreshingTag() = "${tag()} From = '$caller' :: Refreshing :: ${hashCode()} ::"
+    private fun refreshingTag() = "${tag()} Origin = '$origin' :: Refreshing :: ${hashCode()} ::"
 }

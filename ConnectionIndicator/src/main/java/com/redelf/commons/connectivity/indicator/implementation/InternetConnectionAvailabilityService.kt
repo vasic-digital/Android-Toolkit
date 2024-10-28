@@ -10,7 +10,7 @@ import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.Obtainer
 
-class InternetConnectionAvailabilityService private constructor(caller: String) :
+class InternetConnectionAvailabilityService private constructor(origin: String) :
 
     ConnectionAvailabilityService(
 
@@ -24,7 +24,7 @@ class InternetConnectionAvailabilityService private constructor(caller: String) 
             }
         },
 
-        caller = caller
+        origin = origin
 
     )
 {
