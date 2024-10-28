@@ -192,6 +192,15 @@ class ConnectivityIndicator :
 
     ) {
 
+        statefulServices?.let {
+
+            Console.error("$tag Already initialized")
+
+            callback.onInitialization(success = false)
+
+            return
+        }
+
         exec(
 
             onRejected = { error ->
