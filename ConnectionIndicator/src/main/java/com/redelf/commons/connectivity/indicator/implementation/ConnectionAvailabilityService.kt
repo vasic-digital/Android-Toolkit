@@ -102,6 +102,21 @@ abstract class ConnectionAvailabilityService(
 
     protected var cHandler: StatefulBasicConnectionHandler? = null
 
+    private val timerTask = object : TimerTask() {
+
+        override fun run() {
+
+            if (Thread.currentThread().isInterrupted) {
+
+                return
+            }
+
+            Console.log("${refreshingTag()} RUN")
+
+            checkState()
+        }
+    }
+
     init {
 
         withConnectionHandler {
@@ -156,40 +171,25 @@ abstract class ConnectionAvailabilityService(
 
         stopRefreshing()
 
-        Console.log("${tag()} PRE-START REFRESHING")
+        Console.log("${refreshingTag()} PRE-START")
 
         if (autRefresh.get()) {
 
-            Console.log("${tag()} START REFRESHING")
+            Console.log("${refreshingTag()} START")
 
             timer = Timer()
 
-            timer?.schedule(
-
-                object : TimerTask() {
-
-                    override fun run() {
-
-                        if (Thread.currentThread().isInterrupted) {
-
-                            return
-                        }
-
-                        checkState()
-                    }
-
-                }, refreshingFrequency, refreshingFrequency
-            )
+            timer?.schedule(timerTask, refreshingFrequency, refreshingFrequency)
 
         } else {
 
-            Console.log("${tag()} SKIP REFRESHING")
+            Console.log("${refreshingTag()} SKIP")
         }
     }
 
     override fun stopRefreshing() {
 
-        Console.log("${tag()} STOP REFRESHING")
+        Console.log("${refreshingTag()} STOP")
 
         timer?.cancel()
         timer?.purge()
@@ -268,4 +268,6 @@ abstract class ConnectionAvailabilityService(
             Console.log("$tag END")
         }
     }
+
+    private fun refreshingTag() = "${tag()} Refreshing :: ${hashCode()} ::"
 }

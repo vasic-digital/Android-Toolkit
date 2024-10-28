@@ -1,6 +1,6 @@
 package com.redelf.commons.net.connectivity
 
-interface Reconnectable {
+interface Reconnect {
 
     fun reconnect()
 }

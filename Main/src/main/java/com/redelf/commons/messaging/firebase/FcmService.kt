@@ -21,7 +21,7 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
-import com.redelf.commons.net.connectivity.Reconnectable
+import com.redelf.commons.net.connectivity.Reconnect
 import com.redelf.commons.registration.Registration
 import com.redelf.commons.service.Serving
 import java.util.concurrent.atomic.AtomicInteger
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 open class FcmService : FirebaseMessagingService(), Serving {
 
-    companion object : Registration<ConnectivityStateChanges>, Reconnectable {
+    companion object : Registration<ConnectivityStateChanges>, Reconnect {
 
         private val connState = AtomicInteger(ConnectionState.Disconnected.getState())
         private val connStateCallbacks = Callbacks<ConnectivityStateChanges>("FCM")
