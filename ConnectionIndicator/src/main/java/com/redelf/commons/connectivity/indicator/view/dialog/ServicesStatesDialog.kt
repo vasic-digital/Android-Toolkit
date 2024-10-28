@@ -5,6 +5,9 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
+import com.redelf.commons.lifecycle.TerminationAsync
+import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.logging.Console
 import com.redelf.commons.ui.dialog.BaseDialog
 
 class ServicesStatesDialog(
@@ -37,8 +40,39 @@ class ServicesStatesDialog(
                 serviceCallback
             )
 
-            recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(takeContext())
-            recycler.adapter = adapter
+            it.addOnAttachStateChangeListener(
+
+                object : View.OnAttachStateChangeListener {
+
+                    override fun onViewAttachedToWindow(v: View) {
+
+                        // Ignore
+                    }
+
+                    override fun onViewDetachedFromWindow(v: View) {
+
+                        items.forEach { service ->
+
+                            if (service is TerminationAsync) {
+
+                                Console.log("$tag Service = ${service::class.simpleName}")
+
+                                service.terminate()
+                            }
+
+                            if (service is TerminationSynchronized) {
+
+                                Console.log("$tag Service = ${service::class.simpleName}")
+
+                                service.terminate()
+                            }
+                        }
+                    }
+                }
+            )
+
+            it.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(takeContext())
+            it.adapter = adapter
         }
     }
 }

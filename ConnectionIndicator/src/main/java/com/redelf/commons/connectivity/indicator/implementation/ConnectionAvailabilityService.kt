@@ -111,7 +111,10 @@ abstract class ConnectionAvailabilityService(
                 return
             }
 
-            Console.log("${refreshingTag()} RUN")
+            if (isDebug()) {
+
+                Console.log("${refreshingTag()} RUN")
+            }
 
             checkState()
         }
