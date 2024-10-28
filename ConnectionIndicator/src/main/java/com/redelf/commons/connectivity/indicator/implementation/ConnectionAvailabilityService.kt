@@ -17,6 +17,7 @@ import com.redelf.commons.refreshing.AutoRefreshing
 import com.redelf.commons.stateful.State
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class ConnectionAvailabilityService(
 
@@ -25,6 +26,7 @@ abstract class ConnectionAvailabilityService(
 ) : ContextAvailability<Context>, ConnectionAvailableService(), AutoRefreshing {
 
     protected abstract val tag: String
+    protected val autRefresh = AtomicBoolean(true)
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
@@ -148,12 +150,18 @@ abstract class ConnectionAvailabilityService(
 
     override fun startRefreshing() {
 
-        TODO("Not yet implemented")
+        if (autRefresh.get()) {
+
+            // TODO: Auto refresh
+        }
     }
 
     override fun stopRefreshing() {
 
-        TODO("Not yet implemented")
+        if (autRefresh.get()) {
+
+            // TODO: Auto refresh
+        }
     }
 
     protected fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
