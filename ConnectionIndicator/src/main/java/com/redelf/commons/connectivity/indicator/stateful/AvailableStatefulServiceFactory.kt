@@ -9,7 +9,11 @@ import com.redelf.commons.registration.Registration
 import java.lang.IllegalArgumentException
 import java.util.concurrent.ConcurrentHashMap
 
-class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) constructor() :
+class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) constructor(
+
+    private val origin: String
+
+) :
 
     BuilderParametrized<Class<*>, AvailableStatefulService>,
     Registration<AvailableStatefulServiceFactoryRecipe>
@@ -25,7 +29,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
             AvailableStatefulServiceFactoryRecipe(
 
                 InternetConnectionAvailabilityService::class.java,
-                InternetConnectionAvailabilityService.getObtainer()
+                InternetConnectionAvailabilityService.getObtainer(origin)
             )
         )
 
@@ -34,7 +38,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
             AvailableStatefulServiceFactoryRecipe(
 
                 FCMConnectionAvailabilityService::class.java,
-                FCMConnectionAvailabilityService.getObtainer()
+                FCMConnectionAvailabilityService.getObtainer(origin)
             )
         )
     }

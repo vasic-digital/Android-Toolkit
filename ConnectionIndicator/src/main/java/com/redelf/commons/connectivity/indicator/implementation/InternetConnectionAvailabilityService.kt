@@ -41,7 +41,7 @@ class InternetConnectionAvailabilityService private constructor(origin: String) 
 
             if (params.isEmpty() || params[0] !is String) {
 
-                throw IllegalArgumentException("Caller parameter must be a String")
+                throw IllegalArgumentException("Origin parameter must be a String")
             }
 
             return InternetConnectionAvailabilityService(params[0] as String)
@@ -51,7 +51,7 @@ class InternetConnectionAvailabilityService private constructor(origin: String) 
 
             if (params.isEmpty() || params[0] !is String) {
 
-                throw IllegalArgumentException("Caller parameter must be a String")
+                throw IllegalArgumentException("Origin parameter must be a String")
             }
 
             return object : Obtain<AvailableStatefulService> {

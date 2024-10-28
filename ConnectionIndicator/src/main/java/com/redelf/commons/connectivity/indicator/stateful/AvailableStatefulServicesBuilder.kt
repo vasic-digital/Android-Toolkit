@@ -7,10 +7,10 @@ import com.redelf.commons.connectivity.indicator.implementation.InternetConnecti
 import com.redelf.commons.creation.Builder
 import com.redelf.commons.extensions.isOnMainThread
 
-class AvailableStatefulServicesBuilder : Builder<Set<AvailableStatefulService>> {
+class AvailableStatefulServicesBuilder(origin: String) : Builder<Set<AvailableStatefulService>> {
 
     private var debug = false
-    private val factory = AvailableStatefulServiceFactory()
+    private val factory = AvailableStatefulServiceFactory(origin)
     private val services = mutableSetOf<AvailableStatefulService>()
     private val callbacks = mutableSetOf<ConnectivityStateCallback>()
 
