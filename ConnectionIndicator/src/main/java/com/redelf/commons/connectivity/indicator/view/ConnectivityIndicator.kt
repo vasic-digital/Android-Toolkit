@@ -246,6 +246,7 @@ class ConnectivityIndicator :
     /*
     *
     *   FIXME:
+    *    - Refresh mechanism to stop when view is released
     *    - Make sure that FCM is refreshed with internet connectivity events / connectivity state changes
     *
     */
