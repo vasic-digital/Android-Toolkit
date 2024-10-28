@@ -13,6 +13,7 @@ import com.redelf.commons.net.connectivity.ConnectivityHandler
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.refreshing.AutoRefreshing
 import com.redelf.commons.stateful.State
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -21,7 +22,7 @@ abstract class ConnectionAvailabilityService(
 
     private val handlerObtain: Obtain<StatefulBasicConnectionHandler>
 
-) : ContextAvailability<Context>, ConnectionAvailableService() {
+) : ContextAvailability<Context>, ConnectionAvailableService(), AutoRefreshing {
 
     protected abstract val tag: String
 
@@ -100,12 +101,16 @@ abstract class ConnectionAvailabilityService(
         withConnectionHandler {
 
             Console.log("${tag()} Instantiated :: ${hashCode()}")
+
+            startRefreshing()
         }
     }
 
     override fun takeContext() = BaseApplication.takeContext()
 
     override fun terminate() {
+
+        stopRefreshing()
 
         super.terminate()
 
@@ -139,6 +144,16 @@ abstract class ConnectionAvailabilityService(
     override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
         setState(state)
+    }
+
+    override fun startRefreshing() {
+
+        TODO("Not yet implemented")
+    }
+
+    override fun stopRefreshing() {
+
+        TODO("Not yet implemented")
     }
 
     protected fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
