@@ -244,8 +244,10 @@ class ConnectivityIndicator :
     }
 
     /*
+    *
     *   FIXME:
     *    - Make sure that FCM is refreshed with internet connectivity events / connectivity state changes
+    *
     */
     private fun applyStates() {
 
