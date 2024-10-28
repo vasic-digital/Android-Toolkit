@@ -2,5 +2,5 @@ package com.redelf.commons.creation.instantiation
 
 interface Instantiable<T> {
 
-    fun instantiate(): T
+    fun instantiate(vararg params: Any): T
 }

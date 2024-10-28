@@ -11,8 +11,9 @@ import com.redelf.commons.net.connectivity.Reconnect
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.Obtainer
+import kotlin.jvm.Throws
 
-class FCMConnectionAvailabilityService private constructor() :
+class FCMConnectionAvailabilityService private constructor(caller: String) :
 
     ConnectionAvailabilityService(
 
@@ -22,7 +23,9 @@ class FCMConnectionAvailabilityService private constructor() :
 
                 return FcmConnectivityHandler.obtain()
             }
-        }
+        },
+
+        caller = caller,
 
     ), Reconnect
 {
@@ -34,9 +37,15 @@ class FCMConnectionAvailabilityService private constructor() :
 
     {
 
-        override fun instantiate(): ConnectionAvailableService {
+        @Throws(IllegalArgumentException::class)
+        override fun instantiate(vararg params: Any): ConnectionAvailableService {
 
-            return FCMConnectionAvailabilityService()
+            if (params.isEmpty() || params[0] !is String) {
+
+                throw IllegalArgumentException("Caller parameter must be a String")
+            }
+
+            return FCMConnectionAvailabilityService(params[0] as String)
         }
 
         override fun getObtainer(): Obtain<AvailableStatefulService> {

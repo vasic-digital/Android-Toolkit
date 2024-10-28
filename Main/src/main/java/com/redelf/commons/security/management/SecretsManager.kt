@@ -19,7 +19,7 @@ class SecretsManager private constructor(storageKeyToSet: String) : ContextualMa
 
     companion object : SingleInstance<SecretsManager>() {
 
-        override fun instantiate(): SecretsManager {
+        override fun instantiate(vararg params: Any): SecretsManager {
 
             val app = BaseApplication.takeContext()
 
