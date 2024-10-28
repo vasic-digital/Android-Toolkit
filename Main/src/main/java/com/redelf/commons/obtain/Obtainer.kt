@@ -2,5 +2,5 @@ package com.redelf.commons.obtain
 
 interface Obtainer<T> {
 
-    fun getObtainer(): Obtain<T>
+    fun getObtainer(vararg params: Any): Obtain<T>
 }

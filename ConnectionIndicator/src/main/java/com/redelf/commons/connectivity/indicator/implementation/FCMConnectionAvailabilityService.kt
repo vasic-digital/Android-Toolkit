@@ -48,11 +48,17 @@ class FCMConnectionAvailabilityService private constructor(origin: String) :
             return FCMConnectionAvailabilityService(params[0] as String)
         }
 
-        override fun getObtainer(): Obtain<AvailableStatefulService> {
+        @Throws(IllegalArgumentException::class)
+        override fun getObtainer(vararg params: Any): Obtain<AvailableStatefulService> {
+
+            if (params.isEmpty() || params[0] !is String) {
+
+                throw IllegalArgumentException("Caller parameter must be a String")
+            }
 
             return object : Obtain<AvailableStatefulService> {
 
-                override fun obtain() = instantiate()
+                override fun obtain() = instantiate(params[0] as String)
             }
         }
     }
