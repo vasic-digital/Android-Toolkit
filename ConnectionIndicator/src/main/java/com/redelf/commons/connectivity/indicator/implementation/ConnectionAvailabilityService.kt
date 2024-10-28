@@ -15,6 +15,8 @@ import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.refreshing.AutoRefreshing
 import com.redelf.commons.stateful.State
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -27,7 +29,9 @@ abstract class ConnectionAvailabilityService(
 
     protected abstract val tag: String
     protected val autRefresh = AtomicBoolean(true)
+    protected open val refreshingFrequency = 1000L
 
+    private var timer: Timer? = null
     private val connectionCallback = object : ConnectivityStateChanges {
 
         private val tag =
@@ -150,18 +154,46 @@ abstract class ConnectionAvailabilityService(
 
     override fun startRefreshing() {
 
+        stopRefreshing()
+
+        Console.log("${tag()} PRE-START REFRESHING")
+
         if (autRefresh.get()) {
 
-            // TODO: Auto refresh
+            Console.log("${tag()} START REFRESHING")
+
+            timer = Timer()
+
+            timer?.schedule(
+
+                object : TimerTask() {
+
+                    override fun run() {
+
+                        if (Thread.currentThread().isInterrupted) {
+
+                            return
+                        }
+
+                        checkState()
+                    }
+
+                }, refreshingFrequency, refreshingFrequency
+            )
+
+        } else {
+
+            Console.log("${tag()} SKIP REFRESHING")
         }
     }
 
     override fun stopRefreshing() {
 
-        if (autRefresh.get()) {
+        Console.log("${tag()} STOP REFRESHING")
 
-            // TODO: Auto refresh
-        }
+        timer?.cancel()
+        timer?.purge()
+        timer = null
     }
 
     protected fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
@@ -204,6 +236,34 @@ abstract class ConnectionAvailabilityService(
             Console.log("$tag Type ok")
 
             handler.unregister(connectionCallback)
+
+            Console.log("$tag END")
+        }
+    }
+
+    private fun checkState() {
+
+        val tag = "$tag Check state ::"
+
+        if (isDebug()) {
+
+            Console.log("$tag START")
+        }
+
+        val state = getState()
+        val last = lastConnectionState()
+        val whose = this@ConnectionAvailabilityService::class.java
+
+        if (state != last) {
+
+            Console.log("$tag CHANGED :: $last -> $state")
+
+            onStateChanged(whose)
+        }
+
+        onState(state, whose)
+
+        if (isDebug()) {
 
             Console.log("$tag END")
         }

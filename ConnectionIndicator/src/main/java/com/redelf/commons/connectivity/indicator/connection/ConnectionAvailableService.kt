@@ -32,7 +32,7 @@ abstract class ConnectionAvailableService :
         return stateChangesListeners?.isDebug() ?: false
     }
 
-    override fun getState() = ConnectionState.getState(state.get())
+    override fun getState() = ConnectionState.getState(lastState())
 
     override fun setState(state: State<Int>) {
 
@@ -40,7 +40,7 @@ abstract class ConnectionAvailableService :
 
         val stateValue = state.getState()
 
-        if (this.state.get() != stateValue) {
+        if (lastState() != stateValue) {
 
             this.state.set(stateValue)
 
@@ -74,6 +74,10 @@ abstract class ConnectionAvailableService :
     }
 
     protected fun tag() = "${identifier()} ::"
+
+    protected fun lastState() = state.get()
+
+    protected fun lastConnectionState() = ConnectionState.getState(lastState())
 
     protected open fun notifyStateSubscribers(state: State<Int>) {
 
