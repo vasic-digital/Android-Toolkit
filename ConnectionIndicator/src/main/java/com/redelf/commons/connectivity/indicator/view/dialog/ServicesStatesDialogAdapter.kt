@@ -10,6 +10,7 @@ import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServicesBuilder
 import com.redelf.commons.connectivity.indicator.view.ConnectivityIndicator
+import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.dismissal.Dismissable
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.TerminationAsync
@@ -41,19 +42,45 @@ class ServicesStatesDialogAdapter(
 
         Console.log("$tag Dismissing :: START")
 
+        fun logServiceTermination(service: AvailableService) = Console.log(
+
+            "$tag Service :: Termination :: OK :: ${service::class.simpleName} " +
+                    "- ${service.hashCode()}"
+        )
+
+        fun logServiceSkipped(service: AvailableService) = Console.warning(
+
+            "$tag Service :: Termination :: SKIPPED :: ${service::class.simpleName} " +
+                    "- ${service.hashCode()}"
+        )
+
         servicesObjects.forEach { service ->
 
             if (service is TerminationAsync) {
 
-                Console.log("$tag Terminate :: Service = ${service.javaClass.simpleName}")
+                if (service is SingleInstantiated) {
 
-                service.terminate("Dismiss")
+                    logServiceSkipped(service)
+
+                } else {
+
+                    service.terminate("On dismiss")
+
+                    logServiceTermination(service)
+                }
 
             } else if (service is TerminationSynchronized) {
 
-                Console.log("$tag Terminate :: Service = ${service.javaClass.simpleName}")
+                if (service is SingleInstantiated) {
 
-                service.terminate("Dismiss")
+                    logServiceSkipped(service)
+
+                } else {
+
+                    service.terminate("On dismiss")
+
+                    logServiceTermination(service)
+                }
 
             } else {
 
@@ -61,7 +88,7 @@ class ServicesStatesDialogAdapter(
                 val e = IllegalStateException(msg)
                 recordException(e)
 
-                Console.error("$tag Terminate :: $msg")
+                Console.error("$tag ERROR :: $msg")
             }
         }
 

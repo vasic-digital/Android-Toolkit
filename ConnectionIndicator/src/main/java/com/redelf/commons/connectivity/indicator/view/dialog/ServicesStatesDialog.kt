@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.DialogInterface
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
+import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServicesBuilder
+import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.TerminationAsync
@@ -60,19 +62,45 @@ class ServicesStatesDialog(
 
         Console.log("$tag On dismiss :: Adapter dismissed")
 
+        fun logServiceTermination(service: AvailableService) = Console.log(
+
+            "$tag Service :: Termination :: OK :: ${service::class.simpleName} " +
+                    "- ${service.hashCode()}"
+        )
+
+        fun logServiceSkipped(service: AvailableService) = Console.warning(
+
+            "$tag Service :: Termination :: SKIPPED :: ${service::class.simpleName} " +
+                    "- ${service.hashCode()}"
+        )
+
         statefulServices?.getServiceInstances()?.forEach { service ->
 
             if (service is TerminationAsync) {
 
-                service.terminate("On dismiss")
+                if (service is SingleInstantiated) {
 
-                Console.log("$tag Service terminated :: ${service::class.simpleName}")
+                    logServiceSkipped(service)
+
+                } else {
+
+                    service.terminate("On dismiss")
+
+                    logServiceTermination(service)
+                }
 
             } else if (service is TerminationSynchronized) {
 
-                service.terminate("On dismiss")
+                if (service is SingleInstantiated) {
 
-                Console.log("$tag Service terminated :: ${service::class.simpleName}")
+                    logServiceSkipped(service)
+
+                } else {
+
+                    service.terminate("On dismiss")
+
+                    logServiceTermination(service)
+                }
 
             } else {
 
