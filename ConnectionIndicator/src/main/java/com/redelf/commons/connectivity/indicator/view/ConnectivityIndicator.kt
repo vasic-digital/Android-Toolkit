@@ -5,10 +5,10 @@ import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.ImageButton
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
+import arrow.core.identity
 import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
@@ -17,7 +17,6 @@ import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServi
 import com.redelf.commons.connectivity.indicator.view.dialog.ServicesStatesDialog
 import com.redelf.commons.connectivity.indicator.view.dialog.ServicesStatesDialogCallback
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationAsyncParametrized
 import com.redelf.commons.lifecycle.LifecycleCallback
@@ -118,15 +117,9 @@ class ConnectivityIndicator :
         applyStates("onFinishInflate")
     }
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+    override fun terminate(vararg args: Any) {
 
-        Console.log("${tag()} On draw")
-    }
-
-    override fun terminate() {
-
-        Console.log("${tag()} Terminate :: START")
+        Console.log("${tag()} Terminate :: START :: Args = $args")
 
         exec(
 
@@ -139,7 +132,7 @@ class ConnectivityIndicator :
 
             Console.log("${tag()} Terminate :: TERMINATING, statefulServices = $statefulServices")
 
-            statefulServices?.terminate()
+            statefulServices?.terminate("Connectivity Indicator from '$origin'")
             statefulServices = null
 
             Console.log("${tag()} Terminate :: END")

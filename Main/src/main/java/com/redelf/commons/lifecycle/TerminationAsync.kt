@@ -2,5 +2,5 @@ package com.redelf.commons.lifecycle
 
 interface TerminationAsync : Termination {
 
-    fun terminate()
+    fun terminate(vararg args: Any = emptyArray())
 }

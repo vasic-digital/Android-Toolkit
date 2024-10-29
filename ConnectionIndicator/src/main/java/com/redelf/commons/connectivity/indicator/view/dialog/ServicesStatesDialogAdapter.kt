@@ -47,13 +47,13 @@ class ServicesStatesDialogAdapter(
 
                 Console.log("$tag Terminate :: Service = ${service.javaClass.simpleName}")
 
-                service.terminate()
+                service.terminate("Dismiss")
 
             } else if (service is TerminationSynchronized) {
 
                 Console.log("$tag Terminate :: Service = ${service.javaClass.simpleName}")
 
-                service.terminate()
+                service.terminate("Dismiss")
 
             } else {
 

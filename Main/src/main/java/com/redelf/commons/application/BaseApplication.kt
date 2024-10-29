@@ -1135,7 +1135,7 @@ abstract class BaseApplication :
     protected fun isUpdateAvailable(identifier: Long): Boolean {
 
         val key = "$prefsKeyUpdate.$identifier"
-        val value = prefs[key]
+        val value = prefs.get(key)
         val updateAvailable = isEmpty(value)
 
         if (updateAvailable) {

@@ -158,11 +158,12 @@ constructor(
         return ConnectionState.Unavailable
     }
 
-    override fun terminate() {
+    override fun terminate(vararg args: Any) {
 
         val tag = "$tag Termination ::"
+        val from = "$tag $args"
 
-        Console.log("$tag START")
+        Console.log("$tag START :: Args = $args")
 
         services.forEach { service ->
 
@@ -170,14 +171,14 @@ constructor(
 
                 Console.log("$tag Service = ${service::class.simpleName}")
 
-                service.terminate()
+                service.terminate(from)
             }
 
             if (service is TerminationSynchronized) {
 
                 Console.log("$tag Service = ${service::class.simpleName}")
 
-                service.terminate()
+                service.terminate(from)
             }
         }
 

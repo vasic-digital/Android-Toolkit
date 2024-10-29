@@ -54,9 +54,9 @@ abstract class ConnectionAvailableService :
         }
     }
 
-    override fun terminate() {
+    override fun terminate(vararg args: Any) {
 
-        Console.log("${tag()} Terminate :: START")
+        Console.log("${tag()} Terminate :: START :: Args = $args")
 
         callbacks().doOnAll(
 

@@ -55,9 +55,9 @@ object DefaultFacade : Facade {
         return storage?.shutdown() ?: false
     }
 
-    override fun terminate(): Boolean {
+    override fun terminate(vararg args: Any): Boolean {
 
-        return storage?.terminate() ?: false
+        return storage?.terminate(*args) == true
     }
 
     override fun initialize(ctx: Context) {

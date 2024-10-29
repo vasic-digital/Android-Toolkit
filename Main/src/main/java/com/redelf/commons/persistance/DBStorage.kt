@@ -252,7 +252,7 @@ object DBStorage : Storage<String> {
         return true
     }
 
-    override fun terminate(): Boolean {
+    override fun terminate(vararg args: Any): Boolean {
 
         if (shutdown()) {
 

@@ -43,13 +43,13 @@ class ServicesStatesDialog(
 
             if (service is TerminationAsync) {
 
-                service.terminate()
+                service.terminate("On dismiss")
 
                 Console.log("$tag Service terminated :: ${service::class.simpleName}")
 
             } else if (service is TerminationSynchronized) {
 
-                service.terminate()
+                service.terminate("On dismiss")
 
                 Console.log("$tag Service terminated :: ${service::class.simpleName}")
 

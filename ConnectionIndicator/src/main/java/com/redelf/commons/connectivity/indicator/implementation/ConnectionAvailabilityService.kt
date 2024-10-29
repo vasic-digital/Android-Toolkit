@@ -149,13 +149,13 @@ abstract class ConnectionAvailabilityService(
 
     override fun takeContext() = BaseApplication.takeContext()
 
-    override fun terminate() {
+    override fun terminate(vararg args: Any) {
 
         unchainAll()
 
-        super.terminate()
+        super.terminate(*args)
 
-        val tag = "${tag()} Termination ::"
+        val tag = "${tag()} Termination :: Args = $args"
 
         Console.log("$tag START")
 

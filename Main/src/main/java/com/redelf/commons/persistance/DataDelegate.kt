@@ -73,9 +73,9 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.shutdown()
     }
 
-    override fun terminate(): Boolean {
+    override fun terminate(vararg args: Any): Boolean {
 
-        return facade.terminate()
+        return facade.terminate(*args)
     }
 
     override fun initialize(ctx: Context) {
