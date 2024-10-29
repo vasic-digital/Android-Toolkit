@@ -15,6 +15,7 @@ import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServi
 import com.redelf.commons.connectivity.indicator.view.dialog.ServicesStatesDialog
 import com.redelf.commons.connectivity.indicator.view.dialog.ServicesStatesDialogCallback
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationAsyncParametrized
 import com.redelf.commons.lifecycle.LifecycleCallback
@@ -29,9 +30,7 @@ class ConnectivityIndicator :
 
     RelativeLayout,
     InitializationAsyncParametrized<AvailableStatefulServices, AvailableStatefulServicesBuilder>,
-    TerminationAsync
-
-{
+    TerminationAsync {
 
     var dialogStyle = 0
     var showDetails = false
@@ -59,7 +58,7 @@ class ConnectivityIndicator :
 
             Console.log(
 
-                "$tag State has changed :: Who = ${whoseState?.simpleName}"
+                "$tag State :: Changed :: Who = ${whoseState?.simpleName}"
             )
 
             applyStates()
@@ -67,7 +66,7 @@ class ConnectivityIndicator :
 
         override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
-            Console.log("$tag State = $state, whoseState = ${whoseState?.simpleName}")
+            Console.log("$tag State :: $state :: Who = ${whoseState?.simpleName}")
 
             applyStates()
         }
@@ -96,18 +95,13 @@ class ConnectivityIndicator :
 
     constructor(
 
-        ctx: Context,
-        attrs: AttributeSet?,
-        defStyleAttr: Int
+        ctx: Context, attrs: AttributeSet?, defStyleAttr: Int
 
     ) : super(ctx, attrs, defStyleAttr)
 
     constructor(
 
-        ctx: Context,
-        attrs: AttributeSet?,
-        defStyleAttr: Int,
-        defStyleRes: Int
+        ctx: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int
 
     ) : super(ctx, attrs, defStyleAttr, defStyleRes)
 
@@ -170,8 +164,7 @@ class ConnectivityIndicator :
 
             override fun onInitialization(
 
-                success: Boolean,
-                vararg args: AvailableStatefulServices
+                success: Boolean, vararg args: AvailableStatefulServices
 
             ) {
 
@@ -194,15 +187,6 @@ class ConnectivityIndicator :
 
     ) {
 
-        statefulServices?.let {
-
-            Console.error("$tag Already initialized")
-
-            callback.onInitialization(success = false)
-
-            return
-        }
-
         exec(
 
             onRejected = { error ->
@@ -218,15 +202,23 @@ class ConnectivityIndicator :
 
             try {
 
-                param.addCallback(connectionStateCallback)
+                if (statefulServices == null) {
 
-                statefulServices = AvailableStatefulServices(param)
+                    param.addCallback(connectionStateCallback)
+
+                    statefulServices = AvailableStatefulServices(param)
+
+                } else {
+
+                    statefulServices?.register(connectionStateCallback)
+                }
 
                 callback.onInitialization(true, statefulServices!!)
 
             } catch (e: Exception) {
 
                 param.removeCallback(connectionStateCallback)
+                statefulServices?.unregister(connectionStateCallback)
 
                 recordException(e)
 
@@ -265,17 +257,36 @@ class ConnectivityIndicator :
 
         Console.log("$tag Apply states")
 
-        doApplyStates()
+        if (context is Activity) {
 
-        if (showDetails) {
+            val activity = context as Activity
 
-            val button = findViewById<ImageButton?>(R.id.button)
+            activity.runOnUiThread {
 
-            button.setOnClickListener {
+                if (activity.isFinishing) {
+
+                    return@runOnUiThread
+                }
 
                 doApplyStates()
-                presentServiceState()
+
+                if (showDetails) {
+
+                    val button = findViewById<ImageButton?>(R.id.button)
+
+                    button.setOnClickListener {
+
+                        doApplyStates()
+                        presentServiceState()
+                    }
+                }
             }
+
+        } else {
+
+            val e = IllegalArgumentException("Context is not an Activity")
+
+            recordException(e)
         }
     }
 

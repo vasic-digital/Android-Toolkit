@@ -64,11 +64,11 @@ class FCMConnectionAvailabilityService private constructor(origin: String) :
         }
     }
 
-    override fun getWho() = "Push notifications"
-
     override val tag: String = identifier()
 
-    override fun identifier() = "FCM connection availability :: ${hashCode()} ::"
+    override fun getWho() = "Push notifications"
+
+    override fun identifier() = "FCM connection availability :: ${hashCode()}"
 
     override fun reconnect() {
 

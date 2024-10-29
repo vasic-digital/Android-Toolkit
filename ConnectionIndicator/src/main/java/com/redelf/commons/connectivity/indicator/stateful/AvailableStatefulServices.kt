@@ -5,6 +5,8 @@ import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
+import com.redelf.commons.net.connectivity.ConnectivityStateChanges
+import com.redelf.commons.registration.Registration
 import com.redelf.commons.stateful.GetState
 import com.redelf.commons.stateful.State
 import java.util.concurrent.CopyOnWriteArraySet
@@ -15,7 +17,7 @@ constructor(
 
     builder: AvailableStatefulServicesBuilder
 
-) : AvailableService, TerminationAsync, GetState<Int> {
+) : AvailableService, TerminationAsync, GetState<Int>, Registration<ConnectivityStateChanges> {
 
     private val tag: String = "Available stateful services ::"
 
@@ -30,10 +32,39 @@ constructor(
             addService(it)
         }
 
-        if (services.isEmpty()) {
+        if (services.toList().isEmpty()) {
 
             throw IllegalArgumentException("No services provided")
         }
+    }
+
+    override fun register(subscriber: ConnectivityStateChanges) {
+
+        services.forEach { service ->
+
+            service.register(subscriber)
+        }
+    }
+
+    override fun unregister(subscriber: ConnectivityStateChanges) {
+
+        services.forEach { service ->
+
+            service.unregister(subscriber)
+        }
+    }
+
+    override fun isRegistered(subscriber: ConnectivityStateChanges): Boolean {
+
+        services.forEach { service ->
+
+            if (service.isRegistered(subscriber)) {
+
+                return true
+            }
+        }
+
+        return false
     }
 
     fun addService(service: AvailableStatefulService) {
