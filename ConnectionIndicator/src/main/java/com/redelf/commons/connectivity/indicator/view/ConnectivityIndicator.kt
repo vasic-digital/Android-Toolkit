@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.ImageButton
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
@@ -29,8 +30,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ConnectivityIndicator :
 
     RelativeLayout,
-    InitializationAsyncParametrized<AvailableStatefulServices, AvailableStatefulServicesBuilder>,
-    TerminationAsync {
+    TerminationAsync,
+    InitializationAsyncParametrized<AvailableStatefulServices, AvailableStatefulServicesBuilder>
+
+{
 
     var dialogStyle = 0
     var showDetails = false
@@ -105,6 +108,30 @@ class ConnectivityIndicator :
 
     ) : super(ctx, attrs, defStyleAttr, defStyleRes)
 
+    private val detachListener = object : OnAttachStateChangeListener {
+
+        override fun onViewAttachedToWindow(v: View) {
+
+            Console.log("$tag On attached to window")
+
+            // FIXME:
+        }
+
+        override fun onViewDetachedFromWindow(v: View) {
+
+            Console.log("$tag On detached from window")
+
+            dialog?.dismiss()
+
+            terminate() // FIXME: <--
+        }
+    }
+
+    init {
+
+        addOnAttachStateChangeListener(detachListener)
+    }
+
     override fun onFinishInflate() {
         super.onFinishInflate()
 
@@ -113,17 +140,6 @@ class ConnectivityIndicator :
         LayoutInflater.from(context).inflate(layout, this, true)
 
         applyStates()
-    }
-
-    override fun onDetachedFromWindow() {
-
-        dialog?.dismiss()
-
-        super.onDetachedFromWindow()
-
-        Console.log("$tag On detached from window")
-
-        terminate()
     }
 
     override fun terminate() {
