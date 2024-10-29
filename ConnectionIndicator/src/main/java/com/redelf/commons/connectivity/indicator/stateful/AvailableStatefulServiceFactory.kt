@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) constructor(
 
-    private val origin: String
+    origin: String
 
 ) :
 
@@ -20,16 +20,18 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
 {
 
-    private val recipes = ConcurrentHashMap<String, Obtain<AvailableStatefulService>>()
+    private val recipes = ConcurrentHashMap<String, AvailableStatefulServiceFactoryRecipe>()
 
     init {
+
+        val internetServiceObtainer = InternetConnectionAvailabilityService.getObtainer(origin)
 
         register(
 
             AvailableStatefulServiceFactoryRecipe(
 
-                InternetConnectionAvailabilityService::class.java,
-                InternetConnectionAvailabilityService.getObtainer(origin)
+                clazz = InternetConnectionAvailabilityService::class.java,
+                obtain = internetServiceObtainer
             )
         )
 
@@ -37,8 +39,9 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
             AvailableStatefulServiceFactoryRecipe(
 
-                FCMConnectionAvailabilityService::class.java,
-                FCMConnectionAvailabilityService.getObtainer(origin)
+                clazz = FCMConnectionAvailabilityService::class.java,
+                obtain = FCMConnectionAvailabilityService.getObtainer(origin),
+                dependencies = listOf(internetServiceObtainer)
             )
         )
     }
@@ -53,7 +56,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
             throw IllegalArgumentException("The class must have a simple name")
         }
 
-        recipes[sName] = subscriber.obtain
+        recipes[sName] = subscriber
     }
 
     @Throws(IllegalArgumentException::class)
@@ -94,7 +97,16 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
         recipes[identifier]?.let {
 
-            return it.obtain()
+            val instance = it.obtain.obtain()
+
+            it.dependencies.forEach {
+
+                val dependency = it.obtain()
+
+                instance.chain(dependency)
+            }
+
+            return instance
         }
 
         throw IllegalArgumentException("Not supported service with the identifier of: $input")

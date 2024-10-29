@@ -33,8 +33,7 @@ abstract class ConnectionAvailabilityService(
 
     AutoRefreshing,
     ContextAvailability<Context>,
-    ConnectionAvailableService(),
-    Chainable<ConnectionAvailabilityService>
+    ConnectionAvailableService()
 
 {
 
