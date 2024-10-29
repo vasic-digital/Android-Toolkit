@@ -61,19 +61,6 @@ class InternetConnectionAvailabilityService private constructor(origin: String) 
         }
     }
 
-    override fun getState(): ConnectionState {
-
-        cHandler?.let {
-
-            if (it.isNetworkAvailable(takeContext())) {
-
-                return ConnectionState.Connected
-            }
-        }
-
-        return ConnectionState.Disconnected
-    }
-
     override fun getWho() = "Internet connection"
 
     override val tag: String = "${identifier()} ::"

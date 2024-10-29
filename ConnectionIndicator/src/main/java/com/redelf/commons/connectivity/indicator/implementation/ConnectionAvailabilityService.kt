@@ -185,20 +185,7 @@ abstract class ConnectionAvailabilityService(
 
             if (it.isNetworkAvailable(takeContext())) {
 
-                var chainedOk = true
-
-                chained.forEach {
-
-                    if (!chainedOk) {
-
-                        return@forEach
-                    }
-
-                    if (it.getState() != ConnectionState.Connected) {
-
-                        chainedOk = false;
-                    }
-                }
+                val chainedOk = getChainedResult()
 
                 if (chainedOk) {
 
@@ -228,20 +215,7 @@ abstract class ConnectionAvailabilityService(
             return
         }
 
-        var chainedOk = true
-
-        chained.forEach {
-
-            if (!chainedOk) {
-
-                return@forEach
-            }
-
-            if (it.getState() != ConnectionState.Connected) {
-
-                chainedOk = false;
-            }
-        }
+        val chainedOk = getChainedResult()
 
         if (chainedOk) {
 
@@ -251,6 +225,28 @@ abstract class ConnectionAvailabilityService(
 
             setState(ConnectionState.Disconnected)
         }
+    }
+
+    final override fun getState(): ConnectionState {
+
+        cHandler?.let {
+
+            if (it.isNetworkAvailable(takeContext())) {
+
+                val chainedOk = getChainedResult()
+
+                if (chainedOk) {
+
+                    return ConnectionState.Connected
+
+                } else {
+
+                    setState(ConnectionState.Disconnected)
+                }
+            }
+        }
+
+        return ConnectionState.Disconnected
     }
 
     override fun startRefreshing() {
@@ -358,6 +354,19 @@ abstract class ConnectionAvailabilityService(
     private fun unchainAll() {
 
         chained.clear()
+    }
+
+    private fun getChainedResult(): Boolean {
+
+        chained.forEach {
+
+            if (it.getState() != ConnectionState.Connected) {
+
+                return false
+            }
+        }
+
+        return true
     }
 
     private fun refreshingTag() = "${tag()} Origin = '$origin' :: Refreshing :: ${hashCode()} ::"

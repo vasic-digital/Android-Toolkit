@@ -63,19 +63,6 @@ class FCMConnectionAvailabilityService private constructor(origin: String) :
         }
     }
 
-    override fun getState(): ConnectionState {
-
-        cHandler?.let {
-
-            if (it.isNetworkAvailable(takeContext())) {
-
-                return ConnectionState.Connected
-            }
-        }
-
-        return ConnectionState.Disconnected
-    }
-
     override fun getWho() = "Push notifications"
 
     override val tag: String = "${identifier()} ::"
