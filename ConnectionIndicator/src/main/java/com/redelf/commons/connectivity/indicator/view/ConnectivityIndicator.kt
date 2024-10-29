@@ -53,6 +53,7 @@ class ConnectivityIndicator :
     private var dialog: ServicesStatesDialog? = null
     private val tag = "Connectivity Indicator :: $origin ::"
     private val layout = R.layout.layout_connectivity_indicator
+    private var recipe: AvailableStatefulServicesBuilder? = null
     private var statefulServices: AvailableStatefulServices? = null
 
     private val connectionStateCallback = object : ConnectivityStateCallback() {
@@ -114,7 +115,10 @@ class ConnectivityIndicator :
 
             Console.log("$tag On attached to window")
 
-            // FIXME:
+            recipe?.let {
+
+                setServices(it)
+            }
         }
 
         override fun onViewDetachedFromWindow(v: View) {
@@ -123,7 +127,7 @@ class ConnectivityIndicator :
 
             dialog?.dismiss()
 
-            terminate() // FIXME: <--
+            terminate()
         }
     }
 
@@ -185,6 +189,8 @@ class ConnectivityIndicator :
             ) {
 
                 callback?.onInitialization(success = success, *args)
+
+                applyStates()
             }
 
             override fun onShutdown(success: Boolean, vararg args: AvailableStatefulServices) {
@@ -202,6 +208,8 @@ class ConnectivityIndicator :
         callback: LifecycleCallback<AvailableStatefulServices>
 
     ) {
+
+        recipe = param
 
         exec(
 
