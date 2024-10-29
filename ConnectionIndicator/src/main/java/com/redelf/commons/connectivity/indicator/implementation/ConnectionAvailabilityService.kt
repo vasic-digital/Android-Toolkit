@@ -217,7 +217,35 @@ abstract class ConnectionAvailabilityService(
 
     override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
-        setState(state)
+        if (state == ConnectionState.Disconnected) {
+
+            setState(state)
+            return
+        }
+
+        var chainedOk = true
+
+        chained.forEach {
+
+            if (!chainedOk) {
+
+                return@forEach
+            }
+
+            if (it.getState() != ConnectionState.Connected) {
+
+                chainedOk = false;
+            }
+        }
+
+        if (chainedOk) {
+
+            setState(state)
+
+        } else {
+
+            setState(ConnectionState.Disconnected)
+        }
     }
 
     override fun startRefreshing() {
