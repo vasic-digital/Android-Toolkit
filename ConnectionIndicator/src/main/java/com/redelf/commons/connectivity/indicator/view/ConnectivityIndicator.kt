@@ -64,14 +64,14 @@ class ConnectivityIndicator :
                 "${tag()} State :: Changed :: Who = ${whoseState?.simpleName}"
             )
 
-            applyStates()
+            applyStates("onStateChanged - ${whoseState?.simpleName}")
         }
 
         override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
             Console.log("${tag()} State :: $state :: Who = ${whoseState?.simpleName}")
 
-            applyStates()
+            applyStates("onState - ${whoseState?.simpleName}")
         }
     }
 
@@ -115,7 +115,7 @@ class ConnectivityIndicator :
 
         LayoutInflater.from(context).inflate(layout, this, true)
 
-        applyStates()
+        applyStates("onFinishInflate")
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -168,7 +168,7 @@ class ConnectivityIndicator :
 
                 callback?.onInitialization(success = success, *args)
 
-                applyStates()
+                applyStates("setServices")
             }
 
             override fun onShutdown(success: Boolean, vararg args: AvailableStatefulServices) {
@@ -253,9 +253,9 @@ class ConnectivityIndicator :
         }
     }
 
-    private fun applyStates() {
+    private fun applyStates(from: String) {
 
-        Console.log("${tag()} Apply states")
+        Console.log("${tag()} Apply states :: From = $from")
 
         if (context is Activity) {
 
