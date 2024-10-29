@@ -24,7 +24,7 @@ class ServicesStatesDialog(
 
 ) : BaseDialog(ctx, dialogStyle) {
 
-    override val tag = "Services states dialog ::"
+    override val tag = "Connectivity :: Indicator :: Dialog ::"
 
     override val layout = dialogLayout
 

@@ -381,5 +381,5 @@ class ConnectivityIndicator :
         }
     }
 
-    private fun tag() = "Connectivity Indicator :: Origin = '$origin' :: ${hashCode()} ::"
+    private fun tag() = "Connectivity :: Indicator :: Origin = '$origin' :: ${hashCode()} ::"
 }

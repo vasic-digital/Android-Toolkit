@@ -27,6 +27,7 @@ class ServicesStatesDialogAdapter(
 ) : RecyclerView.Adapter<ServicesStatesDialogAdapter.ViewHolder>(), Dismissable {
 
     private val servicesObjects = CopyOnWriteArraySet<AvailableService>()
+    private val tag = "Connectivity :: Indicator :: Dialog :: Adapter ::"
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
@@ -38,13 +39,19 @@ class ServicesStatesDialogAdapter(
 
     override fun dismiss() {
 
+        Console.log("$tag Dismissing")
+
         servicesObjects.forEach { service ->
 
             if (service is TerminationAsync) {
 
+                Console.log("$tag Terminate :: Service = ${service.javaClass.simpleName}")
+
                 service.terminate()
 
             } else if (service is TerminationSynchronized) {
+
+                Console.log("$tag Terminate :: Service = ${service.javaClass.simpleName}")
 
                 service.terminate()
 
@@ -53,6 +60,8 @@ class ServicesStatesDialogAdapter(
                 val msg = "Service cannot be terminated ${service.javaClass.simpleName}"
                 val e = IllegalStateException(msg)
                 recordException(e)
+
+                Console.error("$tag Terminate :: $msg")
             }
         }
     }
@@ -98,9 +107,14 @@ class ServicesStatesDialogAdapter(
         viewHolder.indicator?.origin = origin
         viewHolder.indicator?.setServices(builder)
 
-        servicesObjects.addAll(
+        val newObjects = viewHolder.indicator?.getServices()?.getServiceInstances() ?: emptyList()
 
-            viewHolder.indicator?.getServices()?.getServiceInstances() ?: emptyList()
+        servicesObjects.addAll(newObjects)
+
+        Console.log(
+
+            "$tag Terminate :: Added service objects = " +
+                    "${newObjects.size} / ${servicesObjects.size}"
         )
 
         if (position < services.size - 1) {
