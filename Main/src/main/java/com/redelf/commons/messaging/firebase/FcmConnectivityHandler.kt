@@ -15,6 +15,7 @@ class FcmConnectivityHandler private constructor(
 
         private var instance: FcmConnectivityHandler? = null
 
+        @Synchronized
         override fun obtain(): FcmConnectivityHandler {
 
             return obtain(
@@ -23,6 +24,7 @@ class FcmConnectivityHandler private constructor(
             )
         }
 
+        @Synchronized
         fun obtain(
 
             defaultConnectionBlockState: ConnectionBlockingBehavior
