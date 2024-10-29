@@ -33,17 +33,13 @@ abstract class ConnectionAvailabilityService(
 
 ) :
 
-    AutoRefreshing,
     ContextAvailability<Context>,
     ConnectionAvailableService()
 
 {
 
     protected abstract val tag: String
-    protected val autRefresh = AtomicBoolean(true)
-    protected open val refreshingFrequency = 1000L
 
-    private var timer: Timer? = null
     private val chained: CopyOnWriteArraySet<AvailableStatefulService> = CopyOnWriteArraySet()
 
     private val connectionCallback = object : ConnectivityStateChanges {
@@ -116,24 +112,6 @@ abstract class ConnectionAvailabilityService(
 
     protected var cHandler: StatefulBasicConnectionHandler? = null
 
-    private val timerTask = object : TimerTask() {
-
-        override fun run() {
-
-            if (Thread.currentThread().isInterrupted) {
-
-                return
-            }
-
-            if (isDebug()) {
-
-                Console.log("${refreshingTag()} RUN")
-            }
-
-            checkState()
-        }
-    }
-
     private val chainedStateListener = object : ConnectivityStateCallback() {
 
         override fun onStateChanged(whoseState: Class<*>?) = Unit
@@ -166,8 +144,6 @@ abstract class ConnectionAvailabilityService(
         withConnectionHandler {
 
             Console.log("${tag()} Instantiated :: ${hashCode()}")
-
-            startRefreshing()
         }
     }
 
@@ -175,7 +151,6 @@ abstract class ConnectionAvailabilityService(
 
     override fun terminate() {
 
-        stopRefreshing()
         unchainAll()
 
         super.terminate()
@@ -206,11 +181,6 @@ abstract class ConnectionAvailabilityService(
             Chainable<AvailableStatefulService> {
 
         what.unregister(chainedStateListener)
-
-        if (what is SingleInstantiated) {
-
-            // TODO:
-        }
 
         chained.remove(what)
 
@@ -283,35 +253,6 @@ abstract class ConnectionAvailabilityService(
         return ConnectionState.Disconnected
     }
 
-    override fun startRefreshing() {
-
-        stopRefreshing()
-
-        Console.log("${refreshingTag()} PRE-START")
-
-        if (autRefresh.get()) {
-
-            Console.log("${refreshingTag()} START")
-
-            timer = Timer()
-
-            timer?.schedule(timerTask, refreshingFrequency, refreshingFrequency)
-
-        } else {
-
-            Console.log("${refreshingTag()} SKIP")
-        }
-    }
-
-    override fun stopRefreshing() {
-
-        Console.log("${refreshingTag()} STOP")
-
-        timer?.cancel()
-        timer?.purge()
-        timer = null
-    }
-
     protected fun withConnectionHandler(doWhat: (handler: ConnectivityHandler) -> Unit) {
 
         exec(
@@ -357,34 +298,6 @@ abstract class ConnectionAvailabilityService(
         }
     }
 
-    private fun checkState() {
-
-        val tag = "$tag Check state ::"
-
-        if (isDebug()) {
-
-            Console.log("$tag START")
-        }
-
-        val state = getState()
-        val last = lastConnectionState()
-        val whose = this@ConnectionAvailabilityService::class.java
-
-        if (state != last) {
-
-            Console.log("$tag CHANGED :: $last -> $state")
-
-            onStateChanged(whose)
-        }
-
-        onState(state, whose)
-
-        if (isDebug()) {
-
-            Console.log("$tag END")
-        }
-    }
-
     private fun unchainAll() {
 
         chained.forEach {
@@ -405,6 +318,4 @@ abstract class ConnectionAvailabilityService(
 
         return true
     }
-
-    private fun refreshingTag() = "${tag()} Origin = '$origin' :: Refreshing :: ${hashCode()} ::"
 }

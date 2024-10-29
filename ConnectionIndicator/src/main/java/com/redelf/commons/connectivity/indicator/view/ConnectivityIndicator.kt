@@ -68,6 +68,8 @@ class ConnectivityIndicator :
         override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
             Console.log("$tag State = $state, whoseState = ${whoseState?.simpleName}")
+
+            applyStates()
         }
     }
 
