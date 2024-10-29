@@ -133,12 +133,9 @@ abstract class ConnectionAvailabilityService(
         }
     }
 
-    private val chainedStateListener = object : ConnectivityStateCallback {
+    private val chainedStateListener = object : ConnectivityStateCallback() {
 
-        override fun onStateChanged(whoseState: Class<*>?) {
-
-            // TODO:
-        }
+        override fun onStateChanged(whoseState: Class<*>?) = Unit
 
         override fun onState(
 
@@ -147,7 +144,19 @@ abstract class ConnectionAvailabilityService(
 
         ) {
 
-            // TODO:
+            val who = this@ConnectionAvailabilityService
+            val cumulativeState = who.getState()
+
+            if (state != cumulativeState) {
+
+                who.onStateChanged(who::class.java)
+            }
+
+            who.onState(
+
+                cumulativeState,
+                who::class.java
+            )
         }
     }
 
