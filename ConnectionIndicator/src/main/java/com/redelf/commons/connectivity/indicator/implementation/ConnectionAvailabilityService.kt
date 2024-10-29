@@ -291,13 +291,23 @@ abstract class ConnectionAvailabilityService(
 
     private fun terminateHandler(handler: ConnectivityHandler) {
 
+        Console.log("${tag()} Terminate handler :: START")
+
         if (handler is StatefulBasicConnectionHandler) {
 
-            Console.log("$tag Type ok")
+            Console.log("${tag()} Terminate handler :: TYPE OK")
 
             handler.unregister(connectionCallback)
 
-            Console.log("$tag END")
+            Console.log("${tag()} Terminate handler :: END")
+
+        } else {
+
+            Console.error(
+
+                "${tag()} Terminate handler :: ERROR: " +
+                    "Unsupported type ${handler::class.simpleName}"
+            )
         }
     }
 

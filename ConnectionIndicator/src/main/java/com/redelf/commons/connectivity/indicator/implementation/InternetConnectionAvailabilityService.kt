@@ -64,7 +64,5 @@ class InternetConnectionAvailabilityService private constructor(origin: String) 
 
     override fun getWho() = "Internet connection"
 
-    override val tag: String = identifier()
-
     override fun identifier() = "Connectivity :: Availability :: Internet :: ${hashCode()}"
 }
