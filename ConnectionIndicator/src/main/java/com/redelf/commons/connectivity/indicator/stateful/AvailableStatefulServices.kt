@@ -1,6 +1,8 @@
 package com.redelf.commons.connectivity.indicator.stateful
 
 import com.redelf.commons.connectivity.indicator.AvailableService
+import com.redelf.commons.creation.instantiation.SingleInstantiated
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
@@ -165,20 +167,57 @@ constructor(
 
         Console.log("$tag START :: Args = ${args.joinToString()}")
 
+        fun logServiceTermination(service: AvailableService) = Console.log(
+
+            "$tag Service :: Termination :: OK :: ${service::class.simpleName} " +
+                    "- ${service.hashCode()}"
+        )
+
+        fun logServiceSkipped(service: AvailableService) = Console.warning(
+
+            "$tag Service :: Termination :: SKIPPED :: ${service::class.simpleName} " +
+                    "- ${service.hashCode()}"
+        )
+
         services.forEach { service ->
 
+            /*
+             * TODO: This snippet is repeated three times at least!
+             *  We should move it into one single implementation and reuse!
+             */
             if (service is TerminationAsync) {
 
-                Console.log("$tag Service = ${service::class.simpleName}")
+                if (service is SingleInstantiated) {
 
-                service.terminate(from)
-            }
+                    logServiceSkipped(service)
 
-            if (service is TerminationSynchronized) {
+                } else {
 
-                Console.log("$tag Service = ${service::class.simpleName}")
+                    service.terminate("On dismiss")
 
-                service.terminate(from)
+                    logServiceTermination(service)
+                }
+
+            } else if (service is TerminationSynchronized) {
+
+                if (service is SingleInstantiated) {
+
+                    logServiceSkipped(service)
+
+                } else {
+
+                    service.terminate("On dismiss")
+
+                    logServiceTermination(service)
+                }
+
+            } else {
+
+                val msg = "Service cannot be terminated ${service.javaClass.simpleName}"
+                val e = IllegalStateException(msg)
+                recordException(e)
+
+                Console.error("$tag ERROR :: $msg")
             }
         }
 
