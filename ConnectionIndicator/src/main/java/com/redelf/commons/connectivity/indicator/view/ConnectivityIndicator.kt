@@ -2,6 +2,7 @@ package com.redelf.commons.connectivity.indicator.view
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -53,7 +54,6 @@ class ConnectivityIndicator :
     private var dialog: ServicesStatesDialog? = null
     private val tag = "Connectivity Indicator :: $origin ::"
     private val layout = R.layout.layout_connectivity_indicator
-    private var recipe: AvailableStatefulServicesBuilder? = null
     private var statefulServices: AvailableStatefulServices? = null
 
     private val connectionStateCallback = object : ConnectivityStateCallback() {
@@ -109,33 +109,6 @@ class ConnectivityIndicator :
 
     ) : super(ctx, attrs, defStyleAttr, defStyleRes)
 
-    private val detachListener = object : OnAttachStateChangeListener {
-
-        override fun onViewAttachedToWindow(v: View) {
-
-            Console.log("$tag On attached to window")
-
-            recipe?.let {
-
-                setServices(it)
-            }
-        }
-
-        override fun onViewDetachedFromWindow(v: View) {
-
-            Console.log("$tag On detached from window")
-
-            dialog?.dismiss()
-
-            terminate()
-        }
-    }
-
-    init {
-
-        addOnAttachStateChangeListener(detachListener)
-    }
-
     override fun onFinishInflate() {
         super.onFinishInflate()
 
@@ -144,6 +117,12 @@ class ConnectivityIndicator :
         LayoutInflater.from(context).inflate(layout, this, true)
 
         applyStates()
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+
+        Console.log("$tag On draw")
     }
 
     override fun terminate() {
@@ -208,8 +187,6 @@ class ConnectivityIndicator :
         callback: LifecycleCallback<AvailableStatefulServices>
 
     ) {
-
-        recipe = param
 
         exec(
 

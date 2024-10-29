@@ -66,6 +66,7 @@ class ServicesStatesDialogAdapter(
             .addService(service::class.java)
             .setDebug(true)
 
+        viewHolder.indicator?.origin = origin
         viewHolder.indicator?.setServices(builder)
 
         if (position < services.size - 1) {
