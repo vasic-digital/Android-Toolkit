@@ -36,9 +36,9 @@ class ConnectivityIndicator :
 
 {
 
+    var origin = ""
     var dialogStyle = 0
     var showDetails = false
-    var origin = "${hashCode()}"
     var dialogLayout = R.layout.dialog_services_states
     var dialogAdapterItemLayout: Int = R.layout.layout_services_states_dialog_adapter
 
@@ -381,5 +381,5 @@ class ConnectivityIndicator :
         }
     }
 
-    private fun tag() = "Connectivity Indicator :: $origin ::"
+    private fun tag() = "Connectivity Indicator :: Origin = '$origin' :: ${hashCode()} ::"
 }
