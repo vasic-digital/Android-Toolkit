@@ -39,7 +39,7 @@ class ServicesStatesDialogAdapter(
 
     override fun dismiss() {
 
-        Console.log("$tag Dismissing")
+        Console.log("$tag Dismissing :: START")
 
         servicesObjects.forEach { service ->
 
@@ -64,6 +64,8 @@ class ServicesStatesDialogAdapter(
                 Console.error("$tag Terminate :: $msg")
             }
         }
+
+        Console.log("$tag Dismissing :: END")
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {

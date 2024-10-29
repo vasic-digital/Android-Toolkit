@@ -33,31 +33,39 @@ class ServicesStatesDialog(
     override fun onDismiss(dialog: DialogInterface?) {
         super.onDismiss(dialog)
 
+        Console.log("$tag On dismiss :: START")
+
         adapter?.dismiss()
+
+        Console.log("$tag On dismiss :: Adapter dismissed")
 
         services.getServiceInstances().forEach { service ->
 
             if (service is TerminationAsync) {
 
-                Console.log("$tag Service = ${service::class.simpleName}")
-
                 service.terminate()
+
+                Console.log("$tag Service terminated :: ${service::class.simpleName}")
 
             } else if (service is TerminationSynchronized) {
 
-                Console.log("$tag Service = ${service::class.simpleName}")
-
                 service.terminate()
+
+                Console.log("$tag Service terminated :: ${service::class.simpleName}")
 
             } else {
 
                 val msg = "Service cannot be terminated ${service.javaClass.simpleName}"
                 val e = IllegalStateException(msg)
                 recordException(e)
+
+                Console.error("$tag On dismiss :: $msg")
             }
         }
 
         adapter = null
+
+        Console.log("$tag On dismiss :: END")
     }
 
     override fun onContentView(contentView: View) {
