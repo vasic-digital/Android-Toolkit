@@ -184,7 +184,29 @@ abstract class ConnectionAvailabilityService(
 
             if (it.isNetworkAvailable(takeContext())) {
 
-                onState(ConnectionState.Connected, whoseState)
+                var chainedOk = true
+
+                chained.forEach {
+
+                    if (!chainedOk) {
+
+                        return@forEach
+                    }
+
+                    if (it.getState() != ConnectionState.Connected) {
+
+                        chainedOk = false;
+                    }
+                }
+
+                if (chainedOk) {
+
+                    onState(ConnectionState.Connected, whoseState)
+
+                } else {
+
+                    onState(ConnectionState.Disconnected, whoseState)
+                }
 
             } else {
 
