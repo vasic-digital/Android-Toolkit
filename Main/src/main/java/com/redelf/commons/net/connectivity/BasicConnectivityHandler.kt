@@ -15,7 +15,11 @@ open class BasicConnectivityHandler(
 
     override fun isNetworkAvailable(ctx: Context): Boolean {
 
-        Console.log("Connectivity handler :: ${hashCode()}")
+        Console.log(
+
+            "Connectivity :: Handler :: ${this.javaClass.simpleName} ${hashCode()} " +
+                    ":: isNetworkAvailable"
+        )
 
         if (blockConnection.get()) {
 
