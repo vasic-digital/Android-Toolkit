@@ -6,6 +6,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
+import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServicesBuilder
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
@@ -19,16 +20,28 @@ class ServicesStatesDialog(
     dialogLayout: Int = R.layout.dialog_services_states,
     private val dialogAdapterItemLayout: Int = R.layout.layout_services_states_dialog_adapter,
 
-    private val services: AvailableStatefulServices,
+    builder: AvailableStatefulServicesBuilder,
     private val serviceCallback: ServicesStatesDialogCallback
 
 ) : BaseDialog(ctx, dialogStyle) {
 
+    override val layout = dialogLayout
     override val tag = "Connectivity :: Indicator :: Dialog ::"
 
-    override val layout = dialogLayout
-
     private var adapter: ServicesStatesDialogAdapter? = null
+    private var statefulServices: AvailableStatefulServices? = null
+
+    init {
+
+        try {
+
+            statefulServices = AvailableStatefulServices(builder)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+    }
 
     override fun onDismiss(dialog: DialogInterface?) {
         super.onDismiss(dialog)
@@ -39,7 +52,7 @@ class ServicesStatesDialog(
 
         Console.log("$tag On dismiss :: Adapter dismissed")
 
-        services.getServiceInstances().forEach { service ->
+        statefulServices?.getServiceInstances()?.forEach { service ->
 
             if (service is TerminationAsync) {
 
@@ -70,7 +83,7 @@ class ServicesStatesDialog(
 
     override fun onContentView(contentView: View) {
 
-        val items = services.getServiceInstances()
+        val items = statefulServices?.getServiceInstances() ?: emptyList()
         val recycler = contentView.findViewById<RecyclerView?>(R.id.services)
 
         recycler?.let {

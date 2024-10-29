@@ -52,6 +52,7 @@ class ConnectivityIndicator :
     private val initializing = AtomicBoolean()
     private var dialog: ServicesStatesDialog? = null
     private val layout = R.layout.layout_connectivity_indicator
+    private var builder: AvailableStatefulServicesBuilder? = null
     private var statefulServices: AvailableStatefulServices? = null
 
     private val connectionStateCallback = object : ConnectivityStateCallback() {
@@ -197,16 +198,15 @@ class ConnectivityIndicator :
 
                 if (statefulServices == null) {
 
-                    param.addCallback(connectionStateCallback)
-
                     statefulServices = AvailableStatefulServices(param)
-
-                } else {
-
-                    statefulServices?.register(connectionStateCallback)
                 }
 
+                statefulServices?.register(connectionStateCallback)
+
+                builder = param
+
                 callback.onInitialization(true, statefulServices!!)
+
 
             } catch (e: Exception) {
 
@@ -351,7 +351,7 @@ class ConnectivityIndicator :
 
         if (context is Activity) {
 
-            statefulServices?.let {
+            builder?.let {
 
                 val ctx = context as Activity
 
@@ -361,11 +361,16 @@ class ConnectivityIndicator :
                     dialogStyle,
                     dialogLayout,
                     dialogAdapterItemLayout,
-                    services = it,
+                    builder = it,
                     serviceCallback = serviceCallback
                 )
 
                 dialog?.show()
+            }
+
+            if (builder == null) {
+
+                Console.error("${tag()} Builder is null")
             }
 
         } else {
