@@ -4,6 +4,7 @@ import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
+import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.dependency.Chainable
 import com.redelf.commons.extensions.exec
@@ -42,7 +43,7 @@ abstract class ConnectionAvailabilityService(
     protected open val refreshingFrequency = 1000L
 
     private var timer: Timer? = null
-    private val chained: CopyOnWriteArraySet<ConnectionAvailabilityService> = CopyOnWriteArraySet()
+    private val chained: CopyOnWriteArraySet<AvailableStatefulService> = CopyOnWriteArraySet()
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
@@ -190,8 +191,8 @@ abstract class ConnectionAvailabilityService(
         }
     }
 
-    override fun chain(what: ConnectionAvailabilityService):
-            Chainable<ConnectionAvailabilityService> {
+    override fun chain(what: AvailableStatefulService):
+            Chainable<AvailableStatefulService> {
 
         chained.add(what)
 
@@ -200,8 +201,8 @@ abstract class ConnectionAvailabilityService(
         return this
     }
 
-    override fun unchain(what: ConnectionAvailabilityService):
-            Chainable<ConnectionAvailabilityService> {
+    override fun unchain(what: AvailableStatefulService):
+            Chainable<AvailableStatefulService> {
 
         what.unregister(chainedStateListener)
 
