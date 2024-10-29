@@ -147,6 +147,7 @@ abstract class ConnectionAvailabilityService(
     override fun terminate() {
 
         stopRefreshing()
+        unchainAll()
 
         super.terminate()
 
@@ -214,6 +215,10 @@ abstract class ConnectionAvailabilityService(
             }
         }
     }
+
+    /*
+    * TODO: React when chained dependant receives the state change
+    */
 
     override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
@@ -348,6 +353,11 @@ abstract class ConnectionAvailabilityService(
 
             Console.log("$tag END")
         }
+    }
+
+    private fun unchainAll() {
+
+        chained.clear()
     }
 
     private fun refreshingTag() = "${tag()} Origin = '$origin' :: Refreshing :: ${hashCode()} ::"
