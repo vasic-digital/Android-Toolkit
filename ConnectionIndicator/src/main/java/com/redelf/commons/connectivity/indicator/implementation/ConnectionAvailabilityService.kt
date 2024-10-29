@@ -3,6 +3,7 @@ package com.redelf.commons.connectivity.indicator.implementation
 import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
+import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.dependency.Chainable
 import com.redelf.commons.extensions.exec
@@ -132,21 +133,11 @@ abstract class ConnectionAvailabilityService(
         }
     }
 
-    private val chainedStateListener = object : ConnectivityStateChanges {
-
-        override fun getState(): State<Int> {
-
-            TODO("Not yet implemented")
-        }
-
-        override fun setState(state: State<Int>) {
-
-            TODO("Not yet implemented")
-        }
+    private val chainedStateListener = object : ConnectivityStateCallback {
 
         override fun onStateChanged(whoseState: Class<*>?) {
 
-            TODO("Not yet implemented")
+            // TODO:
         }
 
         override fun onState(
@@ -155,7 +146,8 @@ abstract class ConnectionAvailabilityService(
             whoseState: Class<*>?
 
         ) {
-            TODO("Not yet implemented")
+
+            // TODO:
         }
     }
 
