@@ -132,6 +132,33 @@ abstract class ConnectionAvailabilityService(
         }
     }
 
+    private val chainedStateListener = object : ConnectivityStateChanges {
+
+        override fun getState(): State<Int> {
+
+            TODO("Not yet implemented")
+        }
+
+        override fun setState(state: State<Int>) {
+
+            TODO("Not yet implemented")
+        }
+
+        override fun onStateChanged(whoseState: Class<*>?) {
+
+            TODO("Not yet implemented")
+        }
+
+        override fun onState(
+
+            state: State<Int>,
+            whoseState: Class<*>?
+
+        ) {
+            TODO("Not yet implemented")
+        }
+    }
+
     init {
 
         withConnectionHandler {
@@ -168,11 +195,15 @@ abstract class ConnectionAvailabilityService(
 
         chained.add(what)
 
+        what.register(chainedStateListener)
+
         return this
     }
 
     override fun unchain(what: ConnectionAvailabilityService):
             Chainable<ConnectionAvailabilityService> {
+
+        what.unregister(chainedStateListener)
 
         chained.remove(what)
 
@@ -202,10 +233,6 @@ abstract class ConnectionAvailabilityService(
             }
         }
     }
-
-    /*
-    * TODO: React when chained dependant receives the state change
-    */
 
     override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
@@ -353,7 +380,10 @@ abstract class ConnectionAvailabilityService(
 
     private fun unchainAll() {
 
-        chained.clear()
+        chained.forEach {
+
+            unchain(it)
+        }
     }
 
     private fun getChainedResult(): Boolean {
