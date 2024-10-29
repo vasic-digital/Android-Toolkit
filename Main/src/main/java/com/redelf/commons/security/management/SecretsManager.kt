@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
+import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.data.type.Typed
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
@@ -15,7 +16,12 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
-class SecretsManager private constructor(storageKeyToSet: String) : ContextualManager<Secrets>() {
+class SecretsManager private constructor(storageKeyToSet: String) :
+
+    ContextualManager<Secrets>(),
+    SingleInstantiated
+
+{
 
     companion object : SingleInstance<SecretsManager>() {
 

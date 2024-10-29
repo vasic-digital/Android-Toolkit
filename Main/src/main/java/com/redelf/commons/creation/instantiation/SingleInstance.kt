@@ -35,6 +35,15 @@ abstract class SingleInstance<T> :
 
         instance?.let {
 
+            if (it !is SingleInstantiated) {
+
+                val msg = "${it::class.simpleName} " +
+                        "does not implement ${SingleInstantiated::class.simpleName} " +
+                        "interface"
+
+                throw InstantiationException(msg)
+            }
+
             return it
         }
 

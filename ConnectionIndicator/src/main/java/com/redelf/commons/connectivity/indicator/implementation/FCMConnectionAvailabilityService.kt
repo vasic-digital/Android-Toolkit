@@ -3,6 +3,7 @@ package com.redelf.commons.connectivity.indicator.implementation
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.creation.instantiation.SingleInstance
+import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.firebase.FcmConnectivityHandler
 import com.redelf.commons.messaging.firebase.FcmService
@@ -27,7 +28,7 @@ class FCMConnectionAvailabilityService private constructor(origin: String) :
 
         origin = origin,
 
-    ), Reconnect
+    ), Reconnect, SingleInstantiated
 {
 
     companion object :
@@ -65,9 +66,9 @@ class FCMConnectionAvailabilityService private constructor(origin: String) :
 
     override fun getWho() = "Push notifications"
 
-    override val tag: String = "${identifier()} ::"
+    override val tag: String = "${identifier()}"
 
-    override fun identifier() = "FCM connection availability"
+    override fun identifier() = "FCM connection availability :: ${hashCode()} ::"
 
     override fun reconnect() {
 

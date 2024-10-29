@@ -4,6 +4,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.creation.instantiation.SingleInstance
+import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
@@ -26,7 +27,7 @@ class InternetConnectionAvailabilityService private constructor(origin: String) 
 
         origin = origin
 
-    )
+    ), SingleInstantiated
 {
 
     companion object :
@@ -63,7 +64,7 @@ class InternetConnectionAvailabilityService private constructor(origin: String) 
 
     override fun getWho() = "Internet connection"
 
-    override val tag: String = "${identifier()} ::"
+    override val tag: String = "${identifier()}"
 
-    override fun identifier() = "Internet connection availability"
+    override fun identifier() = "Internet connection availability :: ${hashCode()} ::"
 }

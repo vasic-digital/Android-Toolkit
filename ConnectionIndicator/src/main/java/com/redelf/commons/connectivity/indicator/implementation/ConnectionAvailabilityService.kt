@@ -6,6 +6,7 @@ import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableS
 import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.dependency.Chainable
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isOnMainThread
@@ -205,6 +206,11 @@ abstract class ConnectionAvailabilityService(
             Chainable<AvailableStatefulService> {
 
         what.unregister(chainedStateListener)
+
+        if (what is SingleInstantiated) {
+
+            // TODO:
+        }
 
         chained.remove(what)
 
