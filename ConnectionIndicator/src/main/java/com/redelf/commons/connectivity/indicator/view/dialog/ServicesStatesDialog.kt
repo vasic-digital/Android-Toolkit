@@ -1,6 +1,7 @@
 package com.redelf.commons.connectivity.indicator.view.dialog
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.connectivity.indicator.R
@@ -29,7 +30,8 @@ class ServicesStatesDialog(
 
     private var adapter: ServicesStatesDialogAdapter? = null
 
-    override fun dismiss() {
+    override fun onDismiss(dialog: DialogInterface?) {
+        super.onDismiss(dialog)
 
         adapter?.dismiss()
 
@@ -55,7 +57,7 @@ class ServicesStatesDialog(
             }
         }
 
-        super.dismiss()
+        adapter = null
     }
 
     override fun onContentView(contentView: View) {

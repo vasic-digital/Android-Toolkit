@@ -3,6 +3,7 @@ package com.redelf.commons.ui.dialog
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AlertDialog
@@ -15,7 +16,13 @@ abstract class BaseDialog(
     private val context: Activity,
     protected open var dialogStyle: Int = 0
 
-) : com.redelf.commons.ui.dialog.Dialog, ContextAvailability<Activity> {
+) :
+
+    ContextAvailability<Activity>,
+    DialogInterface.OnDismissListener,
+    com.redelf.commons.ui.dialog.Dialog
+
+{
 
     protected abstract val tag: String
     protected var dialog: Dialog? = null
@@ -26,6 +33,11 @@ abstract class BaseDialog(
     override fun takeContext(): Activity {
 
         return context
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+
+        Console.log("$tag Dialog is dismissed")
     }
 
     override fun show() {
@@ -73,6 +85,7 @@ abstract class BaseDialog(
             .setView(contentView)
             .setCancelable(cancellable)
             .setOnCancelListener { dismiss() }
+            .setOnDismissListener(this)
             .create()
 
         return contentView
