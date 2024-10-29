@@ -64,15 +64,13 @@ class FCMConnectionAvailabilityService private constructor(origin: String) :
         }
     }
 
-    override val tag: String = identifier()
-
     override fun getWho() = "Push notifications"
 
     override fun identifier() = "Connectivity :: Availability :: FCM :: ${hashCode()}"
 
     override fun reconnect() {
 
-        Console.log("$tag Reconnecting...")
+        Console.log("${tag()} Reconnecting...")
 
         FcmService.reconnect()
     }

@@ -38,8 +38,6 @@ abstract class ConnectionAvailabilityService(
 
 {
 
-    protected abstract val tag: String
-
     private val chained: CopyOnWriteArraySet<AvailableStatefulService> = CopyOnWriteArraySet()
 
     private val connectionCallback = object : ConnectivityStateChanges {
@@ -145,6 +143,11 @@ abstract class ConnectionAvailabilityService(
 
             Console.log("${tag()} Instantiated :: ${hashCode()}")
         }
+    }
+
+    override fun tag(): String {
+
+        return "${super.tag()} :: Origin = $origin ::"
     }
 
     override fun takeContext() = BaseApplication.takeContext()

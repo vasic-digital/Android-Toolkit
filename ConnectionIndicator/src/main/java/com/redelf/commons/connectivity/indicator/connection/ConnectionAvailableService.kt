@@ -73,7 +73,7 @@ abstract class ConnectionAvailableService :
         Console.log("${tag()} Terminate :: END")
     }
 
-    protected fun tag() = "${identifier()} ::"
+    protected open fun tag() = "${identifier()} ::"
 
     protected fun lastState() = state.get()
 
