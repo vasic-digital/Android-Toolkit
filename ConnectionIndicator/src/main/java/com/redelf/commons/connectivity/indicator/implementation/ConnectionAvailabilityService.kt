@@ -4,6 +4,7 @@ import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableService
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.dependency.Chainable
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
@@ -17,6 +18,7 @@ import com.redelf.commons.refreshing.AutoRefreshing
 import com.redelf.commons.stateful.State
 import java.util.Timer
 import java.util.TimerTask
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -26,13 +28,22 @@ abstract class ConnectionAvailabilityService(
     private val origin: String,
     private val handlerObtain: Obtain<StatefulBasicConnectionHandler>
 
-) : ContextAvailability<Context>, ConnectionAvailableService(), AutoRefreshing {
+) :
+
+    AutoRefreshing,
+    ContextAvailability<Context>,
+    ConnectionAvailableService(),
+    Chainable<ConnectionAvailabilityService>
+
+{
 
     protected abstract val tag: String
     protected val autRefresh = AtomicBoolean(true)
     protected open val refreshingFrequency = 1000L
 
     private var timer: Timer? = null
+    private val chained: CopyOnWriteArraySet<ConnectionAvailabilityService> = CopyOnWriteArraySet()
+
     private val connectionCallback = object : ConnectivityStateChanges {
 
         private val tag =
@@ -149,6 +160,22 @@ abstract class ConnectionAvailabilityService(
 
             terminateHandler(it)
         }
+    }
+
+    override fun chain(what: ConnectionAvailabilityService):
+            Chainable<ConnectionAvailabilityService> {
+
+        chained.add(what)
+
+        return this
+    }
+
+    override fun unchain(what: ConnectionAvailabilityService):
+            Chainable<ConnectionAvailabilityService> {
+
+        chained.remove(what)
+
+        return this
     }
 
     override fun onStateChanged(whoseState: Class<*>?) {
