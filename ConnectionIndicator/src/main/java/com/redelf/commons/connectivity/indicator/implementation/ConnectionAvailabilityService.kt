@@ -147,7 +147,7 @@ abstract class ConnectionAvailabilityService(
 
     override fun tag(): String {
 
-        return "${super.tag()} :: Origin = $origin ::"
+        return "${super.tag()} Origin = $origin ::"
     }
 
     override fun takeContext() = BaseApplication.takeContext()
@@ -158,7 +158,7 @@ abstract class ConnectionAvailabilityService(
 
         super.terminate(*args)
 
-        val tag = "${tag()} Termination :: Args = $args"
+        val tag = "${tag()} Termination :: Args = ${args.joinToString()}"
 
         Console.log("$tag START")
 

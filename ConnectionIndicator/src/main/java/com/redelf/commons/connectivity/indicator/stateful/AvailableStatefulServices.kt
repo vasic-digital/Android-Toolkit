@@ -163,7 +163,7 @@ constructor(
         val tag = "$tag Termination ::"
         val from = "$tag $args"
 
-        Console.log("$tag START :: Args = $args")
+        Console.log("$tag START :: Args = ${args.joinToString()}")
 
         services.forEach { service ->
 

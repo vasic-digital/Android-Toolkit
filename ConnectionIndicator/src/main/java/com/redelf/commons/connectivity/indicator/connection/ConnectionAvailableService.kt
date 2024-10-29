@@ -56,7 +56,7 @@ abstract class ConnectionAvailableService :
 
     override fun terminate(vararg args: Any) {
 
-        Console.log("${tag()} Terminate :: START :: Args = $args")
+        Console.log("${tag()} Terminate :: START :: Args = ${args.joinToString()}")
 
         callbacks().doOnAll(
 
