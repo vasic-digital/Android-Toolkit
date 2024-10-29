@@ -52,7 +52,6 @@ class ConnectivityIndicator :
 
     private val initializing = AtomicBoolean()
     private var dialog: ServicesStatesDialog? = null
-    private val tag = "Connectivity Indicator :: $origin ::"
     private val layout = R.layout.layout_connectivity_indicator
     private var statefulServices: AvailableStatefulServices? = null
 
@@ -62,7 +61,7 @@ class ConnectivityIndicator :
 
             Console.log(
 
-                "$tag State :: Changed :: Who = ${whoseState?.simpleName}"
+                "${tag()} State :: Changed :: Who = ${whoseState?.simpleName}"
             )
 
             applyStates()
@@ -70,7 +69,7 @@ class ConnectivityIndicator :
 
         override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
-            Console.log("$tag State :: $state :: Who = ${whoseState?.simpleName}")
+            Console.log("${tag()} State :: $state :: Who = ${whoseState?.simpleName}")
 
             applyStates()
         }
@@ -78,7 +77,7 @@ class ConnectivityIndicator :
 
     private val serviceCallback = object : ServicesStatesDialogCallback {
 
-        private val tag = "${this@ConnectivityIndicator.tag} Dialog callback ::"
+        private val tag = "${this@ConnectivityIndicator.tag()} Dialog callback ::"
 
         override fun onService(service: AvailableService) {
 
@@ -112,7 +111,7 @@ class ConnectivityIndicator :
     override fun onFinishInflate() {
         super.onFinishInflate()
 
-        Console.log("$tag On finish inflate")
+        Console.log("${tag()} On finish inflate")
 
         LayoutInflater.from(context).inflate(layout, this, true)
 
@@ -122,12 +121,12 @@ class ConnectivityIndicator :
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        Console.log("$tag On draw")
+        Console.log("${tag()} On draw")
     }
 
     override fun terminate() {
 
-        Console.log("$tag Terminate :: START")
+        Console.log("${tag()} Terminate :: START")
 
         exec(
 
@@ -138,12 +137,12 @@ class ConnectivityIndicator :
 
         ) {
 
-            Console.log("$tag Terminate :: TERMINATING, statefulServices = $statefulServices")
+            Console.log("${tag()} Terminate :: TERMINATING, statefulServices = $statefulServices")
 
             statefulServices?.terminate()
             statefulServices = null
 
-            Console.log("$tag Terminate :: END")
+            Console.log("${tag()} Terminate :: END")
         }
     }
 
@@ -244,19 +243,19 @@ class ConnectivityIndicator :
 
         e?.let {
 
-            Console.log("$tag ERROR: ${e.message}")
+            Console.log("${tag()} ERROR: ${e.message}")
             Console.log(e)
         }
 
         if (e == null) {
 
-            Console.log("$tag Initialization completed")
+            Console.log("${tag()} Initialization completed")
         }
     }
 
     private fun applyStates() {
 
-        Console.log("$tag Apply states")
+        Console.log("${tag()} Apply states")
 
         if (context is Activity) {
 
@@ -324,7 +323,7 @@ class ConnectivityIndicator :
             }
         }
 
-        Console.log("$tag Tint color: $tint")
+        Console.log("${tag()} Tint color: $tint")
 
         val icon = when (state) {
 
@@ -355,7 +354,7 @@ class ConnectivityIndicator :
 
     private fun presentServiceState() {
 
-        Console.log("$tag Present service state")
+        Console.log("${tag()} Present service state")
 
         if (context is Activity) {
 
@@ -378,7 +377,9 @@ class ConnectivityIndicator :
 
         } else {
 
-            Console.warning("$tag Context is not an Activity")
+            Console.warning("${tag()} Context is not an Activity")
         }
     }
+
+    private fun tag() = "Connectivity Indicator :: $origin ::"
 }
