@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.connectivity.indicator.R
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServices
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServicesBuilder
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.TerminationAsync
 import com.redelf.commons.lifecycle.TerminationSynchronized
@@ -33,13 +34,20 @@ class ServicesStatesDialog(
 
     init {
 
-        try {
+        exec(
 
-            statefulServices = AvailableStatefulServices(builder)
+            onRejected = { err -> recordException(err) }
 
-        } catch (e: Exception) {
+        ) {
 
-            recordException(e)
+            try {
+
+                statefulServices = AvailableStatefulServices(builder)
+
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
         }
     }
 
