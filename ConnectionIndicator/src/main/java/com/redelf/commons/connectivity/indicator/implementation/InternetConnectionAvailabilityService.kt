@@ -5,7 +5,6 @@ import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableS
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.creation.instantiation.SingleInstantiated
-import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain

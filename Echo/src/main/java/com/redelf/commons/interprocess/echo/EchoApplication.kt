@@ -1,10 +1,5 @@
 package com.redelf.commons.interprocess.echo
 
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
-import android.os.IBinder
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.interprocess.InterprocessApplication
 import com.redelf.commons.interprocess.InterprocessProcessor
 

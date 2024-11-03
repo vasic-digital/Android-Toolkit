@@ -1,14 +1,10 @@
 package com.redelf.commons.ui.dialog
 
 import android.app.Activity
-import android.app.Dialog
 import android.content.Intent
 import android.provider.MediaStore
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.FileProvider
 import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication

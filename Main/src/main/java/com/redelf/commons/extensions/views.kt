@@ -1,7 +1,6 @@
 package com.redelf.commons.extensions
 
 import android.app.Activity
-import android.graphics.Color
 import android.text.Html
 import android.text.SpannableString
 import android.text.SpannableStringBuilder

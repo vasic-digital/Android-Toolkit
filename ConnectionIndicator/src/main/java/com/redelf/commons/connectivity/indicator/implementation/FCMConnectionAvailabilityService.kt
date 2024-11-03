@@ -7,7 +7,6 @@ import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.firebase.FcmConnectivityHandler
 import com.redelf.commons.messaging.firebase.FcmService
-import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.Reconnect
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain

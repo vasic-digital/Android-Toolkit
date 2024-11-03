@@ -2,7 +2,6 @@ package com.redelf.commons.interprocess.echo
 
 import android.content.Context
 import android.content.Intent
-import com.redelf.commons.extensions.toast
 import com.redelf.commons.interprocess.InterprocessData
 import com.redelf.commons.interprocess.InterprocessProcessor
 import com.redelf.commons.logging.Console
