@@ -19,6 +19,8 @@ class Callbacks<T>(private val identifier: String) : Registration<T>, Debuggable
 
     private fun getTagName() = "$identifier ${hashCode()}"
 
+    fun getTag() = tag
+
     override fun register(subscriber: T) {
 
         val tag = "$tag ON  ::"
