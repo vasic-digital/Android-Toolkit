@@ -17,6 +17,8 @@ data class Credentials @JsonCreator constructor(
 
 ) {
 
+    // TODO: SMail - Data mapping
+
     fun isEmpty(): Boolean = TextUtils.isEmpty(username) || TextUtils.isEmpty(password)
     override fun equals(other: Any?): Boolean {
 
