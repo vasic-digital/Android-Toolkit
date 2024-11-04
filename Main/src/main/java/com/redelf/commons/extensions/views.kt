@@ -55,9 +55,9 @@ data class ColoredText @JsonCreator constructor(
 
             what.forEach {
 
-                val meta = ColoredWord(it)
+                val item = ColoredWord(it)
 
-                items.add(meta)
+                items.add(item)
             }
 
             return items
