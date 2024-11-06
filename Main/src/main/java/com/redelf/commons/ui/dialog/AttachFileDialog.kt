@@ -1,14 +1,10 @@
 package com.redelf.commons.ui.dialog
 
 import android.app.Activity
-import android.app.Dialog
 import android.content.Intent
 import android.provider.MediaStore
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.FileProvider
 import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
@@ -18,11 +14,12 @@ import java.io.File
 
 class AttachFileDialog(
 
-    private val ctx: Activity,
-    private val onPickFromCameraCallback: OnPickFromCameraCallback,
-    private val multiple: Boolean = false
+    ctx: Activity,
+    dialogStyle: Int = 0,
+    private val multiple: Boolean = false,
+    private val onPickFromCameraCallback: OnPickFromCameraCallback
 
-) {
+) : BaseDialog(ctx, dialogStyle) {
 
     companion object {
 
@@ -31,68 +28,31 @@ class AttachFileDialog(
         val REQUEST_GALLERY_PHOTO = randomInteger()
     }
 
-    private var dialog: Dialog? = null
+    override val tag = "Attach file dialog ::"
+    override val layout = R.layout.dialog_attach_file
 
-    fun show(style: Int = 0) {
+    override fun onContentView(contentView: View) {
 
-        if (dialog == null) {
+        val fromCamera = contentView.findViewById<Button>(R.id.from_camera)
+        val fromGallery = contentView.findViewById<Button>(R.id.from_gallery)
+        val fromDocuments = contentView.findViewById<Button>(R.id.from_documents)
 
-            val contentView: View =
-                LayoutInflater.from(ctx).inflate(R.layout.dialog_attach_file, null)
+        fromCamera.setOnClickListener {
 
-            val context = if (style > 0) {
-
-                ContextThemeWrapper(ctx, style)
-
-            } else {
-
-                ctx
-            }
-
-            dialog = AlertDialog.Builder(context)
-                .setView(contentView)
-                .setCancelable(true)
-                .setOnCancelListener { dismiss() }
-                .create()
-
-            val fromCamera = contentView.findViewById<Button>(R.id.from_camera)
-            val fromGallery = contentView.findViewById<Button>(R.id.from_gallery)
-            val fromDocuments = contentView.findViewById<Button>(R.id.from_documents)
-
-            fromCamera.setOnClickListener {
-
-                dismiss()
-                pickFromCamera()
-            }
-
-            fromGallery.setOnClickListener {
-
-                dismiss()
-                pickFromGallery(multiple)
-            }
-
-            fromDocuments.setOnClickListener {
-
-                dismiss()
-                pickFromDocuments(multiple)
-            }
-
-            dialog?.show()
-
-        } else {
-
-            Console.warning("Attach file dialog is already opened")
+            dismiss()
+            pickFromCamera()
         }
-    }
 
-    fun dismiss() {
+        fromGallery.setOnClickListener {
 
-        dialog?.let {
+            dismiss()
+            pickFromGallery(multiple)
+        }
 
-            Console.log("We are about to dismiss attach file dialog")
+        fromDocuments.setOnClickListener {
 
-            it.dismiss()
-            dialog = null
+            dismiss()
+            pickFromDocuments(multiple)
         }
     }
 
@@ -100,7 +60,7 @@ class AttachFileDialog(
 
         Console.log("Pick from camera")
 
-        val external = ctx.getExternalFilesDir(null)
+        val external = takeContext().getExternalFilesDir(null)
 
         external?.let { ext ->
 
@@ -130,12 +90,12 @@ class AttachFileDialog(
                 Console.error(e)
             }
 
-            val authority: String = ctx.applicationContext.packageName.toString() +
+            val authority: String = takeContext().applicationContext.packageName.toString() +
                     ".generic.provider"
 
             val outputFileUri = FileProvider.getUriForFile(
 
-                ctx,
+                takeContext(),
                 authority,
                 outputFile
             )
@@ -147,11 +107,11 @@ class AttachFileDialog(
             takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
-            val title: String = ctx.getString(R.string.attach_file_from_camera)
+            val title: String = takeContext().getString(R.string.attach_file_from_camera)
 
             onPickFromCameraCallback.onDataAccessPrepared(outputFile, outputFileUri)
 
-            ctx.startActivityForResult(
+            takeContext().startActivityForResult(
 
                 Intent.createChooser(takePictureIntent, title),
                 REQUEST_CAMERA_PHOTO
@@ -174,9 +134,9 @@ class AttachFileDialog(
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
-        val title = ctx.getString(R.string.attach_file_from_gallery)
+        val title = takeContext().getString(R.string.attach_file_from_gallery)
 
-        ctx.startActivityForResult(
+        takeContext().startActivityForResult(
 
             Intent.createChooser(intent, title),
             REQUEST_GALLERY_PHOTO
@@ -192,12 +152,12 @@ class AttachFileDialog(
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, multiple)
 
-        ctx.startActivityForResult(
+        takeContext().startActivityForResult(
 
             Intent.createChooser(
 
                 intent,
-                ctx.getString(R.string.attach_file_from_documents)
+                takeContext().getString(R.string.attach_file_from_documents)
             ),
 
             REQUEST_DOCUMENT

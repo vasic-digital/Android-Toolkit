@@ -8,34 +8,34 @@ import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.Retrying
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.ObtainParametrized
-import com.redelf.commons.registration.Registration
 import java.util.concurrent.Callable
 
-class DefaultConnectivityHandler(
+class DefaultConnectivityHandler private constructor(
 
     ctx: Context,
     defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
 
-) :
-
-    BasicConnectivityHandler(defaultConnectionBlockState),
-    Registration<ConnectivityStateChanges>
-
-{
+) : StatefulBasicConnectionHandler(defaultConnectionBlockState) {
 
     companion object : ObtainParametrized<DefaultConnectivityHandler, Context> {
 
         private var instance: DefaultConnectivityHandler? = null
 
+        @Synchronized
         override fun obtain(param: Context): DefaultConnectivityHandler {
 
-            return obtain(param)
+            return obtain(
+
+                param,
+                ConnectionBlockingBehavior.DO_NOT_BLOCK
+            )
         }
 
+        @Synchronized
         fun obtain(
 
             param: Context,
-            defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
+            defaultConnectionBlockState: ConnectionBlockingBehavior
 
         ): DefaultConnectivityHandler {
 

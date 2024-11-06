@@ -151,9 +151,9 @@ constructor(
         return dataDelegate?.shutdown() ?: false
     }
 
-    override fun terminate(): Boolean {
+    override fun terminate(vararg args: Any): Boolean {
 
-        return dataDelegate?.terminate() ?: false
+        return dataDelegate?.terminate(*args) == true
     }
 
     override fun initialize(ctx: Context) {

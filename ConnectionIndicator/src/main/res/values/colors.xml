@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="warning">#b55c00</color>
+    <color name="connected">#00ff00</color>
+    <color name="unavailable">#858585</color>
+    <color name="disconnected">#ff0000</color>
+
+</resources>

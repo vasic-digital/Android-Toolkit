@@ -22,9 +22,9 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.measure.Size
 import com.redelf.commons.modification.Add
+import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
-import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.stateful.State
@@ -94,11 +94,12 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         }
     }
 
-    private val connectionHandler = DefaultConnectivityHandler(dataManager.obtain().takeContext())
+    private val connectionHandler = DefaultConnectivityHandler
+        .obtain(dataManager.obtain().takeContext())
 
     private val connectionCallback = object : ConnectivityStateChanges {
 
-        override fun onStateChanged() {
+        override fun onStateChanged(whoseState: Class<*>?) {
 
             if (connectionHandler.isNetworkAvailable(takeContext())) {
 
@@ -106,7 +107,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
             }
         }
 
-        override fun onState(state: State<Int>) {
+        override fun onState(state: State<Int>, whoseState: Class<*>?) {
 
             Console.log("On state: $state")
         }

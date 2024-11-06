@@ -1,6 +1,6 @@
 package com.redelf.commons.lifecycle
 
-interface TerminationSynchronized {
+interface TerminationSynchronized : Termination {
 
-    fun terminate(): Boolean
+    fun terminate(vararg args: Any = emptyArray()): Boolean
 }

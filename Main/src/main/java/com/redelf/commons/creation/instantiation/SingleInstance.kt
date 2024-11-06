@@ -35,6 +35,15 @@ abstract class SingleInstance<T> :
 
         instance?.let {
 
+            if (it !is SingleInstantiated) {
+
+                val msg = "${it::class.simpleName} " +
+                        "does not implement ${SingleInstantiated::class.simpleName} " +
+                        "interface"
+
+                throw InstantiationException(msg)
+            }
+
             return it
         }
 
@@ -64,12 +73,12 @@ abstract class SingleInstance<T> :
             }
         }
 
-        val newManager = instantiate()
+        val newInstance = instantiate()
 
-        Console.log("$tag New instance: ${newManager.hashCode()}")
+        Console.log("$tag New instance: ${newInstance.hashCode()}")
 
-        val result = newManager != instance
-        instance = newManager
+        val result = newInstance != instance
+        instance = newInstance
 
         Console.log("$tag New instance confirmed: ${instance.hashCode()}")
 

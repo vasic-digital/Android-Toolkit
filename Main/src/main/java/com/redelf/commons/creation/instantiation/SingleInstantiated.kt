@@ -1,0 +1,3 @@
+package com.redelf.commons.creation.instantiation
+
+interface SingleInstantiated

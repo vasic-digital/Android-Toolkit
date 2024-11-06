@@ -6,7 +6,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 open class BasicConnectivityHandler(
 
-    defaultConnectionBlockState: ConnectionBlockingBehavior = ConnectionBlockingBehavior.DO_NOT_BLOCK
+    defaultConnectionBlockState: ConnectionBlockingBehavior =
+        ConnectionBlockingBehavior.DO_NOT_BLOCK
 
 ) : ConnectivityHandler {
 
@@ -14,7 +15,11 @@ open class BasicConnectivityHandler(
 
     override fun isNetworkAvailable(ctx: Context): Boolean {
 
-        Console.log("Connectivity handler :: ${hashCode()}")
+        Console.log(
+
+            "Connectivity :: Handler :: ${this.javaClass.simpleName} ${hashCode()} " +
+                    ":: isNetworkAvailable"
+        )
 
         if (blockConnection.get()) {
 

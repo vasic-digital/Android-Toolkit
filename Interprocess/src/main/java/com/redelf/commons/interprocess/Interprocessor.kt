@@ -1,16 +1,11 @@
 package com.redelf.commons.interprocess
 
 import android.content.Intent
-import com.google.gson.Gson
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.reflect.KClass
 
 object Interprocessor : Interprocessing, Registration<InterprocessProcessor> {
 
