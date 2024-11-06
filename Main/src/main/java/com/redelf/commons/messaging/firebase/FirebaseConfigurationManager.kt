@@ -11,6 +11,8 @@ import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 @SuppressLint("StaticFieldLeak")
 object FirebaseConfigurationManager :
@@ -83,8 +85,23 @@ object FirebaseConfigurationManager :
                     Console.error("$logTag Config params update failed")
                 }
             }
+            .addOnFailureListener {
 
-        latch.await()
+                Console.error("$logTag Config params update failed (2)")
+
+                latch.countDown()
+            }
+
+        if (latch.await(60, TimeUnit.SECONDS)) {
+
+            Console.log("$logTag SUCCESS")
+
+        } else {
+
+            val e = TimeoutException("Timeout-ed while waiting for firebase manager to load data")
+
+            recordException(e)
+        }
     }
 
     @Throws(IllegalArgumentException::class)
