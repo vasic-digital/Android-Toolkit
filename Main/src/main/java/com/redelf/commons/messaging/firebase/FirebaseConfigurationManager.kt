@@ -34,6 +34,13 @@ object FirebaseConfigurationManager :
 
     override fun isLazyReady() = loaded.get()
 
+    override fun reset(): Boolean {
+
+        loaded.set(false)
+
+        return super.reset()
+    }
+
     override fun load() {
 
         val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
