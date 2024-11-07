@@ -848,6 +848,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
             } catch (e: Exception) {
 
+                Console.error("$tag ERROR: ${e.message}")
+
                 recordException(e)
             }
         }
