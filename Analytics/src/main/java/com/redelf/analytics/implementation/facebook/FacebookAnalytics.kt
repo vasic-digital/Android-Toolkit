@@ -8,7 +8,6 @@ import com.redelf.analytics.exception.AnalyticsNullParameterException
 import com.redelf.analytics.exception.AnalyticsParametersCountException
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 
