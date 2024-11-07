@@ -11,24 +11,28 @@ import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("StaticFieldLeak")
 object FirebaseConfigurationManager :
 
-    ContextualManager<ConcurrentHashMap<String, FirebaseRemoteConfigValue>>(),
+    Loadable,
     ResourceDefaults,
-    Loadable
-
-{
+    ContextualManager<ConcurrentHashMap<String, FirebaseRemoteConfigValue>>() {
 
     override val persist = false
     override val storageKey = "remote_configuration"
 
-    private const val logTag = "FirebaseConfigurationManager ::"
+    private const val LOG_TAG = "FirebaseConfigurationManager ::"
 
-    override fun getLogTag() = "$logTag ${hashCode()} ::"
+    override fun getLogTag() = "$LOG_TAG ${hashCode()} ::"
 
     override fun getWho(): String? = FirebaseConfigurationManager::class.java.simpleName
+
+    private val loaded = AtomicBoolean()
+
+    override fun isLazyReady() = loaded.get()
 
     override fun load() {
 
@@ -40,7 +44,7 @@ object FirebaseConfigurationManager :
 
         remoteConfig.setConfigSettingsAsync(configSettings)
 
-        Console.log("$logTag Config params fetching")
+        Console.log("$LOG_TAG Config params fetching")
 
         val latch = CountDownLatch(1)
 
@@ -50,7 +54,7 @@ object FirebaseConfigurationManager :
                 if (task.isSuccessful) {
 
                     val updated = task.result
-                    val msg = "$logTag Config params updated: $updated"
+                    val msg = "$LOG_TAG Config params updated: $updated"
 
                     if (updated) {
 
@@ -63,7 +67,7 @@ object FirebaseConfigurationManager :
 
                     val all = remoteConfig.all
 
-                    Console.log("$logTag Config params obtained: $all")
+                    Console.log("$LOG_TAG Config params obtained: $all")
 
                     try {
 
@@ -80,11 +84,26 @@ object FirebaseConfigurationManager :
 
                 } else {
 
-                    Console.error("$logTag Config params update failed")
+                    Console.error("$LOG_TAG Config params update failed")
                 }
+
+                loaded.set(true)
+
+            }.addOnFailureListener {
+
+                loaded.set(true)
             }
 
-        latch.await()
+        try {
+
+            latch.await(60, TimeUnit.SECONDS)
+
+        } catch (e: Exception) {
+
+            loaded.set(true)
+
+            recordException(e)
+        }
     }
 
     @Throws(IllegalArgumentException::class)
