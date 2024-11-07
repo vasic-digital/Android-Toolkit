@@ -190,7 +190,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
         if (!isLazyReady()) {
 
-            if (DEBUG.get()) Console.log("LAzy not ready")
+            if (DEBUG.get()) Console.warning("Lazy not ready")
             return
         }
 
