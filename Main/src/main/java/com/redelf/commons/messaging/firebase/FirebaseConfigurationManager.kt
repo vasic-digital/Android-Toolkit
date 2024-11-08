@@ -11,7 +11,6 @@ import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -102,14 +101,14 @@ object FirebaseConfigurationManager :
 
                 loaded.set(true)
 
-                Console.error("$logTag Config params update failed (2)")
+                Console.error("$LOG_TAG Config params update failed (2)")
 
                 latch.countDown()
             }
 
         if (latch.await(60, TimeUnit.SECONDS)) {
 
-            Console.log("$logTag SUCCESS")
+            Console.log("$LOG_TAG SUCCESS")
 
         try {
 
