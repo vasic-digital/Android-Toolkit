@@ -174,6 +174,8 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
         }
     }
 
+    protected open fun isLazyReady() = true
+
     private fun onForeground() {
 
         if (DEBUG.get()) Console.log("Application is in foreground")
@@ -186,8 +188,20 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
             return
         }
 
+        if (isLazyReady()) {
+
+            if (DEBUG.get()) Console.log("Lazy :: Ready :: Who = ${getWho()}")
+
+        } else {
+
+            if (DEBUG.get()) Console.warning("Lazy :: Not ready :: Who = ${getWho()}")
+
+            return
+        }
+
         if (isLocked()) {
 
+            if (DEBUG.get()) Console.log("Locked")
             return
         }
 
