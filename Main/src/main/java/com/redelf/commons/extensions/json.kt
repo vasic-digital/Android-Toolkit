@@ -19,7 +19,7 @@ fun json(what: Any): String {
     return ""
 }
 
-fun Any.json(): String {
+fun Any.toJson(): String {
 
     return json(this)
 }
