@@ -5,8 +5,9 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
+import com.redelf.commons.data.Empty
 
-data class Credentials @JsonCreator constructor(
+class Credentials @JsonCreator constructor(
 
     @JsonProperty("username")
     @SerializedName("username")
@@ -16,11 +17,14 @@ data class Credentials @JsonCreator constructor(
     @SerializedName("password")
     var password: String? = ""
 
-) {
+) : Empty {
 
     constructor() : this("", "")
 
-    fun isEmpty(): Boolean = TextUtils.isEmpty(username) || TextUtils.isEmpty(password)
+    override fun isEmpty(): Boolean = TextUtils.isEmpty(username) || TextUtils.isEmpty(password)
+
+    override fun isNotEmpty() = !isEmpty()
+
     override fun equals(other: Any?): Boolean {
 
         if (this === other) return true
