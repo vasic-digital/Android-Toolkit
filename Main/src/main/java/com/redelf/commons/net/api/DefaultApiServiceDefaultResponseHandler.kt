@@ -1,6 +1,6 @@
 package com.redelf.commons.net.api
 
-import com.redelf.commons.exception.credentials.CredentialsInvalidException
+import com.redelf.commons.authentification.exception.CredentialsInvalidException
 import com.redelf.commons.obtain.OnObtain
 import retrofit2.Response
 import java.io.IOException
