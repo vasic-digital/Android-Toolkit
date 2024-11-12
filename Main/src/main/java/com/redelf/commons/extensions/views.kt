@@ -1,7 +1,6 @@
 package com.redelf.commons.extensions
 
 import android.app.Activity
-import android.graphics.Color
 import android.text.Html
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -56,9 +55,9 @@ data class ColoredText @JsonCreator constructor(
 
             what.forEach {
 
-                val meta = ColoredWord(it)
+                val item = ColoredWord(it)
 
-                items.add(meta)
+                items.add(item)
             }
 
             return items

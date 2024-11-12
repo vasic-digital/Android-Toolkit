@@ -6,7 +6,6 @@ import com.redelf.commons.connectivity.indicator.connection.ConnectionAvailableS
 import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCallback
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.context.ContextAvailability
-import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.dependency.Chainable
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isOnMainThread
@@ -17,14 +16,10 @@ import com.redelf.commons.net.connectivity.ConnectivityHandler
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.refreshing.AutoRefreshing
 import com.redelf.commons.stateful.State
-import java.util.Timer
-import java.util.TimerTask
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class ConnectionAvailabilityService(
 

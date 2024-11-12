@@ -4,20 +4,27 @@ import android.text.TextUtils
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
+import com.google.gson.internal.LinkedTreeMap
+import com.redelf.commons.data.Empty
 
-data class Credentials @JsonCreator constructor(
+class Credentials @JsonCreator constructor(
 
     @JsonProperty("username")
     @SerializedName("username")
-    val username: String? = "",
+    var username: String? = "",
 
     @JsonProperty("password")
     @SerializedName("password")
-    val password: String? = ""
+    var password: String? = ""
 
-) {
+) : Empty {
 
-    fun isEmpty(): Boolean = TextUtils.isEmpty(username) || TextUtils.isEmpty(password)
+    constructor() : this("", "")
+
+    override fun isEmpty(): Boolean = TextUtils.isEmpty(username) || TextUtils.isEmpty(password)
+
+    override fun isNotEmpty() = !isEmpty()
+
     override fun equals(other: Any?): Boolean {
 
         if (this === other) return true
@@ -34,5 +41,13 @@ data class Credentials @JsonCreator constructor(
         var result = username.hashCode()
         result = 31 * result + password.hashCode()
         return result
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(ClassCastException::class)
+    constructor(treeMap: LinkedTreeMap<String, Any>) : this() {
+
+        username = treeMap["username"].toString()
+        password = treeMap["password"].toString()
     }
 }

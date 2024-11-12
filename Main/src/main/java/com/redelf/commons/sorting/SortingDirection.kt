@@ -1,7 +1,23 @@
 package com.redelf.commons.sorting
 
-enum class SortingDirection {
+enum class SortingDirection(private val direction: String) {
 
-    ASCENDING,
-    DESCENDING
+    ASCENDING("ASC"),
+    DESCENDING("DESC");
+
+    companion object {
+
+        fun fromString(direction: String): SortingDirection? {
+
+            SortingDirection.entries.forEach {
+
+                if (it.direction == direction) {
+
+                    return it
+                }
+            }
+
+            return null
+        }
+    }
 }

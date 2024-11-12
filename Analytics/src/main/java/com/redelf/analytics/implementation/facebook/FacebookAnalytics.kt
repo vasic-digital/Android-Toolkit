@@ -1,19 +1,13 @@
 package com.redelf.analytics.implementation.facebook
 
 import android.os.Bundle
-import com.facebook.appevents.AppEventsConstants
+import com.facebook.appevents.AppEventsLogger
 import com.redelf.analytics.Analytics
 import com.redelf.analytics.AnalyticsParameter
-
-import com.facebook.appevents.AppEventsLogger
-import com.redelf.analytics.exception.AnalyticsIllegalArgumentsException
 import com.redelf.analytics.exception.AnalyticsNullParameterException
 import com.redelf.analytics.exception.AnalyticsParametersCountException
-import com.redelf.analytics.implementation.firebase.FirebaseAnalyticsEvent
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.extensions.isEmpty
-import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 

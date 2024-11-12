@@ -773,11 +773,13 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
+    @Synchronized
     protected open fun onRegistrationWithGoogleCompleted(tokenId: String) {
 
         Console.log("Registration with Google completed: $tokenId")
     }
 
+    @Synchronized
     protected open fun onRegistrationWithGoogleFailed() {
 
         Console.error("Registration with Google failed")
