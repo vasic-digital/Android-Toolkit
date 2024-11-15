@@ -2,6 +2,6 @@
 <resources>
 
     <!-- Debugging -->
-    <bool name="debug">true</bool>
+    <bool name="debug">false</bool>
 
 </resources>
