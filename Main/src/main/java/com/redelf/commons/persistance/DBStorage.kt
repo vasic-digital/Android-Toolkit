@@ -31,7 +31,7 @@ object DBStorage : Storage<String> {
         TODO: Make possible for data managers to have multiple databases - each manager its own
     */
 
-    var DEBUG: Boolean? = null
+    val DEBUG = AtomicBoolean()
 
     private const val DATABASE_VERSION = 1
     private const val DATABASE_NAME = "sdb"
@@ -121,7 +121,7 @@ object DBStorage : Storage<String> {
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-            if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
+            if (DEBUG.get()) Console.log(
 
                 "Old version: $oldVersion :: New version: $newVersion"
             )
@@ -168,7 +168,7 @@ object DBStorage : Storage<String> {
 
         val tag = "Initialize ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         try {
 
@@ -228,14 +228,14 @@ object DBStorage : Storage<String> {
             columnKey = columnKey()
             columnValue = columnValue()
 
-            if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
+            if (DEBUG.get()) Console.log(
 
                 "$tag dbName = '$dbName', rawName = '$rawName'"
             )
 
             dbHelper = DbHelper(ctx, dbName)
 
-            if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END")
+            if (DEBUG.get()) Console.log("$tag END")
 
         } catch (e: SQLException) {
 
@@ -272,7 +272,7 @@ object DBStorage : Storage<String> {
 
         val tag = "Put :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -316,7 +316,7 @@ object DBStorage : Storage<String> {
 
                             if (rowsUpdated > 0) {
 
-                                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
+                                if (DEBUG.get()) Console.log(
 
                                     "$tag END: rowsUpdated = $rowsUpdated, " +
                                             "length = ${value.length}"
@@ -329,7 +329,7 @@ object DBStorage : Storage<String> {
 
                             if (rowsInserted > 0) {
 
-                                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
+                                if (DEBUG.get()) Console.log(
 
                                     "$tag END: rowsInserted = $rowsInserted, " +
                                             "length = ${value.length}"
@@ -381,7 +381,7 @@ object DBStorage : Storage<String> {
         val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
         val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         withDb { db ->
 
@@ -434,11 +434,11 @@ object DBStorage : Storage<String> {
 
             if (isNotEmpty(result)) {
 
-                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END")
+                if (DEBUG.get()) Console.log("$tag END")
 
             } else {
 
-                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END: Nothing found")
+                if (DEBUG.get()) Console.log("$tag END: Nothing found")
             }
 
             latch.countDown()
@@ -460,7 +460,7 @@ object DBStorage : Storage<String> {
             return false
         }
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -491,7 +491,7 @@ object DBStorage : Storage<String> {
 
                             if (res) {
 
-                                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END")
+                                if (DEBUG.get()) Console.log("$tag END")
 
                             } else {
 
@@ -534,7 +534,7 @@ object DBStorage : Storage<String> {
 
         val tag = "Delete :: All ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
@@ -562,7 +562,7 @@ object DBStorage : Storage<String> {
 
                             if (res) {
 
-                                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag END")
+                                if (DEBUG.get()) Console.log("$tag END")
 
                             } else {
 
@@ -602,7 +602,7 @@ object DBStorage : Storage<String> {
 
         val tag = "Delete :: Database ::"
 
-        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         try {
 
@@ -612,7 +612,7 @@ object DBStorage : Storage<String> {
 
             if (result) {
 
-                if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log(
+                if (DEBUG.get()) Console.log(
 
                     "$tag END: DB '$dbName' has been deleted"
                 )
@@ -770,19 +770,19 @@ object DBStorage : Storage<String> {
 
             tag = "$tag db = ${db?.hashCode()} ::"
 
-            if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag START")
+            if (DEBUG.get()) Console.log("$tag START")
 
             db?.let {
 
                 if (db.isOpen) {
 
-                    if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag EXECUTING")
+                    if (DEBUG.get()) Console.log("$tag EXECUTING")
 
                     executor.execute {
 
                         doWhat(db)
 
-                        if (DEBUG ?: BaseApplication.DEBUG.get()) Console.log("$tag EXECUTED")
+                        if (DEBUG.get()) Console.log("$tag EXECUTED")
                     }
 
                 } else {
