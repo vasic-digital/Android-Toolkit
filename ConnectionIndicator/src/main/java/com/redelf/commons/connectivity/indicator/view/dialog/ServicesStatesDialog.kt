@@ -21,6 +21,7 @@ class ServicesStatesDialog(
     ctx: Activity,
     dialogStyle: Int = 0,
     dialogLayout: Int = R.layout.dialog_services_states,
+    private val textColor: Int? = null,
     private val dialogAdapterItemLayout: Int = R.layout.layout_services_states_dialog_adapter,
 
     builder: AvailableStatefulServicesBuilder,
@@ -127,6 +128,7 @@ class ServicesStatesDialog(
             adapter = ServicesStatesDialogAdapter(
 
                 items,
+                textColor,
                 dialogAdapterItemLayout,
                 serviceCallback
             )

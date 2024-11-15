@@ -22,6 +22,7 @@ import java.util.concurrent.CopyOnWriteArraySet
 class ServicesStatesDialogAdapter(
 
     private val services: List<AvailableService>,
+    private val textColor: Int? = null,
     private val layout: Int = R.layout.layout_services_states_dialog_adapter,
     private val serviceCallback: ServicesStatesDialogCallback
 
@@ -126,6 +127,11 @@ class ServicesStatesDialogAdapter(
         }
 
         viewHolder.title?.text = service.getWho()
+
+        textColor?.let {
+
+            viewHolder.title?.setTextColor(it)
+        }
 
         val origin = this@ServicesStatesDialogAdapter::class.java.simpleName
 

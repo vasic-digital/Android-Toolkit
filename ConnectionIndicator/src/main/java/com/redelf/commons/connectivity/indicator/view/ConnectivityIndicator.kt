@@ -36,6 +36,7 @@ class ConnectivityIndicator :
     var origin = ""
     var dialogStyle = 0
     var showDetails = false
+    var textColor: Int? = null
     var dialogLayout = R.layout.dialog_services_states
     var dialogAdapterItemLayout: Int = R.layout.layout_services_states_dialog_adapter
 
@@ -358,6 +359,7 @@ class ConnectivityIndicator :
                     ctx,
                     dialogStyle,
                     dialogLayout,
+                    textColor,
                     dialogAdapterItemLayout,
                     builder = it,
                     serviceCallback = serviceCallback
