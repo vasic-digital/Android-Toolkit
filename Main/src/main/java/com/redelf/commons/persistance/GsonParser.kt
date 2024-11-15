@@ -58,7 +58,7 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
 
             return provider.obtain().toJson(body)
 
-        } catch (e: ConcurrentModificationException) {
+        } catch (e: Exception) {
 
             recordException(e)
         }
