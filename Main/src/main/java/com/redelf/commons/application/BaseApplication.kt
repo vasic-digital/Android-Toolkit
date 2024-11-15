@@ -34,6 +34,7 @@ import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.detectAllExpect
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
@@ -688,12 +689,22 @@ abstract class BaseApplication :
 
         val clazz = activity::class.java
 
-        TOP_ACTIVITY.add(clazz)
-        TOP_ACTIVITIES.add(clazz)
+        Executor.UI.execute {
 
-        Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${clazz.simpleName}")
+            try {
 
-        Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+                TOP_ACTIVITY.add(clazz)
+                TOP_ACTIVITIES.add(clazz)
+
+                Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${clazz.simpleName}")
+
+                Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
+        }
 
         super.onActivityPreResumed(activity)
     }
@@ -727,13 +738,23 @@ abstract class BaseApplication :
 
     override fun onActivityPrePaused(activity: Activity) {
 
-        val clazz = activity::class.java
+        try {
 
-        TOP_ACTIVITIES.remove(clazz)
+            val clazz = activity::class.java
 
-        Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
+            if (TOP_ACTIVITIES.contains(clazz)) {
 
-        Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+                TOP_ACTIVITIES.remove(clazz)
+            }
+
+            Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
+
+            Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
 
         super.onActivityPrePaused(activity)
     }
