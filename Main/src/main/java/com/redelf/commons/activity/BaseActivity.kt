@@ -85,12 +85,31 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
     private var unregistrar: Unregistrar? = null
     private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
+    private val PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE = 111
     private var attachmentsDialog: AttachFileDialog? = null
     private lateinit var backPressedCallback: OnBackPressedCallback
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val recordLogs = BaseApplication.takeContext().canRecordApplicationLogs()
+
+        if (recordLogs && !Console.filesystemGranted()) {
+
+            val permissions = arrayOf(
+
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+
+            ActivityCompat.requestPermissions(
+
+                this,
+                permissions,
+                PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE
+            )
+        }
 
         val filter = IntentFilter()
 
@@ -190,6 +209,19 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
                 }
 
                 return
+            }
+
+            PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE -> {
+
+                if (
+
+                    (grantResults.isNotEmpty() && grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED)
+
+                ) {
+
+                    BaseApplication.takeContext().enableLogsRecording()
+                }
             }
         }
     }

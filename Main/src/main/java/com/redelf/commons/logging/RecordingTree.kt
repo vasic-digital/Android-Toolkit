@@ -1,13 +1,17 @@
 package com.redelf.commons.logging
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Environment
 import android.util.Log
+import androidx.core.content.ContextCompat
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.appendText
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
-import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toHumanReadableString
+import okio.IOException
 import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
@@ -27,6 +31,14 @@ class RecordingTree(
         private const val MAX_TAG_LENGTH = 23
         private const val MAX_LOG_LENGTH = 4000
         private val ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$")
+
+        fun filesystemGranted(): Boolean {
+
+            val ctx = BaseApplication.takeContext()
+            val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+            val granted = ContextCompat.checkSelfPermission(ctx, permission)
+            return granted == PackageManager.PERMISSION_GRANTED
+        }
     }
 
     private var file: File? = null
@@ -140,6 +152,11 @@ class RecordingTree(
     @SuppressLint("LogNotTimber")
     private fun writeLog(tag: String?, logs: String) {
 
+        if (!filesystemGranted()) {
+
+            return
+        }
+
         try {
 
             val cal = Calendar.getInstance()
@@ -160,12 +177,23 @@ class RecordingTree(
                 val fileName = "$formattedDate-$destination-$session.txt"
                 val downloadsFolder = Environment.getExternalStoragePublicDirectory(dir)
 
-                file = File(downloadsFolder, fileName)
+                if (downloadsFolder.exists() != true) {
 
-                if (file?.exists() != true && file?.createNewFile() != true) {
-
-                    Timber.e("No logs gathering file crated at: ${file?.absolutePath}")
+                    val e = IOException("Directory doesn't exist: ${downloadsFolder?.absolutePath}")
+                    e.printStackTrace()
+                    return
                 }
+
+                val wFile = File(downloadsFolder, fileName)
+
+                if (wFile.exists() != true && wFile.createNewFile() != true) {
+
+                    val e = IOException("No logs gathering file crated at: ${file?.absolutePath}")
+                    e.printStackTrace()
+                    return
+                }
+
+                file = wFile
             }
 
             val tagVal = if (isNotEmpty(tag)) {
@@ -181,17 +209,18 @@ class RecordingTree(
 
                 if (file?.appendText("$datetime :: $tagVal$logs") != true) {
 
-                    Timber.e("Failed to append text into: ${file?.absolutePath}")
+                    val e = IOException("Failed to append text into: ${file?.absolutePath}")
+                    e.printStackTrace()
                 }
 
             } catch (e: Exception) {
 
-                recordException(e)
+                e.printStackTrace()
             }
 
         } catch (e: Exception) {
 
-            recordException(e)
+            e.printStackTrace()
         }
     }
 }

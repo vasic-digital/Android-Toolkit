@@ -595,7 +595,7 @@ fun File.appendText(text: String): Boolean {
 
     } catch (e: Exception) {
 
-        timber.log.Timber.e(e)
+        e.printStackTrace()
 
         return false
     }

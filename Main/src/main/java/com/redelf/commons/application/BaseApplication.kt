@@ -450,6 +450,18 @@ abstract class BaseApplication :
 
     protected open fun isStrictModeDisabled() = !DEBUG.get()
 
+    fun enableLogsRecording() {
+
+        if (DEBUG.get() || canRecordApplicationLogs()) {
+
+            Console.initialize(canRecordApplicationLogs(), production = isProduction())
+
+            Console.info("Application :: Initializing")
+
+            enableStrictMode()
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -463,15 +475,7 @@ abstract class BaseApplication :
         DEBUG.set(CONTEXT.resources.getBoolean(R.bool.debug))
         STRICT_MODE_DISABLED.set(isStrictModeDisabled())
 
-        if (DEBUG.get() || canRecordApplicationLogs()) {
-
-            Console.initialize(canRecordApplicationLogs(), production = isProduction())
-
-            Console.info("Application :: Initializing")
-
-            enableStrictMode()
-        }
-
+        enableLogsRecording()
 
         Cronet.initialize(applicationContext)
         DataManagement.initialize(applicationContext)

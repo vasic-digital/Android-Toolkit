@@ -1,10 +1,18 @@
 package com.redelf.commons.logging
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import com.redelf.commons.application.BaseApplication
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 object Console : LogParametrized {
+
+    fun filesystemGranted(): Boolean {
+
+        return RecordingTree.filesystemGranted()
+    }
 
     private var tree: Timber.Tree? = null
     private val production = AtomicBoolean(false)
@@ -19,6 +27,11 @@ object Console : LogParametrized {
         production: Boolean = false,
 
     ) {
+
+        if (logsRecording && !filesystemGranted()) {
+
+            return
+        }
 
         setFailOnError(failOnError)
         setLogsRecording(logsRecording)
