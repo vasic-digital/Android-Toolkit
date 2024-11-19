@@ -35,15 +35,22 @@ abstract class DataManagement<T> :
     Lockable,
     Abort,
     Contextual<BaseApplication>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>> {
+    ExecuteWithResult<DataManagement.DataTransaction<T>>
+
+{
 
     companion object {
 
         lateinit var STORAGE: EncryptedPersistence
 
         /*
-            TODO: Refactor - Move away from the static context access
+            TODO:
+             - Refactor - Move away from the static context access
+             - Every manager to have its own version which is going to be appended to storage key
+             - Obtain method to catch class cast exception, and to recreate the data object on catch
+             - Make sure that persistence is independent on package path and class name
         */
+
         val DEBUG = AtomicBoolean()
         val ENCRYPT = AtomicBoolean()
         val LOG_RAW_DATA = AtomicBoolean()
