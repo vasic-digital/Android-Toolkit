@@ -4,6 +4,8 @@ interface Updatable<T> {
 
     fun update()
 
+    fun isUpdating(): Boolean
+
     fun update(identifier: T): Boolean
 
     fun onUpdated(identifier: T)

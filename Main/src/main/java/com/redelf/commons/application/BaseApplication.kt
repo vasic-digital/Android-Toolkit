@@ -205,6 +205,8 @@ abstract class BaseApplication :
     protected val managersReady = AtomicBoolean()
     protected val audioFocusTag = "Audio focus ::"
 
+    private val updating = AtomicBoolean()
+    private val updatingTag = "Updating ::"
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private var telephonyManager: TelephonyManager? = null
@@ -1052,6 +1054,15 @@ abstract class BaseApplication :
 
     protected open fun getUpdatesCodes() = setOf<Long>()
 
+    override fun isUpdating() : Boolean {
+
+        val updating = updating.get()
+
+        Console.log("$updatingTag GET :: Updating = $updating")
+
+        return updating
+    }
+
     override fun update() {
 
         /*
@@ -1080,6 +1091,11 @@ abstract class BaseApplication :
             */
             if (versionCode >= code && isUpdateAvailable(code)) {
 
+                if (!isUpdating()) {
+
+                    setUpdating(true)
+                }
+
                 Console.log("$tag Code :: $versionCode :: START")
 
                 try {
@@ -1103,6 +1119,8 @@ abstract class BaseApplication :
                 }
             }
         }
+
+        setUpdating(false)
     }
 
     override fun update(identifier: Long) = false
@@ -1195,5 +1213,12 @@ abstract class BaseApplication :
             val e = IllegalStateException("Failed to setup obfuscator")
             recordException(e)
         }
+    }
+
+    private fun setUpdating(value: Boolean) {
+
+        Console.log("$updatingTag SET :: Updating = $value")
+
+        updating.set(value)
     }
 }
