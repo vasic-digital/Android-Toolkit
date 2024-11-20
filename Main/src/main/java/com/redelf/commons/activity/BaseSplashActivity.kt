@@ -17,7 +17,7 @@ abstract class BaseSplashActivity : BaseActivity() {
 
             val alive = BaseApplication.TOP_ACTIVITY.last()
 
-            val tag = "${BaseApplication.ACTIVITY_LIFECYCLE_TAG} :: Alive ::"
+            val tag = "${BaseApplication.ACTIVITY_LIFECYCLE_TAG} Alive ::"
 
             Console.log("$tag Activity: ${alive.simpleName}")
 
