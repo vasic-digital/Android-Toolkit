@@ -7,6 +7,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Context.POWER_SERVICE
 import android.content.Intent
 import android.content.res.Resources.NotFoundException
 import android.database.Cursor
@@ -15,6 +16,7 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.os.StrictMode
 import android.os.strictmode.Violation
 import android.provider.OpenableColumns
@@ -632,6 +634,60 @@ fun Context.toast(msg: String, short: Boolean = false) {
     Handler(Looper.getMainLooper()).post {
 
         Toast.makeText(applicationContext, msg, length).show()
+    }
+}
+
+/** @noinspection deprecation
+ */
+fun Context.wakeUpScreen() {
+
+    val tag = "Wake up screen ::"
+
+    try {
+
+        Console.log("$tag START")
+
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager?
+
+        powerManager?.let {
+
+            val isScreenOn = it.isInteractive
+
+            if (isScreenOn) {
+
+                Console.log("$tag END :: Screen is on")
+
+            } else {
+
+                val tag = "Sekur:WakeLock:1"
+
+                val wl = it.newWakeLock(
+
+                    PowerManager.FULL_WAKE_LOCK or
+                            PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                            PowerManager.ON_AFTER_RELEASE,
+                    tag
+                )
+
+                wl.acquire(2000)
+
+                val wlCpu = it.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)
+
+                wlCpu.acquire(2000)
+
+                Console.log("$tag END")
+            }
+        }
+
+        if (powerManager == null) {
+
+            Console.error("$tag PowerManager is null")
+        }
+
+    } catch (e: Exception) {
+
+        recordException(e)
+        Console.error("$tag END")
     }
 }
 
