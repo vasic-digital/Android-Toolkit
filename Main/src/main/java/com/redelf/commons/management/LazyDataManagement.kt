@@ -21,6 +21,8 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
     private val saved = AtomicBoolean()
     private val registered = AtomicBoolean()
 
+    // FIXME: Handle the termination broadcast (persist all) - #SMail
+
     private val receiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context?, intent: Intent?) {
