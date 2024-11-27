@@ -106,23 +106,24 @@ object FirebaseConfigurationManager :
                 latch.countDown()
             }
 
-        if (latch.await(60, TimeUnit.SECONDS)) {
-
-            Console.log("$LOG_TAG SUCCESS")
-
         try {
 
-            latch.await(60, TimeUnit.SECONDS)
+            if (latch.await(60, TimeUnit.SECONDS)) {
+
+                Console.log("$LOG_TAG SUCCESS")
+
+            } else {
+
+                val e = TimeoutException("Timeout-ed while waiting for firebase manager to load data")
+
+                recordException(e)
+
+                loaded.set(true)
+            }
 
         } catch (e: Exception) {
 
             loaded.set(true)
-
-            recordException(e)
-        }
-        } else {
-
-            val e = TimeoutException("Timeout-ed while waiting for firebase manager to load data")
 
             recordException(e)
         }
