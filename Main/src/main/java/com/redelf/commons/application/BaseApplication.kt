@@ -468,6 +468,16 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
+        try {
+
+            val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
+            startService(intent)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+
         initFirebaseWithAnalytics()
 
         prefs = SharedPreferencesStorage(applicationContext)
