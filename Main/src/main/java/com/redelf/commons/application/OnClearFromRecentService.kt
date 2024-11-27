@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.logging.Console
+import java.util.concurrent.atomic.AtomicBoolean
 
 class OnClearFromRecentService : Service() {
 
@@ -12,6 +13,10 @@ class OnClearFromRecentService : Service() {
 
         const val TAG = "On clear from recent service ::"
         const val ACTION = "com.redelf.commons.application.OnClearFromRecentService"
+
+        private val RUNNING = AtomicBoolean()
+
+        fun isRunning() = RUNNING.get()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -23,12 +28,16 @@ class OnClearFromRecentService : Service() {
 
         Console.log("$TAG Started")
 
+        RUNNING.set(true)
+
         return START_NOT_STICKY
     }
 
     override fun onDestroy() {
 
         super.onDestroy()
+
+        RUNNING.set(false)
 
         Console.log("$TAG Destroyed")
     }

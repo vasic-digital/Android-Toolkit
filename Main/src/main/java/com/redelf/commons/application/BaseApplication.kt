@@ -468,16 +468,7 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
-        try {
-
-            val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
-            startService(intent)
-
-        } catch (e: Exception) {
-
-            recordException(e)
-        }
-
+        initTerminationListener()
         initFirebaseWithAnalytics()
 
         prefs = SharedPreferencesStorage(applicationContext)
@@ -510,6 +501,35 @@ abstract class BaseApplication :
         defaultManagerResources.putAll(populateDefaultManagerResources())
 
         doCreate()
+    }
+
+    fun initTerminationListener() {
+
+        val tag = "${OnClearFromRecentService.TAG} INIT ::"
+
+        Console.log("$tag START")
+
+        try {
+
+            if (OnClearFromRecentService.isRunning()) {
+
+                Console.log("$tag ALREADY RUNNING")
+                return
+            }
+
+            Console.log("$tag STARTING")
+
+            val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
+            startService(intent)
+
+            Console.log("$tag END")
+
+        } catch (e: Exception) {
+
+            Console.error("$tag ERROR: ${e.message}")
+
+            recordException(e)
+        }
     }
 
     private fun doCreate() {

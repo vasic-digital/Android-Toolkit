@@ -91,6 +91,9 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        BaseApplication.takeContext().initTerminationListener()
+
         super.onCreate(savedInstanceState)
 
         val recordLogs = BaseApplication.takeContext().canRecordApplicationLogs()
