@@ -1,8 +1,5 @@
 package com.redelf.commons.logging
 
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
 import com.redelf.commons.application.BaseApplication
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
