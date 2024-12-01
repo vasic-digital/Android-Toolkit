@@ -12,6 +12,11 @@ class UUIDtoStringMapWrapper(map: ConcurrentHashMap<UUID, String>) :
 
     constructor() : this(ConcurrentHashMap())
 
+    override fun failPartitionData(number: Int, error: Throwable) {
+
+        Console.error(error)
+    }
+
     override fun getClazz(): Class<UUIDtoStringMapWrapper> {
 
         return UUIDtoStringMapWrapper::class.java

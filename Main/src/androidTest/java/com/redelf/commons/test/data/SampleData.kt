@@ -54,6 +54,11 @@ data class SampleData @JsonCreator constructor(
         partitioningParallelized = true
     )
 
+    override fun failPartitionData(number: Int, error: Throwable) {
+
+        Console.error(error)
+    }
+
     override fun getClazz(): Class<SampleData> {
 
         return SampleData::class.java

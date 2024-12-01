@@ -18,6 +18,8 @@ interface Partitional<T> : Typed<T> {
     */
     fun setPartitionData(number: Int, data: Any?): Boolean
 
+    fun failPartitionData(number: Int, error: Throwable)
+
     /*
         TODO: To be fully-automatic, with possibility of override
     */

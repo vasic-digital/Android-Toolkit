@@ -13,6 +13,11 @@ class ObjectMapWrapper(map: ConcurrentHashMap<UUID, SampleData3>) :
 
     constructor() : this(ConcurrentHashMap())
 
+    override fun failPartitionData(number: Int, error: Throwable) {
+
+        Console.error(error)
+    }
+
     override fun getClazz(): Class<ObjectMapWrapper> {
 
         return ObjectMapWrapper::class.java

@@ -25,6 +25,11 @@ data class SampleDataOnlyP4 @JsonCreator constructor(
         partitioningOn = true
     )
 
+    override fun failPartitionData(number: Int, error: Throwable) {
+
+        Console.error(error)
+    }
+
     override fun getClazz(): Class<SampleDataOnlyP4> {
 
         return SampleDataOnlyP4::class.java

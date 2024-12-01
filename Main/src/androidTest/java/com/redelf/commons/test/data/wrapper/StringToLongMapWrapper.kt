@@ -11,6 +11,11 @@ class StringToLongMapWrapper(map: ConcurrentHashMap<String, Long>) :
 
     constructor() : this(ConcurrentHashMap())
 
+    override fun failPartitionData(number: Int, error: Throwable) {
+
+        Console.error(error)
+    }
+
     override fun getClazz(): Class<StringToLongMapWrapper> {
 
         return StringToLongMapWrapper::class.java

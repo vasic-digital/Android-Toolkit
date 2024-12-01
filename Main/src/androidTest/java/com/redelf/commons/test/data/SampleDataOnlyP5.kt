@@ -30,6 +30,11 @@ data class SampleDataOnlyP5 @JsonCreator constructor(
         return SampleDataOnlyP5::class.java
     }
 
+    override fun failPartitionData(number: Int, error: Throwable) {
+
+        Console.error(error)
+    }
+
     override fun isPartitioningEnabled() = partitioningOn
 
     fun isPartitioningDisabled() = !partitioningOn
