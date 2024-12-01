@@ -26,13 +26,14 @@ import java.util.concurrent.atomic.AtomicLong
 object DBStorage : Storage<String> {
 
     /*
-
-        TODO: Implement the mechanism to split data into chunks
         TODO: Make possible for data managers to have multiple databases - each manager its own
     */
 
     val DEBUG = AtomicBoolean()
 
+    private const val KEY_CHUNK = "chunk"
+    private const val KEY_CHUNKS = "chunks"
+    private const val MAX_CHUNK_SIZE = 500
     private const val DATABASE_VERSION = 1
     private const val DATABASE_NAME = "sdb"
     private const val DATABASE_NAME_SUFFIX_KEY = "DATABASE.NAME.SUFFIX.KEY"
@@ -262,7 +263,6 @@ object DBStorage : Storage<String> {
         return false
     }
 
-
     override fun put(key: String?, value: String): Boolean {
 
         if (isEmpty(key)) {
@@ -270,101 +270,37 @@ object DBStorage : Storage<String> {
             return false
         }
 
-        val tag = "Put :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
+        val tag = "Put :: DO :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        if (DEBUG.get()) Console.log("$tag START")
+        val chunksCount = value.length / MAX_CHUNK_SIZE
 
-        val result = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        doPut("${key}_$KEY_CHUNKS", chunksCount.toString())
 
-        withDb { db ->
+        if (chunksCount > 0) {
 
-            if (db?.isOpen == false) {
+            if (DEBUG.get()) Console.log("$tag START :: Chunks count = $chunksCount")
 
-                Console.warning("DB is not open")
+            var success = true
+            val chunks = value.chunked(MAX_CHUNK_SIZE)
 
-                latch.countDown()
+            chunks.forEachIndexed { index, chunk ->
 
-                return@withDb
+                if (!doPut("${key}_${KEY_CHUNK}_$index", chunk)) {
+
+                    Console.error("$tag ERROR :: Saving chunk failed :: Chunk = $index")
+
+                    success = false
+                }
             }
 
-            val res = transact(
+            return success
 
-                object : LocalDBStorageOperation<Boolean>(db) {
+        } else {
 
-                    override fun perform(): Boolean {
+            if (DEBUG.get()) Console.log("$tag START :: No chunks")
 
-                        try {
-
-                            val values = ContentValues().apply {
-
-                                put(columnKey, key)
-                                put(columnValue, value)
-                            }
-
-                            val selection = "$columnKey = ?"
-                            val selectionArgs = arrayOf(key)
-
-                            val rowsUpdated = db?.update(
-
-                                table,
-                                values,
-                                selection,
-                                selectionArgs
-
-                            ) ?: 0
-
-                            if (rowsUpdated > 0) {
-
-                                if (DEBUG.get()) Console.log(
-
-                                    "$tag END: rowsUpdated = $rowsUpdated, " +
-                                            "length = ${value.length}"
-                                )
-
-                                return true
-                            }
-
-                            val rowsInserted = (db?.insert(table(), null, values) ?: 0)
-
-                            if (rowsInserted > 0) {
-
-                                if (DEBUG.get()) Console.log(
-
-                                    "$tag END: rowsInserted = $rowsInserted, " +
-                                            "length = ${value.length}"
-                                )
-
-                                return true
-                            }
-
-                        } catch (e: Exception) {
-
-                            Console.error(tag, e.message ?: "Unknown error")
-
-                            Console.error(e)
-                        }
-
-                        Console.error(
-
-                            "$tag END :: Nothing was inserted or updated, " +
-                                    "length = ${value.length}"
-                        )
-
-                        return false
-                    }
-                }
-
-            ) ?: false
-
-            result.set(res)
-
-            latch.countDown()
+            return doPut("${key}_${KEY_CHUNK}_0", value)
         }
-
-        latch.await()
-
-        return result.get()
     }
 
     override fun get(key: String?): String {
@@ -802,5 +738,109 @@ object DBStorage : Storage<String> {
 
             Console.error(e)
         }
+    }
+
+    private fun doPut(key: String?, value: String): Boolean {
+
+        if (isEmpty(key)) {
+
+            return false
+        }
+
+        val tag = "Put :: DO :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
+
+        if (DEBUG.get()) Console.log("$tag START")
+
+        val result = AtomicBoolean()
+        val latch = CountDownLatch(1)
+
+        withDb { db ->
+
+            if (db?.isOpen == false) {
+
+                Console.warning("DB is not open")
+
+                latch.countDown()
+
+                return@withDb
+            }
+
+            val res = transact(
+
+                object : LocalDBStorageOperation<Boolean>(db) {
+
+                    override fun perform(): Boolean {
+
+                        try {
+
+                            val values = ContentValues().apply {
+
+                                put(columnKey, key)
+                                put(columnValue, value)
+                            }
+
+                            val selection = "$columnKey = ?"
+                            val selectionArgs = arrayOf(key)
+
+                            val rowsUpdated = db?.update(
+
+                                table,
+                                values,
+                                selection,
+                                selectionArgs
+
+                            ) ?: 0
+
+                            if (rowsUpdated > 0) {
+
+                                if (DEBUG.get()) Console.log(
+
+                                    "$tag END: rowsUpdated = $rowsUpdated, " +
+                                            "length = ${value.length}"
+                                )
+
+                                return true
+                            }
+
+                            val rowsInserted = (db?.insert(table(), null, values) ?: 0)
+
+                            if (rowsInserted > 0) {
+
+                                if (DEBUG.get()) Console.log(
+
+                                    "$tag END: rowsInserted = $rowsInserted, " +
+                                            "length = ${value.length}"
+                                )
+
+                                return true
+                            }
+
+                        } catch (e: Exception) {
+
+                            Console.error(tag, e.message ?: "Unknown error")
+
+                            Console.error(e)
+                        }
+
+                        Console.error(
+
+                            "$tag END :: Nothing was inserted or updated, " +
+                                    "length = ${value.length}"
+                        )
+
+                        return false
+                    }
+                }
+
+            ) ?: false
+
+            result.set(res)
+
+            latch.countDown()
+        }
+
+        latch.await()
+
+        return result.get()
     }
 }
