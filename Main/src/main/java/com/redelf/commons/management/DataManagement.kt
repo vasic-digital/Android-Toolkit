@@ -297,7 +297,7 @@ abstract class DataManagement<T> :
     override fun obtain(): T? {
 
         val clazz = typed?.getClazz()
-        val tag = "${getLogTag()} Obtain :: T = '${clazz?.simpleName}' ::"
+        val tag = "${getLogTag()} OBTAIN :: T = '${clazz?.simpleName}' ::"
 
         if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
 
