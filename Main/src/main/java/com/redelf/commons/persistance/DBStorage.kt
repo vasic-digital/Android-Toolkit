@@ -274,7 +274,8 @@ object DBStorage : Storage<String> {
 
         val tag = "Put :: DO :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-        val chunksCount = value.length / MAX_CHUNK_SIZE
+        val chunks = value.chunked(MAX_CHUNK_SIZE)
+        val chunksCount = chunks.size
 
         doPut("${key}_$KEY_CHUNKS", chunksCount.toString())
 
@@ -284,7 +285,7 @@ object DBStorage : Storage<String> {
 
             var index = 0
             var success = true
-            val chunks = value.chunked(MAX_CHUNK_SIZE)
+
 
             chunks.forEach { chunk ->
 
