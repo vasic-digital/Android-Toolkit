@@ -279,7 +279,7 @@ object DBStorage : Storage<String> {
 
         if (chunksCount > 0) {
 
-            if (DEBUG.get()) Console.log("$tag START :: Chunks count = $chunksCount")
+            Console.log("$tag START :: Chunks count = $chunksCount")
 
             var success = true
             val chunks = value.chunked(MAX_CHUNK_SIZE)
@@ -320,6 +320,10 @@ object DBStorage : Storage<String> {
                 return doGet("${key}_${KEY_CHUNK}_0")
 
             } else {
+
+                val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
+
+                Console.log("$tag START :: Chunks count = $chunks")
 
                 val result = StringBuilder()
 
@@ -811,7 +815,7 @@ object DBStorage : Storage<String> {
         val selection = "$columnKey = ?"
         val latch = CountDownLatch(1)
         val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
-        val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
+        val tag = "Get :: DO :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
         if (DEBUG.get()) Console.log("$tag START")
 
