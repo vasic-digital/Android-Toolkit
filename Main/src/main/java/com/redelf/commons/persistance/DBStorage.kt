@@ -12,6 +12,7 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.extensions.randomString
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Storage
@@ -305,84 +306,33 @@ object DBStorage : Storage<String> {
 
     override fun get(key: String?): String {
 
-        if (isEmpty(key)) {
+        try {
 
-            return ""
-        }
+            val chunks = doGet("${key}_$KEY_CHUNKS").toInt()
 
-        var result = ""
-        val selectionArgs = arrayOf(key)
-        val selection = "$columnKey = ?"
-        val latch = CountDownLatch(1)
-        val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
-        val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
+            if (chunks == 0) {
 
-        if (DEBUG.get()) Console.log("$tag START")
-
-        withDb { db ->
-
-            if (db?.isOpen == false) {
-
-                Console.warning("DB is not open")
-
-                latch.countDown()
-
-                return@withDb
-            }
-
-            try {
-
-                val cursor = db?.query(
-
-                    table,
-                    projection,
-                    selection,
-                    selectionArgs,
-                    null,
-                    null,
-                    null
-                )
-
-                cursor?.let {
-
-                    with(it) {
-
-                        while (moveToNext() && isEmpty(result)) {
-
-                            result = getString(getColumnIndexOrThrow(columnValue))
-                        }
-                    }
-                }
-
-                cursor?.close()
-
-            } catch (e: Exception) {
-
-                Console.error(
-
-                    "$tag SQL args :: Selection: $selection, Selection args:" +
-                            " ${selectionArgs.toMutableList()}, projection: " +
-                            "${projection.toMutableList()}", e.message ?: "Unknown error"
-                )
-
-                Console.error(e)
-            }
-
-            if (isNotEmpty(result)) {
-
-                if (DEBUG.get()) Console.log("$tag END")
+                return doGet("${key}_${KEY_CHUNK}_0")
 
             } else {
 
-                if (DEBUG.get()) Console.log("$tag END: Nothing found")
+                val result = StringBuilder()
+
+                for (i in 0..chunks - 1) {
+
+                    val chunked = doGet("${key}_${KEY_CHUNK}_$i")
+                    result.append(chunked)
+                }
+
+                return result.toString()
             }
 
-            latch.countDown()
+        } catch (e: Exception) {
+
+            recordException(e)
         }
 
-        latch.await()
-
-        return result
+        return ""
     }
 
     override fun delete(key: String?): Boolean {
@@ -842,5 +792,87 @@ object DBStorage : Storage<String> {
         latch.await()
 
         return result.get()
+    }
+
+    private fun doGet(key: String?): String {
+
+        if (isEmpty(key)) {
+
+            return ""
+        }
+
+        var result = ""
+        val selectionArgs = arrayOf(key)
+        val selection = "$columnKey = ?"
+        val latch = CountDownLatch(1)
+        val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
+        val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
+
+        if (DEBUG.get()) Console.log("$tag START")
+
+        withDb { db ->
+
+            if (db?.isOpen == false) {
+
+                Console.warning("DB is not open")
+
+                latch.countDown()
+
+                return@withDb
+            }
+
+            try {
+
+                val cursor = db?.query(
+
+                    table,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    null
+                )
+
+                cursor?.let {
+
+                    with(it) {
+
+                        while (moveToNext() && isEmpty(result)) {
+
+                            result = getString(getColumnIndexOrThrow(columnValue))
+                        }
+                    }
+                }
+
+                cursor?.close()
+
+            } catch (e: Exception) {
+
+                Console.error(
+
+                    "$tag SQL args :: Selection: $selection, Selection args:" +
+                            " ${selectionArgs.toMutableList()}, projection: " +
+                            "${projection.toMutableList()}", e.message ?: "Unknown error"
+                )
+
+                Console.error(e)
+            }
+
+            if (isNotEmpty(result)) {
+
+                if (DEBUG.get()) Console.log("$tag END")
+
+            } else {
+
+                if (DEBUG.get()) Console.log("$tag END: Nothing found")
+            }
+
+            latch.countDown()
+        }
+
+        latch.await()
+
+        return result
     }
 }
