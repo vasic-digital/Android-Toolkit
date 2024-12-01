@@ -328,7 +328,8 @@ abstract class DataManagement<T> :
         if (data == null && persist) {
 
             var empty: Boolean? = null
-            val pulled = STORAGE.pull<T?>(storageKey)
+            val key = storageKey
+            val pulled = STORAGE.pull<T?>(key)
 
             if (pulled is Empty) {
 
