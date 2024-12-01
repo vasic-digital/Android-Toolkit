@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit
 @SuppressLint("StaticFieldLeak")
 class SecretsManager private constructor(storageKeyToSet: String) :
 
-    ContextualManager<Secrets>(),
-    SingleInstantiated
+    SingleInstantiated,
+    ContextualManager<Secrets>()
 
 {
 
@@ -106,17 +106,17 @@ class SecretsManager private constructor(storageKeyToSet: String) :
                 }
             }
 
-            if (isEmpty(result?.takeValue())) {
+            if (isEmpty(result.takeValue())) {
 
                 latch.await(60, TimeUnit.SECONDS)
 
-                result?.firstTimeObtained?.set(true)
+                result.firstTimeObtained.set(true)
 
             } else {
 
-                result?.updateValue()
+                result.updateValue()
 
-                result?.firstTimeObtained?.set(false)
+                result.firstTimeObtained.set(false)
             }
 
             return result
