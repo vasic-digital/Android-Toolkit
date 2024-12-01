@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context> {
 
     protected open val lazySaving = false
+    protected open val savingOnTermination = false
     protected open val triggerOnBackgroundForScreenOff = false
 
     private val saved = AtomicBoolean()
@@ -26,6 +27,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
     private val terminationReceiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context?, intent: Intent?) {
+
+            if (!savingOnTermination) {
+
+                return
+            }
 
             intent?.let {
 
@@ -141,21 +147,24 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
             recordException(e)
         }
 
-        try {
+        if (savingOnTermination) {
 
-            val filter = IntentFilter()
+            try {
 
-            filter.addAction(OnClearFromRecentService.ACTION)
+                val filter = IntentFilter()
 
-            LocalBroadcastManager
-                .getInstance(subscriber.applicationContext)
-                .registerReceiver(terminationReceiver, filter)
+                filter.addAction(OnClearFromRecentService.ACTION)
 
-            terminationRegistered.set(true)
+                LocalBroadcastManager
+                    .getInstance(subscriber.applicationContext)
+                    .registerReceiver(terminationReceiver, filter)
 
-        } catch (e: Exception) {
+                terminationRegistered.set(true)
 
-            recordException(e)
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
         }
     }
 
