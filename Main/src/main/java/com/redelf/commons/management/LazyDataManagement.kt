@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.application.OnClearFromRecentService
 import com.redelf.commons.data.Empty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -20,8 +21,21 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
     private val saved = AtomicBoolean()
     private val registered = AtomicBoolean()
+    private val terminationRegistered = AtomicBoolean()
 
-    // FIXME: Handle the termination broadcast (persist all) - #SMail
+    private val terminationReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            intent?.let {
+
+                if (it.action == OnClearFromRecentService.ACTION) {
+
+                    onBackground("Termination received")
+                }
+            }
+        }
+    }
 
     private val receiver = object : BroadcastReceiver() {
 
@@ -46,7 +60,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                                 if (DEBUG.get()) Console.log("$tag OK")
 
-                                onBackground()
+                                onBackground(it.action ?: "")
 
                             } else {
 
@@ -57,7 +71,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                     BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND -> {
 
-                        onBackground()
+                        onBackground(it.action ?: "")
                     }
                 }
             }
@@ -74,7 +88,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 if (!conn.isNetworkAvailable(it)) {
 
-                    onBackground()
+                    onBackground("Offline")
                 }
             }
         }
@@ -126,22 +140,18 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
             recordException(e)
         }
-    }
-
-    override fun unregister(subscriber: Context) {
-
-        if (!registered.get()) {
-
-            return
-        }
 
         try {
 
+            val filter = IntentFilter()
+
+            filter.addAction(OnClearFromRecentService.ACTION)
+
             LocalBroadcastManager
                 .getInstance(subscriber.applicationContext)
-                .unregisterReceiver(receiver)
+                .registerReceiver(terminationReceiver, filter)
 
-            registered.set(false)
+            terminationRegistered.set(true)
 
         } catch (e: Exception) {
 
@@ -149,7 +159,42 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
         }
     }
 
-    override fun isRegistered(subscriber: Context) = registered.get()
+    override fun unregister(subscriber: Context) {
+
+        if (registered.get()) {
+
+            try {
+
+                LocalBroadcastManager
+                    .getInstance(subscriber.applicationContext)
+                    .unregisterReceiver(receiver)
+
+                registered.set(false)
+
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
+        }
+
+        if (terminationRegistered.get()) {
+
+            try {
+
+                LocalBroadcastManager
+                    .getInstance(subscriber.applicationContext)
+                    .unregisterReceiver(terminationReceiver)
+
+                terminationRegistered.set(false)
+
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
+        }
+    }
+
+    override fun isRegistered(subscriber: Context) = registered.get() && terminationRegistered.get()
 
     @Throws(IllegalStateException::class)
     override fun pushData(data: T) {
@@ -183,31 +228,34 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
         if (DEBUG.get()) Console.log("Application is in foreground")
     }
 
-    private fun onBackground() {
+    private fun onBackground(from: String) {
+
+        val tag = "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND ::"
 
         if (!lazySaving) {
+
+            if (DEBUG.get()) Console.warning("$tag SKIPPING")
 
             return
         }
 
         if (isLazyReady()) {
 
-            if (DEBUG.get()) Console.log("Lazy :: Ready :: Who = ${getWho()}")
+            if (DEBUG.get()) Console.log("$tag READY")
 
         } else {
 
-            if (DEBUG.get()) Console.warning("Lazy :: Not ready :: Who = ${getWho()}")
+            if (DEBUG.get()) Console.warning("$tag NOT READY")
 
             return
         }
 
         if (isLocked()) {
 
-            if (DEBUG.get()) Console.log("Locked")
+            if (DEBUG.get()) Console.log("LOCKED")
+
             return
         }
-
-        val tag = "Application went to background :: ${getWho()} ::"
 
         if (DEBUG.get()) Console.log("$tag START")
 
