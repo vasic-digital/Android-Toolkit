@@ -51,7 +51,7 @@ fun String.isBase64Encoded(): Boolean {
     return org.apache.commons.codec.binary.Base64.isBase64(this)
 }
 
-fun String.compress(lz4: Boolean = true): String? {
+fun String.compress(lz4: Boolean = true): ByteArray? {
 
     val uncompressed = this
 
@@ -71,7 +71,7 @@ fun String.compress(lz4: Boolean = true): String? {
             lz4Out.write(uncompressed.toByteArray())
             lz4Out.close()
 
-            return Base64.encodeToString(byteOS.toByteArray(), Base64.DEFAULT)
+            return byteOS.toByteArray()
 
         } else {
 
@@ -80,7 +80,7 @@ fun String.compress(lz4: Boolean = true): String? {
             gzipOut.write(uncompressed.toByteArray())
             gzipOut.close()
 
-            return Base64.encodeToString(byteOS.toByteArray(), Base64.DEFAULT)
+            return byteOS.toByteArray()
         }
 
 
@@ -92,22 +92,18 @@ fun String.compress(lz4: Boolean = true): String? {
     }
 }
 
-fun String.decompress(lz4: Boolean = true): String? {
+fun ByteArray.decompress(lz4: Boolean = true): String? {
 
-    val compressed: String = this
-
-    if (isEmpty(compressed)) {
+    if (this.isEmpty()) {
 
         return null
     }
 
     try {
 
-        val compressedData = Base64.decode(compressed, Base64.DEFAULT)
-
         if (lz4) {
 
-            val lz4In = BlockLZ4CompressorInputStream(ByteArrayInputStream(compressedData))
+            val lz4In = BlockLZ4CompressorInputStream(ByteArrayInputStream(this))
 
             val byteArrayOS = ByteArrayOutputStream()
             val buffer = ByteArray(1024)
@@ -122,7 +118,7 @@ fun String.decompress(lz4: Boolean = true): String? {
 
         } else {
 
-            val gzipIn = GZIPInputStream(ByteArrayInputStream(compressedData))
+            val gzipIn = GZIPInputStream(ByteArrayInputStream(this))
 
             val byteArrayOS = ByteArrayOutputStream()
             val buffer = ByteArray(1024)

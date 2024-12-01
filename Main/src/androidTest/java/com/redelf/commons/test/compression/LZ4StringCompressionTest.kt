@@ -19,10 +19,10 @@ class LZ4StringCompressionTest : BaseTest() {
         Assert.assertNotNull(compressed)
         Assert.assertNotEquals(text, compressed)
         Assert.assertEquals(text, decompressed)
-        Assert.assertTrue(compressed?.length != 0)
+        Assert.assertTrue(compressed?.isNotEmpty() == true)
 
         val textLength = text.length
-        val compressedLength = compressed?.length ?: 0
+        val compressedLength = compressed?.size ?: 0
 
         Assert.assertTrue(compressedLength > 0)
         Assert.assertTrue(compressedLength < textLength)
