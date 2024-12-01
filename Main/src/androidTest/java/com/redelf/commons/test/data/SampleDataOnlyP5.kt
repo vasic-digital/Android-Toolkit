@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Console
-import com.redelf.commons.partition.Partitional
+import com.redelf.commons.partition.Partitioning
 import java.lang.reflect.Type
 
 data class SampleDataOnlyP5 @JsonCreator constructor(
@@ -18,7 +18,7 @@ data class SampleDataOnlyP5 @JsonCreator constructor(
     @SerializedName("partition5")
     var partition5: String = "",
 
-) : Partitional<SampleDataOnlyP5> {
+) : Partitioning<SampleDataOnlyP5> {
 
     constructor() : this(
 

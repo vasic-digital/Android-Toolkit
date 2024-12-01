@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Console
-import com.redelf.commons.partition.Partitional
+import com.redelf.commons.partition.Partitioning
 import java.lang.reflect.Type
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -46,7 +46,7 @@ data class SampleData @JsonCreator constructor(
     @SerializedName("partition6")
     var partition6: CopyOnWriteArrayList<Double> = CopyOnWriteArrayList()
 
-) : Partitional<SampleData> {
+) : Partitioning<SampleData> {
 
     constructor() : this(
 

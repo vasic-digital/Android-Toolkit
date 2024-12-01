@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Console
-import com.redelf.commons.partition.Partitional
+import com.redelf.commons.partition.Partitioning
 import java.lang.reflect.Type
 import java.util.concurrent.ConcurrentHashMap
 
@@ -20,7 +20,7 @@ data class SampleDataOnlyP3 @JsonCreator constructor(
     @SerializedName("partition3")
     var partition3: ConcurrentHashMap<String, List<SampleData3>> = ConcurrentHashMap(),
 
-) : Partitional<SampleDataOnlyP3> {
+) : Partitioning<SampleDataOnlyP3> {
 
     constructor() : this(
 

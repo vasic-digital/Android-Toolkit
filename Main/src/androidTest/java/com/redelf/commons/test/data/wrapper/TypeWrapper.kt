@@ -2,13 +2,13 @@ package com.redelf.commons.test.data.wrapper
 
 import com.redelf.commons.data.model.Wrapper
 import com.redelf.commons.logging.Console
-import com.redelf.commons.partition.Partitional
+import com.redelf.commons.partition.Partitioning
 import org.junit.Assert
 
 abstract class TypeWrapper<T>(wrapped: T?) :
 
     Wrapper<T?>(wrapped),
-    Partitional<TypeWrapper<T?>>
+    Partitioning<TypeWrapper<T?>>
 
 {
 
