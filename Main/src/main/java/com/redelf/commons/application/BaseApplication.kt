@@ -138,7 +138,7 @@ abstract class BaseApplication :
                     return "unknown"
                 }
 
-                return vName
+                return vName ?: "unknown"
 
             } catch (e: NameNotFoundException) {
 

@@ -3,13 +3,13 @@ apply plugin: 'kotlin-android'
 
 android {
 
-    compileSdk 34
+    compileSdk 35
     namespace 'com.redelf.access'
 
     defaultConfig {
 
         minSdk 28
-        targetSdk 34
+        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

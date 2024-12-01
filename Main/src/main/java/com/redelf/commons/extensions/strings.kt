@@ -10,6 +10,8 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscation
+import org.apache.commons.compress.compressors.lz4.BlockLZ4CompressorInputStream
+import org.apache.commons.compress.compressors.lz4.BlockLZ4CompressorOutputStream
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -49,7 +51,7 @@ fun String.isBase64Encoded(): Boolean {
     return org.apache.commons.codec.binary.Base64.isBase64(this)
 }
 
-fun String.compress(): String? {
+fun String.compress(lz4: Boolean = true): String? {
 
     val uncompressed = this
 
@@ -61,12 +63,26 @@ fun String.compress(): String? {
     try {
 
         val byteOS = ByteArrayOutputStream()
-        val gzipOut = GZIPOutputStream(byteOS)
 
-        gzipOut.write(uncompressed.toByteArray())
-        gzipOut.close()
+        if (lz4) {
 
-        return Base64.encodeToString(byteOS.toByteArray(), Base64.DEFAULT)
+            val lz4Out = BlockLZ4CompressorOutputStream(byteOS)
+
+            lz4Out.write(uncompressed.toByteArray())
+            lz4Out.close()
+
+            return Base64.encodeToString(byteOS.toByteArray(), Base64.DEFAULT)
+
+        } else {
+
+            val gzipOut = GZIPOutputStream(byteOS)
+
+            gzipOut.write(uncompressed.toByteArray())
+            gzipOut.close()
+
+            return Base64.encodeToString(byteOS.toByteArray(), Base64.DEFAULT)
+        }
+
 
     } catch (e: IOException) {
 
@@ -76,7 +92,7 @@ fun String.compress(): String? {
     }
 }
 
-fun String.decompress(): String? {
+fun String.decompress(lz4: Boolean = true): String? {
 
     val compressed: String = this
 
@@ -88,18 +104,37 @@ fun String.decompress(): String? {
     try {
 
         val compressedData = Base64.decode(compressed, Base64.DEFAULT)
-        val byteArrayIS = ByteArrayInputStream(compressedData)
-        val gzipIn = GZIPInputStream(byteArrayIS)
-        val byteArrayOS = ByteArrayOutputStream()
-        val buffer = ByteArray(1024)
-        var bytesRead: Int
 
-        while (gzipIn.read(buffer).also { bytesRead = it } != -1) {
+        if (lz4) {
 
-            byteArrayOS.write(buffer, 0, bytesRead)
+            val lz4In = BlockLZ4CompressorInputStream(ByteArrayInputStream(compressedData))
+
+            val byteArrayOS = ByteArrayOutputStream()
+            val buffer = ByteArray(1024)
+            var bytesRead: Int
+
+            while (lz4In.read(buffer).also { bytesRead = it } != -1) {
+
+                byteArrayOS.write(buffer, 0, bytesRead)
+            }
+
+            return String(byteArrayOS.toByteArray(), Charsets.UTF_8)
+
+        } else {
+
+            val gzipIn = GZIPInputStream(ByteArrayInputStream(compressedData))
+
+            val byteArrayOS = ByteArrayOutputStream()
+            val buffer = ByteArray(1024)
+            var bytesRead: Int
+
+            while (gzipIn.read(buffer).also { bytesRead = it } != -1) {
+
+                byteArrayOS.write(buffer, 0, bytesRead)
+            }
+
+            return String(byteArrayOS.toByteArray(), Charsets.UTF_8)
         }
-
-        return String(byteArrayOS.toByteArray(), Charsets.UTF_8)
 
     } catch (e: IOException) {
 

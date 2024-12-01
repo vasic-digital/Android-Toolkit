@@ -90,13 +90,13 @@ def proxyRemoteProdPassword = obfuscator.obfuscate(pRemoteProdPassword)
 
 android {
 
-    compileSdk 34
+    compileSdk 35
     namespace 'com.redelf.commons'
 
     defaultConfig {
 
         minSdk 28
-        targetSdk 34
+        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

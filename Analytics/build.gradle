@@ -46,7 +46,7 @@ if (facebookProtocolScheme != "") {
 
 android {
 
-    compileSdk 34
+    compileSdk 35
     namespace 'com.redelf.analytics'
 
     defaultConfig {
