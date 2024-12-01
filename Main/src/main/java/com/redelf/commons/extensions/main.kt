@@ -348,10 +348,6 @@ fun Activity.onUI(doWhat: () -> Unit) {
 
             doWhat()
         }
-
-    } else {
-
-        Console.log("Context is finishing")
     }
 }
 
