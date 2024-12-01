@@ -625,7 +625,14 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                     try {
 
-                                        val partition = inT.newInstance()
+                                        val partition = if (inT.canonicalName == "java.util.List") {
+
+                                            mutableListOf<Any?>()
+
+                                        } else {
+
+                                            inT.newInstance()
+                                        }
 
                                         for (j in 0..<rowsCount) {
 
@@ -800,6 +807,12 @@ class DataDelegate private constructor(private val facade: Facade) :
                                         }
 
                                     } catch (e: Exception) {
+
+                                        Console.error(
+
+                                            "$tag ERROR :: " +
+                                                "Partition canonical name: ${inT.canonicalName}"
+                                        )
 
                                         instance.failPartitionData(i, e)
                                     }
