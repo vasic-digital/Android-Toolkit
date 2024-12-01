@@ -90,8 +90,8 @@ object DBStorage : Storage<String> {
 
     private fun sqlCreate() = "CREATE TABLE $table (" +
             "${BaseColumns._ID} INTEGER PRIMARY KEY," +
-            "$columnKey VARCHAR(1000000)," +
-            "$columnValue VARCHAR(1000000))"
+            "$columnKey TEXT," +
+            "$columnValue TEXT)"
 
     private fun sqlDelete() = "DROP TABLE IF EXISTS $table"
 
