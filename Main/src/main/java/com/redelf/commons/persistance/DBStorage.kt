@@ -315,7 +315,7 @@ object DBStorage : Storage<String> {
 
         } else {
 
-            if (DEBUG.get()) Console.log("$tag START :: No chunks")
+            Console.log("$tag START Chunk :: No chunks")
 
             return doPut("${key}_${KEY_CHUNK}_0", chunks[0])
         }
@@ -332,6 +332,7 @@ object DBStorage : Storage<String> {
 
             var chunks = -1
             val chunksRawValue = doGet("${key}_$KEY_CHUNKS")
+            val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
             if (chunksRawValue.isNotEmpty() && TextUtils.isDigitsOnly(chunksRawValue)) {
 
@@ -344,11 +345,11 @@ object DBStorage : Storage<String> {
 
             } else if (chunks == 1) {
 
+                Console.log("$tag START :: Chunk :: No chunks")
+
                 return doGet("${key}_${KEY_CHUNK}_0")
 
             } else {
-
-                val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
                 Console.log("$tag START :: Chunk :: Chunks count = $chunks")
 
