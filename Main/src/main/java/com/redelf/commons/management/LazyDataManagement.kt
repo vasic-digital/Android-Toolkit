@@ -237,6 +237,9 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
         if (DEBUG.get()) Console.log("Application is in foreground")
     }
 
+    /*
+    * FIXME: The method is fired even we are surfing through the screens
+    */
     private fun onBackground(from: String) {
 
         val tag = "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND ::"
