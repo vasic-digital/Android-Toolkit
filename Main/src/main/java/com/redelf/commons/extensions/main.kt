@@ -631,9 +631,16 @@ fun Context.toast(msg: String, short: Boolean = false) {
         Toast.LENGTH_LONG
     }
 
-    Handler(Looper.getMainLooper()).post {
+    if (this is Activity) {
 
-        Toast.makeText(applicationContext, msg, length).show()
+        Handler(Looper.getMainLooper()).post {
+
+            Toast.makeText(applicationContext, msg, length).show()
+        }
+
+    } else {
+
+        Console.error("Context is not Activity for the toast to make")
     }
 }
 
