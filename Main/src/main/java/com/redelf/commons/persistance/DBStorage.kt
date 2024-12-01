@@ -279,16 +279,20 @@ object DBStorage : Storage<String> {
 
         if (chunksCount > 0) {
 
-            Console.log("$tag START :: Chunks count = $chunksCount")
+            Console.log("$tag START :: Chunk :: Chunks count = $chunksCount")
 
             var success = true
             val chunks = value.chunked(MAX_CHUNK_SIZE)
 
             chunks.forEachIndexed { index, chunk ->
 
-                if (!doPut("${key}_${KEY_CHUNK}_$index", chunk)) {
+                if (doPut("${key}_${KEY_CHUNK}_$index", chunk)) {
 
-                    Console.error("$tag ERROR :: Saving chunk failed :: Chunk = $index")
+                    Console.log("$tag Chunk :: Written chunk = ${index + 1} / $chunksCount")
+
+                } else {
+
+                    Console.error("$tag Chunk :: Not written chunk = ${index + 1} / $chunksCount")
 
                     success = false
                 }
@@ -323,7 +327,7 @@ object DBStorage : Storage<String> {
 
                 val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-                Console.log("$tag START :: Chunks count = $chunks")
+                Console.log("$tag START :: Chunk :: Chunks count = $chunks")
 
                 val result = StringBuilder()
 
@@ -331,6 +335,8 @@ object DBStorage : Storage<String> {
 
                     val chunked = doGet("${key}_${KEY_CHUNK}_$i")
                     result.append(chunked)
+
+                    Console.log("$tag Chunk :: Loaded chunk = ${i + 1} / $chunks")
                 }
 
                 return result.toString()
