@@ -141,6 +141,7 @@ class DataSerializer implements Serializer {
 
         } catch (JsonSyntaxException e) {
 
+            Console.error("Could not deserialize: " + serializedText);
             Console.error(e);
         }
 
