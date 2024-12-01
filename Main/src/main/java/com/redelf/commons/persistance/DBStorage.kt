@@ -317,7 +317,7 @@ object DBStorage : Storage<String> {
 
             if (DEBUG.get()) Console.log("$tag START :: No chunks")
 
-            return doPut("${key}_${KEY_CHUNK}_0", value)
+            return doPut("${key}_${KEY_CHUNK}_0", chunks[0])
         }
     }
 
@@ -338,11 +338,11 @@ object DBStorage : Storage<String> {
                 chunks = chunksRawValue.toInt()
             }
 
-            if (chunks < 0) {
+            if (chunks < 1) {
 
                 return ""
 
-            } else if (chunks == 0) {
+            } else if (chunks == 1) {
 
                 return doGet("${key}_${KEY_CHUNK}_0")
 
