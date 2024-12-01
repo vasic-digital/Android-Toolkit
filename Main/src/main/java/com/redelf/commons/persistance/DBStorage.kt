@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
+import android.text.TextUtils
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
@@ -317,9 +318,19 @@ object DBStorage : Storage<String> {
 
         try {
 
-            val chunks = doGet("${key}_$KEY_CHUNKS").toInt()
+            var chunks = -1
+            val chunksRawValue = doGet("${key}_$KEY_CHUNKS")
 
-            if (chunks == 0) {
+            if (TextUtils.isDigitsOnly(chunksRawValue)) {
+
+                chunks = chunksRawValue.toInt()
+            }
+
+            if (chunks < 0) {
+
+                return ""
+
+            } else if (chunks == 0) {
 
                 return doGet("${key}_${KEY_CHUNK}_0")
 
