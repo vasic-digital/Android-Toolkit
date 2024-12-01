@@ -321,7 +321,7 @@ object DBStorage : Storage<String> {
             var chunks = -1
             val chunksRawValue = doGet("${key}_$KEY_CHUNKS")
 
-            if (TextUtils.isDigitsOnly(chunksRawValue)) {
+            if (chunksRawValue.isNotEmpty() && TextUtils.isDigitsOnly(chunksRawValue)) {
 
                 chunks = chunksRawValue.toInt()
             }
