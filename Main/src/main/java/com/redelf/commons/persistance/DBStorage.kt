@@ -282,20 +282,26 @@ object DBStorage : Storage<String> {
 
             Console.log("$tag START :: Chunk :: Chunks count = $chunksCount")
 
+            var index = 0
             var success = true
             val chunks = value.chunked(MAX_CHUNK_SIZE)
 
-            chunks.forEachIndexed { index, chunk ->
+            chunks.forEach { chunk ->
 
-                if (doPut("${key}_${KEY_CHUNK}_$index", chunk)) {
+                if (success) {
 
-                    Console.log("$tag Chunk :: Written chunk = ${index + 1} / $chunksCount")
+                    if (doPut("${key}_${KEY_CHUNK}_$index", chunk)) {
 
-                } else {
+                        Console.log("$tag Chunk :: Written chunk = ${index + 1} / $chunksCount")
 
-                    Console.error("$tag Chunk :: Not written chunk = ${index + 1} / $chunksCount")
+                    } else {
 
-                    success = false
+                        Console.error("$tag Chunk :: Not written chunk = ${index + 1} / $chunksCount")
+
+                        success = false
+                    }
+
+                    index++
                 }
             }
 
