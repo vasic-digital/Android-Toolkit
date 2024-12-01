@@ -3,7 +3,7 @@ package com.redelf.commons.persistance
 import android.content.Context
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import com.redelf.commons.data.type.PairDataInfo
-import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationWithContext
@@ -29,7 +29,9 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
-    InitializationWithContext {
+    InitializationWithContext
+
+{
 
     /*
      * TODO:
@@ -68,21 +70,25 @@ class DataDelegate private constructor(private val facade: Facade) :
         }
     }
 
+    @Synchronized
     override fun shutdown(): Boolean {
 
         return facade.shutdown()
     }
 
+    @Synchronized
     override fun terminate(vararg args: Any): Boolean {
 
         return facade.terminate(*args)
     }
 
+    @Synchronized
     override fun initialize(ctx: Context) {
 
         return facade.initialize(ctx)
     }
 
+    @Synchronized
     fun <T> put(key: String?, value: T): Boolean {
 
         if (key == null || isEmpty(key)) {
@@ -123,6 +129,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                     val partition = value.getPartitionData(i)
 
+                    @Synchronized
                     fun doPartition(
 
                         async: Boolean,
@@ -476,7 +483,11 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                             if (async) {
 
-                                Executor.MAIN.execute {
+                                exec(
+
+                                    onRejected = { e -> recordException(e) }
+
+                                ) {
 
                                     action.obtain()
                                 }
@@ -881,6 +892,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     fun count(): Long = facade.count()
 
+    @Synchronized
     fun delete(key: String?): Boolean {
 
         if (key == null || isEmpty(key)) {
@@ -987,11 +999,13 @@ class DataDelegate private constructor(private val facade: Facade) :
     /*
          DANGER ZONE:
     */
+    @Synchronized
     fun destroy() {
 
         facade.destroy()
     }
 
+    @Synchronized
     fun deleteAll(): Boolean {
 
         return facade.deleteAll()
@@ -1016,6 +1030,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.put(rowsKey, rows)
     }
 
+    @Synchronized
     private fun deleteRowsCount(key: String, partition: Int): Boolean {
 
         val rowsKey = keyRows(key, partition)
@@ -1059,6 +1074,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         InstantiationException::class
 
     )
+    @Synchronized
     private fun instantiate(what: Class<*>?, arg: Any?): Any {
 
         arg?.let {
@@ -1123,6 +1139,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return what.newInstance()
     }
 
+    @Synchronized
     private fun getSimple(type: String): Class<*>? {
 
         return when (type) {
