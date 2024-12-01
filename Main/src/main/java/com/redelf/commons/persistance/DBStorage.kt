@@ -306,6 +306,11 @@ object DBStorage : Storage<String> {
 
     override fun get(key: String?): String {
 
+        if (isEmpty(key)) {
+
+            return ""
+        }
+
         try {
 
             val chunks = doGet("${key}_$KEY_CHUNKS").toInt()
