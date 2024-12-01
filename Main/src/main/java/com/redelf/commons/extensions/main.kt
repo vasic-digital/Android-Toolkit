@@ -633,9 +633,9 @@ fun Context.toast(msg: String, short: Boolean = false) {
 
     if (this is Activity) {
 
-        Handler(Looper.getMainLooper()).post {
+        this.runOnUiThread {
 
-            Toast.makeText(applicationContext, msg, length).show()
+            Toast.makeText(this, msg, length).show()
         }
 
     } else {
