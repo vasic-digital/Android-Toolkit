@@ -287,7 +287,7 @@ object DBStorage : Storage<String> {
 
         if (chunksCount > 1) {
 
-            Console.log("$tag START :: Chunk :: Chunks count = $chunksCount")
+            if (DEBUG.get()) Console.log("$tag START :: Chunk :: Chunks count = $chunksCount")
 
             var index = 0
             var success = true
@@ -298,7 +298,10 @@ object DBStorage : Storage<String> {
 
                     if (doPut("${key}_${KEY_CHUNK}_$index", chunk)) {
 
-                        Console.log("$tag Chunk :: Written chunk = ${index + 1} / $chunksCount")
+                        if (DEBUG.get()) {
+
+                            Console.log("$tag Chunk :: Written chunk = ${index + 1} / $chunksCount")
+                        }
 
                     } else {
 
@@ -315,7 +318,7 @@ object DBStorage : Storage<String> {
 
         } else {
 
-            Console.log("$tag START Chunk :: No chunks")
+            if (DEBUG.get()) Console.log("$tag START Chunk :: No chunks")
 
             return doPut("${key}_${KEY_CHUNK}_0", chunks[0])
         }
@@ -345,13 +348,13 @@ object DBStorage : Storage<String> {
 
             } else if (chunks == 1) {
 
-                Console.log("$tag START :: Chunk :: No chunks")
+                if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
 
                 return doGet("${key}_${KEY_CHUNK}_0")
 
             } else {
 
-                Console.log("$tag START :: Chunk :: Chunks count = $chunks")
+                if (DEBUG.get()) Console.log("$tag START :: Chunk :: Chunks count = $chunks")
 
                 val result = StringBuilder()
 
@@ -360,7 +363,7 @@ object DBStorage : Storage<String> {
                     val chunked = doGet("${key}_${KEY_CHUNK}_$i")
                     result.append(chunked)
 
-                    Console.log("$tag Chunk :: Loaded chunk = ${i + 1} / $chunks")
+                    if (DEBUG.get()) Console.log("$tag Chunk :: Loaded chunk = ${i + 1} / $chunks")
                 }
 
                 return result.toString()
