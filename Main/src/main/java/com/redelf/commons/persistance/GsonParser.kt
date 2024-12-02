@@ -2,6 +2,7 @@ package com.redelf.commons.persistance
 
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
+import com.google.gson.annotations.Expose
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.extensions.isEmpty
@@ -153,13 +154,36 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                     out?.beginObject()
 
+                    // TODO: Catch exceptions
+
                     val fields = clazz.declaredFields
 
                     fields.forEach { field ->
 
+                        var excluded = false
                         field.isAccessible = true
 
-                        if (field.isAnnotationPresent(Transient::class.java)) {
+                        if (field.isAnnotationPresent(Expose::class.java)) {
+
+                            val exposeAnnotation = field.getAnnotation(Expose::class.java)
+
+                            if (exposeAnnotation?.serialize == true) {
+
+                                val value = field.get(who)
+
+                                if (value is Boolean) {
+
+                                    excluded = value
+                                }
+                            }
+                        }
+
+                        if (!excluded) {
+
+                            excluded = field.isAnnotationPresent(Transient::class.java)
+                        }
+
+                        if (excluded) {
 
                             // TODO: Implement skipping
 
