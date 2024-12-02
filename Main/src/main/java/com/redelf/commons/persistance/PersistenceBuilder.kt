@@ -90,7 +90,6 @@ class PersistenceBuilder(
     var storage: Storage<String> = DBStorage
     var serializer: Serializer? = DataSerializer()
     var converter: Converter? = DataConverter(parser)
-    var logInterceptor: LogInterceptor = PersistenceLogInterceptor
     var keysFilter: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
     var encryption: Encryption? = instantiateDefaultEncryption(context, salter)
 
@@ -141,12 +140,6 @@ class PersistenceBuilder(
     fun setSerializer(serializer: Serializer?): PersistenceBuilder {
 
         this.serializer = serializer
-        return this
-    }
-
-    fun setLogInterceptor(logInterceptor: LogInterceptor): PersistenceBuilder {
-
-        this.logInterceptor = logInterceptor
         return this
     }
 

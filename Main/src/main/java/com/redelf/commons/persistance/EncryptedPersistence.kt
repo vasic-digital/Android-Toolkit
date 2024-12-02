@@ -124,8 +124,6 @@ constructor(
                 }
             }
 
-            val logger = PersistenceLogInterceptor
-
             val salter = object : Salter {
 
                 override fun getSalt() = keySalt
@@ -133,7 +131,6 @@ constructor(
 
             dataDelegate = PersistenceBuilder.instantiate(it, salter = salter, storageTag = storageTag)
                 .setParser(getParser)
-                .setLogInterceptor(logger)
                 .setDoLog(doLog)
                 .setEncrypt(doEncrypt)
                 .setLogRawData(logRawData)

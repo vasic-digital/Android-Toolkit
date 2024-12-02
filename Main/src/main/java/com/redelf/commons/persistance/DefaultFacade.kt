@@ -25,7 +25,6 @@ object DefaultFacade : Facade {
     private var encryption: Encryption? = null
     private var serializer: Serializer? = null
     private var storage: Storage<String>? = null
-    private var logInterceptor: LogInterceptor? = null
     private val keysFilter = CopyOnWriteArrayList<String>()
 
     fun initialize(builder: PersistenceBuilder): Facade {
@@ -34,7 +33,6 @@ object DefaultFacade : Facade {
         converter = builder.converter
         encryption = builder.encryption
         serializer = builder.serializer
-        logInterceptor = builder.logInterceptor
 
         logRawData.set(builder.logRawData)
         keysFilter.addAll(builder.keysFilter)
@@ -45,7 +43,7 @@ object DefaultFacade : Facade {
                 "logRawData=${logRawData.get()}, " +
                     "keysFilter=${keysFilter.toMutableList()}"
 
-        logInterceptor?.onLog("$TAG $message")
+        if (DEBUG.get()) Console.log("$TAG $message")
 
         return this
     }
@@ -291,7 +289,7 @@ object DefaultFacade : Facade {
 
         if (DEBUG.get()) {
 
-            logInterceptor?.onLog("$TAG $message")
+            Console.log("$TAG $message")
         }
     }
 
@@ -299,13 +297,13 @@ object DefaultFacade : Facade {
 
         if (DEBUG.get()) {
 
-            logInterceptor?.onDebug("$TAG $message")
+            Console.debug("$TAG $message")
         }
     }
 
     private fun err(message: String) {
 
-        logInterceptor?.onError("$TAG ERROR: $message")
+        Console.error("$TAG ERROR: $message")
     }
 
     private fun canLogKeyRaw(key: String): Boolean {
