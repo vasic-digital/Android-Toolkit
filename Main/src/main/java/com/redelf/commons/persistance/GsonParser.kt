@@ -138,9 +138,10 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
     private fun createTypeAdapter(who: Any, recipe: Map<String, String>): TypeAdapter<Any> {
 
         val clazz = who.javaClass
-        val tag = "$tag Type adapter :: Create :: Class = '${clazz.canonicalName}'"
 
-        Console.log("$tag START :: Recipe = $recipe")
+        val tag = "$tag Type adapter :: Class = '${clazz.canonicalName}'"
+
+        Console.log("$tag CREATE :: Recipe = $recipe")
 
         return object : TypeAdapter<Any>() {
 
@@ -183,14 +184,26 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
                             excluded = field.isAnnotationPresent(Transient::class.java)
                         }
 
+                        val fieldName = field.name
+
                         if (excluded) {
 
-                            // TODO: Implement skipping
+                            Console.log("$tag EXCLUDED :: Field name = '$fieldName'")
 
                         } else {
 
-                            val fieldName = field.name
+                            Console.log("$tag WRITING :: Field name = '$fieldName'")
+
                             val fieldValue = field.get(who)
+
+                            if (recipe.containsValue(fieldName)) {
+
+                                // TODO: Check for the type and write
+
+                            } else {
+
+                                // TODO: Just write
+                            }
                         }
                     }
 
