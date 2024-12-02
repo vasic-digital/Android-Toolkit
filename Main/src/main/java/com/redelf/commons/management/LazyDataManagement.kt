@@ -237,6 +237,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
         if (DEBUG.get()) Console.log("Application is in foreground")
     }
 
+    protected fun forceSave() {
+
+        onBackground("forceSave")
+    }
+
     /*
     * FIXME: The method is fired even we are surfing through the screens
     */
