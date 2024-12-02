@@ -14,11 +14,11 @@ import java.io.ObjectOutputStream
 *   - Support compression
 *   - Support data removal
 */
-class ByteArraySerializer(ctx: Context, key: String) {
+class ByteArraySerializer(ctx: Context, key: String) : Serializer<ByteArray> {
 
     private val sPrefs = ctx.getSharedPreferences(key, Context.MODE_PRIVATE)
 
-    fun serialize(key: String, byteArray: ByteArray): Boolean {
+    override fun serialize(key: String, byteArray: ByteArray): Boolean {
 
         try {
 
@@ -47,7 +47,7 @@ class ByteArraySerializer(ctx: Context, key: String) {
         return false
     }
 
-    fun deserialize(key: String): ByteArray? {
+    override fun deserialize(key: String): ByteArray? {
 
         try {
 

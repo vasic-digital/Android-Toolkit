@@ -11,6 +11,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.serialization.CustomSerializable
+import com.redelf.commons.persistance.serialization.SerializationRecipe
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -135,7 +136,12 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
         return null
     }
 
-    private fun createTypeAdapter(who: Any, recipe: Map<String, String>): TypeAdapter<Any> {
+    private fun createTypeAdapter(
+
+        who: Any,
+        recipe: Map<String, SerializationRecipe<*>>
+
+    ): TypeAdapter<Any> {
 
         val clazz = who.javaClass
 
@@ -200,7 +206,7 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                             fieldValue?.let {
 
-                                if (recipe.containsValue(fieldName)) {
+                                if (recipe.containsKey(fieldName)) {
 
                                     Console.log("$wTag END :: Custom write")
 
