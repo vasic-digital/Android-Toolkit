@@ -127,20 +127,17 @@ object DefaultFacade : Facade {
         if (serializedText == null) {
 
             err("put -> key: $key -> Serialization failed")
-
             return false
         }
 
         return if (storage?.put(key, serializedText) == true) {
 
             if (canLogKey(key)) log("put -> key: $key -> Stored successfully")
-
             true
 
         } else {
 
             err("put -> key: $key -> Store operation failed")
-
             false
         }
     }
