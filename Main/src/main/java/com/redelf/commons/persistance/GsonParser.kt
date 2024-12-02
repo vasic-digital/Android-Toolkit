@@ -78,15 +78,12 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
 
                 val customizations = body.getCustomSerializations()
 
-                if (DEBUG.get()) {
+                Console.log(
 
-                    Console.log(
-
-                        "$tag Custom serialization :: " +
-                                "Class = ${body::class.java.canonicalName}, " +
-                                "Customizations = $customizations"
-                    )
-                }
+                    "$tag Custom serialization :: " +
+                            "Class = ${body::class.java.canonicalName}, " +
+                            "Customizations = $customizations"
+                )
 
                 // TODO: Apply customizations
             }
