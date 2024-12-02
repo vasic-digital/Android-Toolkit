@@ -272,17 +272,17 @@ object DefaultFacade : Facade {
 
     override fun deleteAll(): Boolean {
 
-        return storage?.deleteAll() ?: false
+        return storage?.deleteAll() == true
     }
 
     override fun delete(key: String?): Boolean {
 
-        return storage?.delete(key) ?: false
+        return storage?.delete(key) == true
     }
 
     override fun contains(key: String?): Boolean {
 
-        return storage?.contains(key) ?: false
+        return storage?.contains(key) == true
     }
 
     override fun destroy() = Unit
