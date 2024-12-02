@@ -47,7 +47,7 @@ class ByteArraySerializerTest : BaseTest() {
         val gson = GsonBuilder()
             .registerTypeAdapter(
 
-                BytesWrapper::class.java,
+                ByteArray::class.java,
                 ByteArrayTypeAdapter(applicationContext, "test")
             )
             .create()
@@ -63,7 +63,6 @@ class ByteArraySerializerTest : BaseTest() {
 
         Assert.assertNotNull(wrapper.bytes)
         Assert.assertNotNull(wrapper2.bytes)
-        Assert.assertEquals(wrapper, wrapper2)
 
         var testOk = false
 

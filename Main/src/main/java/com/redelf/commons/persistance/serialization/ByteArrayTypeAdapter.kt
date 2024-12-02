@@ -30,15 +30,13 @@ class ByteArrayTypeAdapter(context: Context, private val name: String) : TypeAda
     @Throws(IOException::class)
     override fun read(`in`: JsonReader): ByteArray? {
 
-        val encoded = `in`.nextString()
+        val encoded = `in`.nextBoolean() == true
 
-        return if (encoded == null) {
+        if (encoded) {
 
-            null
-
-        } else {
-
-            serializer.deserialize(encoded)
+            return serializer.deserialize(name)
         }
+
+        return null
     }
 }
