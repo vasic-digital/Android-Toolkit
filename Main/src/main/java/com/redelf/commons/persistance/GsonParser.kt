@@ -192,17 +192,34 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                         } else {
 
-                            Console.log("$tag WRITING :: Field name = '$fieldName'")
+                            val wTag = "$tag WRITING :: Field name = '$fieldName' ::"
+
+                            Console.log("$wTag START")
 
                             val fieldValue = field.get(who)
 
-                            if (recipe.containsValue(fieldName)) {
+                            fieldValue?.let {
 
-                                // TODO: Check for the type and write
+                                if (recipe.containsValue(fieldName)) {
 
-                            } else {
+                                    Console.log("$wTag END :: Custom write")
 
-                                // TODO: Just write
+                                    // TODO: Check for the type and write
+
+                                } else {
+
+                                    Console.log("$wTag END :: Regular write")
+
+                                    out?.name(fieldName)
+
+                                    // TODO: Support this properly
+                                    // out?.value(fieldValue)
+                                }
+                            }
+
+                            if (fieldValue == null) {
+
+                                Console.log("$wTag END :: Field value is null")
                             }
                         }
                     }
