@@ -134,9 +134,10 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
         return null
     }
 
-    private fun createTypeAdapter(who: Class<*>, recipe: Map<String, String>): TypeAdapter<Any> {
+    private fun createTypeAdapter(who: Any, recipe: Map<String, String>): TypeAdapter<Any> {
 
-        val tag = "$tag Type adapter :: Create :: Class = '${who.canonicalName}'"
+        val clazz = who.javaClass
+        val tag = "$tag Type adapter :: Create :: Class = '${clazz.canonicalName}'"
 
         Console.log("$tag START :: Recipe = $recipe")
 
@@ -144,7 +145,26 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
             override fun write(out: JsonWriter?, value: Any?) {
 
-                TODO("Not yet implemented")
+                if (value == null) {
+
+                    out?.nullValue()
+
+                } else {
+
+                    out?.beginObject()
+
+                    val fields = clazz.declaredFields
+
+                    fields.forEach { field ->
+
+                        field.isAccessible = true
+
+                        val fieldName = field.name
+                        val fieldValue = field.get(who)
+                    }
+
+                    out?.endObject()
+                }
             }
 
             override fun read(`in`: JsonReader?): Any? {
