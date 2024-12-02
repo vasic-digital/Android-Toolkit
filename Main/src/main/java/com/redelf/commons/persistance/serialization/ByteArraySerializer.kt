@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance
+package com.redelf.commons.persistance.serialization
 
 import android.content.Context
 import android.util.Base64

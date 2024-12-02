@@ -1,6 +1,6 @@
 package com.redelf.commons.test.serialization
 
-import com.redelf.commons.persistance.ByteArraySerializer
+import com.redelf.commons.persistance.serialization.ByteArraySerializer
 import com.redelf.commons.test.BaseTest
 import org.junit.Assert
 import org.junit.Test
