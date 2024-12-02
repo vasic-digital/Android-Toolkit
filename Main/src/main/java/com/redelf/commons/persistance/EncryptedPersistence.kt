@@ -43,9 +43,6 @@ constructor(
 
     companion object {
 
-        /*
-            TODO: Refactor
-        */
         val DEBUG = AtomicBoolean()
 
         const val LOG_TAG = "${Persistence.TAG} Encrypted ::"
