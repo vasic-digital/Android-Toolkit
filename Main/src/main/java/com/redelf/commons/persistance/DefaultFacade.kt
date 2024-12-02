@@ -72,7 +72,6 @@ object DefaultFacade : Facade {
 
         if (canLogKey(key)) log("put -> key: $key -> has value: ${value != null}")
 
-        // If the value is null, delete it
         if (value == null) {
 
             if (canLogKey(key)) log(
@@ -84,7 +83,6 @@ object DefaultFacade : Facade {
             return delete(key)
         }
 
-        // 1. Convert to text
         val plainText = converter?.toString(value)
 
         if (canLogKey(key)) {
@@ -102,12 +100,12 @@ object DefaultFacade : Facade {
             return false
         }
 
-        // 2. Encrypt the text
         var cipherText: ByteArray? = null
 
         try {
 
             cipherText = encryption?.encrypt(key, plainText)
+
             if (canLogKey(key)) log("put -> key: $key -> Encrypted: " + (cipherText != null))
 
         } catch (e: Exception) {
@@ -122,7 +120,6 @@ object DefaultFacade : Facade {
             return false
         }
 
-        // 3. Serialize the given object along with the cipher text
         val serializedText = serializer?.serialize(cipherText, value)
 
         if (canLogKey(key)) log("put -> key: $key -> Serialized: " + (serializedText != null))
@@ -130,18 +127,20 @@ object DefaultFacade : Facade {
         if (serializedText == null) {
 
             err("put -> key: $key -> Serialization failed")
+
             return false
         }
 
-        // 4. Save to the storage
         return if (storage?.put(key, serializedText) == true) {
 
             if (canLogKey(key)) log("put -> key: $key -> Stored successfully")
+
             true
 
         } else {
 
             err("put -> key: $key -> Store operation failed")
+
             false
         }
     }
