@@ -1,6 +1,7 @@
 package com.redelf.commons.persistance
 
 import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -100,7 +101,9 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
             return null
         }
 
-        if (DEBUG.get()) Console.log("$tag START :: Class = ${body::class.java.canonicalName}")
+        val tag = "$tag Class = '${body::class.java.canonicalName}' ::"
+
+        if (DEBUG.get()) Console.log("$tag START")
 
         try {
 
@@ -110,14 +113,16 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                 val customizations = body.getCustomSerializations()
 
-                Console.log(
+                Console.log("$tag Customizations = $customizations")
 
-                    "$tag Custom serialization :: " +
-                            "Class = ${body::class.java.canonicalName}, " +
-                            "Customizations = $customizations"
-                )
+                val typeAdapter = createTypeAdapter(body::class.java, customizations)
 
-                // TODO: Apply customizations
+                typeAdapter?.let {
+
+                    gsonProvider.registerTypeAdapter(body::class.java, it)
+
+                    Console.log("$tag Type adapter registered")
+                }
             }
 
             return gsonProvider.create().toJson(body)
@@ -126,6 +131,17 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
             recordException(e)
         }
+
+        return null
+    }
+
+    private fun createTypeAdapter(who: Class<*>, recipe: Map<String, String>): TypeAdapter<Any>? {
+
+        val tag = "$tag Type adapter :: Create :: Class = '${who.canonicalName}'"
+
+        Console.log("$tag START :: Recipe = $recipe")
+
+        // TODO: Implement
 
         return null
     }

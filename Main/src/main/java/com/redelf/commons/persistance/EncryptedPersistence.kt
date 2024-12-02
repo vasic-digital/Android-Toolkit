@@ -113,11 +113,11 @@ constructor(
 
                     return GsonParser(
 
-                        object : Obtain<Gson> {
+                        object : Obtain<GsonBuilder> {
 
-                            override fun obtain(): Gson {
+                            override fun obtain(): GsonBuilder {
 
-                                return gsonBuilder.create()
+                                return gsonBuilder
                             }
                         }
                     )

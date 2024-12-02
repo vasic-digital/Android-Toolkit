@@ -3,6 +3,7 @@ package com.redelf.commons.persistance
 import android.content.Context
 import android.text.TextUtils
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Converter
@@ -62,14 +63,14 @@ class PersistenceBuilder(
 
         override fun obtain() = GsonParser(
 
-            object : Obtain<Gson> {
+            object : Obtain<GsonBuilder> {
 
-                override fun obtain(): Gson {
+                override fun obtain(): GsonBuilder {
 
                     /*
                         TODO: Bring the Jackson support
                     */
-                    return Gson()
+                    return GsonBuilder()
                 }
             }
         )
