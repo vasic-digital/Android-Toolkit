@@ -17,13 +17,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 */
 object DefaultFacade : Facade {
 
-    private val doLog = AtomicBoolean()
+    val DEBUG = AtomicBoolean()
+
+    private val TAG = "Facade :: DEFAULT ::"
     private var converter: Converter? = null
     private val logRawData = AtomicBoolean()
     private var encryption: Encryption? = null
     private var serializer: Serializer? = null
     private var storage: Storage<String>? = null
-    private const val LOG_TAG = "Default facade ::"
     private var logInterceptor: LogInterceptor? = null
     private val keysFilter = CopyOnWriteArrayList<String>()
 
@@ -35,17 +36,16 @@ object DefaultFacade : Facade {
         serializer = builder.serializer
         logInterceptor = builder.logInterceptor
 
-        doLog.set(builder.doLog)
         logRawData.set(builder.logRawData)
         keysFilter.addAll(builder.keysFilter)
 
         val message =
 
             "init -> encryption='${encryption?.javaClass?.simpleName}', " +
-                "doLog=${doLog.get()}, logRawData=${logRawData.get()}, " +
+                "logRawData=${logRawData.get()}, " +
                     "keysFilter=${keysFilter.toMutableList()}"
 
-        logInterceptor?.onLog("$LOG_TAG $message")
+        logInterceptor?.onLog("$TAG $message")
 
         return this
     }
@@ -114,6 +114,7 @@ object DefaultFacade : Facade {
 
         } catch (e: Exception) {
 
+            Console.error("$TAG put -> key: $key -> Encrypt failed: ${e.message}")
             Console.error(e)
         }
 
@@ -175,8 +176,8 @@ object DefaultFacade : Facade {
 
         } catch (e: Exception) {
 
-            val message = e.message
-            err("get -> key: $key -> Converter failed, error='$message'")
+            Console.error("$TAG get -> key: $key -> Converter failed: ${e.message}")
+            Console.error(e)
         }
 
         return result
@@ -221,8 +222,8 @@ object DefaultFacade : Facade {
 
         } catch (e: Exception) {
 
-            val message = e.message
-            err("$tag key: $key -> Converter failed, error='$message'")
+            Console.error("$TAG key: $key -> Converter failed: ${e.message}")
+            Console.error(e)
         }
 
         return result
@@ -257,8 +258,8 @@ object DefaultFacade : Facade {
 
         } catch (e: Exception) {
 
-            val message = e.message
-            err("$tag key: $key -> Converter failed, error='$message'")
+            Console.error("$TAG key: $key -> Converter failed: ${e.message}")
+            Console.error(e)
         }
 
         return result
@@ -284,37 +285,38 @@ object DefaultFacade : Facade {
         return storage?.contains(key) ?: false
     }
 
-    override fun destroy() {}
+    override fun destroy() = Unit
+
     private fun log(message: String) {
 
-        if (doLog.get()) {
+        if (DEBUG.get()) {
 
-            logInterceptor?.onLog("$LOG_TAG $message")
+            logInterceptor?.onLog("$TAG $message")
         }
     }
 
     private fun dbg(message: String) {
 
-        if (doLog.get()) {
+        if (DEBUG.get()) {
 
-            logInterceptor?.onDebug("$LOG_TAG $message")
+            logInterceptor?.onDebug("$TAG $message")
         }
     }
 
     private fun err(message: String) {
 
-        logInterceptor?.onError("$LOG_TAG $message")
+        logInterceptor?.onError("$TAG ERROR: $message")
     }
 
     private fun canLogKeyRaw(key: String): Boolean {
 
-        return doLog.get() && logRawData.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
+        return DEBUG.get() && logRawData.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
     }
 
 
     private fun canLogKey(key: String): Boolean {
 
-        return doLog.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
+        return DEBUG.get() && (keysFilter.isEmpty() || keysFilter.contains(key))
     }
 
     private fun getDataInfo(key: String): DataInfo? {
@@ -332,7 +334,8 @@ object DefaultFacade : Facade {
 
         } catch (e: Exception) {
 
-            Console.error(LOG_TAG, e)
+            Console.error("$TAG ERROR: ${e.message}")
+            Console.error(e)
 
             return null
         }
@@ -386,7 +389,8 @@ object DefaultFacade : Facade {
 
         } catch (e: Exception) {
 
-            err("$tag key: $key -> Decrypt failed: " + e.message)
+            Console.error("$TAG key: $key -> Decrypt failed: ${e.message}")
+            Console.error(e)
         }
 
         if (plainText == null) {
