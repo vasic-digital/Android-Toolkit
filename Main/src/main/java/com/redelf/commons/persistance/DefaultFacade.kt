@@ -52,7 +52,7 @@ object DefaultFacade : Facade {
 
     override fun shutdown(): Boolean {
 
-        return storage?.shutdown() ?: false
+        return storage?.shutdown() == true
     }
 
     override fun terminate(vararg args: Any): Boolean {
