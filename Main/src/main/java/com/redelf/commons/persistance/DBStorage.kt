@@ -9,6 +9,7 @@ import android.text.TextUtils
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.randomInteger
@@ -690,45 +691,52 @@ object DBStorage : Storage<String> {
 
     private fun withDb(doWhat: (db: SQLiteDatabase?) -> Unit) {
 
-        var tag = "With DB :: doWhat = ${doWhat.hashCode()} ::"
+        exec(
 
-        try {
+            onRejected = { e -> recordException(e) }
 
-            val db = dbHelper?.writableDatabase
+        ) {
 
-            tag = "$tag db = ${db?.hashCode()} ::"
+            var tag = "With DB :: doWhat = ${doWhat.hashCode()} ::"
 
-            if (DEBUG.get()) Console.log("$tag START")
+            try {
 
-            db?.let {
+                val db = dbHelper?.writableDatabase
 
-                if (db.isOpen) {
+                tag = "$tag db = ${db?.hashCode()} ::"
 
-                    if (DEBUG.get()) Console.log("$tag EXECUTING")
+                if (DEBUG.get()) Console.log("$tag START")
 
-                    executor.execute {
+                db?.let {
 
-                        doWhat(db)
+                    if (db.isOpen) {
 
-                        if (DEBUG.get()) Console.log("$tag EXECUTED")
+                        if (DEBUG.get()) Console.log("$tag EXECUTING")
+
+                        executor.execute {
+
+                            doWhat(db)
+
+                            if (DEBUG.get()) Console.log("$tag EXECUTED")
+                        }
+
+                    } else {
+
+                        Console.warning("$tag DB is not open")
                     }
-
-                } else {
-
-                    Console.warning("$tag DB is not open")
                 }
+
+                if (db == null) {
+
+                    Console.error("$tag DB is null")
+                }
+
+            } catch (e: Exception) {
+
+                Console.error("$tag ERROR ::", e.message ?: "Unknown error")
+
+                Console.error(e)
             }
-
-            if (db == null) {
-
-                Console.error("$tag DB is null")
-            }
-
-        } catch (e: Exception) {
-
-            Console.error("$tag ERROR ::", e.message ?: "Unknown error")
-
-            Console.error(e)
         }
     }
 
