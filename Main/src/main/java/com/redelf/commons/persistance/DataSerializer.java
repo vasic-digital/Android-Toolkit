@@ -122,17 +122,25 @@ class DataSerializer implements Serializer {
             final DataInfo dataInfo = gsn.fromJson(serializedText, DataInfo.class);
 
             if (dataInfo.getKeyClazzName() != null) {
+
                 try {
+
                     dataInfo.setKeyClazz(Class.forName(dataInfo.getKeyClazzName()));
+
                 } catch (ClassNotFoundException e) {
+
                     Console.error(e);
                 }
             }
 
             if (dataInfo.getValueClazzName() != null) {
+
                 try {
+
                     dataInfo.setValueClazz(Class.forName(dataInfo.getValueClazzName()));
+
                 } catch (ClassNotFoundException e) {
+
                     Console.error(e);
                 }
             }
