@@ -1,6 +1,6 @@
 package com.redelf.commons.persistance
 
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -10,7 +10,7 @@ import com.redelf.commons.persistance.serialization.CustomSerializable
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
 
-class GsonParser(private val provider: Obtain<Gson>) : Parser {
+class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
     companion object {
 
@@ -28,7 +28,23 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
                 return null
             }
 
-            return provider.obtain().fromJson(content, type)
+            val gsonProvider = provider.obtain()
+
+//            if (body is CustomSerializable) {
+//
+//                val customizations = body.getCustomSerializations()
+//
+//                Console.log(
+//
+//                    "$tag Custom serialization :: " +
+//                            "Class = ${body::class.java.canonicalName}, " +
+//                            "Customizations = $customizations"
+//                )
+
+            // TODO: Apply customizations
+//            }
+
+            return gsonProvider.create().fromJson(content, type)
 
         } catch (e: Exception) {
 
@@ -49,7 +65,23 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
                 return null
             }
 
-            return provider.obtain().fromJson(content, clazz)
+            val gsonProvider = provider.obtain()
+
+//            if (body is CustomSerializable) {
+//
+//                val customizations = body.getCustomSerializations()
+//
+//                Console.log(
+//
+//                    "$tag Custom serialization :: " +
+//                            "Class = ${body::class.java.canonicalName}, " +
+//                            "Customizations = $customizations"
+//                )
+
+                // TODO: Apply customizations
+//            }
+
+            return gsonProvider.create().fromJson(content, clazz)
 
         } catch (e: Exception) {
 
@@ -88,7 +120,7 @@ class GsonParser(private val provider: Obtain<Gson>) : Parser {
                 // TODO: Apply customizations
             }
 
-            return gsonProvider.toJson(body)
+            return gsonProvider.create().toJson(body)
 
         } catch (e: Exception) {
 
