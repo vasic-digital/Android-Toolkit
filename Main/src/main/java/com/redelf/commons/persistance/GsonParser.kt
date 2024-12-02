@@ -2,6 +2,8 @@ package com.redelf.commons.persistance
 
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -117,12 +119,9 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                 val typeAdapter = createTypeAdapter(body::class.java, customizations)
 
-                typeAdapter?.let {
+                gsonProvider.registerTypeAdapter(body::class.java, typeAdapter)
 
-                    gsonProvider.registerTypeAdapter(body::class.java, it)
-
-                    Console.log("$tag Type adapter registered")
-                }
+                Console.log("$tag Type adapter registered")
             }
 
             return gsonProvider.create().toJson(body)
@@ -135,14 +134,23 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
         return null
     }
 
-    private fun createTypeAdapter(who: Class<*>, recipe: Map<String, String>): TypeAdapter<Any>? {
+    private fun createTypeAdapter(who: Class<*>, recipe: Map<String, String>): TypeAdapter<Any> {
 
         val tag = "$tag Type adapter :: Create :: Class = '${who.canonicalName}'"
 
         Console.log("$tag START :: Recipe = $recipe")
 
-        // TODO: Implement
+        return object : TypeAdapter<Any>() {
 
-        return null
+            override fun write(out: JsonWriter?, value: Any?) {
+
+                TODO("Not yet implemented")
+            }
+
+            override fun read(`in`: JsonReader?): Any? {
+
+                TODO("Not yet implemented")
+            }
+        }
     }
 }
