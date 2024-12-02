@@ -159,8 +159,15 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                         field.isAccessible = true
 
-                        val fieldName = field.name
-                        val fieldValue = field.get(who)
+                        if (field.isAnnotationPresent(Transient::class.java)) {
+
+                            // TODO: Implement skipping
+
+                        } else {
+
+                            val fieldName = field.name
+                            val fieldValue = field.get(who)
+                        }
                     }
 
                     out?.endObject()
