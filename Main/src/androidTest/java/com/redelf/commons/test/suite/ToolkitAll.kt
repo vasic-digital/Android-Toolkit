@@ -5,6 +5,7 @@ import com.redelf.commons.test.EncryptedPersistenceTest
 import com.redelf.commons.test.HttpEndpointsTest
 import com.redelf.commons.test.ObfuscatorTest
 import com.redelf.commons.test.compression.LZ4StringCompressionTest
+import com.redelf.commons.test.serialization.ByteArraySerializerTest
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
 import org.junit.runners.Suite.SuiteClasses
@@ -15,7 +16,8 @@ import org.junit.runners.Suite.SuiteClasses
     EncryptedPersistenceTest::class,
     HttpEndpointsTest::class,
     ObfuscatorTest::class,
-    LZ4StringCompressionTest::class
+    LZ4StringCompressionTest::class,
+    ByteArraySerializerTest::class
 
 )
 @RunWith(Suite::class)

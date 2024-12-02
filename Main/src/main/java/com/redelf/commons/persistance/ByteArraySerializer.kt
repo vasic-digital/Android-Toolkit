@@ -8,6 +8,12 @@ import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
+/*
+* TODO:
+*   - Support encryption
+*   - Support compression
+*   - Support data removal
+*/
 class ByteArraySerializer(ctx: Context, key: String) {
 
     private val sPrefs = ctx.getSharedPreferences(key, Context.MODE_PRIVATE)
