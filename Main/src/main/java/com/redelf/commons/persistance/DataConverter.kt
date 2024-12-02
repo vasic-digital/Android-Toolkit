@@ -7,16 +7,24 @@ import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Converter
 import com.redelf.commons.persistance.base.Parser
 import java.lang.reflect.Type
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("UNCHECKED_CAST")
 internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
+    private val tag = "Converter :: Data ::"
+
+    private fun debug() = Converter.Companion.DEBUG
+
     override fun <T> toString(value: T): String? {
+
 
         if (value == null) {
 
             return null
         }
+
+        if (debug().get()) Console.log("$tag START :: Class = ${value::class.java.canonicalName}")
 
         val p = parser.obtain()
 
