@@ -11,7 +11,8 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.serialization.CustomSerializable
-import com.redelf.commons.persistance.serialization.SerializationRecipe
+import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
+import com.redelf.commons.persistance.serialization.Serializer
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -139,7 +140,7 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
     private fun createTypeAdapter(
 
         who: Any,
-        recipe: Map<String, SerializationRecipe<*>>
+        recipe: Map<String, Serializer<*>>
 
     ): TypeAdapter<Any> {
 
@@ -204,17 +205,47 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                             val fieldValue = field.get(who)
 
-                            fieldValue?.let {
+                            fieldValue?.let { fValue ->
 
                                 if (recipe.containsKey(fieldName)) {
 
-                                    Console.log("$wTag END :: Custom write")
+                                    val clazz = fValue::class.java
 
-                                    // TODO: Check for the type and write
+                                    Console.log(
+
+                                        "$wTag Custom write :: START :: " +
+                                            "Class = '${clazz.canonicalName}'"
+                                    )
+
+                                    recipe[fieldName]?.let { serializer ->
+
+                                        if (serializer is DefaultCustomSerializer) {
+
+                                            Console.log("$wTag Custom write :: Custom serializer")
+
+                                            // TODO: Support this properly
+
+                                        } else {
+
+                                            Console.log("$wTag Custom write :: Custom provided serializer")
+
+                                            // TODO: Support this properly
+                                            /*if (fieldValue::class.java.canonicalName == recipe[fieldName]) {
+
+                                            }*/
+                                        }
+                                    }
+
+                                    if (recipe[fieldName] == null) {
+
+                                        Console.log("$wTag END :: Regular write (1)")
+
+                                        // TODO: Support this properly
+                                    }
 
                                 } else {
 
-                                    Console.log("$wTag END :: Regular write")
+                                    Console.log("$wTag END :: Regular write (2)")
 
                                     out?.name(fieldName)
 
