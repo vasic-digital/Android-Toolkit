@@ -626,14 +626,33 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         super.onDestroy()
     }
 
+    fun finishFrom(from: String) {
+
+        val tag = "ACTIVITY Activity = '${this.javaClass.simpleName}' :: " +
+                "TERMINATE :: FINISH FROM :: From: '$from'"
+
+        Console.log("$tag START")
+
+        finish()
+
+        Console.log("$tag END")
+    }
+
     @Suppress("DEPRECATION")
     override fun finish() {
+
+        val tag = "ACTIVITY Activity = '${this.javaClass.simpleName}' :: TERMINATE :: FINISH"
+
+        Console.log("$tag START")
+
         super.finish()
 
         overridePendingTransition(
 
             0, 0
         )
+
+        Console.log("$tag END")
     }
 
     @Deprecated("Deprecated in Java")
