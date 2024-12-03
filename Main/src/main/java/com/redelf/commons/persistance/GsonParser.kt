@@ -1,5 +1,6 @@
 package com.redelf.commons.persistance
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.annotations.Expose
@@ -207,6 +208,36 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                             fieldValue?.let { fValue ->
 
+                                fun regularWrite() {
+
+                                    val rwTag = "$wTag REGULAR WRITE ::"
+
+                                    Console.log("$rwTag START")
+
+                                    val tAdapter: TypeAdapter<Any>? =
+                                        provider.obtain().create().getAdapter(clazz)
+
+                                    tAdapter?.let { adapter ->
+
+                                        Console.log(
+
+                                            "$rwTag GOT DEFAULT ADAPTER :: " +
+                                                    "Adapter = ${adapter::class.java.canonicalName}"
+                                        )
+
+                                        adapter.write(out, fValue)
+                                    }
+
+                                    if (tAdapter == null) {
+
+                                        Console.log(
+
+                                            "$rwTag ERROR: No default adapter for" +
+                                                    " '${clazz.canonicalName}'"
+                                        )
+                                    }
+                                }
+
                                 if (recipe.containsKey(fieldName)) {
 
                                     val clazz = fValue::class.java
@@ -243,19 +274,16 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                                     if (recipe[fieldName] == null) {
 
-                                        Console.log("$wTag END :: Regular write (1)")
+                                        Console.log("$wTag END :: To write regular (1)")
 
-                                        // TODO: Support this properly
+                                        regularWrite()
                                     }
 
                                 } else {
 
-                                    Console.log("$wTag END :: Regular write (2)")
+                                    Console.log("$wTag END :: To write regular (2)")
 
-                                    out?.name(fieldName)
-
-                                    // TODO: Support this properly
-                                    // out?.value(fieldValue)
+                                    regularWrite()
                                 }
                             }
 
