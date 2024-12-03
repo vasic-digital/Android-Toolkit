@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
+    private val gson = provider.obtain().create()
+
     companion object {
 
         val DEBUG = AtomicBoolean()
@@ -138,6 +140,9 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
         return null
     }
 
+    /*
+    * TODO: Catch and handle exceptions
+    */
     private fun createTypeAdapter(
 
         who: Any,
@@ -162,8 +167,6 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
                 } else {
 
                     out?.beginObject()
-
-                    // TODO: Catch exceptions
 
                     val fields = clazz.declaredFields
 
@@ -208,35 +211,16 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                             fieldValue?.let { fValue ->
 
-                                val clazz = fValue::class.java
-
                                 fun regularWrite() {
 
                                     val rwTag = "$wTag REGULAR WRITE ::"
 
                                     Console.log("$rwTag START")
 
-                                    val tAdapter = provider.obtain().create().getAdapter(clazz)
+                                    out?.name(fieldName)
+                                    out?.value(gson.toJson(fValue))
 
-                                    tAdapter?.let { adapter ->
-
-                                        Console.log(
-
-                                            "$rwTag GOT DEFAULT ADAPTER :: " +
-                                                    "Adapter = ${adapter::class.java.canonicalName}"
-                                        )
-
-                                        adapter.write(out, fValue)
-                                    }
-
-                                    if (tAdapter == null) {
-
-                                        Console.log(
-
-                                            "$rwTag ERROR: No default adapter for" +
-                                                    " '${clazz.canonicalName}'"
-                                        )
-                                    }
+                                    Console.log("$rwTag END")
                                 }
 
                                 fun customWrite() {
