@@ -208,14 +208,15 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                             fieldValue?.let { fValue ->
 
+                                val clazz = fValue::class.java
+
                                 fun regularWrite() {
 
                                     val rwTag = "$wTag REGULAR WRITE ::"
 
                                     Console.log("$rwTag START")
 
-                                    val tAdapter: TypeAdapter<Any>? =
-                                        provider.obtain().create().getAdapter(clazz)
+                                    val tAdapter = provider.obtain().create().getAdapter(clazz)
 
                                     tAdapter?.let { adapter ->
 
@@ -238,14 +239,12 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
                                     }
                                 }
 
-                                if (recipe.containsKey(fieldName)) {
-
-                                    val clazz = fValue::class.java
+                                fun customWrite() {
 
                                     Console.log(
 
                                         "$wTag Custom write :: START :: " +
-                                            "Class = '${clazz.canonicalName}'"
+                                                "Class = '${clazz.canonicalName}'"
                                     )
 
                                     recipe[fieldName]?.let { serializer ->
@@ -278,6 +277,13 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                                         regularWrite()
                                     }
+                                }
+
+                                if (recipe.containsKey(fieldName)) {
+
+                                    Console.log("$wTag END :: To write custom")
+
+                                    customWrite()
 
                                 } else {
 
