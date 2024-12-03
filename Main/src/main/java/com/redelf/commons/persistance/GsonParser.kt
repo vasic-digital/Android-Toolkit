@@ -140,7 +140,7 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
     private fun createTypeAdapter(
 
         who: Any,
-        recipe: Map<String, Serializer<*>>
+        recipe: Map<String, Serializer>
 
     ): TypeAdapter<Any> {
 
@@ -225,14 +225,19 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                                             // TODO: Support this properly
 
-                                        } else {
-
-                                            Console.log("$wTag Custom write :: Custom provided serializer")
-
-                                            // TODO: Support this properly
                                             /*if (fieldValue::class.java.canonicalName == recipe[fieldName]) {
 
                                             }*/
+
+                                        } else {
+
+                                            Console.log(
+
+                                                "$wTag Custom write :: Custom provided serializer"
+                                            )
+
+                                            out?.name(fieldName)
+                                            out?.value(serializer.serialize(fieldName, fValue))
                                         }
                                     }
 

@@ -8,5 +8,5 @@ interface CustomSerializable {
     *  - Vs. just the fields
     */
 
-    fun getCustomSerializations(): Map<String, Serializer<*>>
+    fun getCustomSerializations(): Map<String, Serializer>
 }
