@@ -1,16 +1,19 @@
 package com.redelf.commons.persistance
 
+import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.annotations.Expose
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
+import com.redelf.commons.persistance.serialization.ByteArraySerializer
 import com.redelf.commons.persistance.serialization.CustomSerializable
 import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 import com.redelf.commons.persistance.serialization.Serializer
@@ -20,6 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
     private val gson = provider.obtain().create()
+    private val ctx: Context = BaseApplication.takeContext()
+    private val byteArraySerializer = ByteArraySerializer(ctx, "GsonParser")
 
     companion object {
 
@@ -237,11 +242,14 @@ class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
                                             Console.log("$wTag Custom write :: Custom serializer")
 
-                                            // TODO: Support this properly
+                                            when (clazz.canonicalName) {
 
-                                            /*if (fieldValue::class.java.canonicalName == recipe[fieldName]) {
+                                                ByteArray::class.java.canonicalName -> {
 
-                                            }*/
+                                                    out?.name(fieldName)
+                                                    out?.value(byteArraySerializer.serialize(fieldName, fValue))
+                                                }
+                                            }
 
                                         } else {
 
