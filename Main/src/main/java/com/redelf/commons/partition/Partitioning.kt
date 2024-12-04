@@ -3,6 +3,9 @@ package com.redelf.commons.partition
 import com.redelf.commons.data.type.Typed
 import java.lang.reflect.Type
 
+/*
+* TODO: Make sure taht is possible to write out only the differences (changes)
+*/
 interface Partitioning<T> : Typed<T> {
 
     fun isPartitioningEnabled(): Boolean
