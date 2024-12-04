@@ -4,7 +4,7 @@ import com.redelf.commons.data.type.Typed
 import java.lang.reflect.Type
 
 /*
-* TODO: Make sure taht is possible to write out only the differences (changes)
+* TODO: Make sure that is possible to write out only the differences (changes)
 */
 interface Partitioning<T> : Typed<T> {
 
