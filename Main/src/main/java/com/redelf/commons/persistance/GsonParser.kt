@@ -29,16 +29,15 @@ class GsonParser(
 
 ) : Parser {
 
-    private val gson = provider.obtain().create()
-    private val ctx: Context = BaseApplication.takeContext()
-    private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
-
     companion object {
 
         val DEBUG = AtomicBoolean()
     }
 
-    private val tag = "Parser :: GSON ::"
+    private val gson = provider.obtain().create()
+    private val tag = "Parser :: GSON :: Key = '$parserKey'"
+    private val ctx: Context = BaseApplication.takeContext()
+    private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
 
     override fun <T> fromJson(content: String?, type: Type?): T? {
 
