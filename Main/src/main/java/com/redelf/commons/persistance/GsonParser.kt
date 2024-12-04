@@ -1,7 +1,6 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.annotations.Expose
@@ -20,6 +19,9 @@ import com.redelf.commons.persistance.serialization.Serializer
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
 
+/*
+* TODO: Test for this is mandatory
+*/
 class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
 
     private val gson = provider.obtain().create()
