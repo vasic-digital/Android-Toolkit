@@ -311,7 +311,10 @@ class GsonParser(
                     `in`?.beginObject()
 
                     while (`in`?.hasNext() == true) {
-                        when (`in`.nextName()) {
+
+                        val name = `in`.nextName()
+
+                        when (name) {
 
                             // TODO: Add support for custom deserializers
 
