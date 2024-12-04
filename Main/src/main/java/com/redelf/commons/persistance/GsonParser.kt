@@ -321,8 +321,6 @@ class GsonParser(
 
                     `in`?.endObject()
 
-                    // TODO: Return instance
-
                     return instance
 
                 } catch (e: Exception) {
