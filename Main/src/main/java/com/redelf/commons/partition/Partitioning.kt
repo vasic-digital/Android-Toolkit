@@ -5,6 +5,8 @@ import java.lang.reflect.Type
 
 /*
 * TODO: Make sure that is possible to write out only the differences (changes)
+*   - Hint: CopyOnWriteArrayList
+*   - Hint: How Docker images work
 */
 interface Partitioning<T> : Typed<T> {
 
