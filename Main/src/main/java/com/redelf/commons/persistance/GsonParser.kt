@@ -162,7 +162,6 @@ class GsonParser(
     ): TypeAdapter<Any> {
 
         val clazz = who.javaClass
-
         val tag = "$tag Type adapter :: Class = '${clazz.canonicalName}'"
 
         Console.log("$tag CREATE :: Recipe = $recipe")
