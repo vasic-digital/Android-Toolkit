@@ -303,7 +303,24 @@ class GsonParser(
 
             override fun read(`in`: JsonReader?): Any? {
 
-                TODO("Not yet implemented")
+                // TODO: Create instance
+
+                `in`?.beginObject()
+
+                while (`in`?.hasNext() == true) {
+                    when (`in`.nextName()) {
+
+                        // TODO: Add support for custom deserializers
+
+                        else -> `in`.skipValue()
+                    }
+                }
+
+                `in`?.endObject()
+
+                // TODO: Return instance
+
+                return null
             }
         }
     }
