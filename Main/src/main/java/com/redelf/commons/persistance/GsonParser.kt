@@ -301,24 +301,34 @@ class GsonParser(
                 }
             }
 
+            @Suppress("DEPRECATION")
             override fun read(`in`: JsonReader?): Any? {
 
-                // TODO: Create instance
+                try {
 
-                `in`?.beginObject()
+                    val instance = clazz.newInstance()
 
-                while (`in`?.hasNext() == true) {
-                    when (`in`.nextName()) {
+                    `in`?.beginObject()
 
-                        // TODO: Add support for custom deserializers
+                    while (`in`?.hasNext() == true) {
+                        when (`in`.nextName()) {
 
-                        else -> `in`.skipValue()
+                            // TODO: Add support for custom deserializers
+
+                            else -> `in`.skipValue()
+                        }
                     }
+
+                    `in`?.endObject()
+
+                    // TODO: Return instance
+
+                    return instance
+
+                } catch (e: Exception) {
+
+                    recordException(e)
                 }
-
-                `in`?.endObject()
-
-                // TODO: Return instance
 
                 return null
             }
