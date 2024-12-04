@@ -51,6 +51,11 @@ abstract class DataManagement<T> :
              - Make sure that persistence is independent on package path and class name
         */
 
+        /*
+            TODO:
+                - Introduce the Data Binding mechanism to simplify the use
+        */
+
         val DEBUG = AtomicBoolean()
         val ENCRYPT = AtomicBoolean()
         val LOG_RAW_DATA = AtomicBoolean()
