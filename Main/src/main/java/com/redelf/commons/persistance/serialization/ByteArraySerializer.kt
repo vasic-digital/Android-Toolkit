@@ -52,8 +52,16 @@ class ByteArraySerializer(
             val objectOutputStream = ObjectOutputStream(byteArrayOutputStream)
             objectOutputStream.writeObject(value)
 
-            val byteArrayValue = byteArrayOutputStream.toByteArray()
-            val encoded = Base64.encodeToString(byteArrayValue, Base64.DEFAULT)
+            var byteArrayValue = byteArrayOutputStream.toByteArray()
+            var encoded = Base64.encodeToString(byteArrayValue, Base64.DEFAULT)
+            val encrypted = encryption.encrypt(key, encoded)
+
+            if (encrypted == null) {
+
+                throw IllegalArgumentException("Encryption failed")
+            }
+
+            encoded = Base64.encodeToString(encrypted, Base64.DEFAULT)
 
             editor.putString(key, encoded)
             val result = editor.commit()
@@ -82,7 +90,16 @@ class ByteArraySerializer(
                 return null
             }
 
-            val decodedValue = Base64.decode(encoded, Base64.DEFAULT)
+            var decodedValue = Base64.decode(encoded, Base64.DEFAULT)
+
+            val decrypted = encryption.decrypt(key, decodedValue)
+
+            if (decrypted == null) {
+
+                throw IllegalArgumentException("Decryption failed")
+            }
+
+            decodedValue = Base64.decode(decrypted, Base64.DEFAULT)
 
             val byteArrayInputStream = ByteArrayInputStream(decodedValue)
             val objectInputStream = ObjectInputStream(byteArrayInputStream)
