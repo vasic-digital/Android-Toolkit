@@ -3,6 +3,10 @@ package com.redelf.commons.persistance.serialization
 import android.content.Context
 import android.util.Base64
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.persistance.ConcealEncryption
+import com.redelf.commons.persistance.NoEncryption
+import com.redelf.commons.persistance.base.Encryption
+import com.redelf.commons.persistance.base.Salter
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
@@ -10,13 +14,33 @@ import java.io.ObjectOutputStream
 
 /*
 * TODO:
-*   - Support encryption
 *   - Support compression
 *   - Support data removal
 */
-class ByteArraySerializer(ctx: Context, key: String) : Serializer {
+class ByteArraySerializer(
+
+    ctx: Context,
+    key: String,
+
+    private var encrypt: Boolean = true,
+
+    salter: Salter = object : Salter {
+
+        override fun getSalt() = key.reversed().hashCode().toString()
+    },
+
+) : Serializer {
 
     private val sPrefs = ctx.getSharedPreferences(key, Context.MODE_PRIVATE)
+    private val encryption: Encryption = instantiateDefaultEncryption(ctx, salter)
+
+    init {
+
+        if (encryption is ConcealEncryption) {
+
+            encryption.init()
+        }
+    }
 
     override fun serialize(key: String, value: Any): Boolean {
 
@@ -76,5 +100,15 @@ class ByteArraySerializer(ctx: Context, key: String) : Serializer {
         }
 
         return null
+    }
+
+    private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption {
+
+        if (encrypt) {
+
+            return ConcealEncryption(context, salter)
+        }
+
+        return NoEncryption()
     }
 }

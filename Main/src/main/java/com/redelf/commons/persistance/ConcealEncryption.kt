@@ -17,6 +17,7 @@ class ConcealEncryption constructor(
     salter: Salter
 
 ) : Encryption {
+
     constructor(context: Context, salter: Salter) :
             this(SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256), salter)
 
