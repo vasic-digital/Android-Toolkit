@@ -312,13 +312,29 @@ class GsonParser(
 
                     while (`in`?.hasNext() == true) {
 
-                        val name = `in`.nextName()
+                        val fieldName = `in`.nextName()
 
-                        when (name) {
+                        fun customRead(): Any? {
 
-                            // TODO: Add support for custom deserializers
+                            // TODO
 
-                            else -> `in`.skipValue()
+                            return null
+                        }
+
+                        fun regularRead(): Any? {
+
+                            // TODO
+
+                            return null
+                        }
+
+                        if (recipe.containsKey(fieldName)) {
+
+                            return customRead()
+
+                        } else {
+
+                            return regularRead()
                         }
                     }
 
