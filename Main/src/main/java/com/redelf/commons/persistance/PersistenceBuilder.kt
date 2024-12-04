@@ -63,6 +63,8 @@ class PersistenceBuilder(
 
         override fun obtain() = GsonParser(
 
+            parserKey = storageTag,
+
             object : Obtain<GsonBuilder> {
 
                 override fun obtain(): GsonBuilder {

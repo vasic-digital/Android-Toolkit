@@ -39,6 +39,7 @@ constructor(
     ShutdownSynchronized,
     TerminationSynchronized,
     InitializationWithContext
+
 {
 
     companion object {
@@ -110,6 +111,8 @@ constructor(
 
                     return GsonParser(
 
+                        parserKey = storageTag,
+
                         object : Obtain<GsonBuilder> {
 
                             override fun obtain(): GsonBuilder {
@@ -126,7 +129,13 @@ constructor(
                 override fun getSalt() = keySalt
             }
 
-            dataDelegate = PersistenceBuilder.instantiate(it, salter = salter, storageTag = storageTag)
+            dataDelegate = PersistenceBuilder.instantiate(
+
+                it,
+                salter = salter,
+                storageTag = storageTag
+
+            )
                 .setParser(getParser)
                 .setDoLog(doLog)
                 .setEncrypt(doEncrypt)

@@ -22,11 +22,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 /*
 * TODO: Test for this is mandatory
 */
-class GsonParser(private val provider: Obtain<GsonBuilder>) : Parser {
+class GsonParser(
+
+    parserKey: String,
+    private val provider: Obtain<GsonBuilder>
+
+) : Parser {
 
     private val gson = provider.obtain().create()
     private val ctx: Context = BaseApplication.takeContext()
-    private val byteArraySerializer = ByteArraySerializer(ctx, "GsonParser")
+    private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
 
     companion object {
 
