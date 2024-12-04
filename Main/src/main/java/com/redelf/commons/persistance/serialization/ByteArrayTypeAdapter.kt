@@ -6,13 +6,19 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import java.io.IOException
 
-class ByteArrayTypeAdapter(context: Context, private val name: String) : TypeAdapter<ByteArray>() {
+class ByteArrayTypeAdapter(
+
+    context: Context,
+    private val name: String,
+    encryption: Boolean = true
+
+) : TypeAdapter<ByteArray>() {
 
     /*
     * TODO:
     *  - Encrypt all strings used here (name for example ...)
     */
-    private val serializer = ByteArraySerializer(context, "type_adapter_cache.$name")
+    private val serializer = ByteArraySerializer(context, "type_adapter_cache.$name", encryption)
 
     @Throws(IOException::class)
     override fun write(out: JsonWriter, value: ByteArray?) {
