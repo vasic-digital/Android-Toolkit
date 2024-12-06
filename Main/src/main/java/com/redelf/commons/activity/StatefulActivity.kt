@@ -134,17 +134,17 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
     override fun onDestroy() {
 
+        val tag = "${getLogTag()} onDestroy :: ${this@StatefulActivity::class.simpleName} ::"
+
+        Console.log("$tag START")
+
         activeStateCallbacks.doOnAll(
 
             object : CallbackOperation<ActivityActiveStateListener> {
 
                 override fun perform(callback: ActivityActiveStateListener) {
 
-                    Console.log(
-
-                        "${getLogTag()} NOTIFY :: Destruction :: " +
-                                "${this@StatefulActivity::class.simpleName} " +
-                                "@ ${callback.hashCode()}")
+                    Console.log("$tag NOTIFY :: Destruction :: Subscriber = ${callback.hashCode()}")
 
                     callback.onDestruction(this@StatefulActivity)
 
@@ -155,9 +155,9 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
             "onDestruction"
         )
 
-        activeStateCallbacks.clear()
-
         super.onDestroy()
+
+        Console.log("$tag END")
     }
 
     private fun getLogTag(): String {
