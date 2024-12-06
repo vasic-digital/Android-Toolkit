@@ -31,6 +31,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.callback.CallbackOperation
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.initRegistrationWithGoogle
@@ -39,6 +41,7 @@ import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.broadcast.Broadcast
 import com.redelf.commons.obtain.OnObtain
+import com.redelf.commons.registration.Registration
 import com.redelf.commons.transmission.TransmissionManagement
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
@@ -58,9 +61,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
-abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
+abstract class BaseActivity :
+
+    AppCompatActivity(),
+    ProgressActivity,
+    ActivityActiveStateSubscription
+
+{
 
     protected var googleSignInRequestCode = AtomicInteger()
+
     protected var transmissionService: TransmissionService? = null
     protected var attachmentObtainedUris: MutableList<Uri> = mutableListOf()
     protected var attachmentObtainedFiles: MutableList<File> = mutableListOf()
@@ -82,12 +92,14 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
     private var created = false
     private val paused = AtomicBoolean()
+    private val activeState = AtomicBoolean()
     private var unregistrar: Unregistrar? = null
     private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
     private val PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE = 111
     private var attachmentsDialog: AttachFileDialog? = null
     private lateinit var backPressedCallback: OnBackPressedCallback
+    private val activeStateCallbacks = Callbacks<ActivityActiveStateListener>("resumeCallbacks")
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -186,6 +198,46 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         }
     }
 
+    override fun register(subscriber: ActivityActiveStateListener) {
+
+        if (activeStateCallbacks.isRegistered(subscriber)) {
+
+            return
+        }
+
+        activeStateCallbacks.register(subscriber)
+    }
+
+    override fun unregister(subscriber: ActivityActiveStateListener) {
+
+        activeStateCallbacks.unregister(subscriber)
+    }
+
+    fun isActive() = activeState.get()
+
+    private fun onActiveStateChanged(active: Boolean) {
+
+        activeState.set(active)
+
+        activeStateCallbacks.doOnAll(
+
+            object : CallbackOperation<ActivityActiveStateListener> {
+
+                override fun perform(callback: ActivityActiveStateListener) {
+
+                    callback.onActivityStateChanged(this@BaseActivity, active)
+                }
+            },
+
+            "onActivityStateChanged"
+        )
+    }
+
+    override fun isRegistered(subscriber: ActivityActiveStateListener): Boolean {
+
+        return activeStateCallbacks.isRegistered(subscriber)
+    }
+
     override fun onRequestPermissionsResult(
 
         requestCode: Int,
@@ -235,6 +287,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         paused.set(true)
 
         super.onPause()
+
+        onActiveStateChanged(false)
     }
 
     override fun onResume() {
@@ -242,6 +296,8 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         paused.set(false)
 
         super.onResume()
+
+        onActiveStateChanged(true)
     }
 
     override fun showProgress(from: String) {
