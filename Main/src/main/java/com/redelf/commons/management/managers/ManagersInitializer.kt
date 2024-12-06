@@ -125,13 +125,13 @@ class ManagersInitializer {
 
                                 if (manager is LazyDataManagement<*>) {
 
-                                    val mlTag = "$mTag Registering to app lifecycle events ::"
-
-                                    Console.log("$mlTag START")
-
                                     context?.let { ctx ->
 
                                         if (!manager.isRegistered(ctx)) {
+
+                                            val mlTag = "$mTag Registering to app lifecycle events ::"
+
+                                            Console.log("$mlTag START")
 
                                             Console.log("$mlTag REGISTERING")
 
