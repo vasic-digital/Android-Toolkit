@@ -20,13 +20,28 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
         if (activeStateCallbacks.isRegistered(subscriber)) {
 
+            Console.log(
+
+                "${getLogTag()} ALREADY REGISTERED :: Subscriber = ${subscriber.hashCode()}"
+            )
+
             return
         }
+
+        Console.log(
+
+            "${getLogTag()} REGISTER :: Subscriber = ${subscriber.hashCode()}"
+        )
 
         activeStateCallbacks.register(subscriber)
     }
 
     override fun unregister(subscriber: ActivityActiveStateListener) {
+
+        Console.log(
+
+            "${getLogTag()} UNREGISTER :: Subscriber = ${subscriber.hashCode()}"
+        )
 
         activeStateCallbacks.unregister(subscriber)
     }
@@ -37,23 +52,39 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
     fun clearTagContext() {
 
+        Console.log("${getLogTag()} TAG CONTEXT :: CLEAR")
+
         tagContext = ""
     }
 
     fun setTagContext(context: String) {
 
         tagContext = context
+
+        Console.log("${getLogTag()} TAG CONTEXT :: SET :: Value = $context")
     }
 
     private fun onActiveStateChanged(active: Boolean) {
 
         activeState.set(active)
 
+        Console.log(
+
+            "${getLogTag()} NOTIFY :: Active = $active, " +
+                    "Subscribers = ${activeStateCallbacks.getSubscribersCount()}"
+        )
+
         activeStateCallbacks.doOnAll(
 
             object : CallbackOperation<ActivityActiveStateListener> {
 
                 override fun perform(callback: ActivityActiveStateListener) {
+
+                    Console.log(
+
+                        "${getLogTag()} NOTIFY :: Active = $active, " +
+                                "Subscriber = ${callback.hashCode()}"
+                    )
 
                     callback.onActivityStateChanged(this@StatefulActivity, active)
                 }
@@ -65,7 +96,18 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
     override fun isRegistered(subscriber: ActivityActiveStateListener): Boolean {
 
-        return activeStateCallbacks.isRegistered(subscriber)
+        val registered = activeStateCallbacks.isRegistered(subscriber)
+
+        if (registered) {
+
+            Console.log("${getLogTag()} IT IS REGISTERED :: ${subscriber.hashCode()}")
+
+        } else {
+
+            Console.log("${getLogTag()} IT IS NOT REGISTERED :: ${subscriber.hashCode()}")
+        }
+
+        return registered
     }
 
     override fun onPause() {
