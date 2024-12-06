@@ -1,14 +1,19 @@
 package com.redelf.commons.activity
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscription {
 
+    private var tagContext = ""
     private val paused = AtomicBoolean()
     private val activeState = AtomicBoolean()
+    private val tag = "Stateful :: Activity ::"
     private val activeStateCallbacks = Callbacks<ActivityActiveStateListener>("resumeCallbacks")
 
     override fun register(subscriber: ActivityActiveStateListener) {
@@ -29,6 +34,16 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
     fun isPaused() = paused.get()
 
     fun isActive() = activeState.get()
+
+    fun clearTagContext() {
+
+        tagContext = ""
+    }
+
+    fun setTagContext(context: String) {
+
+        tagContext = context
+    }
 
     private fun onActiveStateChanged(active: Boolean) {
 
@@ -59,6 +74,8 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
         super.onPause()
 
+        Console.log("${getLogTag()} ON PAUSE")
+
         onActiveStateChanged(false)
     }
 
@@ -68,6 +85,8 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
         super.onResume()
 
+        Console.log("${getLogTag()} ON RESUME")
+
         onActiveStateChanged(true)
     }
 
@@ -76,5 +95,15 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
         activeStateCallbacks.clear()
 
         super.onDestroy()
+    }
+
+    private fun getLogTag(): String {
+
+        if (isEmpty(tagContext)) {
+
+            return tag
+        }
+
+        return "$tagContext :: $tag"
     }
 }
