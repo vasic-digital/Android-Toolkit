@@ -2,5 +2,5 @@ package com.redelf.commons.activity
 
 interface ActivityActiveStateListener {
 
-    fun onActivityStateChanged(activity: BaseActivity, active: Boolean)
+    fun onActivityStateChanged(activity: StatefulActivity, active: Boolean)
 }

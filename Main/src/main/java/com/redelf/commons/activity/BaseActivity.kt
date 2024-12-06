@@ -20,7 +20,6 @@ import android.text.TextUtils
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -31,8 +30,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.callback.CallbackOperation
-import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.initRegistrationWithGoogle
@@ -41,7 +38,6 @@ import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.broadcast.Broadcast
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.registration.Registration
 import com.redelf.commons.transmission.TransmissionManagement
 import com.redelf.commons.transmission.TransmissionManager
 import com.redelf.commons.transmission.TransmissionService
@@ -57,15 +53,13 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
 abstract class BaseActivity :
 
-    AppCompatActivity(),
     ProgressActivity,
-    ActivityActiveStateSubscription
+    StatefulActivity()
 
 {
 
@@ -91,15 +85,12 @@ abstract class BaseActivity :
         BaseApplication.takeContext().detectPhoneCallReceived
 
     private var created = false
-    private val paused = AtomicBoolean()
-    private val activeState = AtomicBoolean()
     private var unregistrar: Unregistrar? = null
     private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
     private val PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE = 111
     private var attachmentsDialog: AttachFileDialog? = null
     private lateinit var backPressedCallback: OnBackPressedCallback
-    private val activeStateCallbacks = Callbacks<ActivityActiveStateListener>("resumeCallbacks")
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -198,46 +189,6 @@ abstract class BaseActivity :
         }
     }
 
-    override fun register(subscriber: ActivityActiveStateListener) {
-
-        if (activeStateCallbacks.isRegistered(subscriber)) {
-
-            return
-        }
-
-        activeStateCallbacks.register(subscriber)
-    }
-
-    override fun unregister(subscriber: ActivityActiveStateListener) {
-
-        activeStateCallbacks.unregister(subscriber)
-    }
-
-    fun isActive() = activeState.get()
-
-    private fun onActiveStateChanged(active: Boolean) {
-
-        activeState.set(active)
-
-        activeStateCallbacks.doOnAll(
-
-            object : CallbackOperation<ActivityActiveStateListener> {
-
-                override fun perform(callback: ActivityActiveStateListener) {
-
-                    callback.onActivityStateChanged(this@BaseActivity, active)
-                }
-            },
-
-            "onActivityStateChanged"
-        )
-    }
-
-    override fun isRegistered(subscriber: ActivityActiveStateListener): Boolean {
-
-        return activeStateCallbacks.isRegistered(subscriber)
-    }
-
     override fun onRequestPermissionsResult(
 
         requestCode: Int,
@@ -279,25 +230,6 @@ abstract class BaseActivity :
                 }
             }
         }
-    }
-
-
-    override fun onPause() {
-
-        paused.set(true)
-
-        super.onPause()
-
-        onActiveStateChanged(false)
-    }
-
-    override fun onResume() {
-
-        paused.set(false)
-
-        super.onResume()
-
-        onActiveStateChanged(true)
     }
 
     override fun showProgress(from: String) {
@@ -1081,8 +1013,6 @@ abstract class BaseActivity :
 
         attachmentsDialog?.show()
     }
-
-    protected fun isPaused(): Boolean = paused.get()
 
     protected fun execute(what: Runnable): Boolean {
 
