@@ -131,14 +131,17 @@ class ManagersInitializer {
 
                                     context?.let { ctx ->
 
-                                        Console.log("$mlTag REGISTERING")
+                                        if (!manager.isRegistered(ctx)) {
 
-                                        manager.register(ctx)
+                                            Console.log("$mlTag REGISTERING")
 
-                                        Console.log(
+                                            manager.register(ctx)
 
-                                            "$mlTag REGISTERED: ${manager.isRegistered(ctx)}"
-                                        )
+                                            Console.log(
+
+                                                "$mlTag REGISTERED: ${manager.isRegistered(ctx)}"
+                                            )
+                                        }
                                     }
                                 }
 
