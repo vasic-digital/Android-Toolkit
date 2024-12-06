@@ -100,12 +100,15 @@ class ManagersInitializer {
 
                                 context?.let { ctx ->
 
-                                    Console.log(
+                                    if (manager.takeContext() != ctx) {
 
-                                        "$mTag Injecting context: $ctx"
-                                    )
+                                        Console.log(
 
-                                    manager.injectContext(ctx)
+                                            "$mTag Injecting context: '$ctx'"
+                                        )
+
+                                        manager.injectContext(ctx)
+                                    }
                                 }
 
                                 if (manager is ResourceDefaults) {
