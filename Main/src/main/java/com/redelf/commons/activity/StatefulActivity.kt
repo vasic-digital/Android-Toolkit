@@ -140,7 +140,11 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
                 override fun perform(callback: ActivityActiveStateListener) {
 
-                    Console.log("${getLogTag()} NOTIFY :: Destruction")
+                    Console.log(
+
+                        "${getLogTag()} NOTIFY :: Destruction :: " +
+                                "${this@StatefulActivity::class.simpleName} " +
+                                "@ ${callback.hashCode()}")
 
                     callback.onDestruction(this@StatefulActivity)
 
