@@ -134,6 +134,23 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
     override fun onDestroy() {
 
+        activeStateCallbacks.doOnAll(
+
+            object : CallbackOperation<ActivityActiveStateListener> {
+
+                override fun perform(callback: ActivityActiveStateListener) {
+
+                    Console.log("${getLogTag()} NOTIFY :: Destruction")
+
+                    callback.onDestruction(this@StatefulActivity)
+
+                    activeStateCallbacks.unregister(callback)
+                }
+            },
+
+            "onDestruction"
+        )
+
         activeStateCallbacks.clear()
 
         super.onDestroy()
