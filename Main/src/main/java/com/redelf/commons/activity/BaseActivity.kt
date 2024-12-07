@@ -20,7 +20,6 @@ import android.text.TextUtils
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -54,13 +53,18 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
-abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
+abstract class BaseActivity :
+
+    ProgressActivity,
+    StatefulActivity()
+
+{
 
     protected var googleSignInRequestCode = AtomicInteger()
+
     protected var transmissionService: TransmissionService? = null
     protected var attachmentObtainedUris: MutableList<Uri> = mutableListOf()
     protected var attachmentObtainedFiles: MutableList<File> = mutableListOf()
@@ -81,7 +85,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
         BaseApplication.takeContext().detectPhoneCallReceived
 
     private var created = false
-    private val paused = AtomicBoolean()
     private var unregistrar: Unregistrar? = null
     private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
@@ -227,21 +230,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
                 }
             }
         }
-    }
-
-
-    override fun onPause() {
-
-        paused.set(true)
-
-        super.onPause()
-    }
-
-    override fun onResume() {
-
-        paused.set(false)
-
-        super.onResume()
     }
 
     override fun showProgress(from: String) {
@@ -1025,8 +1013,6 @@ abstract class BaseActivity : AppCompatActivity(), ProgressActivity {
 
         attachmentsDialog?.show()
     }
-
-    protected fun isPaused(): Boolean = paused.get()
 
     protected fun execute(what: Runnable): Boolean {
 

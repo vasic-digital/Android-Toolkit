@@ -22,7 +22,7 @@ fun retrofitApiParameters(
 
 ): RetrofitApiParameters {
 
-    val params = RetrofitApiParameters(
+    return RetrofitApiParameters(
 
         ctx = ctx,
         name = name,
@@ -32,14 +32,10 @@ fun retrofitApiParameters(
         writeTimeoutInSeconds = writeTimeoutInSeconds,
         connectTimeoutInSeconds = connectTimeoutInSeconds,
 
-        bodyLog = bodyLog ?: false,
-        verbose = verbose ?: false,
+        bodyLog = bodyLog == true,
+        verbose = verbose == true,
 
-        scalar = scalar ?: false,
-        jackson = jackson ?: false
+        scalar = scalar == true,
+        jackson = jackson == true
     )
-
-    Console.log("Retrofit :: Parameters :: Service = '${params.name}' :: $params")
-
-    return params
 }
