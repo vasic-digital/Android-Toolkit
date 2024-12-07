@@ -35,6 +35,8 @@ object FirebaseConfigurationManager :
 
     override fun isLazyReady() = loaded.get()
 
+    override fun isLoaded() = isLazyReady()
+
     override fun reset(): Boolean {
 
         loaded.set(false)

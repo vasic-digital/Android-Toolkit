@@ -100,12 +100,15 @@ class ManagersInitializer {
 
                                 context?.let { ctx ->
 
-                                    Console.log(
+                                    if (manager.takeContext() != ctx) {
 
-                                        "$mTag Injecting context: $ctx"
-                                    )
+                                        Console.log(
 
-                                    manager.injectContext(ctx)
+                                            "$mTag Injecting context: '$ctx'"
+                                        )
+
+                                        manager.injectContext(ctx)
+                                    }
                                 }
 
                                 if (manager is ResourceDefaults) {
@@ -125,20 +128,23 @@ class ManagersInitializer {
 
                                 if (manager is LazyDataManagement<*>) {
 
-                                    val mlTag = "$mTag Registering to app lifecycle events ::"
-
-                                    Console.log("$mlTag START")
-
                                     context?.let { ctx ->
 
-                                        Console.log("$mlTag REGISTERING")
+                                        if (!manager.isRegistered(ctx)) {
 
-                                        manager.register(ctx)
+                                            val mlTag = "$mTag Registering to app lifecycle events ::"
 
-                                        Console.log(
+                                            Console.log("$mlTag START")
 
-                                            "$mlTag REGISTERED: ${manager.isRegistered(ctx)}"
-                                        )
+                                            Console.log("$mlTag REGISTERING")
+
+                                            manager.register(ctx)
+
+                                            Console.log(
+
+                                                "$mlTag REGISTERED: ${manager.isRegistered(ctx)}"
+                                            )
+                                        }
                                     }
                                 }
 
