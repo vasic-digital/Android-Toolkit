@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.app.BackgroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -64,11 +65,11 @@ import kotlin.reflect.KClass
 abstract class BaseApplication :
 
     Application(),
-    ContextAvailability<BaseApplication>,
-    ActivityLifecycleCallbacks,
     ActivityCount,
+    Updatable<Long>,
     LifecycleObserver,
-    Updatable<Long>
+    ActivityLifecycleCallbacks,
+    ContextAvailability<BaseApplication>
 
 {
 
@@ -509,26 +510,45 @@ abstract class BaseApplication :
 
         Console.log("$tag START")
 
-        try {
+        if (OnClearFromRecentService.isRunning()) {
 
-            if (OnClearFromRecentService.isRunning()) {
+            Console.log("$tag ALREADY RUNNING")
+            return
+        }
 
-                Console.log("$tag ALREADY RUNNING")
-                return
+        Console.log("$tag STARTING")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+            try {
+
+                val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
+                startService(intent)
+
+                Console.log("$tag END")
+
+            } catch (e: BackgroundServiceStartNotAllowedException) {
+
+                Console.error("$tag ERROR: ${e.message}")
+
+            } catch (e: Exception) {
+
+                recordException(e)
             }
 
-            Console.log("$tag STARTING")
+        } else {
 
-            val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
-            startService(intent)
+            try {
 
-            Console.log("$tag END")
+                val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
+                startService(intent)
 
-        } catch (e: Exception) {
+                Console.log("$tag END")
 
-            Console.error("$tag ERROR: ${e.message}")
+            } catch (e: Exception) {
 
-            recordException(e)
+                recordException(e)
+            }
         }
     }
 
