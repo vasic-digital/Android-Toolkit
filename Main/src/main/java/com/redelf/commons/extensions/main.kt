@@ -865,34 +865,41 @@ fun exec(
     }
 }
 
-@Throws(
 
-    RejectedExecutionException::class,
-    NullPointerException::class
-)
 fun exec(what: Runnable, delayInMilliseconds: Long) {
 
-    Executor.MAIN.execute(what, delayInMilliseconds)
+    try {
+
+        Executor.MAIN.execute(what, delayInMilliseconds)
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
 }
 
-@Throws(
-
-    RejectedExecutionException::class,
-    NullPointerException::class
-)
 fun exec(delayInMilliseconds: Long, what: Runnable) {
 
-    Executor.MAIN.execute(what, delayInMilliseconds)
+    try {
+
+        Executor.MAIN.execute(what, delayInMilliseconds)
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
 }
 
-@Throws(
-
-    RejectedExecutionException::class,
-    NullPointerException::class
-)
 fun exec(what: Runnable) {
 
-    Executor.MAIN.execute(what)
+    try {
+
+        Executor.MAIN.execute(what)
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
 }
 
 fun exec(
@@ -973,23 +980,15 @@ fun <T> doExec(
 
         return success
 
-    } catch (e: RejectedExecutionException) {
-
-        Console.error(e)
-
-    } catch (e: InterruptedException) {
-
-        Console.error(e)
-
-    } catch (e: ExecutionException) {
-
-        Console.error(e)
-
     } catch (e: TimeoutException) {
 
         Console.error(e)
 
         future?.cancel(true)
+
+    } catch (e: Exception) {
+
+        recordException(e)
     }
 
     return success
