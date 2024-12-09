@@ -307,6 +307,19 @@ class GsonParser(
                                                             recordException(e)
                                                         }
                                                     }
+
+                                                    else -> {
+
+                                                        val e = IllegalArgumentException(
+
+                                                            "Not supported type for default " +
+                                                                    "custom serializer " +
+                                                                    "'${clazz.canonicalName}'"
+                                                        )
+
+                                                        Console.error("$wTag ERROR: ${e.message}")
+                                                        recordException(e)
+                                                    }
                                                 }
 
                                             } else {
@@ -396,7 +409,56 @@ class GsonParser(
 
                         fun customRead(): Any? {
 
-                            // TODO
+                            val tag = "$tag CUSTOM ::"
+
+                            Console.log("$tag START")
+
+                            try {
+
+                                recipe[fieldName]?.let { serializer ->
+
+                                    if (serializer is DefaultCustomSerializer) {
+
+                                        Console.log("$tag Custom write :: Custom serializer")
+
+                                        when (clazz.canonicalName) {
+
+                                            ByteArray::class.java.canonicalName -> {
+
+                                                val result = byteArraySerializer.deserialize(fieldName)
+
+                                                return result
+                                            }
+
+                                            else -> {
+
+                                                val e = IllegalArgumentException(
+
+                                                    "Not supported type for default " +
+                                                            "custom serializer " +
+                                                            "'${clazz.canonicalName}'"
+                                                )
+
+                                                Console.error("$tag ERROR: ${e.message}")
+                                                recordException(e)
+
+                                                return null
+                                            }
+                                        }
+
+                                    } else {
+
+                                        val result = serializer.deserialize(fieldName)
+
+                                        return result
+                                    }
+                                }
+
+                            } catch (e: Exception) {
+
+                                Console.error("$tag ERROR: ${e.message}")
+                                recordException(e)
+                            }
 
                             return null
                         }
