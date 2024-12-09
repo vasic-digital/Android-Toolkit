@@ -378,6 +378,10 @@ class GsonParser(
             @Suppress("DEPRECATION")
             override fun read(`in`: JsonReader?): Any? {
 
+                val tag = "$tag READ ::"
+
+                Console.log("$tag START")
+
                 try {
 
                     val instance = clazz.newInstance()
@@ -388,6 +392,8 @@ class GsonParser(
 
                         val fieldName = `in`.nextName()
 
+                        val tag = "$tag Field = '$fieldName' ::"
+
                         fun customRead(): Any? {
 
                             // TODO
@@ -397,7 +403,27 @@ class GsonParser(
 
                         fun regularRead(): Any? {
 
-                            // TODO
+                            val tag = "$tag REGULAR ::"
+
+                            Console.log("$tag START")
+
+                            try {
+
+                                val json = `in`.nextString()
+
+                                Console.log("$tag JSON obtained")
+
+                                val result = gson.fromJson(json, clazz)
+
+                                Console.log("$tag END: $result")
+
+                                return result
+
+                            } catch (e: Exception) {
+
+                                Console.error("$tag ERROR: ${e.message}")
+                                recordException(e)
+                            }
 
                             return null
                         }
@@ -418,6 +444,7 @@ class GsonParser(
 
                 } catch (e: Exception) {
 
+                    Console.error("$tag ERROR: ${e.message}")
                     recordException(e)
                 }
 
