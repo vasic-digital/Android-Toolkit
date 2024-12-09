@@ -623,13 +623,28 @@ abstract class BaseApplication :
         return managers
     }
 
-    protected open fun getManagersToLoad(): MutableList<DataManagement<*>> {
+    protected open fun getToLoad(): MutableList<Loadable> {
 
-        val managers = mutableListOf<DataManagement<*>>()
+        val toLoad = mutableListOf<Loadable>()
+
+        // TODO: Add install referrers
+        // toLoad.add(SettingsManager.obtain())
+
+        return toLoad
+    }
+
+    protected open fun getManagersToLoad(): MutableList<Loadable> {
+
+        val managers = mutableListOf<Loadable>()
 
         managers.add(SettingsManager.obtain())
 
         return managers
+    }
+
+    protected open fun onLoaded() {
+
+        Console.log("Loadable are loaded")
     }
 
     protected open fun onManagersLoaded() {
@@ -661,17 +676,31 @@ abstract class BaseApplication :
         return success
     }
 
+    private fun load() {
+
+        loadManagers()
+
+        getToLoad().forEach {
+
+            it.load()
+        }
+
+        onDidLoaded()
+    }
+
     private fun loadManagers() {
 
         getManagersToLoad().forEach {
 
-            if (it is Loadable) {
-
-                it.load()
-            }
+            it.load()
         }
 
         onManagersDidLoaded()
+    }
+
+    private fun onDidLoaded() {
+
+        onLoaded()
     }
 
     private fun onManagersDidLoaded() {
@@ -948,7 +977,7 @@ abstract class BaseApplication :
     private fun onManagers() {
 
         initializeFcm()
-        loadManagers()
+        load()
         onManagersReady()
         update()
     }
