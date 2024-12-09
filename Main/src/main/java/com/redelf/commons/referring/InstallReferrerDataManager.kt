@@ -1,8 +1,28 @@
 package com.redelf.commons.referring
 
+import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.loading.Loadable
+import com.redelf.commons.persistance.base.get.Get
+import com.redelf.commons.settings.SettingsManagement
 import com.redelf.commons.settings.SettingsManager
 
-abstract class InstallReferrerDataManager(settings: SettingsManager): Loadable {
+abstract class InstallReferrerDataManager<T>(
 
+    protected val settings: SettingsManagement = SettingsManager.obtain()
+
+) :
+
+    Get<T>,
+    Loadable,
+    ContextAvailability<BaseApplication>
+
+{
+
+    protected open val tag = "Install referrer ::"
+
+    override fun takeContext(): BaseApplication {
+
+        return BaseApplication.takeContext()
+    }
 }
