@@ -181,9 +181,6 @@ class GsonParser(
         return null
     }
 
-    /*
-    * TODO: Catch and handle exceptions
-    */
     private fun createTypeAdapter(
 
         who: Any,
@@ -200,134 +197,181 @@ class GsonParser(
 
             override fun write(out: JsonWriter?, value: Any?) {
 
-                if (value == null) {
+                try {
 
-                    out?.nullValue()
+                    if (value == null) {
 
-                } else {
+                        out?.nullValue()
 
-                    out?.beginObject()
+                    } else {
 
-                    val fields = clazz.declaredFields
+                        out?.beginObject()
 
-                    fields.forEach { field ->
+                        val fields = clazz.declaredFields
 
-                        var excluded = false
-                        field.isAccessible = true
+                        fields.forEach { field ->
 
-                        if (field.isAnnotationPresent(Expose::class.java)) {
+                            var excluded = false
+                            field.isAccessible = true
 
-                            val exposeAnnotation = field.getAnnotation(Expose::class.java)
+                            if (field.isAnnotationPresent(Expose::class.java)) {
 
-                            if (exposeAnnotation?.serialize == true) {
+                                val exposeAnnotation = field.getAnnotation(Expose::class.java)
 
-                                val value = field.get(who)
+                                if (exposeAnnotation?.serialize == true) {
 
-                                if (value is Boolean) {
+                                    val value = field.get(who)
 
-                                    excluded = value
+                                    if (value is Boolean) {
+
+                                        excluded = value
+                                    }
                                 }
                             }
-                        }
 
-                        if (!excluded) {
+                            if (!excluded) {
 
-                            excluded = field.isAnnotationPresent(Transient::class.java)
-                        }
+                                excluded = field.isAnnotationPresent(Transient::class.java)
+                            }
 
-                        val fieldName = field.name
+                            val fieldName = field.name
 
-                        if (excluded) {
+                            if (excluded) {
 
-                            Console.log("$tag EXCLUDED :: Field name = '$fieldName'")
+                                Console.log("$tag EXCLUDED :: Field name = '$fieldName'")
 
-                        } else {
+                            } else {
 
-                            val wTag = "$tag WRITING :: Field name = '$fieldName' ::"
+                                val wTag = "$tag WRITING :: Field name = '$fieldName' ::"
 
-                            Console.log("$wTag START")
+                                Console.log("$wTag START")
 
-                            val fieldValue = field.get(who)
+                                val fieldValue = field.get(who)
 
-                            fieldValue?.let { fValue ->
+                                fieldValue?.let { fValue ->
 
-                                fun regularWrite() {
+                                    fun regularWrite() {
 
-                                    val rwTag = "$wTag REGULAR WRITE ::"
+                                        val rwTag = "$wTag REGULAR WRITE ::"
 
-                                    Console.log("$rwTag START")
+                                        Console.log("$rwTag START")
 
-                                    out?.name(fieldName)
-                                    out?.value(gson.toJson(fValue))
-
-                                    Console.log("$rwTag END")
-                                }
-
-                                fun customWrite() {
-
-                                    Console.log(
-
-                                        "$wTag Custom write :: START :: " +
-                                                "Class = '${clazz.canonicalName}'"
-                                    )
-
-                                    recipe[fieldName]?.let { serializer ->
-
-                                        if (serializer is DefaultCustomSerializer) {
-
-                                            Console.log("$wTag Custom write :: Custom serializer")
-
-                                            when (clazz.canonicalName) {
-
-                                                ByteArray::class.java.canonicalName -> {
-
-                                                    out?.name(fieldName)
-                                                    out?.value(byteArraySerializer.serialize(fieldName, fValue))
-                                                }
-                                            }
-
-                                        } else {
-
-                                            Console.log(
-
-                                                "$wTag Custom write :: Custom provided serializer"
-                                            )
+                                        try {
 
                                             out?.name(fieldName)
-                                            out?.value(serializer.serialize(fieldName, fValue))
+                                            out?.value(gson.toJson(fValue))
+
+                                            Console.log("$rwTag END")
+
+                                        } catch (e: Exception) {
+
+                                            Console.error("$rwTag ERROR: ${e.message}")
+                                            recordException(e)
                                         }
                                     }
 
-                                    if (recipe[fieldName] == null) {
+                                    fun customWrite() {
 
-                                        Console.log("$wTag END :: To write regular (1)")
+                                        Console.log(
+
+                                            "$wTag Custom write :: START :: " +
+                                                    "Class = '${clazz.canonicalName}'"
+                                        )
+
+                                        recipe[fieldName]?.let { serializer ->
+
+                                            if (serializer is DefaultCustomSerializer) {
+
+                                                Console.log("$wTag Custom write :: Custom serializer")
+
+                                                when (clazz.canonicalName) {
+
+                                                    ByteArray::class.java.canonicalName -> {
+
+                                                        try {
+
+                                                            out?.name(fieldName)
+
+                                                            out?.value(
+
+                                                                byteArraySerializer.serialize(
+
+                                                                    fieldName,
+                                                                    fValue
+                                                                )
+                                                            )
+
+                                                        } catch (e: Exception) {
+
+                                                            Console.error("$wTag ERROR: ${e.message}")
+                                                            recordException(e)
+                                                        }
+                                                    }
+                                                }
+
+                                            } else {
+
+                                                Console.log(
+
+                                                    "$wTag Custom write :: Custom provided serializer"
+                                                )
+
+                                                try {
+
+                                                    out?.name(fieldName)
+
+                                                    out?.value(
+
+                                                        serializer.serialize(
+
+                                                            fieldName,
+                                                            fValue
+                                                        )
+                                                    )
+
+                                                } catch (e: Exception) {
+
+                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    recordException(e)
+                                                }
+                                            }
+                                        }
+
+                                        if (recipe[fieldName] == null) {
+
+                                            Console.log("$wTag END :: To write regular (1)")
+
+                                            regularWrite()
+                                        }
+                                    }
+
+                                    if (recipe.containsKey(fieldName)) {
+
+                                        Console.log("$wTag END :: To write custom")
+
+                                        customWrite()
+
+                                    } else {
+
+                                        Console.log("$wTag END :: To write regular (2)")
 
                                         regularWrite()
                                     }
                                 }
 
-                                if (recipe.containsKey(fieldName)) {
+                                if (fieldValue == null) {
 
-                                    Console.log("$wTag END :: To write custom")
-
-                                    customWrite()
-
-                                } else {
-
-                                    Console.log("$wTag END :: To write regular (2)")
-
-                                    regularWrite()
+                                    Console.log("$wTag END :: Field value is null")
                                 }
                             }
-
-                            if (fieldValue == null) {
-
-                                Console.log("$wTag END :: Field value is null")
-                            }
                         }
+
+                        out?.endObject()
                     }
 
-                    out?.endObject()
+                } catch (e: Exception) {
+
+                    recordException(e)
                 }
             }
 
