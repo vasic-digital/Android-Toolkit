@@ -99,41 +99,48 @@ class GsonParser(
         return null
     }
 
+    @Suppress("DEPRECATION")
     override fun <T> fromJson(content: String?, clazz: Class<T>?): T? {
+
+        if (isEmpty(content)) {
+
+            return null
+        }
+
+        val tag = "$tag Deserialize ::"
+
+        Console.log("$tag START")
+
+        val gsonProvider = provider.obtain()
 
         try {
 
-            if (isEmpty(content)) {
+            Console.log("$tag Class = '${clazz?.canonicalName}'")
 
-                return null
+            val instance = clazz?.newInstance()
+
+            Console.log("$tag Instance hash = ${instance.hashCode()}")
+
+            if (instance is CustomSerializable) {
+
+                val customizations = instance.getCustomSerializations()
+
+                Console.log("$tag Customizations = $customizations")
+
+                val typeAdapter = createTypeAdapter(instance::class.java, customizations)
+
+                gsonProvider.registerTypeAdapter(instance::class.java, typeAdapter)
+
+                Console.log("$tag Type adapter registered")
             }
-
-            val gsonProvider = provider.obtain()
-
-//            if (body is CustomSerializable) {
-//
-//                val customizations = body.getCustomSerializations()
-//
-//                Console.log(
-//
-//                    "$tag Custom serialization :: " +
-//                            "Class = ${body::class.java.canonicalName}, " +
-//                            "Customizations = $customizations"
-//                )
-
-                // TODO: Apply customizations
-//            }
-
-            return gsonProvider.create().fromJson(content, clazz)
 
         } catch (e: Exception) {
 
+            Console.error("$tag ERROR: ${e.message}")
             recordException(e)
-
-            Console.error("Tried to deserialize into '${clazz?.simpleName}' from '$content'")
         }
 
-        return null
+        return gsonProvider.create().fromJson(content, clazz)
     }
 
     override fun toJson(body: Any?): String? {
