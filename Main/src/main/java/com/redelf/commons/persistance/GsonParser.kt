@@ -31,7 +31,6 @@ class GsonParser(
         val DEBUG = AtomicBoolean()
     }
 
-    private val gson = provider.obtain().create()
     private val ctx: Context = BaseApplication.takeContext()
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}'"
     private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
@@ -256,7 +255,9 @@ class GsonParser(
                                         try {
 
                                             out?.name(fieldName)
-                                            out?.value(gson.toJson(fValue))
+
+                                            // FIXME:
+                                            // out?.value(gson.toJson(fValue))
 
                                             Console.log("$rwTag END")
 
@@ -468,15 +469,16 @@ class GsonParser(
 
                             try {
 
+                                // FIXME:
                                 val json = `in`.nextString()
 
-                                Console.log("$tag JSON obtained")
+//                                Console.log("$tag JSON obtained")
 
-                                val result = gson.fromJson(json, clazz)
+//                                val result = gson.fromJson(json, clazz)
+//
+//                                Console.log("$tag END: $result")
 
-                                Console.log("$tag END: $result")
-
-                                return result
+                                return ""
 
                             } catch (e: Exception) {
 

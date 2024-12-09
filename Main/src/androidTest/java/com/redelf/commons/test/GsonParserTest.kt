@@ -3,12 +3,15 @@ package com.redelf.commons.test
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
+import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.GsonParser
 import com.redelf.commons.persistance.serialization.CustomSerializable
 import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 
 class GsonParserTest : BaseTest() {
@@ -55,13 +58,25 @@ class GsonParserTest : BaseTest() {
         )
     }
 
+    @Before
+    fun prepare() {
+
+        Console.initialize(failOnError = true)
+
+        Console.log("Console initialized: $this")
+
+        GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK.set(true)
+    }
+
     @Test
     fun testGsonParser() {
+
+        val timestamp = System.currentTimeMillis()
 
         val simpleAsset = SimpleAsset(
 
             bytes = testBytes,
-            size = System.currentTimeMillis(),
+            size = timestamp,
             fileName = testString,
             cid = testString,
             mimeType = testString
@@ -70,7 +85,7 @@ class GsonParserTest : BaseTest() {
         val customAsset = CustomAsset(
 
             bytes = testBytes,
-            size = System.currentTimeMillis(),
+            size = timestamp,
             fileName = testString,
             cid = testString,
             mimeType = testString
@@ -87,7 +102,7 @@ class GsonParserTest : BaseTest() {
 
         val parser = GsonParser(
 
-            parserKey = "test.${System.currentTimeMillis()}",
+            parserKey = "test.$timestamp",
 
             object : Obtain<GsonBuilder> {
 
