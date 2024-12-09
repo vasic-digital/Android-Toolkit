@@ -39,6 +39,7 @@ class GsonParser(
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}'"
     private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
 
+    @Suppress("DEPRECATION")
     override fun <T> fromJson(content: String?, type: Type?): T? {
 
         try {
@@ -48,21 +49,43 @@ class GsonParser(
                 return null
             }
 
+            val tag = "$tag Deserialize ::"
+
+            Console.log("$tag START")
+
             val gsonProvider = provider.obtain()
 
-//            if (body is CustomSerializable) {
-//
-//                val customizations = body.getCustomSerializations()
-//
-//                Console.log(
-//
-//                    "$tag Custom serialization :: " +
-//                            "Class = ${body::class.java.canonicalName}, " +
-//                            "Customizations = $customizations"
-//                )
+            type?.let { t ->
 
-            // TODO: Apply customizations
-//            }
+                try {
+
+                    val clazz = Class.forName(t.typeName)
+
+                    Console.log("$tag Class = '${clazz.canonicalName}'")
+
+                    val instance = clazz.newInstance()
+
+                    Console.log("$tag Instance hash = ${instance.hashCode()}")
+
+                    if (instance is CustomSerializable) {
+
+                        val customizations = instance.getCustomSerializations()
+
+                        Console.log("$tag Customizations = $customizations")
+
+                        val typeAdapter = createTypeAdapter(instance::class.java, customizations)
+
+                        gsonProvider.registerTypeAdapter(instance::class.java, typeAdapter)
+
+                        Console.log("$tag Type adapter registered")
+                    }
+
+                } catch (e: Exception) {
+
+                    Console.error("$tag ERROR: ${e.message}")
+                    recordException(e)
+                }
+            }
 
             return gsonProvider.create().fromJson(content, type)
 
