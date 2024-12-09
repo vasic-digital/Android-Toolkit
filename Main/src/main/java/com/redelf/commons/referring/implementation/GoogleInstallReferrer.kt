@@ -4,6 +4,7 @@ import com.android.installreferrer.api.InstallReferrerClient
 import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse
 import com.android.installreferrer.api.InstallReferrerStateListener
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Unloadable
 import com.redelf.commons.logging.Console
@@ -33,6 +34,12 @@ class GoogleInstallReferrer : InstallReferrerDataManager<GoogleInstallReferrerDa
         val tag = "$tag Load ::"
 
         Console.log("$tag START")
+
+        if (isOnMainThread()) {
+
+            val e = IllegalStateException("RUNNING ON MAIN THREAD :: ${this::class.simpleName}.load")
+            recordException(e)
+        }
 
         if (connected.get()) {
 
@@ -81,6 +88,12 @@ class GoogleInstallReferrer : InstallReferrerDataManager<GoogleInstallReferrerDa
         val tag = "$tag GET ::"
 
         Console.log("$tag START")
+
+        if (isOnMainThread()) {
+
+            val e = IllegalStateException("RUNNING ON MAIN THREAD :: ${this::class.simpleName}.obtain")
+            recordException(e)
+        }
 
         try {
 
@@ -151,6 +164,12 @@ class GoogleInstallReferrer : InstallReferrerDataManager<GoogleInstallReferrerDa
         val tag = "$tag UNLOAD ::"
 
         Console.log("$tag START")
+
+        if (isOnMainThread()) {
+
+            val e = IllegalStateException("RUNNING ON MAIN THREAD :: ${this::class.simpleName}.unload")
+            recordException(e)
+        }
 
         try {
 
