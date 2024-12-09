@@ -1,4 +1,4 @@
-package com.redelf.commons.referring.implementation
+package com.redelf.commons.referring.implementation.google
 
 import com.android.installreferrer.api.InstallReferrerClient
 import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse

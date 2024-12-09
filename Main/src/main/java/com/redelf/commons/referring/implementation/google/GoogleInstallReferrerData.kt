@@ -1,4 +1,4 @@
-package com.redelf.commons.referring.implementation
+package com.redelf.commons.referring.implementation.google
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.serialization.SerialName

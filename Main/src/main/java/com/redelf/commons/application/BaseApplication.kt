@@ -705,7 +705,7 @@ abstract class BaseApplication :
 
     private fun onManagersDidLoaded() {
 
-        // TODO: Initialize installation referrers
+        // TODO: Initialize installation referrers or other Loadable(s)
 
         onManagersLoaded()
     }
