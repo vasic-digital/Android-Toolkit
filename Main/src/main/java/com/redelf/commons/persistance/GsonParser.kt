@@ -19,9 +19,6 @@ import com.redelf.commons.persistance.serialization.Serializer
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
 
-/*
-* TODO: Test for this is mandatory
-*/
 class GsonParser(
 
     parserKey: String,
