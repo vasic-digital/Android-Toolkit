@@ -32,11 +32,7 @@ class GsonParserTest : BaseTest() {
         var cid: String? = "",
         @SerializedName("mime")
         var mimeType: String? = ""
-
-    ) {
-
-        var name: String = fileName ?: ""
-    }
+    )
 
     private data class CustomAsset @JsonCreator constructor(
 
@@ -52,8 +48,6 @@ class GsonParserTest : BaseTest() {
         var mimeType: String? = ""
 
     ) : CustomSerializable {
-
-        var name: String = fileName ?: ""
 
         override fun getCustomSerializations() = mapOf(
 
