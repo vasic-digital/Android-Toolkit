@@ -13,4 +13,8 @@ data class Settings(
     @JsonProperty("values")
     @SerializedName("values")
     var values: ConcurrentHashMap<String, String>? = ConcurrentHashMap<String, String>(),
+
+    @JsonProperty("numbers")
+    @SerializedName("numbers")
+    var numbers: ConcurrentHashMap<String, Long>? = ConcurrentHashMap<String, Long>(),
 )

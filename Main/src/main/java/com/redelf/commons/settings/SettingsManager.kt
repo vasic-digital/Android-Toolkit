@@ -146,6 +146,8 @@ class SettingsManager private constructor() :
         return defaultValue
     }
 
+
+
     override fun getString(key: String, defaultValue: String): String {
 
         try {
@@ -163,5 +165,46 @@ class SettingsManager private constructor() :
         }
 
         return defaultValue
+    }
+
+    override fun getLong(key: String, defaultValue: Long): Long {
+
+        try {
+
+            val settings = obtain()
+
+            settings?.let {
+
+                return it.numbers?.get(key) ?: defaultValue
+            }
+
+        } catch (e: IllegalStateException) {
+
+            Console.error(e)
+        }
+
+        return defaultValue
+    }
+
+    override fun putLong(key: String, value: Long): Boolean {
+
+        try {
+
+            val settings = obtain()
+
+            settings?.let {
+
+                it.numbers?.set(key, value)
+                pushData(it)
+
+                return true
+            }
+
+        } catch (e: IllegalStateException) {
+
+            Console.error(e)
+        }
+
+        return false
     }
 }

@@ -3,7 +3,7 @@ package com.redelf.commons.referring
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.loading.Loadable
-import com.redelf.commons.persistance.base.get.Get
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.settings.SettingsManagement
 import com.redelf.commons.settings.SettingsManager
 
@@ -13,8 +13,8 @@ abstract class InstallReferrerDataManager<T>(
 
 ) :
 
-    Get<T>,
     Loadable,
+    Obtain<T?>,
     ContextAvailability<BaseApplication>
 
 {
