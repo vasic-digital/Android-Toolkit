@@ -120,7 +120,24 @@ class GsonParserTest : BaseTest() {
         Assert.assertEquals(simpleJson, simpleJson2)
         Assert.assertEquals(customJson, customJson2)
 
+        val simpleDeserialized = parser.fromJson(simpleJson, SimpleAsset::class.java)
 
+        Assert.assertNotNull(simpleDeserialized)
 
+        val customDeserialized = parser.fromJson(customJson, CustomAsset::class.java)
+
+        Assert.assertNotNull(customDeserialized)
+
+        Assert.assertEquals(simpleDeserialized?.cid, simpleAsset.cid)
+        Assert.assertEquals(simpleDeserialized?.size, simpleAsset.size)
+        Assert.assertEquals(simpleDeserialized?.bytes, simpleAsset.bytes)
+        Assert.assertEquals(simpleDeserialized?.fileName, simpleAsset.fileName)
+        Assert.assertEquals(simpleDeserialized?.mimeType, simpleAsset.mimeType)
+
+        Assert.assertEquals(customDeserialized?.cid, customAsset.cid)
+        Assert.assertEquals(customDeserialized?.size, customAsset.size)
+        Assert.assertEquals(customDeserialized?.bytes, customAsset.bytes)
+        Assert.assertEquals(customDeserialized?.fileName, customAsset.fileName)
+        Assert.assertEquals(customDeserialized?.mimeType, customAsset.mimeType)
     }
 }
