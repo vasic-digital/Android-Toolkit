@@ -41,6 +41,7 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.interprocess.InterprocessData
+import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
@@ -54,6 +55,7 @@ import com.redelf.commons.security.management.SecretsManager
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscator
 import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
+import com.redelf.commons.settings.SettingsManager
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -468,6 +470,9 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
+        DataManagement.LOGGABLE_MANAGERS.add(SettingsManager::class.java)
+        DataManagement.LOGGABLE_STORAGE_KEYS.add(SettingsManager.obtain().takeStorageKey())
+
         initTerminationListener()
         initFirebaseWithAnalytics()
 
@@ -609,6 +614,29 @@ abstract class BaseApplication :
         Console.info("Managers: Ready")
     }
 
+    protected open fun getIndependentManagers(): MutableList<DataManagement<*>> {
+
+        val managers = mutableListOf<DataManagement<*>>()
+
+        managers.add(SettingsManager.obtain())
+
+        return managers
+    }
+
+    protected open fun getManagersToLoad(): MutableList<DataManagement<*>> {
+
+        val managers = mutableListOf<DataManagement<*>>()
+
+        managers.add(SettingsManager.obtain())
+
+        return managers
+    }
+
+    protected open fun onManagersLoaded() {
+
+        Console.log("Managers are loaded")
+    }
+
     private fun initializeManagers(): Boolean {
 
         var success = true
@@ -631,6 +659,26 @@ abstract class BaseApplication :
         managersReady.set(true)
 
         return success
+    }
+
+    private fun loadManagers() {
+
+        getManagersToLoad().forEach {
+
+            if (it is Loadable) {
+
+                it.load()
+            }
+        }
+
+        onManagersDidLoaded()
+    }
+
+    private fun onManagersDidLoaded() {
+
+        // TODO: Initialize installation referrers
+
+        onManagersLoaded()
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -900,6 +948,7 @@ abstract class BaseApplication :
     private fun onManagers() {
 
         initializeFcm()
+        loadManagers()
         onManagersReady()
         update()
     }
