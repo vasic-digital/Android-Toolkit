@@ -2,6 +2,7 @@ package com.redelf.commons.referring
 
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.expiration.ExpirationParametrized
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -16,7 +17,7 @@ abstract class InstallReferrerDataManager<T>(
 ) :
 
     Obtain<T?>,
-    ContextAvailability<BaseApplication>
+    ContextAvailability<BaseApplication> where T : ExpirationParametrized<Int>
 
 {
 
@@ -57,13 +58,63 @@ abstract class InstallReferrerDataManager<T>(
 
                 settings.putString(keyVersionCode, versionCode)
 
+                Console.log(
+
+                    "$tag INSTANTIATE :: " +
+                            "Version code changed from $existingVersionCode to $versionCode"
+                )
+
                 instantiateReferrerData()
 
             } else {
 
-                if (getReferrerDataValue() == null) {
+                val dataValue = getReferrerDataValue()
 
-                    obtainReferrerData()
+                if (dataValue == null) {
+
+                    Console.log("$tag NO REFERRER DATA LOADED")
+
+                    val data = obtainReferrerData()
+
+                    Console.log("$tag LOAD :: START")
+
+                    data?.let {
+
+                        Console.log(
+
+                            "$tag LOAD :: END :: Referrer data available " +
+                                    "after loading from settings"
+                        )
+
+                        if (it.isExpired(daysValid)) {
+
+                            Console.log("$tag INSTANTIATE :: Data expired (1)")
+
+                            instantiateReferrerData()
+                        }
+                    }
+
+                    if (data == null) {
+
+                        Console.log(
+
+                            "$tag INSTANTIATE :: No referrer data available " +
+                                    "after loading from settings"
+                        )
+
+                        instantiateReferrerData()
+                    }
+
+                } else {
+
+                    Console.log("$tag REFERRER DATA ALREADY LOADED")
+
+                    if (dataValue.isExpired(daysValid)) {
+
+                        Console.log("$tag INSTANTIATE :: Data expired (2)")
+
+                        instantiateReferrerData()
+                    }
                 }
             }
 
@@ -73,7 +124,11 @@ abstract class InstallReferrerDataManager<T>(
             recordException(e)
         }
 
-        return getReferrerDataValue()
+        val result = getReferrerDataValue()
+
+        Console.log("$tag END: $result")
+
+        return result
     }
 
     protected abstract fun obtainReferrerData(): T?
