@@ -8,13 +8,13 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.loading.Unloadable
 import com.redelf.commons.logging.Console
-import com.redelf.commons.referring.InstallReferrerDataManager
+import com.redelf.commons.referring.InstallReferrer
 import java.util.concurrent.atomic.AtomicBoolean
 
 class GoogleInstallReferrer :
 
     Loadable, Unloadable,
-    InstallReferrerDataManager<GoogleInstallReferrerData>()
+    InstallReferrer<GoogleInstallReferrerData>()
 
 {
 

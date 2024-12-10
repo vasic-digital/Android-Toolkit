@@ -3,9 +3,9 @@ package com.redelf.commons.referring.implementation.facebook
 import com.facebook.applinks.AppLinkData
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.referring.InstallReferrerDataManager
+import com.redelf.commons.referring.InstallReferrer
 
-class FacebookInstallReferrer : InstallReferrerDataManager<FacebookInstallReferrerData>() {
+class FacebookInstallReferrer : InstallReferrer<FacebookInstallReferrerData>() {
 
     companion object {
 
