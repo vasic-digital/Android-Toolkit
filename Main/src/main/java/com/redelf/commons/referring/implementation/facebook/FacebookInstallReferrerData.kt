@@ -1,11 +1,15 @@
 package com.redelf.commons.referring.implementation.facebook
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.redelf.commons.referring.implementation.InstallReferrerData
 import kotlinx.serialization.SerialName
 
-data class FacebookInstallReferrerData(
+class FacebookInstallReferrerData(
 
     @JsonProperty("mir")
     @SerialName("mir")
-    val mir: String
-)
+    var mir: String? = "",
+
+    timestamp: Long? = System.currentTimeMillis()
+
+) : InstallReferrerData(timestamp)

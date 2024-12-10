@@ -1,9 +1,10 @@
 package com.redelf.commons.referring.implementation.google
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.redelf.commons.referring.implementation.InstallReferrerData
 import kotlinx.serialization.SerialName
 
-data class GoogleInstallReferrerData(
+class GoogleInstallReferrerData(
 
     @SerialName("referrerUrl")
     @JsonProperty("referrerUrl")
@@ -19,5 +20,8 @@ data class GoogleInstallReferrerData(
 
     @SerialName("googlePlayInstantParam")
     @JsonProperty("googlePlayInstantParam")
-    var googlePlayInstantParam: Boolean? = false
-)
+    var googlePlayInstantParam: Boolean? = false,
+
+    timestamp: Long? = System.currentTimeMillis()
+
+) : InstallReferrerData(timestamp)
