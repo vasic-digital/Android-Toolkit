@@ -1,6 +1,8 @@
 package com.redelf.commons.referring.implementation.facebook
 
 import com.facebook.applinks.AppLinkData
+import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.referring.InstallReferrerDataManager
 
 class FacebookInstallReferrer : InstallReferrerDataManager<FacebookInstallReferrerData>() {
@@ -9,10 +11,25 @@ class FacebookInstallReferrer : InstallReferrerDataManager<FacebookInstallReferr
 
     override fun obtain(): FacebookInstallReferrerData? {
 
-        // Get the App Link Data
-        val appLinkData = AppLinkData.createFromAlApplinkData(intent.data)
+        try {
 
-// Get the Meta Install Referrer (MIR)
-        val mir = appLinkData.targetUri.getQueryParameter("fbclid")
+            val intent = takeContext().takeIntent()
+            val appLinkData = AppLinkData.createFromAlApplinkData(intent)
+            val mir = appLinkData?.targetUri?.getQueryParameter("fbclid")
+
+            mir?.let {
+
+                if (isNotEmpty(it)) {
+
+                    return FacebookInstallReferrerData(it)
+                }
+            }
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+
+        return null
     }
 }
