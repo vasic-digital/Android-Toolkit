@@ -4,6 +4,8 @@ import com.redelf.commons.referring.InstallReferrerDataManager
 
 class FacebookInstallReferrer : InstallReferrerDataManager<FacebookInstallReferrerData>() {
 
+    override val tag = "${super.tag} Facebook ::"
+
     override fun load() {
 
         TODO("Not yet implemented")
