@@ -6,12 +6,18 @@ import com.android.installreferrer.api.InstallReferrerStateListener
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.loading.Loadable
 import com.redelf.commons.loading.Unloadable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.referring.InstallReferrerDataManager
 import java.util.concurrent.atomic.AtomicBoolean
 
-class GoogleInstallReferrer : InstallReferrerDataManager<GoogleInstallReferrerData>(), Unloadable {
+class GoogleInstallReferrer :
+
+    Loadable, Unloadable,
+    InstallReferrerDataManager<GoogleInstallReferrerData>()
+
+{
 
     companion object {
 

@@ -43,6 +43,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.intention.Intentional
 import com.redelf.commons.interprocess.InterprocessData
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
@@ -68,16 +69,23 @@ import kotlin.reflect.KClass
 
 abstract class BaseApplication :
 
+    Intentional,
     Application(),
-    ContextAvailability<BaseApplication>,
-    ActivityLifecycleCallbacks,
     ActivityCount,
+    Updatable<Long>,
     LifecycleObserver,
-    Updatable<Long>
+    ActivityLifecycleCallbacks,
+    ContextAvailability<BaseApplication>
 
 {
 
-    companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
+    companion object :
+
+        Intentional,
+        ApplicationInfo,
+        ContextAvailability<BaseApplication>
+
+    {
 
         val DEBUG = AtomicBoolean()
         val STRICT_MODE_DISABLED = AtomicBoolean()
@@ -97,6 +105,8 @@ abstract class BaseApplication :
         val ALARM_SERVICE_JOB_ID_MAX = AtomicInteger(8000)
 
         override fun takeContext() = CONTEXT
+
+        override fun takeIntent(): Intent? = CONTEXT.takeIntent()
 
         private var isAppInBackground = AtomicBoolean()
 
@@ -456,6 +466,20 @@ abstract class BaseApplication :
     }
 
     override fun takeContext() = CONTEXT
+
+    override fun takeIntent(): Intent? {
+
+        try {
+
+            return packageManager.getLaunchIntentForPackage(packageName)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+
+        return null
+    }
 
     protected open fun isStrictModeDisabled() = !DEBUG.get()
 
