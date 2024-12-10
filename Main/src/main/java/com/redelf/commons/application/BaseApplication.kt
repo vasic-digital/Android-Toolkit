@@ -25,6 +25,9 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
+import com.facebook.FacebookSdk
+import com.facebook.appevents.AppEventsConstants
+import com.facebook.appevents.AppEventsLogger
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
@@ -41,7 +44,9 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.intention.Intentional
 import com.redelf.commons.interprocess.InterprocessData
+import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.managers.ManagersInitializer
@@ -55,6 +60,7 @@ import com.redelf.commons.security.management.SecretsManager
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscator
 import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
+import com.redelf.commons.settings.SettingsManager
 import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -64,6 +70,7 @@ import kotlin.reflect.KClass
 
 abstract class BaseApplication :
 
+    Intentional,
     Application(),
     ActivityCount,
     Updatable<Long>,
@@ -73,7 +80,13 @@ abstract class BaseApplication :
 
 {
 
-    companion object : ContextAvailability<BaseApplication>, ApplicationInfo {
+    companion object :
+
+        Intentional,
+        ApplicationInfo,
+        ContextAvailability<BaseApplication>
+
+    {
 
         val DEBUG = AtomicBoolean()
         val STRICT_MODE_DISABLED = AtomicBoolean()
@@ -93,6 +106,8 @@ abstract class BaseApplication :
         val ALARM_SERVICE_JOB_ID_MAX = AtomicInteger(8000)
 
         override fun takeContext() = CONTEXT
+
+        override fun takeIntent(): Intent? = CONTEXT.takeIntent()
 
         private var isAppInBackground = AtomicBoolean()
 
@@ -182,6 +197,7 @@ abstract class BaseApplication :
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
     protected open val firebaseEnabled = true
+    protected open val facebookEnabled = false
     protected open val firebaseAnalyticsEnabled = false
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
@@ -452,6 +468,20 @@ abstract class BaseApplication :
 
     override fun takeContext() = CONTEXT
 
+    override fun takeIntent(): Intent? {
+
+        try {
+
+            return packageManager.getLaunchIntentForPackage(packageName)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+
+        return null
+    }
+
     protected open fun isStrictModeDisabled() = !DEBUG.get()
 
     fun enableLogsRecording() {
@@ -469,8 +499,12 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
+        DataManagement.LOGGABLE_MANAGERS.add(SettingsManager::class.java)
+        DataManagement.LOGGABLE_STORAGE_KEYS.add(SettingsManager.obtain().takeStorageKey())
+
         initTerminationListener()
         initFirebaseWithAnalytics()
+        initFacebook()
 
         prefs = SharedPreferencesStorage(applicationContext)
 
@@ -599,6 +633,23 @@ abstract class BaseApplication :
         }
     }
 
+    protected open fun initFacebook() {
+
+        if (facebookEnabled) {
+
+            try {
+
+                FacebookSdk.sdkInitialize(applicationContext)
+                val facebookLogger = AppEventsLogger.newLogger(this);
+                facebookLogger.logEvent(AppEventsConstants.EVENT_NAME_ACTIVATED_APP);
+
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
+        }
+    }
+
     protected open fun onPostCreate() = Unit
 
     protected open fun onScreenOn() {
@@ -629,6 +680,44 @@ abstract class BaseApplication :
         Console.info("Managers: Ready")
     }
 
+    protected open fun getIndependentManagers(): MutableList<DataManagement<*>> {
+
+        val managers = mutableListOf<DataManagement<*>>()
+
+        managers.add(SettingsManager.obtain())
+
+        return managers
+    }
+
+    protected open fun getToLoad(): MutableList<Loadable> {
+
+        val toLoad = mutableListOf<Loadable>()
+
+        // TODO: Add install referrers
+        // toLoad.add(SettingsManager.obtain())
+
+        return toLoad
+    }
+
+    protected open fun getManagersToLoad(): MutableList<Loadable> {
+
+        val managers = mutableListOf<Loadable>()
+
+        managers.add(SettingsManager.obtain())
+
+        return managers
+    }
+
+    protected open fun onLoaded() {
+
+        Console.log("Loadable are loaded")
+    }
+
+    protected open fun onManagersLoaded() {
+
+        Console.log("Managers are loaded")
+    }
+
     private fun initializeManagers(): Boolean {
 
         var success = true
@@ -651,6 +740,40 @@ abstract class BaseApplication :
         managersReady.set(true)
 
         return success
+    }
+
+    private fun load() {
+
+        loadManagers()
+
+        getToLoad().forEach {
+
+            it.load()
+        }
+
+        onDidLoaded()
+    }
+
+    private fun loadManagers() {
+
+        getManagersToLoad().forEach {
+
+            it.load()
+        }
+
+        onManagersDidLoaded()
+    }
+
+    private fun onDidLoaded() {
+
+        onLoaded()
+    }
+
+    private fun onManagersDidLoaded() {
+
+        // TODO: Initialize installation referrers or other Loadable(s)
+
+        onManagersLoaded()
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -920,6 +1043,7 @@ abstract class BaseApplication :
     private fun onManagers() {
 
         initializeFcm()
+        load()
         onManagersReady()
         update()
     }

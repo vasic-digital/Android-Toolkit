@@ -269,6 +269,9 @@ dependencies {
     api "com.google.net.cronet:cronet-okhttp:0.1.0"
     api "com.google.android.gms:play-services-cronet:18.1.0"
 
+    api "com.android.installreferrer:installreferrer:2.2"
+    api "com.facebook.android:facebook-android-sdk:17.0.2"
+
     testImplementation project("${toolkit_context}:Test")
 
     testImplementation "junit:junit:4.13.2"

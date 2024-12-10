@@ -6,3 +6,20 @@ interface Loadable {
 
     fun isLoaded(): Boolean
 }
+
+fun Loadable.withLoadable(
+
+    ifLoaded: () -> Unit,
+    ifNotLoaded: () -> Unit
+
+) {
+
+    if (isLoaded()) {
+
+        ifLoaded()
+
+    } else {
+
+        ifNotLoaded()
+    }
+}
