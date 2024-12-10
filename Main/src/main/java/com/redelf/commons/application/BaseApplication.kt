@@ -24,6 +24,9 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
+import com.facebook.FacebookSdk
+import com.facebook.appevents.AppEventsConstants
+import com.facebook.appevents.AppEventsLogger
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
@@ -183,6 +186,7 @@ abstract class BaseApplication :
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
     protected open val firebaseEnabled = true
+    protected open val facebookEnabled = false
     protected open val firebaseAnalyticsEnabled = false
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
@@ -475,6 +479,7 @@ abstract class BaseApplication :
 
         initTerminationListener()
         initFirebaseWithAnalytics()
+        initFacebook()
 
         prefs = SharedPreferencesStorage(applicationContext)
 
@@ -580,6 +585,23 @@ abstract class BaseApplication :
             if (firebaseAnalyticsEnabled) {
 
                 firebaseAnalytics = Firebase.analytics
+            }
+        }
+    }
+
+    protected open fun initFacebook() {
+
+        if (facebookEnabled) {
+
+            try {
+
+                FacebookSdk.sdkInitialize(applicationContext)
+                val facebookLogger = AppEventsLogger.newLogger(this);
+                facebookLogger.logEvent(AppEventsConstants.EVENT_NAME_ACTIVATED_APP);
+
+            } catch (e: Exception) {
+
+                recordException(e)
             }
         }
     }
