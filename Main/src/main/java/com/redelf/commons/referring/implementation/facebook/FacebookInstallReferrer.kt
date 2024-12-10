@@ -4,8 +4,6 @@ import com.facebook.applinks.AppLinkData
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.referring.InstallReferrerDataManager
-import com.redelf.commons.referring.implementation.google.GoogleInstallReferrer
-import com.redelf.commons.referring.implementation.google.GoogleInstallReferrerData
 
 class FacebookInstallReferrer : InstallReferrerDataManager<FacebookInstallReferrerData>() {
 
@@ -19,11 +17,25 @@ class FacebookInstallReferrer : InstallReferrerDataManager<FacebookInstallReferr
     override val daysValid = 28
     override val tag = "${super.tag} Facebook ::"
 
-    override fun obtainReferrerData(): FacebookInstallReferrerData? {
+    override fun getReferrerDataValue(): FacebookInstallReferrerData? {
 
-        TODO("Not yet implemented")
+        return referrerData
     }
 
+    override fun setReferrerDataValue(value: FacebookInstallReferrerData?) {
+
+        referrerData = value
+    }
+
+    override fun obtainReferrerData(): FacebookInstallReferrerData? {
+
+        val mir: String = settings.getString(keyMir, "")
+        val data = FacebookInstallReferrerData(mir)
+
+        setReferrerDataValue(data)
+
+        return getReferrerDataValue()
+    }
 
     override fun instantiateReferrerData(): FacebookInstallReferrerData? {
 
@@ -47,15 +59,5 @@ class FacebookInstallReferrer : InstallReferrerDataManager<FacebookInstallReferr
         }
 
         return null
-    }
-
-    override fun getReferrerDataValue(): FacebookInstallReferrerData? {
-
-        return referrerData
-    }
-
-    override fun setReferrerDataValue(value: FacebookInstallReferrerData?) {
-
-        referrerData = value
     }
 }
