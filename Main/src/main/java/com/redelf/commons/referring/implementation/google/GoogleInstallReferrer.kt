@@ -3,7 +3,6 @@ package com.redelf.commons.referring.implementation.google
 import com.android.installreferrer.api.InstallReferrerClient
 import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse
 import com.android.installreferrer.api.InstallReferrerStateListener
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
@@ -21,19 +20,82 @@ class GoogleInstallReferrer :
 
     companion object {
 
-        private var details: GoogleInstallReferrerData? = null
+        private var referrerData: GoogleInstallReferrerData? = null
 
-        private const val keyVersionCode = "key.VersionCode"
-        private const val keyReferrerUrl = "key.ReferrerUrl"
         private const val keyGooglePlayInstantParam = "key.GooglePlayInstantParam"
         private const val keyInstallBeginTimestampSeconds = "key.InstallBeginTimestampSeconds"
         private const val keyReferrerClickTimestampSeconds = "key.ReferrerClickTimestampSeconds"
     }
 
+    override val daysValid = 90
     override val tag = "${super.tag} Google ::"
 
     private val connected = AtomicBoolean()
     private var referrerClient: InstallReferrerClient? = null
+
+    override fun getReferrerDataValue(): GoogleInstallReferrerData? {
+
+        return referrerData
+    }
+
+    override fun setReferrerDataValue(value: GoogleInstallReferrerData?) {
+
+        referrerData = value
+    }
+
+    override fun obtainReferrerData(): GoogleInstallReferrerData? {
+
+        val referrerUrl: String = settings.getString(keyReferrerUrl, "")
+        val referrerClickTime: Long = settings.getLong(keyReferrerClickTimestampSeconds, 0)
+        val appInstallTime: Long = settings.getLong(keyInstallBeginTimestampSeconds, 0)
+        val instantExperienceLaunched: Boolean = settings.getBoolean(keyGooglePlayInstantParam, false)
+
+        val data = GoogleInstallReferrerData(
+
+            referrerUrl = referrerUrl,
+            installBeginTimestampSeconds = appInstallTime,
+            referrerClickTimestampSeconds = referrerClickTime,
+            googlePlayInstantParam = instantExperienceLaunched
+        )
+
+        setReferrerDataValue(data)
+
+        return getReferrerDataValue()
+    }
+
+    override fun instantiateReferrerData(): GoogleInstallReferrerData? {
+
+        load()
+
+        referrerClient?.let { client ->
+
+            val ref = client.installReferrer
+
+            val referrerUrl: String = ref.installReferrer
+            val referrerClickTime: Long = ref.referrerClickTimestampSeconds
+            val appInstallTime: Long = ref.installBeginTimestampSeconds
+            val instantExperienceLaunched: Boolean = ref.googlePlayInstantParam
+
+            val data = GoogleInstallReferrerData(
+
+                referrerUrl = referrerUrl,
+                installBeginTimestampSeconds = appInstallTime,
+                referrerClickTimestampSeconds = referrerClickTime,
+                googlePlayInstantParam = instantExperienceLaunched
+            )
+
+            setReferrerDataValue(data)
+
+            settings.putString(keyReferrerUrl, data.referrerUrl ?: "")
+            settings.putBoolean(keyGooglePlayInstantParam, data.googlePlayInstantParam ?: false)
+            settings.putLong(keyInstallBeginTimestampSeconds, data.installBeginTimestampSeconds ?: 0)
+            settings.putLong(keyReferrerClickTimestampSeconds, data.referrerClickTimestampSeconds ?: 0)
+
+            unload()
+        }
+
+        return getReferrerDataValue()
+    }
 
     override fun load() {
 
@@ -87,84 +149,6 @@ class GoogleInstallReferrer :
         })
     }
 
-    override fun isLoaded() = connected.get()
-
-    override fun obtain(): GoogleInstallReferrerData? {
-
-        val tag = "$tag GET ::"
-
-        Console.log("$tag START")
-
-        if (isOnMainThread()) {
-
-            val e = IllegalStateException("RUNNING ON MAIN THREAD :: ${this::class.simpleName}.obtain")
-            recordException(e)
-        }
-
-        try {
-
-            val versionCode = BaseApplication.getVersionCode()
-            val existingVersionCode = settings.getString(keyVersionCode, "")
-
-            if (versionCode != existingVersionCode) {
-
-                load()
-
-                settings.putString(keyVersionCode, versionCode)
-
-                referrerClient?.let { client ->
-
-                    val ref = client.installReferrer
-
-                    val referrerUrl: String = ref.installReferrer
-                    val referrerClickTime: Long = ref.referrerClickTimestampSeconds
-                    val appInstallTime: Long = ref.installBeginTimestampSeconds
-                    val instantExperienceLaunched: Boolean = ref.googlePlayInstantParam
-
-                    details = GoogleInstallReferrerData(
-
-                        referrerUrl = referrerUrl,
-                        installBeginTimestampSeconds = appInstallTime,
-                        referrerClickTimestampSeconds = referrerClickTime,
-                        googlePlayInstantParam = instantExperienceLaunched
-                    )
-
-                    settings.putString(keyReferrerUrl, details?.referrerUrl ?: "")
-                    settings.putBoolean(keyGooglePlayInstantParam, details?.googlePlayInstantParam ?: false)
-                    settings.putLong(keyInstallBeginTimestampSeconds, details?.installBeginTimestampSeconds ?: 0)
-                    settings.putLong(keyReferrerClickTimestampSeconds, details?.referrerClickTimestampSeconds ?: 0)
-
-                    unload()
-                }
-
-            } else {
-
-                if (details == null) {
-
-                    val referrerUrl: String = settings.getString(keyReferrerUrl, "")
-                    val referrerClickTime: Long = settings.getLong(keyReferrerClickTimestampSeconds, 0)
-                    val appInstallTime: Long = settings.getLong(keyInstallBeginTimestampSeconds, 0)
-                    val instantExperienceLaunched: Boolean = settings.getBoolean(keyGooglePlayInstantParam, false)
-
-                    details = GoogleInstallReferrerData(
-
-                        referrerUrl = referrerUrl,
-                        installBeginTimestampSeconds = appInstallTime,
-                        referrerClickTimestampSeconds = referrerClickTime,
-                        googlePlayInstantParam = instantExperienceLaunched
-                    )
-                }
-            }
-
-        } catch (e: Exception) {
-
-            Console.error("$tag ERROR: ${e.message}")
-            recordException(e)
-        }
-
-        return details
-    }
-
     override fun unload() {
 
         val tag = "$tag UNLOAD ::"
@@ -190,4 +174,6 @@ class GoogleInstallReferrer :
             recordException(e)
         }
     }
+
+    override fun isLoaded() = connected.get()
 }
