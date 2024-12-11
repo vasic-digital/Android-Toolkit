@@ -1,6 +1,7 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.annotations.Expose
@@ -136,7 +137,17 @@ class GsonParser(
             recordException(e)
         }
 
-        return gsonProvider.create().fromJson(content, clazz)
+        try {
+
+            return gsonProvider.create().fromJson(content, clazz)
+
+        } catch (e: Exception) {
+
+            Console.error("$tag ERROR: ${e.message}")
+            recordException(e)
+        }
+
+        return null
     }
 
     override fun toJson(body: Any?): String? {
@@ -160,7 +171,7 @@ class GsonParser(
 
                 Console.log("$tag Customizations = $customizations")
 
-                val typeAdapter = createTypeAdapter(body::class.java, customizations)
+                val typeAdapter = createTypeAdapter(body, customizations)
 
                 gsonProvider.registerTypeAdapter(body::class.java, typeAdapter)
 
@@ -254,10 +265,10 @@ class GsonParser(
 
                                         try {
 
-                                            out?.name(fieldName)
+                                            val serialized = "szzzzz"
 
-                                            // FIXME:
-                                            // out?.value(gson.toJson(fValue))
+                                            out?.name(fieldName)
+                                            out?.value(serialized)
 
                                             Console.log("$rwTag END")
 
@@ -472,11 +483,12 @@ class GsonParser(
                                 // FIXME:
                                 val json = `in`.nextString()
 
-//                                Console.log("$tag JSON obtained")
+                                Console.log("$tag JSON obtained")
 
-//                                val result = gson.fromJson(json, clazz)
-//
-//                                Console.log("$tag END: $result")
+                                val gson = Gson()
+                                val result = gson.fromJson(json, clazz)
+
+                                Console.log("$tag END: $result")
 
                                 return ""
 

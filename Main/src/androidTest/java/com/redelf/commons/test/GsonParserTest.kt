@@ -1,15 +1,13 @@
 package com.redelf.commons.test
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.google.gson.GsonBuilder
-import com.google.gson.annotations.SerializedName
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.GsonParser
-import com.redelf.commons.persistance.serialization.CustomSerializable
-import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
+import com.redelf.commons.test.data.CustomAsset
+import com.redelf.commons.test.data.SimpleAsset
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -23,45 +21,10 @@ class GsonParserTest : BaseTest() {
 
     private val testBytes = testString.toByteArray()
 
-    private data class SimpleAsset @JsonCreator constructor(
-
-        @SerializedName("bytes")
-        var bytes: ByteArray? = null,
-        @SerializedName("size")
-        var size: Long? = 0L,
-        @SerializedName("filename")
-        var fileName: String? = "",
-        @SerializedName("cid")
-        var cid: String? = "",
-        @SerializedName("mime")
-        var mimeType: String? = ""
-    )
-
-    private data class CustomAsset @JsonCreator constructor(
-
-        @SerializedName("bytes")
-        var bytes: ByteArray? = null,
-        @SerializedName("size")
-        var size: Long? = 0L,
-        @SerializedName("filename")
-        var fileName: String? = "",
-        @SerializedName("cid")
-        var cid: String? = "",
-        @SerializedName("mime")
-        var mimeType: String? = ""
-
-    ) : CustomSerializable {
-
-        override fun getCustomSerializations() = mapOf(
-
-            "bytes" to DefaultCustomSerializer()
-        )
-    }
-
     @Before
     fun prepare() {
 
-        Console.initialize(failOnError = true)
+        Console.initialize(failOnError = false)
 
         Console.log("Console initialized: $this")
 
