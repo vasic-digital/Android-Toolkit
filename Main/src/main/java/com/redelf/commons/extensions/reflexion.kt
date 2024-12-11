@@ -16,10 +16,10 @@ fun Class<*>.hasPublicDefaultConstructor(): Boolean {
     }
 }
 
-fun Any.assign(fieldName: String, fieldValue: Any?): Boolean {
+fun Any.assign(fieldName: String, fieldValue: Any?, tag: String = ""): Boolean {
 
-    val tag = "ASSIGN :: Instance = '$this' :: Field = '$fieldName' " +
-            ":: Value = '$fieldValue' ::"
+    val tag = "$tag ASSIGN :: Instance = '$this' :: Field = '$fieldName' " +
+            ":: Value = '$fieldValue' ::".trim()
 
     Console.log("$tag START")
 

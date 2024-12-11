@@ -575,10 +575,6 @@ class GsonParser(
         val tag = "$tag ASSIGN :: Instance = '$instance' :: Field = '$fieldName' " +
                 ":: Value = '$fieldValue' ::"
 
-        Console.log("$tag START")
-
-        instance?.assign(fieldName, fieldValue)
-
-        Console.log("$tag END")
+        instance?.assign(fieldName, fieldValue, tag)
     }
 }
