@@ -24,6 +24,6 @@ data class CustomAsset @JsonCreator constructor(
 
     override fun getCustomSerializations() = mapOf(
 
-        "bytes" to DefaultCustomSerializer()
+        "bytes" to DefaultCustomSerializer(ByteArray::class.java)
     )
 }

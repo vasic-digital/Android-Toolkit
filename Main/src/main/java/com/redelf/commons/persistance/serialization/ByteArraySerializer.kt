@@ -42,6 +42,11 @@ class ByteArraySerializer(
         }
     }
 
+    override fun takeClass(): Class<*> {
+
+        return ByteArray::class.java
+    }
+
     override fun serialize(key: String, value: Any): Boolean {
 
         try {

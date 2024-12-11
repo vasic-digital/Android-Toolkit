@@ -108,7 +108,7 @@ class GsonParser(
 
             Console.log("$tag Class = '${clazz?.canonicalName}'")
 
-            val instance = clazz?.newInstance()
+            val instance = instantiate(clazz)
 
             Console.log("$tag Instance hash = ${instance.hashCode()}")
 
@@ -118,7 +118,7 @@ class GsonParser(
 
                 Console.log("$tag Customizations = $customizations")
 
-                val typeAdapter = createTypeAdapter(instance::class.java, customizations)
+                val typeAdapter = createTypeAdapter(instance, customizations)
 
                 gsonProvider.registerTypeAdapter(instance::class.java, typeAdapter)
 
@@ -182,47 +182,15 @@ class GsonParser(
 
     private fun createTypeAdapter(
 
-        who: Any,
+        instance: Any,
         recipe: Map<String, Serializer>
 
     ): TypeAdapter<Any> {
 
-        val clazz = who::class.java
+        val clazz = instance::class.java
         val tag = "$tag Type adapter :: Class = '${clazz.canonicalName}'"
 
         Console.log("$tag CREATE :: Recipe = $recipe")
-
-        @Suppress("DEPRECATION")
-        fun instantiate(): Any? {
-
-            Console.log("$tag INSTANTIATE :: Class = '${clazz.canonicalName}' :: START")
-
-            try {
-
-                var instance: Any? = null
-
-                if (clazz.hasPublicDefaultConstructor()) {
-
-                    instance = clazz.newInstance()
-
-                    Console.log("$tag INSTANTIATE :: END :: Instance = '$instance'")
-
-                } else {
-
-                    Console.error("$tag INSTANTIATE :: END :: No public constructor found")
-                }
-
-
-                return instance
-
-            } catch (e: Exception) {
-
-                Console.error("$tag INSTANTIATE :: ERROR: ${e.message}")
-                recordException(e)
-            }
-
-            return null
-        }
 
         return object : TypeAdapter<Any>() {
 
@@ -251,7 +219,7 @@ class GsonParser(
 
                                 if (exposeAnnotation?.serialize == true) {
 
-                                    val value = field.get(who)
+                                    val value = field.get(instance)
 
                                     if (value is Boolean) {
 
@@ -277,7 +245,7 @@ class GsonParser(
 
                                 Console.log("$wTag START")
 
-                                val fieldValue = field.get(who)
+                                val fieldValue = field.get(instance)
 
                                 fieldValue?.let { fValue ->
 
@@ -433,15 +401,6 @@ class GsonParser(
 
                 try {
 
-                    var instance: Any? = null
-
-                    instance = instantiate()
-
-                    if (instance == null) {
-
-                        return null
-                    }
-
                     `in`?.beginObject()
 
                     while (`in`?.hasNext() == true) {
@@ -462,7 +421,13 @@ class GsonParser(
 
                                     if (serializer is DefaultCustomSerializer) {
 
-                                        Console.log("$tag Custom write :: Custom serializer")
+                                        val clazz = serializer.takeClass()
+
+                                        Console.log(
+
+                                            "$tag Custom write :: Custom serializer :: " +
+                                                    "Class = '${clazz.canonicalName}'"
+                                        )
 
                                         when (clazz.canonicalName) {
 
@@ -535,11 +500,15 @@ class GsonParser(
 
                         if (recipe.containsKey(fieldName)) {
 
-                            return customRead()
+                            val read = customRead()
+
+                            // FIXME: Apply to the instance
 
                         } else {
 
-                            return regularRead()
+                            val read = regularRead()
+
+                            // FIXME: Apply to the instance
                         }
                     }
 
@@ -556,5 +525,42 @@ class GsonParser(
                 return null
             }
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun instantiate(clazz: Class<*>?): Any? {
+
+        if (clazz == null) {
+
+            return null
+        }
+
+        Console.log("$tag INSTANTIATE :: Class = '${clazz.canonicalName}' :: START")
+
+        try {
+
+            var instance: Any? = null
+
+            if (clazz.hasPublicDefaultConstructor()) {
+
+                instance = clazz.newInstance()
+
+                Console.log("$tag INSTANTIATE :: END :: Instance = '$instance'")
+
+            } else {
+
+                Console.error("$tag INSTANTIATE :: END :: No public constructor found")
+            }
+
+
+            return instance
+
+        } catch (e: Exception) {
+
+            Console.error("$tag INSTANTIATE :: ERROR: ${e.message}")
+            recordException(e)
+        }
+
+        return null
     }
 }
