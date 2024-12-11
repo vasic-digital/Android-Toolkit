@@ -16,7 +16,7 @@ fun Class<*>.hasPublicDefaultConstructor(): Boolean {
     }
 }
 
-fun Any.assign(fieldName: String, fieldValue: Any?) {
+fun Any.assign(fieldName: String, fieldValue: Any?): Boolean {
 
     val tag = "ASSIGN :: Instance = '$this' :: Field = '$fieldName' " +
             ":: Value = '$fieldValue' ::"
@@ -32,9 +32,20 @@ fun Any.assign(fieldName: String, fieldValue: Any?) {
             field?.let {
 
                 it.isAccessible = true
-                it.set(fieldName, fieldValue)
+                it.set(instance, fieldValue)
 
-                Console.log("$tag END")
+                val success = it.get(instance) == fieldValue
+
+                if (success) {
+
+                    Console.log("$tag END")
+
+                } else {
+
+                    Console.error("$tag FAILED")
+                }
+
+                return success
             }
         }
 
@@ -43,4 +54,6 @@ fun Any.assign(fieldName: String, fieldValue: Any?) {
         Console.error("$tag ERROR: ${e.message}")
         recordException(e)
     }
+
+    return false
 }
