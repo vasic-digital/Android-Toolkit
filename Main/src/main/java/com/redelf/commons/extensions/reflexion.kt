@@ -32,7 +32,7 @@ fun Any.assign(fieldName: String, fieldValue: Any?) {
             field?.let {
 
                 it.isAccessible = true
-                it.set(instance, fieldName)
+                it.set(fieldName, fieldValue)
 
                 Console.log("$tag END")
             }
