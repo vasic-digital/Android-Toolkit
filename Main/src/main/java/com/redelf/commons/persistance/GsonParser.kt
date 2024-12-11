@@ -9,6 +9,7 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.fromBase64
+import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toBase64
@@ -194,13 +195,23 @@ class GsonParser(
         @Suppress("DEPRECATION")
         fun instantiate(): Any? {
 
-            Console.log("$tag INSTANTIATE :: START")
+            Console.log("$tag INSTANTIATE :: Class = '${clazz.canonicalName}' :: START")
 
             try {
 
-                val instance = clazz.newInstance()
+                var instance: Any? = null
 
-                Console.log("$tag INSTANTIATE :: END :: Instance = '$instance'")
+                if (clazz.hasPublicDefaultConstructor()) {
+
+                    instance = clazz.newInstance()
+
+                    Console.log("$tag INSTANTIATE :: END :: Instance = '$instance'")
+
+                } else {
+
+                    Console.error("$tag INSTANTIATE :: END :: No public constructor found")
+                }
+
 
                 return instance
 
@@ -422,7 +433,9 @@ class GsonParser(
 
                 try {
 
-                    val instance = instantiate()
+                    var instance: Any? = null
+
+                    instance = instantiate()
 
                     if (instance == null) {
 
