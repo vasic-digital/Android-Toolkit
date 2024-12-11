@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class GsonParser(
 
     parserKey: String,
-    private val provider: Obtain<GsonBuilder>
+    provider: Obtain<GsonBuilder>
 
 ) : Parser {
 
@@ -38,8 +38,8 @@ class GsonParser(
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}'"
     private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
 
-    @Suppress("DEPRECATION")
-    override fun fromJson(content: String?, type: Type?): Any? {
+    @Suppress("DEPRECATION", "UNCHECKED_CAST")
+    override fun <T> fromJson(content: String?, type: Type?): T? {
 
         try {
 
@@ -65,11 +65,11 @@ class GsonParser(
 
                     Console.log("$tag Class = '${clazz.canonicalName}'")
 
-                    val instance = fromJson(content, clazz)
+                    val instance: Any? = fromJson(content, clazz)
 
                     Console.log("$tag END :: Instance = '$instance'")
 
-                    return instance
+                    return instance as T?
 
                 } catch (e: Exception) {
 
@@ -89,8 +89,8 @@ class GsonParser(
         return null
     }
 
-    @Suppress("DEPRECATION")
-    override fun fromJson(content: String?, clazz: Class<*>?): Any? {
+    @Suppress("DEPRECATION", "UNCHECKED_CAST")
+    override fun <T> fromJson(content: String?, clazz: Class<*>?): T? {
 
         if (isEmpty(content)) {
 
@@ -130,7 +130,7 @@ class GsonParser(
 
         try {
 
-            return gsonProvider.create().fromJson(content, clazz)
+            return gsonProvider.create().fromJson(content, clazz) as T?
 
         } catch (e: Exception) {
 
