@@ -195,10 +195,32 @@ class GsonParser(
 
     ): TypeAdapter<Any> {
 
-        val clazz = who.javaClass
+        val clazz = who::class.java
         val tag = "$tag Type adapter :: Class = '${clazz.canonicalName}'"
 
         Console.log("$tag CREATE :: Recipe = $recipe")
+
+        @Suppress("DEPRECATION")
+        fun instantiate(): Any? {
+
+            Console.log("$tag INSTANTIATE :: START")
+
+            try {
+
+                val instance = clazz.newInstance()
+
+                Console.log("$tag INSTANTIATE :: END :: Instance = '$instance'")
+
+                return instance
+
+            } catch (e: Exception) {
+
+                Console.error("$tag INSTANTIATE :: ERROR: ${e.message}")
+                recordException(e)
+            }
+
+            return null
+        }
 
         return object : TypeAdapter<Any>() {
 
@@ -410,7 +432,12 @@ class GsonParser(
 
                 try {
 
-                    val instance = clazz.newInstance()
+                    val instance = instantiate()
+
+                    if (instance == null) {
+
+                        return null
+                    }
 
                     `in`?.beginObject()
 

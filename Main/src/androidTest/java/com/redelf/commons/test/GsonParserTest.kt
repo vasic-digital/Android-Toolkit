@@ -96,9 +96,9 @@ class GsonParserTest : BaseTest() {
 
         Assert.assertNotNull(simpleDeserialized)
 
-//        val customDeserialized = parser.fromJson(customJson, CustomAsset::class.java)
+        val customDeserialized = parser.fromJson(customJson, CustomAsset::class.java)
 
-//        Assert.assertNotNull(customDeserialized)
+        Assert.assertNotNull(customDeserialized)
 
         Assert.assertNotNull(simpleDeserialized?.bytes)
         Assert.assertTrue((simpleDeserialized?.bytes?.size ?: 0) > 0)
