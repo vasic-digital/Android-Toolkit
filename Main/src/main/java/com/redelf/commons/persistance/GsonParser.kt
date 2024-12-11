@@ -265,7 +265,8 @@ class GsonParser(
 
                                         try {
 
-                                            val serialized = "szzzzz"
+                                            // FIXME:
+                                            val serialized = provider.obtain().create().toJson(value)
 
                                             out?.name(fieldName)
                                             out?.value(serialized)
@@ -485,7 +486,7 @@ class GsonParser(
 
                                 Console.log("$tag JSON obtained")
 
-                                val gson = Gson()
+                                val gson = provider.obtain().create()
                                 val result = gson.fromJson(json, clazz)
 
                                 Console.log("$tag END: $result")
