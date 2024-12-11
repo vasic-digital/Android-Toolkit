@@ -257,6 +257,8 @@ class GsonParser(
 
                                 fieldValue?.let { fValue ->
 
+                                    val clazz = fValue::class.java
+
                                     fun regularWrite() {
 
                                         val rwTag = "$wTag REGULAR WRITE ::"
