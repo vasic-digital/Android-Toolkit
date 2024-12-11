@@ -51,6 +51,43 @@ fun String.isBase64Encoded(): Boolean {
     return org.apache.commons.codec.binary.Base64.isBase64(this)
 }
 
+fun String.toBase64(): String {
+
+    try {
+
+        val inputBytes = this.toByteArray()
+        val encodedBytes = Base64.encode(inputBytes, Base64.DEFAULT)
+
+        return encodedBytes.toString(Charsets.UTF_8)
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return ""
+}
+
+fun String.fromBase64(): String {
+
+    if (this.isBase64Encoded()) {
+
+        try {
+
+            val encodedBytes = this.toByteArray(Charsets.UTF_8)
+            val decodedBytes = Base64.decode(encodedBytes, Base64.DEFAULT)
+
+            return String(decodedBytes)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+    }
+
+    return this
+}
+
 fun String.compress(lz4: Boolean = true): ByteArray? {
 
     val uncompressed = this

@@ -8,8 +8,10 @@ import com.google.gson.annotations.Expose
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.extensions.fromBase64
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.toBase64
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
@@ -279,8 +281,7 @@ class GsonParser(
 
                                         try {
 
-                                            // FIXME:
-                                            val serialized = gson.toJson(value)
+                                            val serialized = gson.toJson(value).toBase64()
 
                                             out?.name(fieldName)
                                             out?.value(serialized)
@@ -500,12 +501,11 @@ class GsonParser(
 
                             try {
 
-                                // FIXME:
                                 val json = `in`.nextString()
 
                                 Console.log("$tag JSON obtained")
 
-                                val result = gson.fromJson(json, clazz)
+                                val result = gson.fromJson(json.fromBase64(), clazz)
 
                                 Console.log("$tag END: $result")
 
