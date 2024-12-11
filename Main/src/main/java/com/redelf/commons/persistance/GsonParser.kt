@@ -32,12 +32,14 @@ class GsonParser(
         val DEBUG = AtomicBoolean()
     }
 
+    private val gsonProvider = provider.obtain()
+    private val gson = gsonProvider.create()
     private val ctx: Context = BaseApplication.takeContext()
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}'"
     private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
 
     @Suppress("DEPRECATION")
-    override fun <T> fromJson(content: String?, type: Type?): T? {
+    override fun fromJson(content: String?, type: Type?): Any? {
 
         try {
 
@@ -46,13 +48,16 @@ class GsonParser(
                 return null
             }
 
-            val tag = "$tag Deserialize ::"
+            if (type == null) {
+
+                return null
+            }
+
+            val tag = "$tag Deserialize :: Type = '${type.typeName}' ::"
 
             Console.log("$tag START")
 
-            val gsonProvider = provider.obtain()
-
-            type?.let { t ->
+            type.let { t ->
 
                 try {
 
@@ -60,22 +65,11 @@ class GsonParser(
 
                     Console.log("$tag Class = '${clazz.canonicalName}'")
 
-                    val instance = clazz.newInstance()
+                    val instance = fromJson(content, clazz)
 
-                    Console.log("$tag Instance hash = ${instance.hashCode()}")
+                    Console.log("$tag END :: Instance = '$instance'")
 
-                    if (instance is CustomSerializable) {
-
-                        val customizations = instance.getCustomSerializations()
-
-                        Console.log("$tag Customizations = $customizations")
-
-                        val typeAdapter = createTypeAdapter(instance::class.java, customizations)
-
-                        gsonProvider.registerTypeAdapter(instance::class.java, typeAdapter)
-
-                        Console.log("$tag Type adapter registered")
-                    }
+                    return instance
 
                 } catch (e: Exception) {
 
@@ -89,26 +83,23 @@ class GsonParser(
         } catch (e: Exception) {
 
             recordException(e)
-
-            Console.error("Tried to deserialize into '${type?.typeName}' from '$content'")
+            Console.error("$tag ERROR: ${e.message}")
         }
 
         return null
     }
 
     @Suppress("DEPRECATION")
-    override fun <T> fromJson(content: String?, clazz: Class<T>?): T? {
+    override fun fromJson(content: String?, clazz: Class<*>?): Any? {
 
         if (isEmpty(content)) {
 
             return null
         }
 
-        val tag = "$tag Deserialize ::"
+        val tag = "$tag Deserialize :: Class = '${clazz?.canonicalName}'"
 
         Console.log("$tag START")
-
-        val gsonProvider = provider.obtain()
 
         try {
 
@@ -162,8 +153,6 @@ class GsonParser(
         if (DEBUG.get()) Console.log("$tag START")
 
         try {
-
-            val gsonProvider = provider.obtain()
 
             if (body is CustomSerializable) {
 
@@ -291,7 +280,7 @@ class GsonParser(
                                         try {
 
                                             // FIXME:
-                                            val serialized = provider.obtain().create().toJson(value)
+                                            val serialized = gson.toJson(value)
 
                                             out?.name(fieldName)
                                             out?.value(serialized)
@@ -516,7 +505,6 @@ class GsonParser(
 
                                 Console.log("$tag JSON obtained")
 
-                                val gson = provider.obtain().create()
                                 val result = gson.fromJson(json, clazz)
 
                                 Console.log("$tag END: $result")
