@@ -8,6 +8,7 @@ import com.google.gson.annotations.Expose
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.extensions.assign
 import com.redelf.commons.extensions.fromBase64
 import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
@@ -22,6 +23,7 @@ import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 import com.redelf.commons.persistance.serialization.Serializer
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.reflect.full.memberProperties
 
 class GsonParser(
 
@@ -502,13 +504,17 @@ class GsonParser(
 
                             val read = customRead()
 
-                            // FIXME: Apply to the instance
+                            Console.log("$tag Read = '$read'")
+
+                            assign(instance, fieldName, read)
 
                         } else {
 
                             val read = regularRead()
 
-                            // FIXME: Apply to the instance
+                            Console.log("$tag Read = '$read'")
+
+                            assign(instance, fieldName, read)
                         }
                     }
 
@@ -562,5 +568,17 @@ class GsonParser(
         }
 
         return null
+    }
+
+    private fun assign(instance: Any?, fieldName: String, fieldValue: Any?) {
+
+        val tag = "$tag ASSIGN :: Instance = '$instance' :: Field = '$fieldName' " +
+                ":: Value = '$fieldValue' ::"
+
+        Console.log("$tag START")
+
+        instance?.assign(fieldName, fieldValue)
+
+        Console.log("$tag END")
     }
 }
