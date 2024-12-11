@@ -257,6 +257,7 @@ class GsonParser(
 
                                 fieldValue?.let { fValue ->
 
+                                    val value = fValue
                                     val clazz = fValue::class.java
 
                                     fun regularWrite() {
