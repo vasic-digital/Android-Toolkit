@@ -450,13 +450,18 @@ class GsonParser(
 
                             try {
 
-                                when (fieldClazz) {
+                                when (fieldClazz.canonicalName) {
 
-                                    Int::class.java -> return `in`.nextInt()
-                                    Long::class.java -> return `in`.nextLong()
-                                    String::class.java -> return `in`.nextString()
-                                    Double::class.java -> return `in`.nextDouble()
-                                    Boolean::class.java -> return `in`.nextBoolean()
+                                    Int::class.java.canonicalName -> return `in`.nextInt()
+                                    "int" -> return `in`.nextInt()
+                                    Long::class.java.canonicalName -> return `in`.nextLong()
+                                    "long" -> return `in`.nextLong()
+                                    String::class.java.canonicalName -> return `in`.nextString()
+                                    "string" -> return `in`.nextString()
+                                    Double::class.java.canonicalName -> return `in`.nextDouble()
+                                    "double" -> return `in`.nextDouble()
+                                    Boolean::class.java.canonicalName -> return `in`.nextBoolean()
+                                    "boolean" -> return `in`.nextBoolean()
 
                                     else -> {
 
