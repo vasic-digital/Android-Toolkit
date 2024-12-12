@@ -110,6 +110,10 @@ class GsonParser(
                 typeAdapter = createTypeAdapter(instance, customizations)
 
                 Console.log("$tag Type adapter registered")
+
+            } else {
+
+                typeAdapter = createTypeAdapter(instance)
             }
 
         } catch (e: Exception) {
@@ -170,7 +174,12 @@ class GsonParser(
                 typeAdapter = createTypeAdapter(body)
             }
 
-            return typeAdapter.toJson(body)
+            if (typeAdapter == null) {
+
+                Console.error("$tag ERROR: Type adapter is null")
+            }
+
+            return typeAdapter?.toJson(body)
 
         } catch (e: Exception) {
 
@@ -182,10 +191,15 @@ class GsonParser(
 
     private fun createTypeAdapter(
 
-        instance: Any,
+        instance: Any?,
         recipe: Map<String, Serializer> = emptyMap<String, Serializer>()
 
-    ): TypeAdapter<Any> {
+    ): TypeAdapter<Any>? {
+
+        if (instance == null) {
+
+            return null
+        }
 
         val clazz = instance::class.java
         val gson = provider.obtain().create()
@@ -406,7 +420,8 @@ class GsonParser(
 
                                             ByteArray::class.java.canonicalName -> {
 
-                                                val result = byteArraySerializer.deserialize(fieldName)
+                                                val result =
+                                                    byteArraySerializer.deserialize(fieldName)
 
                                                 return result
                                             }
