@@ -11,6 +11,7 @@ import com.redelf.commons.extensions.fromBase64
 import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isExcluded
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toBase64
 import com.redelf.commons.logging.Console
@@ -449,15 +450,27 @@ class GsonParser(
 
                             try {
 
-                                val json = `in`.nextString()
+                                when (fieldClazz) {
 
-                                Console.log("$tag JSON = '$json'")
+                                    Int::class.java -> return `in`.nextInt()
+                                    Long::class.java -> return `in`.nextLong()
+                                    String::class.java -> return `in`.nextString()
+                                    Double::class.java -> return `in`.nextDouble()
+                                    Boolean::class.java -> return `in`.nextBoolean()
 
-                                val result = gson.fromJson(json, fieldClazz)
+                                    else -> {
 
-                                Console.log("$tag END: $result")
+                                        val json = `in`.nextString()
 
-                                return result
+                                        Console.log("$tag JSON = '$json'")
+
+                                        val result = gson.fromJson(json, fieldClazz)
+
+                                        Console.log("$tag END: $result")
+
+                                        return result
+                                    }
+                                }
 
                             } catch (e: Exception) {
 
