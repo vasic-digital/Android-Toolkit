@@ -512,6 +512,8 @@ class GsonParser(
 
                             assign(instance, fieldName, read)
 
+                            Console.log("$tag Assigned = '$read'")
+
                         } else {
 
                             val read = regularRead()
@@ -519,6 +521,8 @@ class GsonParser(
                             Console.log("$tag Read = '$read'")
 
                             assign(instance, fieldName, read)
+
+                            Console.log("$tag Assigned = '$read'")
                         }
                     }
 
