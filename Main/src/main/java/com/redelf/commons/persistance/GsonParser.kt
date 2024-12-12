@@ -42,50 +42,39 @@ class GsonParser(
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
     override fun <T> fromJson(content: String?, type: Type?): T? {
 
-        try {
+        if (isEmpty(content)) {
 
-            if (isEmpty(content)) {
+            return null
+        }
 
-                return null
+        if (type == null) {
+
+            return null
+        }
+
+        val tag = "$tag Deserialize :: Type = '${type.typeName}' ::"
+
+        Console.log("$tag START")
+
+        type.let { t ->
+
+            try {
+
+                val clazz = Class.forName(t.typeName)
+
+                Console.log("$tag Class = '${clazz.canonicalName}'")
+
+                val instance: Any? = fromJson(content, clazz)
+
+                Console.log("$tag END :: Instance = '$instance'")
+
+                return instance as T?
+
+            } catch (e: Exception) {
+
+                Console.error("$tag ERROR: ${e.message}")
+                recordException(e)
             }
-
-            if (type == null) {
-
-                return null
-            }
-
-            val tag = "$tag Deserialize :: Type = '${type.typeName}' ::"
-
-            Console.log("$tag START")
-
-            type.let { t ->
-
-                try {
-
-                    val clazz = Class.forName(t.typeName)
-
-                    Console.log("$tag Class = '${clazz.canonicalName}'")
-
-                    val instance: Any? = fromJson(content, clazz)
-
-                    Console.log("$tag END :: Instance = '$instance'")
-
-                    return instance as T?
-
-                } catch (e: Exception) {
-
-                    Console.error("$tag ERROR: ${e.message}")
-                    recordException(e)
-                }
-            }
-
-            // FIXME: Use type adapter
-            return gson.fromJson(content, type)
-
-        } catch (e: Exception) {
-
-            recordException(e)
-            Console.error("$tag ERROR: ${e.message}")
         }
 
         return null
