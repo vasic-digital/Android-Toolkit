@@ -23,7 +23,6 @@ import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 import com.redelf.commons.persistance.serialization.Serializer
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.reflect.full.memberProperties
 
 class GsonParser(
 
@@ -300,15 +299,10 @@ class GsonParser(
 
                                                         try {
 
-                                                            out?.name(fieldName)
+                                                            byteArraySerializer.serialize(
 
-                                                            out?.value(
-
-                                                                byteArraySerializer.serialize(
-
-                                                                    fieldName,
-                                                                    fValue
-                                                                )
+                                                                fieldName,
+                                                                fValue
                                                             )
 
                                                         } catch (e: Exception) {
@@ -341,15 +335,10 @@ class GsonParser(
 
                                                 try {
 
-                                                    out?.name(fieldName)
+                                                    serializer.serialize(
 
-                                                    out?.value(
-
-                                                        serializer.serialize(
-
-                                                            fieldName,
-                                                            fValue
-                                                        )
+                                                        fieldName,
+                                                        fValue
                                                     )
 
                                                 } catch (e: Exception) {
