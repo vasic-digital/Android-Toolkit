@@ -164,15 +164,13 @@ class GsonParser(
                 typeAdapter = createTypeAdapter(body, customizations)
 
                 Console.log("$tag Type adapter registered")
+
+            } else {
+
+                typeAdapter = createTypeAdapter(body)
             }
 
-            typeAdapter?.let { adapter ->
-
-                return adapter.toJson(body)
-            }
-
-            // FIXME: Use type adapter
-            return gson.toJson(body)
+            return typeAdapter.toJson(body)
 
         } catch (e: Exception) {
 
@@ -185,7 +183,7 @@ class GsonParser(
     private fun createTypeAdapter(
 
         instance: Any,
-        recipe: Map<String, Serializer>
+        recipe: Map<String, Serializer> = emptyMap<String, Serializer>()
 
     ): TypeAdapter<Any> {
 
