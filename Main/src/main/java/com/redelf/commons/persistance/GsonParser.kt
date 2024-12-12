@@ -469,13 +469,13 @@ class GsonParser(
 
                                 val json = `in`.nextString()
 
-                                Console.log("$tag JSON obtained")
+                                Console.log("$tag JSON :: json = '$json'")
 
-                                val result = gson.fromJson(json.fromBase64(), clazz)
+                                val result = gson.fromJson(json, clazz)
 
                                 Console.log("$tag END: $result")
 
-                                return ""
+                                return result
 
                             } catch (e: Exception) {
 
