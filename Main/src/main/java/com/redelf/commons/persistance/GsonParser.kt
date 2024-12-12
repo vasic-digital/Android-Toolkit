@@ -139,7 +139,7 @@ class GsonParser(
 
         } catch (e: Exception) {
 
-            Console.error("$tag ERROR: ${e.message}")
+            Console.error("$tag ERROR: ${e.message}, Content = '$content'")
             recordException(e)
         }
 
