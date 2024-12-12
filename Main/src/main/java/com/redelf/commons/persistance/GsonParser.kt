@@ -373,9 +373,9 @@ class GsonParser(
 
                         val fieldName = `in`.nextName()
                         val fieldClazz = clazz.getDeclaredField(fieldName).type
+                        val fieldCanonical = fieldClazz.canonicalName
 
-                        val tag = "$tag Field = '$fieldName' :: " +
-                                "Field class = '${fieldClazz.canonicalName}' ::"
+                        val tag = "$tag Field = '$fieldName' :: Field class = '$fieldCanonical' ::"
 
                         fieldsRead.add(fieldName)
 
@@ -450,24 +450,33 @@ class GsonParser(
 
                             try {
 
-                                when (fieldClazz.canonicalName) {
+                                when (fieldCanonical) {
 
                                     Int::class.java.canonicalName -> return `in`.nextInt()
                                     "int" -> return `in`.nextInt()
+                                    "java.lang.Integer" -> return `in`.nextInt()
                                     Long::class.java.canonicalName -> return `in`.nextLong()
                                     "long" -> return `in`.nextLong()
+                                    "java.lang.Long" -> return `in`.nextLong()
                                     String::class.java.canonicalName -> return `in`.nextString()
                                     "string" -> return `in`.nextString()
+                                    "java.lang.String" -> return `in`.nextString()
                                     Double::class.java.canonicalName -> return `in`.nextDouble()
                                     "double" -> return `in`.nextDouble()
+                                    "java.lang.Double" -> return `in`.nextDouble()
                                     Boolean::class.java.canonicalName -> return `in`.nextBoolean()
                                     "boolean" -> return `in`.nextBoolean()
+                                    "java.lang.Boolean" -> return `in`.nextBoolean()
 
                                     else -> {
 
                                         val json = `in`.nextString()
 
-                                        Console.log("$tag JSON = '$json'")
+                                        Console.log(
+
+                                            "$tag JSON = '$json', " +
+                                                    "Field canonical = '$fieldCanonical"
+                                        )
 
                                         val result = gson.fromJson(json, fieldClazz)
 
