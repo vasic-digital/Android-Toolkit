@@ -1,6 +1,8 @@
 package com.redelf.commons.extensions
 
+import com.google.gson.annotations.Expose
 import com.redelf.commons.logging.Console
+import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
 fun Class<*>.hasPublicDefaultConstructor(): Boolean {
@@ -56,4 +58,40 @@ fun Any.assign(fieldName: String, fieldValue: Any?, tag: String = ""): Boolean {
     }
 
     return false
+}
+
+fun Field.isExcluded(instance: Any): Boolean {
+
+    var excluded = false
+
+    try {
+
+        this.isAccessible = true
+
+        if (this.isAnnotationPresent(Expose::class.java)) {
+
+            val exposeAnnotation = this.getAnnotation(Expose::class.java)
+
+            if (exposeAnnotation?.serialize == true) {
+
+                val value = this.get(instance)
+
+                if (value is Boolean) {
+
+                    excluded = value
+                }
+            }
+        }
+
+        if (!excluded) {
+
+            excluded = this.isAnnotationPresent(Transient::class.java)
+        }
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return excluded
 }

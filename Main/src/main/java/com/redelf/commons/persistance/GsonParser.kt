@@ -1,10 +1,8 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
-import com.google.gson.annotations.Expose
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
@@ -12,6 +10,7 @@ import com.redelf.commons.extensions.assign
 import com.redelf.commons.extensions.fromBase64
 import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isExcluded
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toBase64
 import com.redelf.commons.logging.Console
@@ -27,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class GsonParser(
 
     parserKey: String,
-    provider: Obtain<GsonBuilder>
+    private val provider: Obtain<GsonBuilder>
 
 ) : Parser {
 
@@ -36,8 +35,6 @@ class GsonParser(
         val DEBUG = AtomicBoolean()
     }
 
-    private val gsonProvider = provider.obtain()
-    private val gson = gsonProvider.create()
     private val ctx: Context = BaseApplication.takeContext()
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}'"
     private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
@@ -82,7 +79,8 @@ class GsonParser(
                 }
             }
 
-            return gsonProvider.create().fromJson(content, type)
+            // FIXME: Use type adapter
+            return gson.fromJson(content, type)
 
         } catch (e: Exception) {
 
@@ -138,7 +136,8 @@ class GsonParser(
                 return adapter.fromJson(content) as T?
             }
 
-            return gsonProvider.create().fromJson(content, clazz) as T?
+            // FIXME: Use type adapter
+            return gson.fromJson(content, clazz) as T?
 
         } catch (e: Exception) {
 
@@ -162,20 +161,26 @@ class GsonParser(
 
         try {
 
+            var typeAdapter: TypeAdapter<*>? = null
+
             if (body is CustomSerializable) {
 
                 val customizations = body.getCustomSerializations()
 
                 Console.log("$tag Customizations = $customizations")
 
-                val typeAdapter = createTypeAdapter(body, customizations)
-
-                gsonProvider.registerTypeAdapter(body::class.java, typeAdapter)
+                typeAdapter = createTypeAdapter(body, customizations)
 
                 Console.log("$tag Type adapter registered")
             }
 
-            return gsonProvider.create().toJson(body)
+            typeAdapter?.let { adapter ->
+
+                return adapter.toJson(body)
+            }
+
+            // FIXME: Use type adapter
+            return gson.toJson(body)
 
         } catch (e: Exception) {
 
@@ -193,6 +198,7 @@ class GsonParser(
     ): TypeAdapter<Any> {
 
         val clazz = instance::class.java
+        val gson = provider.obtain().create()
         val tag = "$tag Type adapter :: Class = '${clazz.canonicalName}'"
 
         Console.log("$tag CREATE :: Recipe = $recipe")
@@ -215,30 +221,8 @@ class GsonParser(
 
                         fields.forEach { field ->
 
-                            var excluded = false
-                            field.isAccessible = true
-
-                            if (field.isAnnotationPresent(Expose::class.java)) {
-
-                                val exposeAnnotation = field.getAnnotation(Expose::class.java)
-
-                                if (exposeAnnotation?.serialize == true) {
-
-                                    val value = field.get(instance)
-
-                                    if (value is Boolean) {
-
-                                        excluded = value
-                                    }
-                                }
-                            }
-
-                            if (!excluded) {
-
-                                excluded = field.isAnnotationPresent(Transient::class.java)
-                            }
-
                             val fieldName = field.name
+                            val excluded = field.isExcluded(instance)
 
                             if (excluded) {
 
@@ -398,11 +382,15 @@ class GsonParser(
 
                     `in`?.beginObject()
 
+                    val fieldsRead = mutableListOf<String>()
+
                     while (`in`?.hasNext() == true) {
 
                         val fieldName = `in`.nextName()
 
                         val tag = "$tag Field = '$fieldName' ::"
+
+                        fieldsRead.add(fieldName)
 
                         fun customRead(): Any? {
 
@@ -512,6 +500,24 @@ class GsonParser(
                             assign(instance, fieldName, read)
 
                             Console.log("$tag Assigned = '$read'")
+                        }
+                    }
+
+                    val fields = clazz.declaredFields
+
+                    fields.forEach { field ->
+
+                        val fieldName = field.name
+
+                        val tag = "$tag ADDITIONAL :: Field = '$fieldName' ::"
+
+                        if (!fieldsRead.contains(fieldName) && !field.isExcluded(instance)) {
+
+                            Console.log("$tag START")
+
+                            // TODO: Do deserialize
+
+                            Console.log("$tag END")
                         }
                     }
 
