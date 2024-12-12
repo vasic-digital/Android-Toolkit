@@ -102,6 +102,7 @@ class GsonParser(
             return null
         }
 
+        var typeAdapter: TypeAdapter<*>? = null
         val tag = "$tag Deserialize :: Class = '${clazz?.canonicalName}'"
 
         Console.log("$tag START")
@@ -120,9 +121,7 @@ class GsonParser(
 
                 Console.log("$tag Customizations = $customizations")
 
-                val typeAdapter = createTypeAdapter(instance, customizations)
-
-                gsonProvider.registerTypeAdapter(instance::class.java, typeAdapter)
+                typeAdapter = createTypeAdapter(instance, customizations)
 
                 Console.log("$tag Type adapter registered")
             }
@@ -134,6 +133,11 @@ class GsonParser(
         }
 
         try {
+
+            typeAdapter?.let { adapter ->
+
+                return adapter.fromJson(content) as T?
+            }
 
             return gsonProvider.create().fromJson(content, clazz) as T?
 
