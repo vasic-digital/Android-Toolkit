@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class GsonParser(
 
     parserKey: String,
-    private val provider: Obtain<GsonBuilder>
+    provider: Obtain<GsonBuilder>
 
 ) : Parser {
 
@@ -35,9 +35,51 @@ class GsonParser(
         val DEBUG = AtomicBoolean()
     }
 
+    private val gson = provider.obtain().create()
     private val ctx: Context = BaseApplication.takeContext()
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}'"
     private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
+
+    override fun toJson(body: Any?): String? {
+
+        if (body == null) {
+
+            return null
+        }
+
+        val tag = "$tag Class = '${body::class.java.canonicalName}' ::"
+
+        if (DEBUG.get()) Console.log("$tag START")
+
+        try {
+
+            var typeAdapter: TypeAdapter<Any>? = null
+
+            if (body is CustomSerializable) {
+
+                val customizations = body.getCustomSerializations()
+
+                Console.log("$tag Customizations = $customizations")
+
+                typeAdapter = createTypeAdapter(body, customizations)
+
+                Console.log("$tag Type adapter registered")
+            }
+
+            typeAdapter?.let { adapter ->
+
+                return adapter.toJson(body)
+            }
+
+            return gson.toJson(body)
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+
+        return null
+    }
 
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
     override fun <T> fromJson(content: String?, type: Type?): T? {
@@ -110,79 +152,18 @@ class GsonParser(
                 typeAdapter = createTypeAdapter(instance, customizations)
 
                 Console.log("$tag Type adapter registered")
-
-            } else {
-
-                typeAdapter = createTypeAdapter(instance)
             }
-
-        } catch (e: Exception) {
-
-            Console.error("$tag ERROR: ${e.message}")
-            recordException(e)
-        }
-
-        if (typeAdapter == null) {
-
-            Console.error("$tag ERROR: Type adapter is null")
-        }
-
-        try {
 
             typeAdapter?.let { adapter ->
 
                 return adapter.fromJson(content) as T?
             }
 
+            return gson.fromJson(content, clazz) as T?
 
         } catch (e: Exception) {
 
-            Console.error("$tag ERROR: ${e.message}, Content = '$content'")
-            recordException(e)
-        }
-
-        return null
-    }
-
-    override fun toJson(body: Any?): String? {
-
-        if (body == null) {
-
-            return null
-        }
-
-        val tag = "$tag Class = '${body::class.java.canonicalName}' ::"
-
-        if (DEBUG.get()) Console.log("$tag START")
-
-        try {
-
-            var typeAdapter: TypeAdapter<*>? = null
-
-            if (body is CustomSerializable) {
-
-                val customizations = body.getCustomSerializations()
-
-                Console.log("$tag Customizations = $customizations")
-
-                typeAdapter = createTypeAdapter(body, customizations)
-
-                Console.log("$tag Type adapter registered")
-
-            } else {
-
-                typeAdapter = createTypeAdapter(body)
-            }
-
-            if (typeAdapter == null) {
-
-                Console.error("$tag ERROR: Type adapter is null")
-            }
-
-            return typeAdapter?.toJson(body)
-
-        } catch (e: Exception) {
-
+            Console.error("$tag ERROR: ${e.message}")
             recordException(e)
         }
 
@@ -202,7 +183,6 @@ class GsonParser(
         }
 
         val clazz = instance::class.java
-        val gson = provider.obtain().create()
         val tag = "$tag Type adapter :: Class = '${clazz.canonicalName}'"
 
         Console.log("$tag CREATE :: Recipe = $recipe")
@@ -391,8 +371,10 @@ class GsonParser(
                     while (`in`?.hasNext() == true) {
 
                         val fieldName = `in`.nextName()
+                        val fieldClazz = clazz.getDeclaredField(fieldName).type
 
-                        val tag = "$tag Field = '$fieldName' ::"
+                        val tag = "$tag Field = '$fieldName' :: " +
+                                "Field class = '${fieldClazz.canonicalName}' ::"
 
                         fieldsRead.add(fieldName)
 
@@ -469,9 +451,9 @@ class GsonParser(
 
                                 val json = `in`.nextString()
 
-                                Console.log("$tag JSON :: json = '$json'")
+                                Console.log("$tag JSON = '$json'")
 
-                                val result = gson.fromJson(json, clazz)
+                                val result = gson.fromJson(json, fieldClazz)
 
                                 Console.log("$tag END: $result")
 
