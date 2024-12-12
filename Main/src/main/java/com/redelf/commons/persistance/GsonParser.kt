@@ -129,6 +129,11 @@ class GsonParser(
             recordException(e)
         }
 
+        if (typeAdapter == null) {
+
+            Console.error("$tag ERROR: Type adapter is null")
+        }
+
         try {
 
             typeAdapter?.let { adapter ->
@@ -136,8 +141,6 @@ class GsonParser(
                 return adapter.fromJson(content) as T?
             }
 
-            // FIXME: Use type adapter
-            return gson.fromJson(content, clazz) as T?
 
         } catch (e: Exception) {
 
