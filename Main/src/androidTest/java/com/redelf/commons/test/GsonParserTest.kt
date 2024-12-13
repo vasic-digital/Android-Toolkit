@@ -24,7 +24,7 @@ class GsonParserTest : BaseTest() {
     @Before
     fun prepare() {
 
-        Console.initialize(failOnError = false)
+        Console.initialize(failOnError = true)
 
         Console.log("Console initialized: $this")
 
