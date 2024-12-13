@@ -117,5 +117,7 @@ class GsonParserTest : BaseTest() {
 //        Assert.assertEquals(customDeserialized?.bytes, customAsset.bytes)
 //        Assert.assertEquals(customDeserialized?.fileName, customAsset.fileName)
 //        Assert.assertEquals(customDeserialized?.mimeType, customAsset.mimeType)
+
+        // TODO: EXtend the test with nested objects!
     }
 }
