@@ -446,6 +446,7 @@ class GsonParser(
 
                                         when (clazz.canonicalName) {
 
+                                            "byte[]",
                                             ByteArray::class.java.canonicalName -> {
 
                                                 val result =
