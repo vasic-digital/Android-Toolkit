@@ -18,6 +18,7 @@ import com.redelf.commons.persistance.serialization.ByteArraySerializer
 import com.redelf.commons.persistance.serialization.CustomSerializable
 import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 import com.redelf.commons.persistance.serialization.Serializer
+import java.io.IOException
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -297,15 +298,26 @@ class GsonParser(
 
                                                 when (clazz.canonicalName) {
 
+                                                    "byte[]",
                                                     ByteArray::class.java.canonicalName -> {
 
                                                         try {
 
-                                                            byteArraySerializer.serialize(
+                                                            val success = byteArraySerializer.serialize(
 
                                                                 fieldName,
                                                                 fValue
                                                             )
+
+                                                            if (!success) {
+
+                                                                throw IOException(
+
+                                                                    "Could not serialize the '" +
+                                                                            "$fieldName' for " +
+                                                                            "'${instance::class.java.canonicalName}'"
+                                                                )
+                                                            }
 
                                                         } catch (e: Exception) {
 
