@@ -100,23 +100,25 @@ class GsonParserTest : BaseTest() {
 
         Assert.assertNotNull(customDeserialized)
 
-        Assert.assertNotNull(simpleDeserialized?.bytes)
-        Assert.assertTrue((simpleDeserialized?.bytes?.size ?: 0) > 0)
-
         Assert.assertEquals(simpleDeserialized?.cid, simpleAsset.cid)
         Assert.assertEquals(simpleDeserialized?.size, simpleAsset.size)
         Assert.assertEquals(simpleDeserialized?.mimeType, simpleAsset.mimeType)
         Assert.assertEquals(simpleDeserialized?.fileName, simpleAsset.fileName)
         Assert.assertEquals(simpleDeserialized?.bytes?.size, simpleAsset.bytes?.size)
 
-//        Assert.assertNotNull(customDeserialized?.bytes)
-//        Assert.assertTrue((customDeserialized?.bytes?.size ?: 0) > 0)
+        Assert.assertNotNull(simpleDeserialized?.bytes)
+        Assert.assertTrue((simpleDeserialized?.bytes?.size ?: 0) > 0)
 
-//        Assert.assertEquals(customDeserialized?.cid, customAsset.cid)
-//        Assert.assertEquals(customDeserialized?.size, customAsset.size)
-//        Assert.assertEquals(customDeserialized?.bytes, customAsset.bytes)
-//        Assert.assertEquals(customDeserialized?.fileName, customAsset.fileName)
-//        Assert.assertEquals(customDeserialized?.mimeType, customAsset.mimeType)
+        Assert.assertEquals(customDeserialized?.cid?.length ?: 0, customAsset.cid?.length ?: -1)
+        Assert.assertEquals(customDeserialized?.cid, customAsset.cid)
+
+        Assert.assertEquals(customDeserialized?.size, customAsset.size)
+        Assert.assertEquals(customDeserialized?.bytes, customAsset.bytes)
+        Assert.assertEquals(customDeserialized?.fileName, customAsset.fileName)
+        Assert.assertEquals(customDeserialized?.mimeType, customAsset.mimeType)
+
+        Assert.assertNotNull(customDeserialized?.bytes)
+        Assert.assertTrue((customDeserialized?.bytes?.size ?: 0) > 0)
 
         // TODO: Extend the test with nested objects
     }
