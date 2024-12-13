@@ -414,6 +414,70 @@ class GsonParser(
 
                     val fieldsRead = mutableListOf<String>()
 
+                    fun customRead(fieldName: String): Any? {
+
+                        val tag = "$tag CUSTOM ::"
+
+                        Console.log("$tag START")
+
+                        try {
+
+                            recipe[fieldName]?.let { serializer ->
+
+                                if (serializer is DefaultCustomSerializer) {
+
+                                    val clazz = serializer.takeClass()
+
+                                    Console.log(
+
+                                        "$tag Custom write :: Custom serializer :: " +
+                                                "Class = '${clazz.canonicalName}'"
+                                    )
+
+                                    when (clazz.canonicalName) {
+
+                                        "byte[]",
+                                        ByteArray::class.java.canonicalName -> {
+
+                                            val result =
+                                                byteArraySerializer.deserialize(fieldName)
+
+                                            return result
+                                        }
+
+                                        else -> {
+
+                                            val e = IllegalArgumentException(
+
+                                                "Not supported type for default " +
+                                                        "custom serializer " +
+                                                        "'${clazz.canonicalName}'"
+                                            )
+
+                                            Console.error("$tag ERROR: ${e.message}")
+                                            recordException(e)
+
+                                            return null
+                                        }
+                                    }
+
+                                } else {
+
+                                    val result = serializer.deserialize(fieldName)
+
+                                    return result
+                                }
+                            }
+
+                        } catch (e: Exception) {
+
+                            Console.error("$tag ERROR: ${e.message}")
+                            recordException(e)
+                        }
+
+                        return null
+                    }
+
                     while (`in`?.hasNext() == true) {
 
                         val fieldName = `in`.nextName()
@@ -424,129 +488,9 @@ class GsonParser(
 
                         fieldsRead.add(fieldName)
 
-                        fun customRead(): Any? {
-
-                            val tag = "$tag CUSTOM ::"
-
-                            Console.log("$tag START")
-
-                            try {
-
-                                recipe[fieldName]?.let { serializer ->
-
-                                    if (serializer is DefaultCustomSerializer) {
-
-                                        val clazz = serializer.takeClass()
-
-                                        Console.log(
-
-                                            "$tag Custom write :: Custom serializer :: " +
-                                                    "Class = '${clazz.canonicalName}'"
-                                        )
-
-                                        when (clazz.canonicalName) {
-
-                                            "byte[]",
-                                            ByteArray::class.java.canonicalName -> {
-
-                                                val result =
-                                                    byteArraySerializer.deserialize(fieldName)
-
-                                                return result
-                                            }
-
-                                            else -> {
-
-                                                val e = IllegalArgumentException(
-
-                                                    "Not supported type for default " +
-                                                            "custom serializer " +
-                                                            "'${clazz.canonicalName}'"
-                                                )
-
-                                                Console.error("$tag ERROR: ${e.message}")
-                                                recordException(e)
-
-                                                return null
-                                            }
-                                        }
-
-                                    } else {
-
-                                        val result = serializer.deserialize(fieldName)
-
-                                        return result
-                                    }
-                                }
-
-                            } catch (e: Exception) {
-
-                                Console.error("$tag ERROR: ${e.message}")
-                                recordException(e)
-                            }
-
-                            return null
-                        }
-
-                        fun regularRead(): Any? {
-
-                            val tag = "$tag REGULAR ::"
-
-                            Console.log("$tag START")
-
-                            try {
-
-                                when (fieldCanonical) {
-
-                                    Int::class.java.canonicalName -> return `in`.nextInt()
-                                    "int" -> return `in`.nextInt()
-                                    "java.lang.Integer" -> return `in`.nextInt()
-                                    Long::class.java.canonicalName -> return `in`.nextLong()
-                                    "long" -> return `in`.nextLong()
-                                    "java.lang.Long" -> return `in`.nextLong()
-                                    String::class.java.canonicalName -> return `in`.nextString()
-                                    "string" -> return `in`.nextString()
-                                    "java.lang.String" -> return `in`.nextString()
-                                    Double::class.java.canonicalName -> return `in`.nextDouble()
-                                    "double" -> return `in`.nextDouble()
-                                    "java.lang.Double" -> return `in`.nextDouble()
-                                    Float::class.java.canonicalName -> return `in`.nextDouble()
-                                    "float" -> return `in`.nextDouble()
-                                    "java.lang.Float" -> return `in`.nextDouble()
-                                    Boolean::class.java.canonicalName -> return `in`.nextBoolean()
-                                    "boolean" -> return `in`.nextBoolean()
-                                    "java.lang.Boolean" -> return `in`.nextBoolean()
-
-                                    else -> {
-
-                                        val json = `in`.nextString()
-
-                                        Console.log(
-
-                                            "$tag JSON = '$json', " +
-                                                    "Field canonical = '$fieldCanonical"
-                                        )
-
-                                        val result = gson.fromJson(json, fieldClazz)
-
-                                        Console.log("$tag END: $result")
-
-                                        return result
-                                    }
-                                }
-
-                            } catch (e: Exception) {
-
-                                Console.error("$tag ERROR: ${e.message}")
-                                recordException(e)
-                            }
-
-                            return null
-                        }
-
                         if (recipe.containsKey(fieldName)) {
 
-                            val read = customRead()
+                            val read = customRead(fieldName)
 
                             Console.log("$tag Read = '$read'")
 
@@ -555,6 +499,62 @@ class GsonParser(
                             Console.log("$tag Assigned = '$read'")
 
                         } else {
+
+                            fun regularRead(): Any? {
+
+                                val tag = "$tag REGULAR ::"
+
+                                Console.log("$tag START")
+
+                                try {
+
+                                    when (fieldCanonical) {
+
+                                        Int::class.java.canonicalName -> return `in`.nextInt()
+                                        "int" -> return `in`.nextInt()
+                                        "java.lang.Integer" -> return `in`.nextInt()
+                                        Long::class.java.canonicalName -> return `in`.nextLong()
+                                        "long" -> return `in`.nextLong()
+                                        "java.lang.Long" -> return `in`.nextLong()
+                                        String::class.java.canonicalName -> return `in`.nextString()
+                                        "string" -> return `in`.nextString()
+                                        "java.lang.String" -> return `in`.nextString()
+                                        Double::class.java.canonicalName -> return `in`.nextDouble()
+                                        "double" -> return `in`.nextDouble()
+                                        "java.lang.Double" -> return `in`.nextDouble()
+                                        Float::class.java.canonicalName -> return `in`.nextDouble()
+                                        "float" -> return `in`.nextDouble()
+                                        "java.lang.Float" -> return `in`.nextDouble()
+                                        Boolean::class.java.canonicalName -> return `in`.nextBoolean()
+                                        "boolean" -> return `in`.nextBoolean()
+                                        "java.lang.Boolean" -> return `in`.nextBoolean()
+
+                                        else -> {
+
+                                            val json = `in`.nextString()
+
+                                            Console.log(
+
+                                                "$tag JSON = '$json', " +
+                                                        "Field canonical = '$fieldCanonical"
+                                            )
+
+                                            val result = gson.fromJson(json, fieldClazz)
+
+                                            Console.log("$tag END: $result")
+
+                                            return result
+                                        }
+                                    }
+
+                                } catch (e: Exception) {
+
+                                    Console.error("$tag ERROR: ${e.message}")
+                                    recordException(e)
+                                }
+
+                                return null
+                            }
 
                             val read = regularRead()
 
@@ -578,7 +578,13 @@ class GsonParser(
 
                             Console.log("$tag START")
 
-                            // TODO: Do deserialize
+                            val read = customRead(fieldName)
+
+                            Console.log("$tag Read = '$read'")
+
+                            assign(instance, fieldName, read)
+
+                            Console.log("$tag Assigned = '$read'")
 
                             Console.log("$tag END")
                         }

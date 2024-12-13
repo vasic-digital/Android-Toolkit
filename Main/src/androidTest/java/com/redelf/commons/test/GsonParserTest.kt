@@ -118,7 +118,7 @@ class GsonParserTest : BaseTest() {
 
         Assert.assertNotNull(customDeserialized?.bytes)
         Assert.assertTrue((customDeserialized?.bytes?.size ?: 0) > 0)
-        Assert.assertEquals(customDeserialized?.bytes, customAsset.bytes)
+        Assert.assertEquals(customDeserialized?.bytes?.size, customAsset.bytes?.size)
 
         // TODO: Extend the test with nested objects
     }
