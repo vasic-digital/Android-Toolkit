@@ -222,6 +222,7 @@ class GsonParser(
 
                                     val value = fValue
                                     val clazz = fValue::class.java
+                                    val fieldCanonical = clazz.canonicalName
 
                                     fun regularWrite() {
 
@@ -231,10 +232,45 @@ class GsonParser(
 
                                         try {
 
-                                            val serialized = gson.toJson(value)
-
                                             out?.name(fieldName)
-                                            out?.value(serialized)
+
+                                            when (fieldCanonical) {
+
+                                                Int::class.java.canonicalName -> out?.value(fValue as Int)
+                                                "int" -> out?.value(fValue as Int)
+                                                "java.lang.Integer" -> out?.value(fValue as Int)
+                                                Long::class.java.canonicalName -> out?.value(fValue as Long)
+                                                "long" -> out?.value(fValue as Long)
+                                                "java.lang.Long" -> out?.value(fValue as Long)
+                                                String::class.java.canonicalName -> out?.value(fValue as String)
+                                                "string" -> out?.value(fValue as String)
+                                                "java.lang.String" -> out?.value(fValue as String)
+                                                Double::class.java.canonicalName -> out?.value(fValue as Double)
+                                                "double" -> out?.value(fValue as Double)
+                                                "java.lang.Double" -> out?.value(fValue as Double)
+                                                Float::class.java.canonicalName -> out?.value(fValue as Float)
+                                                "float" -> out?.value(fValue as Float)
+                                                "java.lang.Float" -> out?.value(fValue as Float)
+                                                Boolean::class.java.canonicalName -> out?.value(fValue as Boolean)
+                                                "boolean" -> out?.value(fValue as Boolean)
+                                                "java.lang.Boolean" -> out?.value(fValue as Boolean)
+
+                                                else -> {
+
+                                                    val serialized = gson.toJson(value)
+                                                    out?.value(serialized)
+                                                }
+                                            }
+
+                                        } catch (e: Exception) {
+
+                                            Console.error("$tag ERROR: ${e.message}")
+                                            recordException(e)
+                                        }
+
+                                        try {
+
+
 
                                             Console.log("$rwTag END")
 
@@ -461,6 +497,9 @@ class GsonParser(
                                     Double::class.java.canonicalName -> return `in`.nextDouble()
                                     "double" -> return `in`.nextDouble()
                                     "java.lang.Double" -> return `in`.nextDouble()
+                                    Float::class.java.canonicalName -> return `in`.nextDouble()
+                                    "float" -> return `in`.nextDouble()
+                                    "java.lang.Float" -> return `in`.nextDouble()
                                     Boolean::class.java.canonicalName -> return `in`.nextBoolean()
                                     "boolean" -> return `in`.nextBoolean()
                                     "java.lang.Boolean" -> return `in`.nextBoolean()
