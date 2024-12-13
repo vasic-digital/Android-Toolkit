@@ -7,13 +7,10 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.assign
-import com.redelf.commons.extensions.fromBase64
 import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isExcluded
-import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.toBase64
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
@@ -234,7 +231,7 @@ class GsonParser(
 
                                         try {
 
-                                            val serialized = gson.toJson(value).toBase64()
+                                            val serialized = gson.toJson(value)
 
                                             out?.name(fieldName)
                                             out?.value(serialized)
