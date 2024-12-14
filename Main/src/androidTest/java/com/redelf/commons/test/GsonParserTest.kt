@@ -182,6 +182,9 @@ class GsonParserTest : BaseTest() {
 
         Assert.assertNotNull(customDeserialized)
 
+        /*
+        *   FIXME: Missing values in the fields
+        */
         Assert.assertEquals(customDeserialized?.cid?.length ?: 0, extended.cid?.length ?: -1)
         Assert.assertEquals(customDeserialized?.cid, extended.cid)
 
