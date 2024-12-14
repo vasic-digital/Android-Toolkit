@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 import com.redelf.commons.persistance.serialization.CustomSerializable
 import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 
-data class CustomAsset @JsonCreator constructor(
+open class CustomAsset @JsonCreator constructor(
 
     @SerializedName("bytes")
     var bytes: ByteArray? = null,
