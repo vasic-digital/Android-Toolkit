@@ -7,6 +7,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.GsonParser
 import com.redelf.commons.test.data.CustomAsset
+import com.redelf.commons.test.data.ExtendedCustomAsset
 import com.redelf.commons.test.data.SimpleAsset
 import org.junit.Assert
 import org.junit.Before
@@ -119,7 +120,63 @@ class GsonParserTest : BaseTest() {
         Assert.assertNotNull(customDeserialized?.bytes)
         Assert.assertTrue((customDeserialized?.bytes?.size ?: 0) > 0)
         Assert.assertEquals(customDeserialized?.bytes?.size, customAsset.bytes?.size)
+    }
 
-        // TODO: Extend the test with nested objects
+    @Test
+    fun testNestedObjects() {
+
+        val timestamp = System.currentTimeMillis()
+
+        val customAsset = CustomAsset(
+
+            bytes = testBytes,
+            size = timestamp,
+            fileName = testString,
+            cid = testString,
+            mimeType = testString
+        )
+
+        val customAsset2 = CustomAsset(
+
+            bytes = "test".toByteArray(),
+            size = timestamp,
+            fileName = "$testString.2",
+            cid = "$testString.2",
+            mimeType = "$testString.2",
+        )
+
+        val extended = ExtendedCustomAsset(
+
+            bytes = testBytes,
+            size = timestamp,
+            fileName = testString,
+            cid = testString,
+            mimeType = testString,
+            customAsset = customAsset,
+            customAssets = listOf(customAsset, customAsset2)
+        )
+
+        val gsonBuilder = GsonBuilder()
+            .enableComplexMapKeySerialization()
+
+        val parser = GsonParser(
+
+            parserKey = "test.$timestamp",
+
+            object : Obtain<GsonBuilder> {
+
+                override fun obtain(): GsonBuilder {
+
+                    return gsonBuilder
+                }
+            }
+        )
+
+        val customJson = parser.toJson(customAsset)
+
+        Assert.assertNotNull(customJson)
+        Assert.assertTrue(isNotEmpty(customJson))
+
+
     }
 }
