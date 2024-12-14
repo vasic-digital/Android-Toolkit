@@ -95,3 +95,75 @@ fun Field.isExcluded(instance: Any): Boolean {
 
     return excluded
 }
+
+@Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+fun Class<*>.getSuperClasses(selfIncluded: Boolean = true): Set<Class<*>> {
+
+    val superClasses = mutableSetOf<Class<*>>()
+
+    if (selfIncluded) {
+
+        superClasses.add(this)
+    }
+
+    try {
+
+        var currentClazz = this.superclass
+
+        while (currentClazz != null) {
+
+            superClasses.add(currentClazz)
+            currentClazz = currentClazz.superclass
+        }
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return superClasses
+}
+
+fun Class<*>.getAllFields(): Set<Field> {
+
+    val allFields = mutableSetOf<Field>()
+
+    try {
+
+        var classes = this.getSuperClasses()
+
+        classes.forEach {
+
+            val fields = it.declaredFields
+            allFields.addAll(fields)
+        }
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return allFields
+}
+
+fun Class<*>.getFieldByName(name: String): Field? {
+
+    try {
+
+        val allFields = this.getAllFields()
+
+        allFields.forEach {
+
+            if (it.name == name) {
+
+                return it
+            }
+        }
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return null
+}

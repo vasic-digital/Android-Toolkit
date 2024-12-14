@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.assign
+import com.redelf.commons.extensions.getFieldByName
 import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isExcluded
@@ -481,8 +482,18 @@ class GsonParser(
                     while (`in`?.hasNext() == true) {
 
                         val fieldName = `in`.nextName()
-                        val fieldClazz = clazz.getDeclaredField(fieldName).type
-                        val fieldCanonical = fieldClazz.canonicalName
+
+                        val fieldClazz = clazz.getFieldByName(fieldName)?.type
+                        val fieldCanonical = fieldClazz?.canonicalName
+
+                        if (isEmpty(fieldCanonical)) {
+
+                            throw IllegalArgumentException(
+
+                                "Could not find field '$fieldName' " +
+                                    "for the '${clazz.canonicalName}' class"
+                            )
+                        }
 
                         val tag = "$tag Field = '$fieldName' :: Field class = '$fieldCanonical' ::"
 

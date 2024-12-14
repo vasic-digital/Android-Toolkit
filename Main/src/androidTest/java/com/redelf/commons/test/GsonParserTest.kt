@@ -177,6 +177,20 @@ class GsonParserTest : BaseTest() {
         Assert.assertNotNull(customJson)
         Assert.assertTrue(isNotEmpty(customJson))
 
+        val customDeserialized = parser
+            .fromJson<ExtendedCustomAsset?>(customJson, ExtendedCustomAsset::class.java)
 
+        Assert.assertNotNull(customDeserialized)
+
+        Assert.assertEquals(customDeserialized?.cid?.length ?: 0, extended.cid?.length ?: -1)
+        Assert.assertEquals(customDeserialized?.cid, extended.cid)
+
+        Assert.assertEquals(customDeserialized?.size, extended.size)
+        Assert.assertEquals(customDeserialized?.fileName, extended.fileName)
+        Assert.assertEquals(customDeserialized?.mimeType, extended.mimeType)
+
+        Assert.assertNotNull(customDeserialized?.bytes)
+        Assert.assertTrue((customDeserialized?.bytes?.size ?: 0) > 0)
+        Assert.assertEquals(customDeserialized?.bytes?.size, extended.bytes?.size)
     }
 }
