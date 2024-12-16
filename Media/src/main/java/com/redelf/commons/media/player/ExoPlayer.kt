@@ -1,12 +1,12 @@
 package com.redelf.commons.media.player
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.Retrying
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
@@ -17,7 +17,7 @@ import com.redelf.commons.media.Media
 import java.io.IOException
 import kotlin.collections.indexOf
 
-abstract class ExoPlayer(private val context: Context) : PlayerAbstraction() {
+abstract class ExoPlayer : PlayerAbstraction() {
 
     private var currentDuration: Long = 0
 
@@ -265,7 +265,7 @@ abstract class ExoPlayer(private val context: Context) : PlayerAbstraction() {
 
                                 val currentProgress: Float = if (startFrom < 0) {
 
-                                    obtainCurrentProgress()
+                                    obtainCurrentProgress(what)
 
                                 } else {
 
@@ -582,7 +582,7 @@ abstract class ExoPlayer(private val context: Context) : PlayerAbstraction() {
                 val noTitle = ""
                 val iChooser = Intent.createChooser(intent, noTitle)
                 iChooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(iChooser)
+                BaseApplication.takeContext().startActivity(iChooser)
 
                 return true
 
@@ -666,7 +666,7 @@ abstract class ExoPlayer(private val context: Context) : PlayerAbstraction() {
         return getMediaList() ?: emptyList()
     }
 
-    protected abstract fun obtainCurrentProgress(): Float
+    protected abstract fun obtainCurrentProgress(from: Media): Float
 
     protected abstract fun obtainPlayable(): Pair<Media, Float>?
 
