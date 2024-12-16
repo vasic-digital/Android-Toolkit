@@ -29,7 +29,7 @@ fun Any.assign(fieldName: String, fieldValue: Any?, tag: String = ""): Boolean {
 
         this.let { instance ->
 
-            val field = instance::class.java.declaredFields.find { it.name == fieldName }
+            val field = instance::class.java.getAllFields().find { it.name == fieldName }
 
             field?.let {
 
