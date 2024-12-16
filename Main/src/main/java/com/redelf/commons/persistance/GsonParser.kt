@@ -641,7 +641,11 @@ class GsonParser(
 
             } else {
 
-                Console.error("$tag INSTANTIATE :: END :: No public constructor found")
+                Console.error(
+
+                    "$tag INSTANTIATE :: END :: No public constructor " +
+                            "found for class '${clazz.canonicalName}'"
+                )
             }
 
 
