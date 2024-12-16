@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.assign
+import com.redelf.commons.extensions.getAllFields
 import com.redelf.commons.extensions.getFieldByName
 import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
@@ -201,7 +202,7 @@ class GsonParser(
 
                         out?.beginObject()
 
-                        val fields = clazz.declaredFields
+                        val fields = clazz.getAllFields()
 
                         fields.forEach { field ->
 
@@ -577,7 +578,7 @@ class GsonParser(
                         }
                     }
 
-                    val fields = clazz.declaredFields
+                    val fields = clazz.getAllFields()
 
                     fields.forEach { field ->
 
