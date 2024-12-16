@@ -484,6 +484,8 @@ class GsonParser(
 
                         val fieldName = `in`.nextName()
 
+                        Console.log("$tag Field name = '$fieldName'")
+
                         val fieldClazz = clazz.getFieldByName(fieldName)?.type
                         val fieldCanonical = fieldClazz?.canonicalName
 
