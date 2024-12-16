@@ -172,7 +172,7 @@ class GsonParserTest : BaseTest() {
             }
         )
 
-        val customJson = parser.toJson(customAsset)
+        val customJson = parser.toJson(extended)
 
         Assert.assertNotNull(customJson)
         Assert.assertTrue(isNotEmpty(customJson))
@@ -182,9 +182,6 @@ class GsonParserTest : BaseTest() {
 
         Assert.assertNotNull(customDeserialized)
 
-        /*
-        *   FIXME: Missing values in the fields
-        */
         Assert.assertEquals(customDeserialized?.cid?.length ?: 0, extended.cid?.length ?: -1)
         Assert.assertEquals(customDeserialized?.cid, extended.cid)
 
