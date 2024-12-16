@@ -131,6 +131,13 @@ class GsonParser(
             return null
         }
 
+        /*
+        * FIXME: When type is:
+        *  - Primitive type, return primitive type with the value of
+        *  - Check what if is a list of a) primitive types and b) objects
+        *  - Else: Continue to instantiate and enter the flow further
+        */
+
         var typeAdapter: TypeAdapter<*>? = null
         val tag = "$tag Deserialize :: Class = '${clazz?.canonicalName}'"
 
