@@ -136,6 +136,7 @@ class GsonParser(
         *  - Primitive type, return primitive type with the value of
         *  - Check what if is a list of a) primitive types and b) objects
         *  - Else: Continue to instantiate and enter the flow further
+        *  - Cover this with proper test.
         */
 
         var typeAdapter: TypeAdapter<*>? = null
