@@ -143,6 +143,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                             val action = object : Obtain<Boolean> {
 
+                                @Synchronized
                                 override fun obtain(): Boolean {
 
                                     try {
@@ -156,6 +157,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                         partition.let {
 
+                                            @Synchronized
                                             fun simpleWrite(): Boolean {
 
                                                 val written = facade.put(keyPartition(key, i), it)
@@ -172,6 +174,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                 return written
                                             }
 
+                                            @Synchronized
                                             fun rowWrite(
 
                                                 partition: Int,
@@ -223,6 +226,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                 return written
                                             }
 
+                                            @Synchronized
                                             fun rowWrite(
 
                                                 partition: Int,
@@ -498,7 +502,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                 return action.obtain()
                             }
 
-                        } catch (e: RejectedExecutionException) {
+                        } catch (e: Exception) {
 
                             callback?.onFailure(e)
 
