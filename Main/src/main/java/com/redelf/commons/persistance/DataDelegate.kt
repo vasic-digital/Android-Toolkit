@@ -177,9 +177,22 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                 val keyRow = keyRow(key, partition, row)
                                                 val keyRowType = keyRowType(key, partition, row)
 
-                                                val fqName = value::class.java.canonicalName
+                                                var savedFqName = false
                                                 val savedValue = facade.put(keyRow, value)
-                                                val savedFqName = facade.put(keyRowType, fqName)
+                                                val fqName = value::class.java.canonicalName
+
+                                                if (isNotEmpty(fqName)) {
+
+                                                    savedFqName = facade.put(keyRowType, fqName)
+
+                                                } else {
+
+                                                    Console.error(
+
+                                                        "$tag Failed to obtain canonical " +
+                                                                "name for the '$value'"
+                                                    )
+                                                }
 
                                                 val written = savedValue && savedFqName
 
@@ -278,21 +291,24 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                     valueType.canonicalName
                                                 )
 
-                                                val fqName = rowValue::class.java.canonicalName
+                                                var savedFqName = false
                                                 val savedValue = facade.put(keyRow, rowValue)
-                                                val savedFqName = facade.put(keyRowType, fqName)
+                                                val fqName = rowValue::class.java.canonicalName
 
-                                                if (isEmpty(fqName)) {
+                                                if (isNotEmpty(fqName)) {
+
+                                                    savedFqName = facade.put(keyRowType, fqName)
+
+                                                } else {
 
                                                     Console.error(
 
                                                         "$tag Failed to obtain canonical " +
-                                                                "name for the '$rowValue'"
+                                                                "name for the '$value'"
                                                     )
                                                 }
 
-                                                val written = isNotEmpty(fqName) &&
-                                                        savedValue && savedFqName
+                                                val written = savedValue && savedFqName
 
                                                 if (written) {
 
