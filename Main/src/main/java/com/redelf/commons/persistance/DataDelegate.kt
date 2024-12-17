@@ -6,6 +6,7 @@ import com.redelf.commons.data.type.PairDataInfo
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
@@ -54,20 +55,6 @@ class DataDelegate private constructor(private val facade: Facade) :
 
             return DataDelegate(facade)
         }
-
-        @Throws(IllegalArgumentException::class)
-        fun convert(what: ArrayList<String>): List<UUID> {
-
-            val list = mutableListOf<UUID>()
-
-            what.forEach {
-
-                val uuid = UUID.fromString(it)
-                list.add(uuid)
-            }
-
-            return list
-        }
     }
 
     @Synchronized
@@ -98,7 +85,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         if (value is Partitioning<*> && value.isPartitioningEnabled()) {
 
-            val tag = "Partitional :: Put ::"
+            val tag = "Partitioning :: Put ::"
 
             val type = value.getClazz()
             val partitionsCount = value.getPartitionCount()
@@ -115,7 +102,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                 if (!marked) {
 
-                    Console.error("$tag ERROR: Could not mark partitional data")
+                    Console.error("$tag ERROR: Could not mark partitioning data")
 
                     return false
                 }
@@ -190,7 +177,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                 val keyRow = keyRow(key, partition, row)
                                                 val keyRowType = keyRowType(key, partition, row)
 
-                                                val fqName = value::class.qualifiedName
+                                                val fqName = value::class.java.canonicalName
                                                 val savedValue = facade.put(keyRow, value)
                                                 val savedFqName = facade.put(keyRowType, fqName)
 
@@ -291,11 +278,21 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                     valueType.canonicalName
                                                 )
 
-                                                val fqName = rowValue::class.qualifiedName
+                                                val fqName = rowValue::class.java.canonicalName
                                                 val savedValue = facade.put(keyRow, rowValue)
                                                 val savedFqName = facade.put(keyRowType, fqName)
 
-                                                val written = savedValue && savedFqName
+                                                if (isEmpty(fqName)) {
+
+                                                    Console.error(
+
+                                                        "$tag Failed to obtain canonical " +
+                                                                "name for the '$rowValue'"
+                                                    )
+                                                }
+
+                                                val written = isNotEmpty(fqName) &&
+                                                        savedValue && savedFqName
 
                                                 if (written) {
 
@@ -588,7 +585,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         if (count > 0) {
 
-            if (DEBUG.get()) Console.log("$tag Partitional :: START")
+            if (DEBUG.get()) Console.log("$tag Partitioning :: START")
 
             return get<T?>(key = key, defaultValue = null)
         }
@@ -659,8 +656,9 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 Console.error(
 
-                                                    "$tag FAILURE: No row type for the key:" +
-                                                            " '$keyRowType'"
+                                                    "$tag FAILURE: No row type :: Key =" +
+                                                            " '$keyRowType', " +
+                                                            "Partition = $i, Row = $j"
                                                 )
 
                                                 return defaultValue
@@ -942,7 +940,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         val partitionsCount = getPartitionsCount(key)
 
-        val tag = "Partitional :: Delete ::"
+        val tag = "Partitioning :: Delete ::"
 
         if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
 
@@ -953,7 +951,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
             if (!markRemoved) {
 
-                Console.error("$tag ERROR: Could not un-mark partitional data")
+                Console.error("$tag ERROR: Could not un-mark partitioning data")
 
                 return false
             }
@@ -1142,7 +1140,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         if (DEBUG.get()) {
 
-            Console.log("$tag '${what::class.qualifiedName}' from '${arg ?: "nothing"}'")
+            Console.log("$tag '${what::class.java.canonicalName}' from '${arg ?: "nothing"}'")
         }
 
         arg?.let { argument ->
@@ -1168,7 +1166,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                     }
 
                     val msg = "Constructor for the argument " +
-                            "'${argument::class.qualifiedName}' not found to instantiate " +
+                            "'${argument::class.java.canonicalName}' not found to instantiate " +
                             "'${what.canonicalName}'"
 
                     throw IllegalArgumentException(msg)
@@ -1184,27 +1182,27 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         return when (type) {
 
-            Float::class.qualifiedName,
-            Int::class.qualifiedName,
-            Long::class.qualifiedName,
-            Short::class.qualifiedName -> {
+            Float::class.java.canonicalName,
+            Int::class.java.canonicalName,
+            Long::class.java.canonicalName,
+            Short::class.java.canonicalName -> {
 
                 throw IllegalArgumentException(
 
                     "Not supported serialization type " +
                             "'$type', please use " +
                             "the " +
-                            "'${Double::class.qualifiedName}'" +
+                            "'${Double::class.java.canonicalName}'" +
                             " instead"
                 )
             }
 
-            Double::class.qualifiedName -> Double::class.java
-            Boolean::class.qualifiedName -> Boolean::class.java
-            Char::class.qualifiedName -> Char::class.java
-            String::class.qualifiedName -> String::class.java
-            Byte::class.qualifiedName -> Byte::class.java
-            Array::class.qualifiedName -> Array::class.java
+            Double::class.java.canonicalName -> Double::class.java
+            Boolean::class.java.canonicalName -> Boolean::class.java
+            Char::class.java.canonicalName -> Char::class.java
+            String::class.java.canonicalName -> String::class.java
+            Byte::class.java.canonicalName -> Byte::class.java
+            Array::class.java.canonicalName -> Array::class.java
 
             else -> null
         }
