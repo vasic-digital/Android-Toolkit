@@ -417,4 +417,9 @@ fun String.color(
     return ss
 }
 
+fun String.forClassName(): String {
+
+    return this.replace("\"", "").replace("\'", "").trim()
+}
+
 

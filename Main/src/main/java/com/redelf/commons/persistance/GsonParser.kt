@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.assign
+import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.getAllFields
 import com.redelf.commons.extensions.getFieldByName
 import com.redelf.commons.extensions.hasPublicDefaultConstructor
@@ -103,7 +104,7 @@ class GsonParser(
 
             try {
 
-                val clazz = Class.forName(t.typeName)
+                val clazz = Class.forName(t.typeName.forClassName())
 
                 Console.log("$tag Class = '${clazz.canonicalName}'")
 

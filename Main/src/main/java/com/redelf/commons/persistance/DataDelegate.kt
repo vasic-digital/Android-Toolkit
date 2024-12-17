@@ -4,6 +4,7 @@ import android.content.Context
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import com.redelf.commons.data.type.PairDataInfo
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationWithContext
@@ -632,7 +633,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                 if (rowsCount > 0) {
 
                                     val pt = t as ParameterizedType
-                                    val inT = Class.forName(pt.rawType.typeName)
+                                    val inT = Class.forName(pt.rawType.typeName.forClassName())
 
                                     try {
 
@@ -682,7 +683,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (simpleClass == null) {
 
-                                                    rowClazz = Class.forName(rowType)
+                                                    rowClazz = Class.forName(rowType.forClassName())
                                                 }
 
                                             } catch (e: ClassNotFoundException) {
@@ -717,10 +718,13 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                                     obt.second.let { second ->
 
                                                                         val clz1 = Class.forName(
-                                                                            obt.firstType ?: ""
+
+                                                                            (obt.firstType ?: "").forClassName()
                                                                         )
+
                                                                         val clz2 = Class.forName(
-                                                                            obt.secondType ?: ""
+
+                                                                            (obt.secondType ?: "").forClassName()
                                                                         )
 
                                                                         if (DEBUG.get()) Console.log(
@@ -1044,7 +1048,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         try {
 
-            return Class.forName(value.replace("\"", "").replace("\'", "").trim())
+            return Class.forName(value.forClassName())
 
         } catch (e: ClassNotFoundException) {
 
