@@ -18,7 +18,7 @@ interface Media {
 
     fun onResumed()
 
-    fun onProgress(position: Int, bufferedPosition: Int)
+    fun onProgress(position: Long, bufferedPosition: Int)
 
     fun autoPlayAsNextReady(): Boolean
 

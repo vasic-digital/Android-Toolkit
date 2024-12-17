@@ -1,12 +1,11 @@
 package com.redelf.commons.media.player
 
-import android.media.MediaPlayer
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.Player
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class PlayerAbstraction : Player, ExecuteWithResult<Media> {
+abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
 
     companion object {
 
@@ -20,7 +19,6 @@ abstract class PlayerAbstraction : Player, ExecuteWithResult<Media> {
         private var media: Media? = null
         private var volume: Float = 1.0f
         private val playing = AtomicBoolean()
-        private var mediaPlayer: MediaPlayer? = null
         private var mediaList: List<Media>? = null
     }
 
@@ -52,18 +50,17 @@ abstract class PlayerAbstraction : Player, ExecuteWithResult<Media> {
         volume = value
     }
 
-    protected open fun getMediaPlayer() = mediaPlayer
+    protected abstract fun getMediaPlayer(): MP?
 
-    protected open fun setMediaPlayer(value: MediaPlayer) {
+    protected abstract fun setMediaPlayer(value: MP)
 
-        mediaPlayer = value
-    }
+    protected abstract fun unsetMediaPlayer()
 
-    protected open fun clearMediaPlayer() {
+    protected fun clearMediaPlayer() {
 
         prepared.set(false)
 
-        mediaPlayer = null
+        unsetMediaPlayer()
     }
 
     protected open fun clearMediaItem() {

@@ -46,7 +46,7 @@ interface Player {
 
     fun isNotPlaying(): Boolean
 
-    fun onProgressChanged(position: Int, bufferedPosition: Int)
+    fun onProgressChanged(position: Long, bufferedPosition: Int)
 
     fun getSpeed(): Float
 
