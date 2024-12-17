@@ -131,44 +131,74 @@ class GsonParser(
             return null
         }
 
-        /*
-        * FIXME: When type is:
-        *  - Primitive type, return primitive type with the value of
-        *  - Check what if is a list of a) primitive types and b) objects
-        *  - Else: Continue to instantiate and enter the flow further
-        *  - Cover this with proper test.
-        */
+        if (clazz == null) {
 
-        var typeAdapter: TypeAdapter<*>? = null
-        val tag = "$tag Deserialize :: Class = '${clazz?.canonicalName}'"
-
-        Console.log("$tag START")
+            return null
+        }
 
         try {
 
-            Console.log("$tag Class = '${clazz?.canonicalName}'")
+            when (clazz.canonicalName) {
 
-            val instance = instantiate(clazz)
+                Int::class.java.canonicalName -> return content?.toInt() as T?
+                "int" -> return content?.toInt() as T?
+                "java.lang.Integer" -> return content?.toInt() as T?
+                Long::class.java.canonicalName -> return content?.toLong() as T?
+                "long" -> return content?.toLong() as T?
+                "java.lang.Long" -> return content?.toLong() as T?
+                String::class.java.canonicalName -> return content as T?
+                "string" -> return content as T?
+                "java.lang.String" -> return content as T?
+                Double::class.java.canonicalName -> return content?.toDouble() as T?
+                "double" -> return content?.toDouble() as T?
+                "java.lang.Double" -> return content?.toDouble() as T?
+                Float::class.java.canonicalName -> return content?.toFloat() as T?
+                "float" -> return content?.toFloat() as T?
+                "java.lang.Float" -> return content?.toFloat() as T?
+                Boolean::class.java.canonicalName -> return content?.toBoolean() as T?
+                "boolean" -> return content?.toBoolean() as T?
+                "java.lang.Boolean" -> return content?.toBoolean() as T?
 
-            Console.log("$tag Instance hash = ${instance.hashCode()}")
+                else -> {
 
-            if (instance is CustomSerializable) {
+                    var typeAdapter: TypeAdapter<*>? = null
+                    val tag = "$tag Deserialize :: Class = '${clazz.canonicalName}'"
 
-                val customizations = instance.getCustomSerializations()
+                    Console.log("$tag START")
 
-                Console.log("$tag Customizations = $customizations")
+                    try {
 
-                typeAdapter = createTypeAdapter(instance, customizations)
+                        Console.log("$tag Class = '${clazz.canonicalName}'")
 
-                Console.log("$tag Type adapter registered")
+                        val instance = instantiate(clazz)
+
+                        Console.log("$tag Instance hash = ${instance.hashCode()}")
+
+                        if (instance is CustomSerializable) {
+
+                            val customizations = instance.getCustomSerializations()
+
+                            Console.log("$tag Customizations = $customizations")
+
+                            typeAdapter = createTypeAdapter(instance, customizations)
+
+                            Console.log("$tag Type adapter registered")
+                        }
+
+                        typeAdapter?.let { adapter ->
+
+                            return adapter.fromJson(content) as T?
+                        }
+
+                        return gson.fromJson(content, clazz) as T?
+
+                    } catch (e: Exception) {
+
+                        Console.error("$tag ERROR: ${e.message}")
+                        recordException(e)
+                    }
+                }
             }
-
-            typeAdapter?.let { adapter ->
-
-                return adapter.fromJson(content) as T?
-            }
-
-            return gson.fromJson(content, clazz) as T?
 
         } catch (e: Exception) {
 

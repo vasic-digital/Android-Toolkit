@@ -232,7 +232,7 @@ class GsonParserTest : BaseTest() {
             val deserialized = parser.fromJson<Any>(key.toString(), value)
 
             Assert.assertNotNull(deserialized)
-            Assert.assertEquals(value, deserialized)
+            Assert.assertEquals(key, deserialized)
         }
     }
 }
