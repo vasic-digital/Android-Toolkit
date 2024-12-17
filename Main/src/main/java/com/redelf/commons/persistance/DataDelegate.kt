@@ -150,11 +150,22 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (written) {
 
-                                                    if (DEBUG.get()) Console.log("$tag WRITTEN: Partition no. $i")
+                                                    if (DEBUG.get()) {
+
+                                                        Console.log(
+
+                                                            "$tag WRITTEN: Partition no. $i"
+                                                        )
+                                                    }
 
                                                 } else {
 
-                                                    Console.error("$tag FAILURE: Partition no. $i")
+                                                    val msg = "FAILURE: Partition no. $i not put"
+
+                                                    val e = IOException(msg)
+
+                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    recordException(e)
                                                 }
 
                                                 return written
@@ -187,11 +198,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 } else {
 
-                                                    Console.error(
+                                                    val msg = "Failed to obtain canonical " +
+                                                            "name for the '$value', Log no. = 1"
 
-                                                        "$tag Failed to obtain canonical " +
-                                                                "name for the '$value'"
-                                                    )
+                                                    val e = IOException(msg)
+
+                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    recordException(e)
                                                 }
 
                                                 val written = savedValue && savedFqName
@@ -206,20 +219,17 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 } else {
 
-                                                    Console.error(
-                                                        "$tag FAILURE: Partition no. $i, " +
-                                                                "Row no. $row, Qualified name: $fqName"
-                                                    )
+                                                    val msg = "Partition no. $i failure write :: " +
+                                                            "Row no. = $row, " +
+                                                            "Qualified name = $fqName, " +
+                                                            "Saved value = $savedValue, " +
+                                                            "Saved Fq. name = $savedFqName, " +
+                                                            "Log no. = 1"
 
-                                                    if (!savedValue) {
+                                                    val e = IOException(msg)
 
-                                                        Console.error("$tag Value has not been persisted")
-                                                    }
-
-                                                    if (!savedFqName) {
-
-                                                        Console.error("$tag Qualified name has not been persisted")
-                                                    }
+                                                    Console.error("$tag ERROR :: ${e.message}")
+                                                    recordException(e)
                                                 }
 
                                                 return written
@@ -249,20 +259,26 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (mapKeyType == null) {
 
-                                                    Console.error(
-                                                        "$tag FAILURE: Partition no. $i, " +
-                                                                "Row no. $row, No map key type provided"
-                                                    )
+                                                    val msg = "FAILURE: Partition no. $i, " +
+                                                            "Row no. $row, No map key type provided"
+
+                                                    val e = IOException(msg)
+
+                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    recordException(e)
 
                                                     return false
                                                 }
 
                                                 if (valueType == null) {
 
-                                                    Console.error(
-                                                        "$tag FAILURE: Partition no. $i, " +
-                                                                "Row no. $row, No value type provided"
-                                                    )
+                                                    val msg = "FAILURE: Partition no. $i, " +
+                                                            "Row no. $row, No value type provided"
+
+                                                    val e = IOException(msg)
+
+                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    recordException(e)
 
                                                     return false
                                                 }
@@ -301,11 +317,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 } else {
 
-                                                    Console.error(
+                                                    val msg = "Failed to obtain canonical " +
+                                                            "name for the '$value', Log no. = 2"
 
-                                                        "$tag Failed to obtain canonical " +
-                                                                "name for the '$value'"
-                                                    )
+                                                    val e = IOException(msg)
+
+                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    recordException(e)
                                                 }
 
                                                 val written = savedValue && savedFqName
@@ -315,27 +333,25 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                     if (DEBUG.get()) Console.log(
 
                                                         "$tag WRITTEN: Partition no. $partition, " +
-                                                                "Row no. $row, Qualified name: $fqName, " +
+                                                                "Row no. $row, " +
+                                                                "Qualified name: $fqName, " +
                                                                 "Pair data info: $rowValue"
                                                     )
 
                                                 } else {
 
-                                                    Console.error(
-                                                        "$tag FAILURE: Partition no. $i, " +
-                                                                "Row no. $row, Qualified name: $fqName, " +
-                                                                "Pair data info: $rowValue"
-                                                    )
+                                                    val msg = "Partition no. $i failure write :: " +
+                                                            "Row no. = $row, " +
+                                                            "Qualified name = $fqName, " +
+                                                            "Pair data info = $rowValue, " +
+                                                            "Saved value = $savedValue, " +
+                                                            "Saved Fq. name = $savedFqName, " +
+                                                            "Log no. = 2"
 
-                                                    if (!savedValue) {
+                                                    val e = IOException(msg)
 
-                                                        Console.error("$tag Value has not been persisted")
-                                                    }
-
-                                                    if (!savedFqName) {
-
-                                                        Console.error("$tag Qualified name has not been persisted")
-                                                    }
+                                                    Console.error("$tag ERROR :: ${e.message}")
+                                                    recordException(e)
                                                 }
 
                                                 return false
@@ -992,7 +1008,12 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                     } else {
 
-                        Console.error("$tag FAILURE: Partition no. $i")
+                        val msg = "FAILURE: Partition no. $i not removed, Log no. = 2"
+
+                        val e = IOException(msg)
+
+                        Console.error("$tag ERROR: ${e.message}")
+                        recordException(e)
                     }
 
                 } else {
@@ -1011,7 +1032,12 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                         } else {
 
-                            Console.error("$tag FAILURE: Partition no. $i, Row no. $j")
+                            val msg = "FAILURE: Partition no. $i not removed, Row no. $j"
+
+                            val e = IOException(msg)
+
+                            Console.error("$tag ERROR: ${e.message}")
+                            recordException(e)
                         }
                     }
 
@@ -1019,12 +1045,17 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                         if (DEBUG.get()) Console.log(
 
-                            "$tag REMOVED: Partition no. $i, Rows count"
+                            "$tag REMOVED: Partition no. $i, Rows count deletion"
                         )
 
                     } else {
 
-                        Console.error("$tag FAILURE: Partition no. $i, Rows count")
+                        val msg = "FAILURE: Partition no. $i, Rows count deletion"
+
+                        val e = IOException(msg)
+
+                        Console.error("$tag ERROR: ${e.message}")
+                        recordException(e)
                     }
                 }
             }
