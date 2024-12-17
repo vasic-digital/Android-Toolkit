@@ -2,13 +2,13 @@ apply plugin: 'com.android.library'
 
 android {
 
-    compileSdk 34
+    compileSdk 35
     namespace "com.redelf.widget.fastscrolleralphabet"
 
     defaultConfig {
 
         minSdk 28
-        targetSdk 33
+
         multiDexEnabled true
     }
 

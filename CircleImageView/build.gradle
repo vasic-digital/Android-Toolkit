@@ -2,13 +2,12 @@ apply plugin: 'com.android.library'
 
 android {
 
-    compileSdk 34
+    compileSdk 35
     namespace 'com.redelf.widget.circleimageview'
 
     defaultConfig {
 
         minSdk 28
-        targetSdk 33
     }
 }
 
