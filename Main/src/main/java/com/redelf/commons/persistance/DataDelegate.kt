@@ -1044,7 +1044,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         try {
 
-            return Class.forName(value)
+            return Class.forName(value.replace("\"", "").replace("\'", "").trim())
 
         } catch (e: ClassNotFoundException) {
 
