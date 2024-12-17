@@ -96,7 +96,6 @@ android {
     defaultConfig {
 
         minSdk 28
-        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -221,8 +220,8 @@ dependencies {
     api "com.google.firebase:firebase-analytics:22.1.2"
     api "com.google.firebase:firebase-analytics-ktx:22.1.2"
     api "com.google.firebase:firebase-messaging:24.1.0"
-    api "com.google.firebase:firebase-crashlytics:19.2.1"
-    api "com.google.android.gms:play-services-auth:21.2.0"
+    api "com.google.firebase:firebase-crashlytics:19.3.0"
+    api "com.google.android.gms:play-services-auth:21.3.0"
 
     api "com.google.android.play:app-update:2.1.0"
     api "com.google.android.play:app-update-ktx:2.1.0"
@@ -253,7 +252,7 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
 
-    api platform("com.google.firebase:firebase-bom:33.6.0")
+    api platform("com.google.firebase:firebase-bom:33.7.0")
 
     api "io.github.nefilim.kjwt:kjwt-core:0.9.0"
     api "io.github.nefilim.kjwt:kjwt-jwks:0.9.0"
@@ -262,8 +261,8 @@ dependencies {
     api "androidx.work:work-runtime-ktx:2.10.0"
     api "androidx.preference:preference-ktx:1.2.1"
     api "com.google.android.material:material:1.12.0"
-    api "androidx.navigation:navigation-ui-ktx:2.8.4"
-    api "androidx.navigation:navigation-fragment-ktx:2.8.4"
+    api "androidx.navigation:navigation-ui-ktx:2.8.5"
+    api "androidx.navigation:navigation-fragment-ktx:2.8.5"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     api "com.google.net.cronet:cronet-okhttp:0.1.0"
