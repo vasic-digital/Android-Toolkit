@@ -683,7 +683,40 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (simpleClass == null) {
 
-                                                    rowClazz = Class.forName(rowType.forClassName())
+                                                    val rType = rowType.forClassName()
+
+                                                    rowClazz = when(rType) {
+
+                                                        "string",
+                                                        "java.lang.String",
+                                                        "kotlin.String" -> String::class.java
+
+                                                        "int",
+                                                        "java.lang.Integer",
+                                                        "kotlin.Integer" -> Int::class.java
+
+                                                        "long",
+                                                        "java.lang.Long",
+                                                        "kotlin.Long" -> Long::class.java
+
+                                                        "float",
+                                                        "java.lang.Float",
+                                                        "kotlin.Float" -> Float::class.java
+
+                                                        "double",
+                                                        "java.lang.Double",
+                                                        "kotlin.Double" -> Double::class.java
+
+                                                        "bool",
+                                                        "boolean",
+                                                        "java.lang.Boolean",
+                                                        "kotlin.Boolean" -> Boolean::class.java
+
+
+                                                        else -> Class.forName(rType)
+                                                    }
+
+
                                                 }
 
                                             } catch (e: ClassNotFoundException) {
