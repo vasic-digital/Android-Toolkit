@@ -193,4 +193,46 @@ class GsonParserTest : BaseTest() {
         Assert.assertTrue((customDeserialized?.bytes?.size ?: 0) > 0)
         Assert.assertEquals(customDeserialized?.bytes?.size, extended.bytes?.size)
     }
+
+    @Test
+    fun testPrimitives() {
+
+        val timestamp = System.currentTimeMillis()
+
+        val gsonBuilder = GsonBuilder()
+            .enableComplexMapKeySerialization()
+
+        val parser = GsonParser(
+
+            parserKey = "test.$timestamp",
+
+            object : Obtain<GsonBuilder> {
+
+                override fun obtain(): GsonBuilder {
+
+                    return gsonBuilder
+                }
+            }
+        )
+
+        mapOf(
+
+            0 to Int::class.java,
+            1 to Int::class.java,
+            timestamp to Long::class.java,
+            timestamp.toInt() to Int::class.java,
+            timestamp.toFloat() to Float::class.java,
+            timestamp.toDouble() to Double::class.java,
+            timestamp.toString() to String()::class.java,
+            true to Boolean::class.java,
+            false to Boolean::class.java
+
+        ).forEach { key, value ->
+
+            val deserialized = parser.fromJson<Any>(key.toString(), value)
+
+            Assert.assertNotNull(deserialized)
+            Assert.assertEquals(value, deserialized)
+        }
+    }
 }
