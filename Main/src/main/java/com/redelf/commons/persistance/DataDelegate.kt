@@ -20,7 +20,6 @@ import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
