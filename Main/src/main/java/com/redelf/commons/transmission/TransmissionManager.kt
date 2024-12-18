@@ -348,6 +348,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         return managedData?.add(data) == true
     }
 
+    protected open fun dataEmpty(): Boolean = managedData?.isEmpty() == true
+
     protected open fun onAtLeastOneSuccess() {
 
         Console.log("$logTag We have at least one success")
@@ -389,7 +391,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
         var persistingRequired = false
 
-        if (managedData?.isEmpty() == true) {
+        if (dataEmpty()) {
 
             Console.warning("$logTag No data to be sent yet")
             setSending(false)
@@ -656,7 +658,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
         clear()
 
-        return managedData?.isEmpty() == true
+        return dataEmpty()
     }
 
     @Throws(InterruptedException::class)
