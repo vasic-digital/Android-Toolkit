@@ -7,6 +7,8 @@ import com.redelf.commons.context.Contextual
 import com.redelf.commons.data.Empty
 import com.redelf.commons.data.type.Typed
 import com.redelf.commons.destruction.reset.Resettable
+import com.redelf.commons.enable.Enabling
+import com.redelf.commons.enable.EnablingCallback
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
@@ -34,6 +36,7 @@ abstract class DataManagement<T> :
     Resettable,
     Lockable,
     Abort,
+    Enabling,
     Contextual<BaseApplication>,
     ExecuteWithResult<DataManagement.DataTransaction<T>>
 
@@ -192,6 +195,7 @@ abstract class DataManagement<T> :
 
     private var data: T? = null
     private val locked = AtomicBoolean()
+    private var enabled = AtomicBoolean(true)
     private var session = Session(name = javaClass.simpleName)
 
     private val initCallbacks =
@@ -209,6 +213,23 @@ abstract class DataManagement<T> :
     open fun canLog() = DEBUG.get()
 
     override fun abort() = Unit
+
+    override fun enable(callback: EnablingCallback?) {
+
+        enabled.set(true)
+        callback?.onChange(enabled.get(), enabled.get())
+    }
+
+    override fun disable(callback: EnablingCallback?) {
+
+        enabled.set(false)
+        callback?.onChange(!enabled.get(), !enabled.get())
+    }
+
+    override fun isEnabled(): Boolean {
+
+        return enabled.get()
+    }
 
     override fun execute(what: DataTransaction<T>): Boolean {
 
