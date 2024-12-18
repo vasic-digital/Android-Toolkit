@@ -79,6 +79,8 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     override fun terminate(vararg args: Any): Boolean {
 
+        listeners.clear()
+
         return storage?.terminate(*args) == true
     }
 
@@ -289,7 +291,10 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
         return storage?.contains(key) == true
     }
 
-    override fun destroy() = Unit
+    override fun destroy() {
+
+        listeners.clear()
+    }
 
     private fun log(message: String) {
 
