@@ -1063,7 +1063,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                     if (partition == null && DEBUG.get()) {
 
-                                        Console.warning("$tag WARNING: Null partition: $i")
+                                        Console.log("$tag WARNING: Null partition: $i")
                                     }
                                 }
                             }
