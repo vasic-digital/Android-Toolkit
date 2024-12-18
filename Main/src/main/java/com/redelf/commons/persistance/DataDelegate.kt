@@ -21,8 +21,6 @@ import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -98,7 +96,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         yieldWhile(
 
-            timeoutInMilliseconds = 60 * 1000
+            timeoutInMilliseconds = 10 * 1000
 
         ) {
 
@@ -107,7 +105,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         if (putActions.contains(key)) {
 
-            Console.error("$tag Still writing")
+            Console.error("$tag ERROR: Still writing")
 
             return false
         }
