@@ -197,6 +197,11 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                     @Synchronized
                                                     fun simpleWrite(): Boolean {
 
+                                                        if (DEBUG.get()) {
+
+                                                            Console.log("$oTag Do simple write")
+                                                        }
+
                                                         val written = facade.put(keyPartition(key, i), it)
 
                                                         if (written) {
@@ -244,6 +249,12 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                             }
 
                                                             return true
+                                                        }
+
+                                                        if (DEBUG.get()) {
+
+                                                            Console.log("$oTag Do row write :: " +
+                                                                    "'$row' -> '$value'")
                                                         }
 
                                                         val keyRow = keyRow(key, partition, row)
@@ -316,6 +327,13 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                             }
 
                                                             return true
+                                                        }
+
+                                                        if (DEBUG.get()) {
+
+                                                            Console.log("$oTag Do map " +
+                                                                    "row write :: " +
+                                                                    "'$mapKey' -> '$value'")
                                                         }
 
                                                         if (value == null) {
@@ -434,6 +452,11 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         partition is Collection<*> || partition is Map<*, *>
 
                                                     if (collection) {
+
+                                                        if (DEBUG.get()) {
+
+                                                            Console.log("$oTag Collection")
+                                                        }
 
                                                         when (partition) {
 
@@ -569,6 +592,11 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         }
 
                                                     } else {
+
+                                                        if (DEBUG.get()) {
+
+                                                            Console.log("$oTag Not collection")
+                                                        }
 
                                                         if (simpleWrite()) {
 
