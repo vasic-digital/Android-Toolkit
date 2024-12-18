@@ -191,6 +191,7 @@ abstract class BaseApplication :
         }
     }
 
+    open val useCronet = false
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
     open val secretsKey = "com.redelf.commons.security.secrets"
@@ -513,7 +514,14 @@ abstract class BaseApplication :
 
         enableLogsRecording()
 
-        Cronet.initialize(applicationContext)
+        if (useCronet) {
+
+            exec {
+
+                Cronet.initialize(applicationContext)
+            }
+        }
+
         DataManagement.initialize(applicationContext)
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
