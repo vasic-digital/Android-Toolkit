@@ -439,7 +439,11 @@ abstract class DataManagement<T> :
 
         try {
 
-            exec {
+            exec(
+
+                onRejected = { e -> onDataPushed(err = e) }
+
+            ) {
 
                 overwriteData(data)
 

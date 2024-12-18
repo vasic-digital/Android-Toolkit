@@ -151,7 +151,7 @@ constructor(
 
     override fun shutdown(): Boolean {
 
-        return dataDelegate?.shutdown() ?: false
+        return dataDelegate?.shutdown() == true
     }
 
     override fun terminate(vararg args: Any): Boolean {
@@ -176,17 +176,24 @@ constructor(
 
     override fun <T> push(key: String, what: T): Boolean {
 
-        return dataDelegate?.put(key, what) ?: false
+        if (dataDelegate == null) {
+
+            Console.error("$LOG_TAG ERROR: Data delegate instance is null")
+
+            return false
+        }
+
+        return dataDelegate?.put(key, what) == true
     }
 
     override fun delete(what: String): Boolean {
 
-        return dataDelegate?.delete(what) ?: false
+        return dataDelegate?.delete(what) == true
     }
 
     override fun contains(key: String): Boolean {
 
-        return dataDelegate?.contains(key) ?: false
+        return dataDelegate?.contains(key) == true
     }
 
     /*
@@ -194,6 +201,6 @@ constructor(
     */
     override fun erase(): Boolean {
 
-        return dataDelegate?.deleteAll() ?: false
+        return dataDelegate?.deleteAll() == true
     }
 }
