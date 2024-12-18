@@ -98,7 +98,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             if (partitionsCount > 0) {
 
                 val marked = facade.put(keyPartitions(key), partitionsCount) &&
-                        facade.put(keyType(key), type.canonicalName)
+                        facade.put(keyType(key), type.canonicalName?.forClassName())
 
                 if (!marked) {
 
@@ -198,7 +198,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 var savedFqName = false
                                                 val savedValue = facade.put(keyRow, value)
-                                                val fqName = value::class.java.canonicalName
+                                                val fqName = value::class.java.canonicalName?.forClassName()
 
                                                 if (isNotEmpty(fqName)) {
 
@@ -311,13 +311,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     mapKeyValue,
                                                     valueValue,
-                                                    mapKeyType.canonicalName,
-                                                    valueType.canonicalName
+                                                    mapKeyType.canonicalName?.forClassName(),
+                                                    valueType.canonicalName?.forClassName()
                                                 )
 
                                                 var savedFqName = false
                                                 val savedValue = facade.put(keyRow, rowValue)
-                                                val fqName = rowValue::class.java.canonicalName
+                                                val fqName = rowValue::class.java.canonicalName?.forClassName()
 
                                                 if (isNotEmpty(fqName)) {
 
@@ -694,7 +694,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                     try {
 
-                                        val partition = if (inT.canonicalName == "java.util.List") {
+                                        val partition = if (inT.canonicalName?.forClassName() == "java.util.List") {
 
                                             mutableListOf<Any?>()
 
@@ -917,7 +917,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                         Console.error(
 
                                             "$tag ERROR :: " +
-                                                "Partition canonical name: ${inT.canonicalName}"
+                                                "Partition canonical name: ${inT.canonicalName?.forClassName()}"
                                         )
 
                                         instance.failPartitionData(i, e)
@@ -1189,7 +1189,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         arg?.let {
 
-            if (it::class.java.canonicalName == what?.canonicalName) {
+            if (it::class.java.canonicalName?.forClassName() == what?.canonicalName?.forClassName()) {
 
                 return arg
             }
@@ -1212,7 +1212,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         if (DEBUG.get()) {
 
-            Console.log("$tag '${what::class.java.canonicalName}' from '${arg ?: "nothing"}'")
+            Console.log("$tag '${what::class.java.canonicalName?.forClassName()}' from '${arg ?: "nothing"}'")
         }
 
         arg?.let { argument ->
@@ -1229,7 +1229,8 @@ class DataDelegate private constructor(private val facade: Facade) :
                     what.constructors.forEach { constructor ->
 
                         val constructorIsValid = constructor.parameterCount == 1 &&
-                                constructor.parameterTypes[0].canonicalName == argument::class.java.canonicalName
+                                constructor.parameterTypes[0].canonicalName?.forClassName() ==
+                                    argument::class.java.canonicalName?.forClassName()
 
                         if (constructorIsValid) {
 
@@ -1238,8 +1239,9 @@ class DataDelegate private constructor(private val facade: Facade) :
                     }
 
                     val msg = "Constructor for the argument " +
-                            "'${argument::class.java.canonicalName}' not found to instantiate " +
-                            "'${what.canonicalName}'"
+                            "'${argument::class.java.canonicalName?.forClassName()}' " +
+                            "not found to instantiate " +
+                            "'${what.canonicalName?.forClassName()}'"
 
                     throw IllegalArgumentException(msg)
                 }
@@ -1254,27 +1256,27 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         return when (type.forClassName()) {
 
-            Float::class.java.canonicalName,
-            Int::class.java.canonicalName,
-            Long::class.java.canonicalName,
-            Short::class.java.canonicalName -> {
+            Float::class.java.canonicalName?.forClassName(),
+            Int::class.java.canonicalName?.forClassName(),
+            Long::class.java.canonicalName?.forClassName(),
+            Short::class.java.canonicalName?.forClassName() -> {
 
                 throw IllegalArgumentException(
 
                     "Not supported serialization type " +
                             "'$type', please use " +
                             "the " +
-                            "'${Double::class.java.canonicalName}'" +
+                            "'${Double::class.java.canonicalName?.forClassName()}'" +
                             " instead"
                 )
             }
 
-            Double::class.java.canonicalName -> Double::class.java
-            Boolean::class.java.canonicalName -> Boolean::class.java
-            Char::class.java.canonicalName -> Char::class.java
-            String::class.java.canonicalName -> String::class.java
-            Byte::class.java.canonicalName -> Byte::class.java
-            Array::class.java.canonicalName -> Array::class.java
+            Double::class.java.canonicalName?.forClassName() -> Double::class.java
+            Boolean::class.java.canonicalName?.forClassName() -> Boolean::class.java
+            Char::class.java.canonicalName?.forClassName() -> Char::class.java
+            String::class.java.canonicalName?.forClassName() -> String::class.java
+            Byte::class.java.canonicalName?.forClassName() -> Byte::class.java
+            Array::class.java.canonicalName?.forClassName() -> Array::class.java
 
             else -> null
         }
@@ -1282,27 +1284,27 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     private fun isSimple(clazz: Class<*>): Boolean {
 
-        return when (clazz.canonicalName) {
+        return when (clazz.canonicalName?.forClassName()) {
 
-            java.lang.Long::class.java.canonicalName,
-            java.lang.Float::class.java.canonicalName,
-            java.lang.Integer::class.java.canonicalName,
-            java.lang.Short::class.java.canonicalName,
-            java.lang.Double::class.java.canonicalName,
-            java.lang.Boolean::class.java.canonicalName,
-            java.lang.Character::class.java.canonicalName,
-            java.lang.String::class.java.canonicalName,
+            java.lang.Long::class.java.canonicalName?.forClassName(),
+            java.lang.Float::class.java.canonicalName?.forClassName(),
+            java.lang.Integer::class.java.canonicalName?.forClassName(),
+            java.lang.Short::class.java.canonicalName?.forClassName(),
+            java.lang.Double::class.java.canonicalName?.forClassName(),
+            java.lang.Boolean::class.java.canonicalName?.forClassName(),
+            java.lang.Character::class.java.canonicalName?.forClassName(),
+            java.lang.String::class.java.canonicalName?.forClassName(),
 
-            Float::class.java.canonicalName,
-            Int::class.java.canonicalName,
-            Long::class.java.canonicalName,
-            Short::class.java.canonicalName,
-            Double::class.java.canonicalName,
-            Boolean::class.java.canonicalName,
-            Char::class.java.canonicalName,
-            String::class.java.canonicalName,
-            Byte::class.java.canonicalName,
-            Array::class.java.canonicalName -> true
+            Float::class.java.canonicalName?.forClassName(),
+            Int::class.java.canonicalName?.forClassName(),
+            Long::class.java.canonicalName?.forClassName(),
+            Short::class.java.canonicalName?.forClassName(),
+            Double::class.java.canonicalName?.forClassName(),
+            Boolean::class.java.canonicalName?.forClassName(),
+            Char::class.java.canonicalName?.forClassName(),
+            String::class.java.canonicalName?.forClassName(),
+            Byte::class.java.canonicalName?.forClassName(),
+            Array::class.java.canonicalName?.forClassName() -> true
 
             else -> false
         }
