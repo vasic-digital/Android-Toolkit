@@ -96,9 +96,20 @@ class DataDelegate private constructor(private val facade: Facade) :
             Console.warning("$tag Already writing")
         }
 
-        yieldWhile {
+        yieldWhile(
+
+            timeoutInMilliseconds = 60 * 1000
+
+        ) {
 
             putActions.contains(key)
+        }
+
+        if (putActions.contains(key)) {
+
+            Console.error("$tag Still writing")
+
+            return false
         }
 
         putActions.add(key)
