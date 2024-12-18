@@ -22,7 +22,8 @@ class ByteArraySerializer(
     ctx: Context,
     key: String,
 
-    private var encrypt: Boolean = true,
+    private var encrypt: Boolean,
+    private var encryption: Encryption? = null,
 
     salter: Salter = object : Salter {
 
@@ -32,13 +33,17 @@ class ByteArraySerializer(
 ) : Serializer {
 
     private val sPrefs = ctx.getSharedPreferences(key, Context.MODE_PRIVATE)
-    private val encryption: Encryption = instantiateDefaultEncryption(ctx, salter)
 
     init {
 
+        if (encryption == null) {
+
+            encryption = instantiateDefaultEncryption(ctx, salter)
+        }
+
         if (encryption is ConcealEncryption) {
 
-            encryption.init()
+            encryption?.init()
         }
     }
 
@@ -59,7 +64,7 @@ class ByteArraySerializer(
 
             var byteArrayValue = byteArrayOutputStream.toByteArray()
             var encoded = Base64.encodeToString(byteArrayValue, Base64.DEFAULT)
-            val encrypted = encryption.encrypt(key, encoded)
+            val encrypted = encryption?.encrypt(key, encoded)
 
             if (encrypted == null) {
 
@@ -97,7 +102,7 @@ class ByteArraySerializer(
 
             var decodedValue = Base64.decode(encoded, Base64.DEFAULT)
 
-            val decrypted = encryption.decrypt(key, decodedValue)
+            val decrypted = encryption?.decrypt(key, decodedValue)
 
             if (decrypted == null) {
 

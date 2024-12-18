@@ -67,6 +67,8 @@ class GsonParserTest : BaseTest() {
         val parser = GsonParser.instantiate(
 
             "test.$timestamp",
+            null,
+            true,
 
             object : Obtain<GsonBuilder> {
 
@@ -162,6 +164,8 @@ class GsonParserTest : BaseTest() {
         val parser = GsonParser.instantiate(
 
             "test.$timestamp",
+            null,
+            true,
 
             object : Obtain<GsonBuilder> {
 
@@ -205,6 +209,8 @@ class GsonParserTest : BaseTest() {
         val parser = GsonParser.instantiate(
 
             "test.$timestamp",
+            null,
+            true,
 
             object : Obtain<GsonBuilder> {
 

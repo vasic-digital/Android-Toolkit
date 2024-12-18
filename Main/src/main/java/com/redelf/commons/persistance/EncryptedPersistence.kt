@@ -21,8 +21,6 @@ class EncryptedPersistence
 constructor(
 
     ctx: Context,
-    serializationExclusionStrategy: ExclusionStrategy? = null,
-    deserializationExclusionStrategy: ExclusionStrategy? = null,
 
     private val keySalt: String = "st",
     private val doEncrypt: Boolean = true,
@@ -67,58 +65,17 @@ constructor(
             "$LOG_TAG :: Initialization :: Storage tag: '$storageTag'"
         )
 
-        val tag = "Exclusion strategies ::"
-
         ctx.let {
 
             val getParser = object : Obtain<Parser> {
 
                 override fun obtain(): Parser {
 
-                    val gsonBuilder = this@EncryptedPersistence.gsonBuilder.obtain()
-
-                    if (serializationExclusionStrategy == deserializationExclusionStrategy) {
-
-                        serializationExclusionStrategy?.let {
-
-                            if (DEBUG.get()) Console.log(
-
-                                "$tag Exclusion Strategies: $serializationExclusionStrategy"
-                            )
-
-                            gsonBuilder.setExclusionStrategies(serializationExclusionStrategy)
-                        }
-
-                    } else {
-
-                        serializationExclusionStrategy?.let {
-
-                            if (DEBUG.get()) Console.log(
-
-                                "$tag Ser. Excl. Strategy: $serializationExclusionStrategy"
-                            )
-
-                            gsonBuilder.addSerializationExclusionStrategy(
-                                serializationExclusionStrategy
-                            )
-                        }
-
-                        deserializationExclusionStrategy?.let {
-
-                            if (DEBUG.get()) Console.log(
-
-                                "$tag De-Ser. Excl. Strategy: $serializationExclusionStrategy"
-                            )
-
-                            gsonBuilder.addSerializationExclusionStrategy(
-                                deserializationExclusionStrategy
-                            )
-                        }
-                    }
-
                     return GsonParser.instantiate(
 
                         storageTag,
+                        null,
+                        true,
                         gsonBuilder
                     )
                 }

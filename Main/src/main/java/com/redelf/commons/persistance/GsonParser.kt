@@ -17,6 +17,7 @@ import com.redelf.commons.extensions.isExcluded
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.serialization.ByteArraySerializer
 import com.redelf.commons.persistance.serialization.CustomSerializable
@@ -28,6 +29,9 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 class GsonParser private constructor(
+
+    encrypt: Boolean,
+    encryption: Encryption?,
 
     parserKey: String,
     provider: Obtain<GsonBuilder>
@@ -44,25 +48,23 @@ class GsonParser private constructor(
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
         override fun instantiate(vararg params: Any): GsonParser {
 
-            if (params.size < 2) {
+            if (params.size < 4) {
 
-                throw IllegalArgumentException("Key and provider expected")
+                throw IllegalArgumentException("Encryption parameters, key and provider expected")
             }
 
             try {
 
-                val key = params[0] as String
-                val provider: Obtain<GsonBuilder> = params[1] as Obtain<GsonBuilder>
-                val mapKey = "$key.${provider.hashCode()}"
+                val key = params[2] as String? ?: ""
+                val encryption = params[1] as Encryption?
+                val encrypt = params[0] as Boolean? == true
+                val provider: Obtain<GsonBuilder>? = params[2] as Obtain<GsonBuilder>?
 
-                instances.get(mapKey)?.let {
+                return instantiate(key, encryption, encrypt, provider)
 
-                    return it
-                }
+            } catch (e: IllegalArgumentException) {
 
-                val parser = GsonParser(key, provider)
-                instances[mapKey] = parser
-                return parser
+                throw e
 
             } catch (e: Exception) {
 
@@ -71,12 +73,51 @@ class GsonParser private constructor(
                 throw IllegalStateException("ERROR: ${e.message}")
             }
         }
+
+        @Throws(IllegalArgumentException::class, IllegalStateException::class)
+        fun instantiate(
+
+            key: String,
+            encryption: Encryption?,
+            encrypt: Boolean,
+            provider: Obtain<GsonBuilder>?
+
+        ): GsonParser {
+
+            if (provider == null) {
+
+                throw IllegalArgumentException("Provider parameter is mandatory")
+            }
+
+            var mapKey = "$key.${provider.hashCode()}.$encrypt"
+
+            encryption?.let {
+
+                mapKey += ".${encryption::class.simpleName}"
+            }
+
+            instances.get(mapKey)?.let {
+
+                return it
+            }
+
+            val parser = GsonParser(encrypt, encryption, key, provider)
+            instances[mapKey] = parser
+            return parser
+        }
     }
 
     private val gson = provider.obtain().create()
     private val ctx: Context = BaseApplication.takeContext()
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}' ::"
-    private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
+
+    private val byteArraySerializer = ByteArraySerializer(
+
+        ctx,
+        "Parser.GSON.$parserKey",
+        encrypt || encryption != null,
+        encryption
+    )
 
     override fun toJson(body: Any?): String? {
 

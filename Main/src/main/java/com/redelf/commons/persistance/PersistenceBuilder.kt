@@ -75,6 +75,8 @@ class PersistenceBuilder(
         override fun obtain() = GsonParser.instantiate(
 
             storageTag,
+            encryption,
+            true,
             pCallback
         )
     }

@@ -20,11 +20,11 @@ object DefaultFacade : Facade {
 
     val DEBUG = AtomicBoolean()
 
-    private val TAG = "Facade :: DEFAULT ::"
     private var converter: Converter? = null
     private var encryption: Encryption? = null
     private var serializer: Serializer? = null
     private var storage: Storage<String>? = null
+    private const val TAG = "Facade :: DEFAULT ::"
 
     fun initialize(builder: PersistenceBuilder): Facade {
 

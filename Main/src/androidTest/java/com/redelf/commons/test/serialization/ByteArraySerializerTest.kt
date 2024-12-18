@@ -24,7 +24,7 @@ class ByteArraySerializerTest : BaseTest() {
 
         val testByteArraySerializer = ByteArraySerializer(
 
-            applicationContext, "test.${System.currentTimeMillis()}"
+            applicationContext, "test.${System.currentTimeMillis()}", true
         )
 
         val serialized = testByteArraySerializer.serialize("test", testBytes)
