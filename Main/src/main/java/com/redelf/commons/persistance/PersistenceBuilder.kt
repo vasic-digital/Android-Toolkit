@@ -144,7 +144,9 @@ class PersistenceBuilder(
 
         if (encrypt) {
 
-            return ConcealEncryption(context, salter)
+            // FIXME:
+            // return ConcealEncryption(context, salter)
+            return ReverseEncryption(salter)
         }
 
         return NoEncryption()

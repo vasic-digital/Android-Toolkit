@@ -42,7 +42,7 @@ class EncryptedPersistenceTest : BaseTest() {
                 doLog = true,
                 doEncrypt = true,
                 storageTag = testTag,
-                ctx = applicationContext
+                ctx = applicationContext,
             )
 
             Assert.assertTrue(persistence.isEncryptionEnabled())
