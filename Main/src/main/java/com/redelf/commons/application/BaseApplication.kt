@@ -1156,6 +1156,7 @@ abstract class BaseApplication :
 
         val intent = Intent()
         val data = InterprocessData(function, content)
+        // FIXME: Shall use GsonParser with custom serialization support
         val json = Gson().toJson(data)
 
         intent.setAction(action)

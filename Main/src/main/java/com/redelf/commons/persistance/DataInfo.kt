@@ -1,33 +1,86 @@
 package com.redelf.commons.persistance
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
+import com.google.gson.internal.LinkedTreeMap
+import com.redelf.commons.persistance.serialization.CustomSerializable
+import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 
-class DataInfo(
+data class DataInfo(
 
-    val cipherText: ByteArray?,
+    @JsonProperty("cipherText")
+    @SerializedName("cipherText")
+    var cipherText: ByteArray? = null,
 
-    val dataType: Char,
-    val keyClazzName: String?,
-    val valueClazzName: String?,
+    @JsonProperty("dataType")
+    @SerializedName("dataType")
+    var dataType: String? = null,
 
-    @JsonIgnore
-    @JsonProperty("keyClass")
-    @SerializedName("keyClass")
-    @Transient var keyClazz: Class<*>?,
+    @JsonProperty("keyClazzName")
+    @SerializedName("keyClazzName")
+    var keyClazzName: String? = null,
 
-    @JsonIgnore
-    @JsonProperty("valueClass")
-    @SerializedName("valueClass")
-    @Transient var valueClazz: Class<*>?
+    @JsonProperty("valueClazzName")
+    @SerializedName("valueClazzName")
+    var valueClazzName: String? = null,
 
-) {
+    @JsonProperty("keyClazz")
+    @SerializedName("keyClazz")
+    var keyClazz: String? = null,
+
+    @JsonProperty("valueClazz")
+    @SerializedName("valueClazz")
+    var valueClazz: String? = null
+
+) : CustomSerializable {
+
     companion object {
 
-        const val TYPE_OBJECT = '0'
-        const val TYPE_LIST = '1'
-        const val TYPE_MAP = '2'
-        const val TYPE_SET = '3'
+        const val TYPE_OBJECT: String = 0.toString()
+        const val TYPE_LIST: String = 1.toString()
+        const val TYPE_MAP: String = 2.toString()
+        const val TYPE_SET: String = 3.toString()
     }
+
+    constructor() : this(null, null, null, null, null, null)
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(ClassCastException::class)
+    constructor(treeMap: LinkedTreeMap<String, Any>) : this() {
+
+        treeMap["valueClazz"]?.let {
+
+            valueClazz = it.toString()
+        }
+
+        treeMap["keyClazz"]?.let {
+
+            keyClazz = it.toString()
+        }
+
+        treeMap["valueClazzName"]?.let {
+
+            valueClazzName = it.toString()
+        }
+
+        treeMap["keyClazzName"]?.let {
+
+            keyClazzName = it.toString()
+        }
+
+        treeMap["dataType"]?.let {
+
+            dataType = it.toString()
+        }
+
+        treeMap["cipherText"]?.let {
+
+            throw IllegalStateException("Not implemented yet")
+        }
+    }
+
+    override fun getCustomSerializations() = mapOf(
+
+        "cipherText" to DefaultCustomSerializer(ByteArray::class.java)
+    )
 }

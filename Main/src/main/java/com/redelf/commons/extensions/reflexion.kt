@@ -167,3 +167,17 @@ fun Class<*>.getFieldByName(name: String): Field? {
 
     return null
 }
+
+fun String.toClass(): Class<*>? {
+
+    try {
+
+        return Class.forName(this.forClassName())
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return null
+}

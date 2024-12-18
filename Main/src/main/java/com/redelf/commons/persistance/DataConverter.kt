@@ -2,6 +2,7 @@ package com.redelf.commons.persistance
 
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.toClass
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Converter
@@ -50,10 +51,10 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
             return when (info.dataType) {
 
-                DataInfo.TYPE_OBJECT -> toObject<T>(value, keyType)
-                DataInfo.TYPE_LIST -> toList<T>(value, keyType)
-                DataInfo.TYPE_MAP -> toMap<Any, Any, T>(value, keyType, valueType)
-                DataInfo.TYPE_SET -> toSet<T>(value, keyType)
+                DataInfo.TYPE_OBJECT -> toObject<T>(value, keyType?.toClass())
+                DataInfo.TYPE_LIST -> toList<T>(value, keyType?.toClass())
+                DataInfo.TYPE_MAP -> toMap<Any, Any, T>(value, keyType?.toClass(), valueType?.toClass())
+                DataInfo.TYPE_SET -> toSet<T>(value, keyType?.toClass())
 
                 else -> null
             }

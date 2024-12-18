@@ -64,9 +64,9 @@ class GsonParserTest : BaseTest() {
         val gsonBuilder = GsonBuilder()
             .enableComplexMapKeySerialization()
 
-        val parser = GsonParser(
+        val parser = GsonParser.instantiate(
 
-            parserKey = "test.$timestamp",
+            "test.$timestamp",
 
             object : Obtain<GsonBuilder> {
 
@@ -159,9 +159,9 @@ class GsonParserTest : BaseTest() {
         val gsonBuilder = GsonBuilder()
             .enableComplexMapKeySerialization()
 
-        val parser = GsonParser(
+        val parser = GsonParser.instantiate(
 
-            parserKey = "test.$timestamp",
+            "test.$timestamp",
 
             object : Obtain<GsonBuilder> {
 
@@ -202,9 +202,9 @@ class GsonParserTest : BaseTest() {
         val gsonBuilder = GsonBuilder()
             .enableComplexMapKeySerialization()
 
-        val parser = GsonParser(
+        val parser = GsonParser.instantiate(
 
-            parserKey = "test.$timestamp",
+            "test.$timestamp",
 
             object : Obtain<GsonBuilder> {
 

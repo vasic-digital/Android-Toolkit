@@ -1,22 +1,20 @@
 package com.redelf.commons.persistance
 
-import android.text.TextUtils
-import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console.error
+import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Serializer
 import java.lang.Exception
 
-internal class DataSerializer : Serializer {
+internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
     /*
         TODO: Create a flavor that uses Jackson lib for stream-like serialization / deserialization
     */
-    private val gsn: Gson = Gson()
 
     override fun <T> serialize(cipherText: ByteArray?, originalGivenValue: T): String? {
 
@@ -33,7 +31,7 @@ internal class DataSerializer : Serializer {
         var keyClassName: Class<*>? = null
         var valueClassName: Class<*>? = null
 
-        var dataType: Char
+        var dataType: String
 
         if (MutableList::class.java.isAssignableFrom(originalGivenValue.javaClass)) {
             
@@ -90,13 +88,13 @@ internal class DataSerializer : Serializer {
             dataType,
             keyClassName?.getName(),
             valueClassName?.getName(),
-            keyClassName,
-            valueClassName
+            keyClassName?.canonicalName?.forClassName(),
+            valueClassName?.canonicalName?.forClassName()
         )
 
         try {
 
-            return gsn.toJson(dataInfo)
+            return parser.obtain().toJson(dataInfo)
 
         } catch (e: OutOfMemoryError) {
 
@@ -118,30 +116,17 @@ internal class DataSerializer : Serializer {
         }
 
         try {
-            val dataInfo = gsn.fromJson<DataInfo>(serializedText, DataInfo::class.java)
 
-            if (dataInfo.keyClazzName != null) {
+            val dataInfo = parser.obtain().fromJson<DataInfo?>(serializedText, DataInfo::class.java)
 
-                try {
+            if (dataInfo?.keyClazzName != null) {
 
-                    dataInfo.keyClazz = Class.forName(dataInfo.keyClazzName.forClassName())
-
-                } catch (e: ClassNotFoundException) {
-
-                    error(e)
-                }
+                dataInfo.keyClazz = dataInfo.keyClazzName?.forClassName()
             }
 
-            if (dataInfo.valueClazzName != null) {
+            if (dataInfo?.valueClazzName != null) {
 
-                try {
-
-                    dataInfo.valueClazz = Class.forName(dataInfo.valueClazzName.forClassName())
-
-                } catch (e: ClassNotFoundException) {
-
-                    error(e)
-                }
+                dataInfo.valueClazz = dataInfo.valueClazzName?.forClassName()
             }
 
             return dataInfo

@@ -18,7 +18,7 @@ interface Partitioning<T> : Typed<T> {
 
     fun getPartitionData(number: Int): Any?
 
-    fun isPartitionCollection(number: Int): Boolean?
+    fun isPartitionCollection(number: Int): Boolean? = null
 
     /*
         TODO: To be fully-automatic, with possibility of override and automatic data conversion

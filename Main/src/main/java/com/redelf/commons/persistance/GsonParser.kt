@@ -6,6 +6,7 @@ import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.creation.instantiation.Instantiable
 import com.redelf.commons.extensions.assign
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.getAllFields
@@ -23,18 +24,53 @@ import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 import com.redelf.commons.persistance.serialization.Serializer
 import java.io.IOException
 import java.lang.reflect.Type
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
-class GsonParser(
+class GsonParser private constructor(
 
     parserKey: String,
     provider: Obtain<GsonBuilder>
 
 ) : Parser {
 
-    companion object {
+    companion object : Instantiable<GsonParser> {
 
         val DEBUG = AtomicBoolean()
+
+        private val instances = ConcurrentHashMap<String, GsonParser>()
+
+        @Suppress("UNCHECKED_CAST")
+        @Throws(IllegalArgumentException::class, IllegalStateException::class)
+        override fun instantiate(vararg params: Any): GsonParser {
+
+            if (params.size < 2) {
+
+                throw IllegalArgumentException("Key and provider expected")
+            }
+
+            try {
+
+                val key = params[0] as String
+                val provider: Obtain<GsonBuilder> = params[1] as Obtain<GsonBuilder>
+                val mapKey = "$key.${provider.hashCode()}"
+
+                instances.get(mapKey)?.let {
+
+                    return it
+                }
+
+                val parser = GsonParser(key, provider)
+                instances[mapKey] = parser
+                return parser
+
+            } catch (e: Exception) {
+
+                recordException(e)
+
+                throw IllegalStateException("ERROR: ${e.message}")
+            }
+        }
     }
 
     private val gson = provider.obtain().create()

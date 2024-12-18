@@ -20,6 +20,7 @@ abstract class InterprocessProcessor : Process<Intent> {
 
         try {
 
+            // FIXME: Shall use GsonParser with custom serialization support
             val ipcData: InterprocessData? = Gson().fromJson(data, InterprocessData::class.java)
 
             if (ipcData == null) {

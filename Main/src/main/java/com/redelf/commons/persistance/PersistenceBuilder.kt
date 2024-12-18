@@ -59,22 +59,23 @@ class PersistenceBuilder(
         }
     }
 
+    private val pCallback = object : Obtain<GsonBuilder> {
+
+        override fun obtain(): GsonBuilder {
+
+            /*
+                TODO: Bring the Jackson support
+            */
+            return GsonBuilder()
+        }
+    }
+
     private var parser: Obtain<Parser> = object : Obtain<Parser> {
 
-        override fun obtain() = GsonParser(
+        override fun obtain() = GsonParser.instantiate(
 
-            parserKey = storageTag,
-
-            object : Obtain<GsonBuilder> {
-
-                override fun obtain(): GsonBuilder {
-
-                    /*
-                        TODO: Bring the Jackson support
-                    */
-                    return GsonBuilder()
-                }
-            }
+            storageTag,
+            pCallback
         )
     }
 
@@ -91,8 +92,8 @@ class PersistenceBuilder(
     var doLog: Boolean = false
     var logRawData: Boolean = false
     var storage: Storage<String> = DBStorage
-    var serializer: Serializer? = DataSerializer()
     var converter: Converter? = DataConverter(parser)
+    var serializer: Serializer? = DataSerializer(parser)
     var keysFilter: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
     var encryption: Encryption? = instantiateDefaultEncryption(context, salter)
 

@@ -51,6 +51,15 @@ constructor(
 
     private var dataDelegate: DataDelegate? = null
 
+    private val gsonBuilder = object : Obtain<GsonBuilder> {
+
+        override fun obtain(): GsonBuilder {
+
+            return GsonBuilder()
+                .enableComplexMapKeySerialization()
+        }
+    }
+
     init {
 
         if (DEBUG.get()) Console.log(
@@ -66,8 +75,7 @@ constructor(
 
                 override fun obtain(): Parser {
 
-                    val gsonBuilder = GsonBuilder()
-                        .enableComplexMapKeySerialization()
+                    val gsonBuilder = this@EncryptedPersistence.gsonBuilder.obtain()
 
                     if (serializationExclusionStrategy == deserializationExclusionStrategy) {
 
@@ -108,18 +116,10 @@ constructor(
                         }
                     }
 
+                    return GsonParser.instantiate(
 
-                    return GsonParser(
-
-                        parserKey = storageTag,
-
-                        object : Obtain<GsonBuilder> {
-
-                            override fun obtain(): GsonBuilder {
-
-                                return gsonBuilder
-                            }
-                        }
+                        storageTag,
+                        gsonBuilder
                     )
                 }
             }
