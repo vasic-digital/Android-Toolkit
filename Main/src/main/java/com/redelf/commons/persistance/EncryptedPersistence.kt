@@ -1,8 +1,6 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
-import com.google.gson.ExclusionStrategy
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
@@ -16,6 +14,7 @@ import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Persistence
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.registration.Registration
+import com.redelf.commons.security.encryption.EncryptionListener
 import java.util.concurrent.atomic.AtomicBoolean
 
 class EncryptedPersistence
@@ -36,7 +35,7 @@ constructor(
     ShutdownSynchronized,
     TerminationSynchronized,
     InitializationWithContext,
-    Registration<EncryptedPersistenceListener>
+    Registration<EncryptionListener<String, String>>
 
 {
 
@@ -48,7 +47,7 @@ constructor(
     }
 
     private var dataDelegate: DataDelegate? = null
-    private val listeners = Callbacks<EncryptedPersistenceListener>("enc_listeners")
+    private val listeners = Callbacks<EncryptionListener<String, String>>("enc_listeners")
 
     private val gsonBuilder = object : Obtain<GsonBuilder> {
 
@@ -166,17 +165,17 @@ constructor(
         return dataDelegate?.deleteAll() == true
     }
 
-    override fun register(subscriber: EncryptedPersistenceListener) {
+    override fun register(subscriber: EncryptionListener<String, String>) {
 
         listeners.register(subscriber)
     }
 
-    override fun unregister(subscriber: EncryptedPersistenceListener) {
+    override fun unregister(subscriber: EncryptionListener<String, String>) {
 
         listeners.unregister(subscriber)
     }
 
-    override fun isRegistered(subscriber: EncryptedPersistenceListener): Boolean {
+    override fun isRegistered(subscriber: EncryptionListener<String, String>): Boolean {
 
         return listeners.isRegistered(subscriber)
     }
