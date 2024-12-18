@@ -38,7 +38,7 @@ class PinAccess(priority: Int, ctx: AccessActivity) : AccessMethod(priority, ctx
         ctx.startActivity(intent)
     }
 
-    @Synchronized
+    
     @Suppress("DEPRECATION")
     override fun execute() {
 

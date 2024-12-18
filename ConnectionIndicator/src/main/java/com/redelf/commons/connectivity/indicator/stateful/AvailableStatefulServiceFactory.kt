@@ -84,7 +84,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
         return recipes.containsKey(sName)
     }
 
-    @Synchronized
+    
     @Throws(IllegalArgumentException::class)
     override fun build(input: Class<*>): AvailableStatefulService {
 

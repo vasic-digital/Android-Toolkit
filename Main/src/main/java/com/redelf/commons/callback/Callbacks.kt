@@ -183,7 +183,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T>, Debuggable
         this.debug.set(debug)
     }
 
-    @Synchronized
+    
     override fun isDebug(): Boolean {
 
         return debug.get() || DEBUG.get()

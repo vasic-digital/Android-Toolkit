@@ -104,7 +104,7 @@ class Access(builder: AccessBuilder) :
 
     override fun isInitializing() = isInitialized()
 
-    @Synchronized
+    
     fun isExecuting(): Boolean {
 
         method.get()?.let {

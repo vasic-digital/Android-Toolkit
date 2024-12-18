@@ -22,7 +22,6 @@ import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -62,25 +61,23 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     private val putActions = ConcurrentHashMap<String, Any?>()
 
-    @Synchronized
     override fun shutdown(): Boolean {
 
         return facade.shutdown()
     }
 
-    @Synchronized
     override fun terminate(vararg args: Any): Boolean {
 
         return facade.terminate(*args)
     }
 
-    @Synchronized
+    
     override fun initialize(ctx: Context) {
 
         return facade.initialize(ctx)
     }
 
-    @Synchronized
+
     fun <T> put(key: String?, value: T): Boolean {
 
         if (key == null || isEmpty(key)) {
@@ -88,34 +85,34 @@ class DataDelegate private constructor(private val facade: Facade) :
             return false
         }
 
-        val tag = "Partitioning :: Put :: Key = $key ::"
-
-        if (putActions.contains(key)) {
-
-            Console.warning("$tag Already writing")
-        }
-
-        yieldWhile(
-
-            timeoutInMilliseconds = 10 * 1000
-
-        ) {
-
-            putActions.contains(key)
-        }
-
-        if (putActions.contains(key)) {
-
-            Console.error("$tag ERROR: Still writing")
-
-            return false
-        }
-
-        putActions.put(key, value as Any)
-
         val obtain = object : Obtain<Boolean> {
 
             override fun obtain(): Boolean {
+
+                val tag = "Partitioning :: Put :: Key = $key ::"
+
+                if (putActions.contains(key)) {
+
+                    Console.warning("$tag Already writing")
+                }
+
+                yieldWhile(
+
+                    timeoutInMilliseconds = 10 * 1000
+
+                ) {
+
+                    putActions.contains(key)
+                }
+
+                if (putActions.contains(key)) {
+
+                    Console.error("$tag ERROR: Still writing")
+
+                    return false
+                }
+
+                putActions.put(key, value as Any)
 
                 if (value is Partitioning<*> && value.isPartitioningEnabled()) {
 
@@ -149,7 +146,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                             val partition = value.getPartitionData(i)
 
-                            @Synchronized
+                            
                             fun doPartition(
 
                                 async: Boolean,
@@ -169,7 +166,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                     val action = object : Obtain<Boolean> {
 
-                                        @Synchronized
+                                        
                                         override fun obtain(): Boolean {
 
                                             val oTag = "$dTag Obtain async ::"
@@ -195,7 +192,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 partition.let {
 
-                                                    @Synchronized
+                                                    
                                                     fun simpleWrite(): Boolean {
 
                                                         if (DEBUG.get()) {
@@ -233,7 +230,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         return written
                                                     }
 
-                                                    @Synchronized
+                                                    
                                                     fun rowWrite(
 
                                                         partition: Int,
@@ -308,7 +305,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         return written
                                                     }
 
-                                                    @Synchronized
+                                                    
                                                     fun rowWrite(
 
                                                         partition: Int,
@@ -765,7 +762,7 @@ class DataDelegate private constructor(private val facade: Facade) :
     }
 
     @Suppress("UNCHECKED_CAST")
-    @Synchronized
+    
     operator fun <T> get(key: String?): T? {
 
         val tag = "Get :: key = $key, T = '${T::class.simpleName}' ::"
@@ -807,7 +804,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.get(key)
     }
 
-    @Synchronized
+    
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
     operator fun <T> get(key: String?, defaultValue: T?): T? {
 
@@ -1151,7 +1148,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     fun count(): Long = facade.count()
 
-    @Synchronized
+    
     fun delete(key: String?): Boolean {
 
         if (key == null || isEmpty(key)) {
@@ -1253,7 +1250,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.delete(key)
     }
 
-    @Synchronized
+    
     operator fun contains(key: String?): Boolean {
 
         if (key == null || isEmpty(key)) {
@@ -1274,25 +1271,25 @@ class DataDelegate private constructor(private val facade: Facade) :
     /*
          DANGER ZONE:
     */
-    @Synchronized
+    
     fun destroy() {
 
         facade.destroy()
     }
 
-    @Synchronized
+    
     fun deleteAll(): Boolean {
 
         return facade.deleteAll()
     }
 
-    @Synchronized
+    
     private fun getPartitionsCount(key: String): Int {
 
         return facade.get(keyPartitions(key), 0)
     }
 
-    @Synchronized
+    
     private fun getRowsCount(key: String, partition: Int): Int {
 
         val rowsKey = keyRows(key, partition)
@@ -1300,7 +1297,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.get(rowsKey, 0)
     }
 
-    @Synchronized
+    
     private fun setRowsCount(key: String, partition: Int, rows: Int): Boolean {
 
         val rowsKey = keyRows(key, partition)
@@ -1308,7 +1305,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.put(rowsKey, rows)
     }
 
-    @Synchronized
+    
     private fun deleteRowsCount(key: String, partition: Int): Boolean {
 
         val rowsKey = keyRows(key, partition)
@@ -1352,7 +1349,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         InstantiationException::class
 
     )
-    @Synchronized
+    
     private fun instantiate(what: Class<*>?, arg: Any?): Any {
 
         arg?.let {
@@ -1419,7 +1416,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return what.newInstance()
     }
 
-    @Synchronized
+    
     private fun getSimple(type: String): Class<*>? {
 
         return when (type.forClassName()) {

@@ -17,7 +17,7 @@ abstract class ContextualManager<T> : LazyDataManagement<T>(), Contextual<BaseAp
         return ctx
     }
 
-    @Synchronized
+    
     override fun injectContext(ctx: BaseApplication) {
         super.injectContext(ctx)
 

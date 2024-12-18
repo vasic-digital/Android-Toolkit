@@ -148,7 +148,7 @@ abstract class ConnectionAvailableService :
         return callbacks().isRegistered(subscriber)
     }
 
-    @Synchronized
+    
     private fun callbacks(): Callbacks<Stateful> {
 
         if (stateChangesListeners == null) {

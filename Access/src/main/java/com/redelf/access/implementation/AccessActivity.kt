@@ -95,7 +95,7 @@ abstract class AccessActivity : BaseActivity() {
 
     abstract fun getAccess(): Access
 
-    @Synchronized
+    
     protected open fun checkAccess() {
 
         try {
@@ -148,7 +148,7 @@ abstract class AccessActivity : BaseActivity() {
         access.install()
     }
 
-    @Synchronized
+    
     protected open fun executeAccess() {
 
         if (access.isExecuting()) {

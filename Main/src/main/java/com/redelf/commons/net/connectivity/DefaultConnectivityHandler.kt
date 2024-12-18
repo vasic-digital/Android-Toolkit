@@ -21,7 +21,7 @@ class DefaultConnectivityHandler private constructor(
 
         private var instance: DefaultConnectivityHandler? = null
 
-        @Synchronized
+        
         override fun obtain(param: Context): DefaultConnectivityHandler {
 
             return obtain(
@@ -31,7 +31,7 @@ class DefaultConnectivityHandler private constructor(
             )
         }
 
-        @Synchronized
+        
         fun obtain(
 
             param: Context,
