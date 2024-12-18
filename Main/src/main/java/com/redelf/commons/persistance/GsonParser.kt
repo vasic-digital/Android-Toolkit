@@ -75,7 +75,7 @@ class GsonParser private constructor(
 
     private val gson = provider.obtain().create()
     private val ctx: Context = BaseApplication.takeContext()
-    private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}'"
+    private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}' ::"
     private val byteArraySerializer = ByteArraySerializer(ctx, "Parser.GSON.$parserKey")
 
     override fun toJson(body: Any?): String? {
