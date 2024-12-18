@@ -477,7 +477,17 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             if (DEBUG.get()) {
 
-                                                                Console.log("$tag Simple write OK")
+                                                                if (DEBUG.get()) {
+
+                                                                    Console.log(
+
+                                                                        "$tag WRITTEN: " +
+                                                                                "Partition no. " +
+                                                                                "$partition " +
+                                                                                "(simple write " +
+                                                                                "/ 2)"
+                                                                    )
+                                                                }
                                                             }
 
                                                         } else {
@@ -497,7 +507,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     if (DEBUG.get()) {
 
-                                                        Console.log("$tag Simple write OK")
+                                                        Console.log("$tag WRITTEN: Partition no. " +
+                                                                "$partition (simple write / 1)")
                                                     }
 
                                                 } else {
