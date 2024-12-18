@@ -66,13 +66,13 @@ object DefaultFacade : Facade {
             return false
         }
 
-        log("put :: Key :: $key :: has value: ${value != null}")
+        log("Put :: Key :: $key :: Has value = ${value != null}")
 
         if (value == null) {
 
             log(
 
-                "put :: Key :: $key :: null value, any existing value will " +
+                "Put :: Key :: $key :: Null value :: Any existing value will " +
                         "be deleted with the given key"
             )
 
@@ -81,11 +81,12 @@ object DefaultFacade : Facade {
 
         val plainText = converter?.toString(value)
 
-        log("put :: Key :: $key :: Converted: $plainText")
+        log("Put :: Key :: $key :: Converted = '$plainText'")
 
         if (plainText == null) {
 
-            err("put :: Key :: $key :: Converter failed")
+            err("Put :: Key :: $key :: Converter failed")
+
             return false
         }
 
@@ -95,39 +96,43 @@ object DefaultFacade : Facade {
 
             cipherText = encryption?.encrypt(key, plainText)
 
-            log("put :: Key :: $key :: Encrypted: $cipherText")
+            log("Put :: Key :: $key :: Encrypted = $cipherText")
 
         } catch (e: Exception) {
 
-            err("put :: Key :: $key :: Encrypt failed: ${e.message}")
+            err("Put :: Key :: $key :: Encrypt failed :: Error = '${e.message}'")
 
             Console.error(e)
         }
 
         if (cipherText == null) {
 
-            err("put :: Key :: $key :: Encryption failed")
+            err("Put :: Key :: $key :: Encryption failed")
+
             return false
         }
 
         val serializedText = serializer?.serialize(cipherText, value)
 
-        log("put :: Key :: $key :: Serialized: $serializedText")
+        log("Put :: Key :: $key :: Serialized = '$serializedText'")
 
         if (serializedText == null) {
 
-            err("put :: Key :: $key :: Serialization failed")
+            err("Put :: Key :: $key :: Serialization failed")
+
             return false
         }
 
         return if (storage?.put(key, serializedText) == true) {
 
-            log("put :: Key :: $key :: Stored successfully")
+            log("Put :: Key :: $key :: Stored successfully")
+
             true
 
         } else {
 
-            err("put :: Key :: $key :: Store operation failed")
+            err("Put :: Key :: $key :: Store operation failed")
+
             false
         }
     }
@@ -326,7 +331,7 @@ object DefaultFacade : Facade {
 
             plainText = encryption?.decrypt(key, dataInfo.cipherText)
 
-            log("$tag Key :: $key :: Decrypted: $plainText")
+            log("$tag Key :: $key :: Decrypted = '$plainText'")
 
         } catch (e: Exception) {
 
