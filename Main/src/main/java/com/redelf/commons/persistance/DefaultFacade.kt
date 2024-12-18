@@ -113,7 +113,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
         val plainText = converter?.toString(value)
 
-        log("Put :: Key = $key :: Converted = '$plainText'")
+        log("Put :: Key = $key :: Converted")
 
         if (plainText == null) {
 
@@ -128,7 +128,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             cipherText = encryption?.encrypt(key, plainText)
 
-            log("Put :: Key = $key :: Encrypted :: '$plainText' into '$cipherText'")
+            log("Put :: Key = $key :: Encrypted")
 
         } catch (e: Exception) {
 
@@ -151,7 +151,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
         val serializedText = serializer?.serialize(cipherText, value)
 
-        log("Put :: Key = $key :: Serialized = '$serializedText'")
+        log("Put :: Key = $key :: Serialized")
 
         if (serializedText == null) {
 
@@ -231,7 +231,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             result = converter?.fromString(plainText, type)
 
-            log("$tag Key = $key :: Converted: $result")
+            log("$tag Key = $key :: Converted")
 
         } catch (e: Exception) {
 
@@ -261,7 +261,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             result = converter?.fromString(plainText, clazz)
 
-            log("$tag Key = $key :: Converted: $result")
+            log("$tag Key = $key :: Converted")
 
         } catch (e: Exception) {
 
@@ -362,7 +362,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
             return null
         }
 
-        log("$tag Key = $key :: Deserialized = '$dataInfo'")
+        log("$tag Key = $key :: Deserialized")
 
         // 3. Decrypt
         var plainText: String? = null
@@ -383,7 +383,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                 plainText = encryption?.decrypt(key, cText)
 
-                log("$tag Key = $key :: Decrypted :: '$plainText' from '$cText'")
+                log("$tag Key = $key :: Decrypted")
 
                 notifyDecrypted(key, cText, plainText ?: "")
             }
