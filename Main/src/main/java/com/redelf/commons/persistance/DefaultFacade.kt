@@ -1,6 +1,8 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
+import com.redelf.commons.callback.CallbackOperation
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
@@ -9,14 +11,16 @@ import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.persistance.base.Serializer
 import com.redelf.commons.persistance.base.Storage
+import com.redelf.commons.registration.Registration
+import com.redelf.commons.security.encryption.EncryptionListener
+import java.io.IOException
 import java.lang.reflect.Type
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 /*
     TODO: Eliminate use of objects (statics) in persistence mechanism
 */
-object DefaultFacade : Facade {
+object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> {
 
     val DEBUG = AtomicBoolean()
 
@@ -25,6 +29,7 @@ object DefaultFacade : Facade {
     private var serializer: Serializer? = null
     private var storage: Storage<String>? = null
     private const val TAG = "Facade :: DEFAULT ::"
+    private val listeners = Callbacks<EncryptionListener<String, String>>("enc_listeners")
 
     fun initialize(builder: PersistenceBuilder): Facade {
 
@@ -42,6 +47,29 @@ object DefaultFacade : Facade {
         }
 
         return this
+    }
+
+    override fun register(subscriber: EncryptionListener<String, String>) {
+
+        if (isRegistered(subscriber)) {
+
+            return
+        }
+
+        listeners.register(subscriber)
+    }
+
+    override fun unregister(subscriber: EncryptionListener<String, String>) {
+
+        if (isRegistered(subscriber)) {
+
+            listeners.unregister(subscriber)
+        }
+    }
+
+    override fun isRegistered(subscriber: EncryptionListener<String, String>): Boolean {
+
+        return listeners.isRegistered(subscriber)
     }
 
     override fun shutdown(): Boolean {
@@ -109,8 +137,13 @@ object DefaultFacade : Facade {
 
             err("Put :: Key = $key :: Encryption failed")
 
+            val e = IOException("Encryption failed")
+            notifyEncryptedFailed(key, e)
+
             return false
         }
+
+        notifyEncrypted(key, plainText, String(cipherText))
 
         val serializedText = serializer?.serialize(cipherText, value)
 
@@ -329,16 +362,34 @@ object DefaultFacade : Facade {
 
         try {
 
-            val cText = dataInfo.cipherText
-            plainText = encryption?.decrypt(key, cText?.toByteArray())
+            val cText = dataInfo.cipherText ?: ""
 
-            log("$tag Key = $key :: Decrypted :: '$plainText' from '$cText'")
+            if (isEmpty(cText)) {
+
+                plainText = ""
+
+                log("$tag Key = $key :: Decrypted :: Got empty")
+
+                notifyDecrypted(key, "", "")
+
+            } else {
+
+                val encrypted = cText.toByteArray()
+
+                plainText = encryption?.decrypt(key, encrypted)
+
+                log("$tag Key = $key :: Decrypted :: '$plainText' from '$cText'")
+
+                notifyDecrypted(key, cText, plainText ?: "")
+            }
 
         } catch (e: Exception) {
 
             err("$tag Key = $key :: Decrypt failed: ${e.message}")
 
             Console.error(e)
+
+            notifyDecryptedFailed(key, e)
         }
 
         if (plainText == null) {
@@ -347,5 +398,69 @@ object DefaultFacade : Facade {
         }
 
         return plainText
+    }
+
+    private fun notifyEncrypted(key: String, raw: String, encrypted: String) {
+
+        listeners.doOnAll(
+
+            object : CallbackOperation<EncryptionListener<String, String>> {
+
+                override fun perform(callback: EncryptionListener<String, String>) {
+
+                    callback.onEncrypted(key, raw, encrypted)
+                }
+            },
+
+            "encrypted.$key"
+        )
+    }
+
+    private fun notifyDecrypted(key: String, encrypted: String, decrypted: String) {
+
+        listeners.doOnAll(
+
+            object : CallbackOperation<EncryptionListener<String, String>> {
+
+                override fun perform(callback: EncryptionListener<String, String>) {
+
+                    callback.onDecrypted(key, encrypted, decrypted)
+                }
+            },
+
+            "decrypted.$key"
+        )
+    }
+
+    private fun notifyEncryptedFailed(key: String, error: Throwable) {
+
+        listeners.doOnAll(
+
+            object : CallbackOperation<EncryptionListener<String, String>> {
+
+                override fun perform(callback: EncryptionListener<String, String>) {
+
+                    callback.onEncryptionFailure(key, error)
+                }
+            },
+
+            "encryption.failure"
+        )
+    }
+
+    private fun notifyDecryptedFailed(key: String, error: Throwable) {
+
+        listeners.doOnAll(
+
+            object : CallbackOperation<EncryptionListener<String, String>> {
+
+                override fun perform(callback: EncryptionListener<String, String>) {
+
+                    callback.onDecryptionFailure(key, error)
+                }
+            },
+
+            "decryption.failure"
+        )
     }
 }

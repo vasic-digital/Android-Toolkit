@@ -47,7 +47,6 @@ constructor(
     }
 
     private var dataDelegate: DataDelegate? = null
-    private val listeners = Callbacks<EncryptionListener<String, String>>("enc_listeners")
 
     private val gsonBuilder = object : Obtain<GsonBuilder> {
 
@@ -106,21 +105,15 @@ constructor(
 
     override fun shutdown(): Boolean {
 
-        listeners.clear()
-
         return dataDelegate?.shutdown() == true
     }
 
     override fun terminate(vararg args: Any): Boolean {
 
-        listeners.clear()
-
         return dataDelegate?.terminate(*args) == true
     }
 
     override fun initialize(ctx: Context) {
-
-        listeners.clear()
 
         dataDelegate?.initialize(ctx)
     }
@@ -167,16 +160,16 @@ constructor(
 
     override fun register(subscriber: EncryptionListener<String, String>) {
 
-        listeners.register(subscriber)
+        dataDelegate?.register(subscriber)
     }
 
     override fun unregister(subscriber: EncryptionListener<String, String>) {
 
-        listeners.unregister(subscriber)
+        dataDelegate?.unregister(subscriber)
     }
 
     override fun isRegistered(subscriber: EncryptionListener<String, String>): Boolean {
 
-        return listeners.isRegistered(subscriber)
+        return dataDelegate?.isRegistered(subscriber) == true
     }
 }

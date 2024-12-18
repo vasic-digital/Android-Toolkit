@@ -2,6 +2,7 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.data.type.PairDataInfo
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.forClassName
@@ -17,6 +18,8 @@ import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.partition.Partitioning
 import com.redelf.commons.persistance.base.Facade
+import com.redelf.commons.registration.Registration
+import com.redelf.commons.security.encryption.EncryptionListener
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.util.Queue
@@ -32,7 +35,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
     TerminationSynchronized,
-    InitializationWithContext
+    InitializationWithContext,
+    Registration<EncryptionListener<String, String>>
 
 {
 
@@ -75,6 +79,32 @@ class DataDelegate private constructor(private val facade: Facade) :
     override fun initialize(ctx: Context) {
 
         return facade.initialize(ctx)
+    }
+
+    override fun register(subscriber: EncryptionListener<String, String>) {
+
+        if (facade is DefaultFacade) {
+
+            facade.register(subscriber)
+        }
+    }
+
+    override fun unregister(subscriber: EncryptionListener<String, String>) {
+
+        if (facade is DefaultFacade) {
+
+            facade.unregister(subscriber)
+        }
+    }
+
+    override fun isRegistered(subscriber: EncryptionListener<String, String>): Boolean {
+
+        if (facade is DefaultFacade) {
+
+            return facade.isRegistered(subscriber)
+        }
+
+        return false
     }
 
 
@@ -802,7 +832,6 @@ class DataDelegate private constructor(private val facade: Facade) :
     }
 
     @Suppress("UNCHECKED_CAST")
-    
     operator fun <T> get(key: String?): T? {
 
         val tag = "Get :: key = $key, T = '${T::class.simpleName}' ::"
