@@ -728,27 +728,6 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                 return facade.put(key, value)
             }
-
-            operator fun <T> get(key: String?): T? {
-
-                val tag = "Get :: key = $key, T = '${T::class.simpleName}' ::"
-
-                if (key == null || isEmpty(key)) {
-
-                    return null
-                }
-
-                val count = getPartitionsCount(key)
-
-                if (count > 0) {
-
-                    if (DEBUG.get()) Console.log("$tag Partitioning :: START")
-
-                    return get<T?>(key = key, defaultValue = null)
-                }
-
-                return facade.get(key)
-            }
         }
 
         val obtained = obtain.obtain()
@@ -758,6 +737,29 @@ class DataDelegate private constructor(private val facade: Facade) :
         return obtained
     }
 
+    @Synchronized
+    operator fun <T> get(key: String?): T? {
+
+        val tag = "Get :: key = $key, T = '${T::class.simpleName}' ::"
+
+        if (key == null || isEmpty(key)) {
+
+            return null
+        }
+
+        val count = getPartitionsCount(key)
+
+        if (count > 0) {
+
+            if (DEBUG.get()) Console.log("$tag Partitioning :: START")
+
+            return get<T?>(key = key, defaultValue = null)
+        }
+
+        return facade.get(key)
+    }
+
+    @Synchronized
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
     operator fun <T> get(key: String?, defaultValue: T?): T? {
 
@@ -1203,6 +1205,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.delete(key)
     }
 
+    @Synchronized
     operator fun contains(key: String?): Boolean {
 
         if (key == null || isEmpty(key)) {
@@ -1235,11 +1238,13 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.deleteAll()
     }
 
+    @Synchronized
     private fun getPartitionsCount(key: String): Int {
 
         return facade.get(keyPartitions(key), 0)
     }
 
+    @Synchronized
     private fun getRowsCount(key: String, partition: Int): Int {
 
         val rowsKey = keyRows(key, partition)
@@ -1247,6 +1252,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.get(rowsKey, 0)
     }
 
+    @Synchronized
     private fun setRowsCount(key: String, partition: Int, rows: Int): Boolean {
 
         val rowsKey = keyRows(key, partition)
