@@ -12,6 +12,12 @@ interface Partitioning<T> : Typed<T> {
 
     fun isPartitioningEnabled(): Boolean
 
+    /*
+    * FIXME: Fix the parallelized data writing with use of custom serialization (ByteArray)
+    *  in gson parser - ByteArraySerializer class. Currently use of custom serializer breaks
+    *  the partition writing and reading which them may break the application since the data
+    *  are corrupted - nullable
+    */
     fun isPartitioningParallelized(): Boolean
 
     fun getPartitionCount(): Int
