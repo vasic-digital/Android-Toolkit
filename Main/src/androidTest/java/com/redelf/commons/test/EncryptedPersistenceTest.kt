@@ -9,6 +9,8 @@ import com.redelf.commons.security.encryption.EncryptionListener
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 class EncryptedPersistenceTest : BaseTest() {
@@ -89,50 +91,6 @@ class EncryptedPersistenceTest : BaseTest() {
 
         log("Numbers testing: START")
 
-        val callback = object : EncryptionListener<String, String> {
-
-            override fun onEncrypted(
-
-                key: String,
-                raw: String,
-                encrypted: String
-
-            ) {
-
-                Console.log("On :: Encrypted :: Key = $key, Raw = $raw, Encrypted = $encrypted")
-
-                // TODO:
-            }
-
-            override fun onDecrypted(
-
-                key: String,
-                encrypted: String,
-                decrypted: String
-
-            ) {
-
-                Console.log(
-
-                    "On :: Encrypted :: Key = $key, Encrypted = $encrypted, Decrypted = $decrypted"
-                )
-
-                // TODO:
-            }
-
-            override fun onEncryptionFailure(key: String, error: Throwable) {
-
-                Assert.fail("ASSERT FAILURE :: Key = $key, Error = ${error.message}")
-            }
-
-            override fun onDecryptionFailure(key: String, error: Throwable) {
-
-                Assert.fail("ASSERT FAILURE :: Key = $key, Error = ${error.message}")
-            }
-        }
-
-        persistence.register(callback)
-
         val numbers = listOf(1, 2, 21, 1.0, 0.1, 1.0000000001, 100, 1000, 100000)
 
         numbers.forEach { number ->
@@ -141,8 +99,6 @@ class EncryptedPersistenceTest : BaseTest() {
         }
 
         log("Numbers testing: END")
-
-        persistence.unregister(callback)
     }
 
     private fun testRandomPositiveNumbers() {
@@ -238,6 +194,52 @@ class EncryptedPersistenceTest : BaseTest() {
 
     private fun testNumber(number: Number) {
 
+        val latch = CountDownLatch(2)
+
+        val callback = object : EncryptionListener<String, String> {
+
+            override fun onEncrypted(
+
+                key: String,
+                raw: String,
+                encrypted: String
+
+            ) {
+
+                Console.log("On :: Encrypted :: Key = $key, Raw = $raw, Encrypted = $encrypted")
+
+                latch.countDown()
+            }
+
+            override fun onDecrypted(
+
+                key: String,
+                encrypted: String,
+                decrypted: String
+
+            ) {
+
+                Console.log(
+
+                    "On :: Encrypted :: Key = $key, Encrypted = $encrypted, Decrypted = $decrypted"
+                )
+
+                latch.countDown()
+            }
+
+            override fun onEncryptionFailure(key: String, error: Throwable) {
+
+                Assert.fail("ASSERT FAILURE :: Key = $key, Error = ${error.message}")
+            }
+
+            override fun onDecryptionFailure(key: String, error: Throwable) {
+
+                Assert.fail("ASSERT FAILURE :: Key = $key, Error = ${error.message}")
+            }
+        }
+
+        persistence.register(callback)
+
         val numberValueKey = "testNumber"
 
         val persistOK = persistence.push(numberValueKey, number)
@@ -246,9 +248,23 @@ class EncryptedPersistenceTest : BaseTest() {
 
         val retrieved = persistence.pull<Any?>(numberValueKey)
 
+        try {
+
+            if (!latch.await(15, TimeUnit.SECONDS)) {
+
+                Assert.fail("Latch timed out")
+            }
+
+        } catch (e: Exception) {
+
+            Assert.fail(e.message)
+        }
+
         Assert.assertNotNull(retrieved)
         Assert.assertTrue(retrieved is Number)
         Assert.assertTrue(number == retrieved)
+
+        persistence.unregister(callback)
     }
 
     private fun testClass() {
