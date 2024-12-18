@@ -673,7 +673,7 @@ object DBStorage : Storage<String> {
 
         ) {
 
-            var tag = "With DB :: doWhat = ${doWhat.hashCode()} ::"
+            var tag = "With DB ::"
 
             try {
 
