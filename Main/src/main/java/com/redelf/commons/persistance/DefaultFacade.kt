@@ -66,13 +66,13 @@ object DefaultFacade : Facade {
             return false
         }
 
-        log("Put :: Key :: $key :: Has value = ${value != null}")
+        log("Put :: Key = $key :: Has value = ${value != null}")
 
         if (value == null) {
 
             log(
 
-                "Put :: Key :: $key :: Null value :: Any existing value will " +
+                "Put :: Key = $key :: Null value :: Any existing value will " +
                         "be deleted with the given key"
             )
 
@@ -81,11 +81,11 @@ object DefaultFacade : Facade {
 
         val plainText = converter?.toString(value)
 
-        log("Put :: Key :: $key :: Converted = '$plainText'")
+        log("Put :: Key = $key :: Converted = '$plainText'")
 
         if (plainText == null) {
 
-            err("Put :: Key :: $key :: Converter failed")
+            err("Put :: Key = $key :: Converter failed")
 
             return false
         }
@@ -96,42 +96,42 @@ object DefaultFacade : Facade {
 
             cipherText = encryption?.encrypt(key, plainText)
 
-            log("Put :: Key :: $key :: Encrypted = $cipherText")
+            log("Put :: Key = $key :: Encrypted :: '$plainText' into '$cipherText'")
 
         } catch (e: Exception) {
 
-            err("Put :: Key :: $key :: Encrypt failed :: Error = '${e.message}'")
+            err("Put :: Key = $key :: Encrypt failed :: Error = '${e.message}'")
 
             Console.error(e)
         }
 
         if (cipherText == null) {
 
-            err("Put :: Key :: $key :: Encryption failed")
+            err("Put :: Key = $key :: Encryption failed")
 
             return false
         }
 
         val serializedText = serializer?.serialize(cipherText, value)
 
-        log("Put :: Key :: $key :: Serialized = '$serializedText'")
+        log("Put :: Key = $key :: Serialized = '$serializedText'")
 
         if (serializedText == null) {
 
-            err("Put :: Key :: $key :: Serialization failed")
+            err("Put :: Key = $key :: Serialization failed")
 
             return false
         }
 
         return if (storage?.put(key, serializedText) == true) {
 
-            log("Put :: Key :: $key :: Stored successfully")
+            log("Put :: Key = $key :: Stored successfully")
 
             true
 
         } else {
 
-            err("Put :: Key :: $key :: Store operation failed")
+            err("Put :: Key = $key :: Store operation failed")
 
             false
         }
@@ -154,11 +154,11 @@ object DefaultFacade : Facade {
 
             result = converter?.fromString(plainText, dataInfo)
 
-            log(" Get :: Key :: $key :: Converted: $result")
+            log(" Get :: Key = $key :: Converted: $result")
 
         } catch (e: Exception) {
 
-            err(" Get :: Key :: $key :: Converter failed: ${e.message}")
+            err(" Get :: Key = $key :: Converter failed: ${e.message}")
 
             Console.error(e)
         }
@@ -194,7 +194,7 @@ object DefaultFacade : Facade {
 
             result = converter?.fromString(plainText, type)
 
-            log("$tag Key :: $key :: Converted: $result")
+            log("$tag Key = $key :: Converted: $result")
 
         } catch (e: Exception) {
 
@@ -224,7 +224,7 @@ object DefaultFacade : Facade {
 
             result = converter?.fromString(plainText, clazz)
 
-            log("$tag Key :: $key :: Converted: $result")
+            log("$tag Key = $key :: Converted: $result")
 
         } catch (e: Exception) {
 
@@ -275,7 +275,7 @@ object DefaultFacade : Facade {
 
         val tag = " Get :: Data info ::"
 
-        log("$tag Key :: $key")
+        log("$tag Key = $key")
 
         // 1. Get serialized text from the storage
         val serializedText: String?
@@ -297,12 +297,12 @@ object DefaultFacade : Facade {
 
         if (empty) {
 
-            log("$tag Key :: $key :: Nothing fetched from the storage for Key :: $key")
+            log("$tag Key = $key :: Nothing fetched from the storage for Key = $key")
 
             return null
         }
 
-        log("$tag Key :: $key :: Fetched from storage for Key :: $key")
+        log("$tag Key = $key :: Fetched from storage for Key = $key")
 
         // 2. Deserialize
         return serializer?.deserialize(serializedText)
@@ -317,32 +317,33 @@ object DefaultFacade : Facade {
 
         if (dataInfo == null) {
 
-            log("$tag Key :: $key :: empty info data for Key :: $key")
+            log("$tag Key = $key :: empty info data for Key = $key")
 
             return null
         }
 
-        log("$tag Key :: $key :: Deserialized")
+        log("$tag Key = $key :: Deserialized = '$dataInfo'")
 
         // 3. Decrypt
         var plainText: String? = null
 
         try {
 
-            plainText = encryption?.decrypt(key, dataInfo.cipherText)
+            val cText = dataInfo.cipherText
+            plainText = encryption?.decrypt(key, cText)
 
-            log("$tag Key :: $key :: Decrypted = '$plainText'")
+            log("$tag Key = $key :: Decrypted :: '$plainText' from '$cText'")
 
         } catch (e: Exception) {
 
-            err("$tag Key :: $key :: Decrypt failed: ${e.message}")
+            err("$tag Key = $key :: Decrypt failed: ${e.message}")
 
             Console.error(e)
         }
 
         if (plainText == null) {
 
-            err("$tag Key :: $key :: Decrypt failed")
+            err("$tag Key = $key :: Decrypt failed")
         }
 
         return plainText
