@@ -18,6 +18,8 @@ class ConcealEncryption constructor(
 
 ) : Encryption {
 
+    private val tag = "Encryption :: Conceal ::"
+
     constructor(context: Context, salter: Salter) :
             this(SharedPrefsBackedKeyChain(context, CryptoConfig.KEY_256), salter)
 
@@ -53,7 +55,7 @@ class ConcealEncryption constructor(
         val entity = Entity.create(getKey(key))
         val decrypted = crypto.decrypt(value, entity)
 
-        Console.log("Decrypted: ${decrypted.isNotEmpty()}")
+        Console.log("$tag Decrypted = '$decrypted'")
 
         return String(decrypted)
     }
