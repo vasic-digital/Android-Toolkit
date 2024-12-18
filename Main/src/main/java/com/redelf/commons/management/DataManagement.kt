@@ -77,116 +77,6 @@ abstract class DataManagement<T> :
         }
     }
 
-    class DataTransaction<T>(
-
-        val name: String,
-        private val parent: DataManagement<T>,
-        private val operation: TransactionOperation? = null
-
-    ) : Transaction {
-
-        companion object {
-
-            /*
-                TODO: Refactor - Move away from the static context access
-            */
-            val DEBUG = AtomicBoolean()
-        }
-
-        private val tag = "Transaction ::"
-        private var session: UUID? = parent.session.takeIdentifier()
-        private val canLog = DataManagement.DEBUG.get() && DEBUG.get()
-
-        init {
-
-            if (canLog) Console.log(
-
-                "$tag Session: $session :: INIT :: $name :: " +
-                    "With operation = ${operation != null}"
-            )
-
-            if (operation == null) {
-
-                start()
-            }
-        }
-
-        override fun start(): Boolean {
-
-            session = parent.session.takeIdentifier()
-
-            if (canLog) Console.log("$tag Session: $session :: START :: $name")
-
-            return true
-        }
-
-        override fun perform(): Boolean {
-
-            if (canLog) Console.log("$tag Session: $session :: PERFORM :: $name")
-
-            operation?.let {
-
-                val result =  parent.session.execute(operation)
-
-                if (result) {
-
-                    if (canLog) Console.log("$tag Session: $session :: PERFORMED :: $name")
-
-                } else {
-
-                    Console.error("$tag Session: $session :: FAILED :: $name")
-                }
-
-                return result
-            }
-
-            if (canLog) Console.log("$tag Session: $session :: PERFORMED :: $name")
-
-            return true
-        }
-
-        override fun end(): Boolean {
-
-            if (canLog) Console.log("$tag Session: $session :: ENDING :: $name")
-
-            if (session != parent.session.takeIdentifier()) {
-
-                if (canLog) Console.warning("$tag Session: $session :: SKIPPED :: $name")
-
-                return false
-            }
-
-            var result = false
-
-            try {
-
-                val data = parent.obtain()
-
-                data?.let {
-
-                    parent.pushData(it)
-
-                    result = true
-
-                    if (canLog) Console.log("$tag Session: $session :: ENDED :: $name")
-                }
-
-            } catch (e: IllegalStateException) {
-
-                Console.error(e)
-            }
-
-            if (!result) {
-
-                if (canLog) Console.log("$tag Session: $session :: ENDING :: Failed: $name")
-            }
-
-            return result
-        }
-
-        fun getSession() = parent.session.takeName()
-    }
-
     protected abstract val storageKey: String
 
     protected open val typed: Typed<T>? = null
@@ -198,17 +88,12 @@ abstract class DataManagement<T> :
     private var enabled = AtomicBoolean(true)
     private var session = Session(name = javaClass.simpleName)
 
-    private val initCallbacks =
-        Callbacks<LifecycleCallback<EncryptedPersistence>>(initCallbacksTag())
-
     protected abstract fun getLogTag(): String
 
     /*
         TODO: Cluster data object into smaller chunks so serialization and deserialization is improved
     */
     protected open fun createDataObject(): T? = null
-
-    protected open fun postInitialize(ctx: Context) = Unit
 
     open fun canLog() = DEBUG.get()
 
@@ -232,6 +117,11 @@ abstract class DataManagement<T> :
     }
 
     override fun execute(what: DataTransaction<T>): Boolean {
+
+        if (!isEnabled()) {
+
+            return true
+        }
 
         val transaction = what.name
         val session = what.getSession()
@@ -269,6 +159,11 @@ abstract class DataManagement<T> :
 
     fun transaction(name: String, action: Obtain<Boolean>) {
 
+        if (!isEnabled()) {
+
+            return
+        }
+
         execute(
 
             DataTransaction(
@@ -288,6 +183,11 @@ abstract class DataManagement<T> :
 
     override fun lock() {
 
+        if (!isEnabled()) {
+            
+            return
+        }
+
         Console.log("${getLogTag()} Lock")
 
         abort()
@@ -296,6 +196,11 @@ abstract class DataManagement<T> :
     }
 
     override fun unlock() {
+
+        if (!isEnabled()) {
+
+            return
+        }
 
         Console.log("${getLogTag()} :: Unlock")
 
@@ -311,6 +216,11 @@ abstract class DataManagement<T> :
 
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(): T? {
+
+        if (!isEnabled()) {
+
+            return null
+        }
 
         val clazz = typed?.getClazz()
         val tag = "${getLogTag()} OBTAIN :: T = '${clazz?.simpleName}' ::"
@@ -400,6 +310,11 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     fun takeStorage(): EncryptedPersistence? {
 
+        if (!isEnabled()) {
+
+            return null
+        }
+
         if (isLocked()) {
 
             return null
@@ -411,6 +326,11 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     open fun pushData(data: T) {
 
+        if (!isEnabled()) {
+
+            return
+        }
+
         if (DEBUG.get()) Console.log("${getLogTag()} Push data :: START")
 
         doPushData(data)
@@ -418,6 +338,11 @@ abstract class DataManagement<T> :
 
     @Throws(IllegalStateException::class)
     protected fun doPushData(data: T) {
+
+        if (!isEnabled()) {
+            
+            return
+        }
 
         if (isLocked()) {
 
@@ -477,6 +402,11 @@ abstract class DataManagement<T> :
     }
 
     override fun reset(): Boolean {
+
+        if (!isEnabled()) {
+            
+            return true
+        }
 
         val tag = "${getLogTag()} :: Reset ::"
 
@@ -560,13 +490,133 @@ abstract class DataManagement<T> :
 
     protected fun eraseData() {
 
+        if (!isEnabled()) {
+
+            return
+        }
+
         overwriteData()
     }
 
     protected fun overwriteData(data: T? = null) {
 
+        if (!isEnabled()) {
+
+            return
+        }
+
         this.data = data
     }
 
     private fun initCallbacksTag() = "${getLogTag()} Data management initialization"
+
+    class DataTransaction<T>(
+
+        val name: String,
+        private val parent: DataManagement<T>,
+        private val operation: TransactionOperation? = null
+
+    ) : Transaction {
+
+        companion object {
+
+            /*
+                TODO: Refactor - Move away from the static context access
+            */
+            val DEBUG = AtomicBoolean()
+        }
+
+        private val tag = "Transaction ::"
+        private var session: UUID? = parent.session.takeIdentifier()
+        private val canLog = DataManagement.DEBUG.get() && DEBUG.get()
+
+        init {
+
+            if (canLog) Console.log(
+
+                "$tag Session: $session :: INIT :: $name :: " +
+                        "With operation = ${operation != null}"
+            )
+
+            if (operation == null) {
+
+                start()
+            }
+        }
+
+        override fun start(): Boolean {
+
+            session = parent.session.takeIdentifier()
+
+            if (canLog) Console.log("$tag Session: $session :: START :: $name")
+
+            return true
+        }
+
+        override fun perform(): Boolean {
+
+            if (canLog) Console.log("$tag Session: $session :: PERFORM :: $name")
+
+            operation?.let {
+
+                val result =  parent.session.execute(operation)
+
+                if (result) {
+
+                    if (canLog) Console.log("$tag Session: $session :: PERFORMED :: $name")
+
+                } else {
+
+                    Console.error("$tag Session: $session :: FAILED :: $name")
+                }
+
+                return result
+            }
+
+            if (canLog) Console.log("$tag Session: $session :: PERFORMED :: $name")
+
+            return true
+        }
+
+        override fun end(): Boolean {
+
+            if (canLog) Console.log("$tag Session: $session :: ENDING :: $name")
+
+            if (session != parent.session.takeIdentifier()) {
+
+                if (canLog) Console.warning("$tag Session: $session :: SKIPPED :: $name")
+
+                return false
+            }
+
+            var result = false
+
+            try {
+
+                val data = parent.obtain()
+
+                data?.let {
+
+                    parent.pushData(it)
+
+                    result = true
+
+                    if (canLog) Console.log("$tag Session: $session :: ENDED :: $name")
+                }
+
+            } catch (e: IllegalStateException) {
+
+                Console.error(e)
+            }
+
+            if (!result) {
+
+                if (canLog) Console.log("$tag Session: $session :: ENDING :: Failed: $name")
+            }
+
+            return result
+        }
+
+        fun getSession() = parent.session.takeName()
+    }
 }

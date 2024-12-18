@@ -76,17 +76,13 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication>
-
-{
+    ContextAvailability<BaseApplication> {
 
     companion object :
 
         Intentional,
         ApplicationInfo,
-        ContextAvailability<BaseApplication>
-
-    {
+        ContextAvailability<BaseApplication> {
 
         val DEBUG = AtomicBoolean()
         val STRICT_MODE_DISABLED = AtomicBoolean()
@@ -241,6 +237,8 @@ abstract class BaseApplication :
     protected open fun onDoCreate() = Unit
 
     protected open fun populateManagers() = listOf<List<DataManagement<*>>>()
+
+    protected open fun getDisabledManagers() = listOf<List<DataManagement<*>>>()
 
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
 
@@ -729,16 +727,25 @@ abstract class BaseApplication :
 
         managers.forEach {
 
-            val result = ManagersInitializer().initializeManagers(
+            val disabled = getDisabledManagers()
 
-                managers = it,
-                context = this,
-                defaultResources = defaultManagerResources
-            )
+            if (disabled.contains(it)) {
 
-            if (!result) {
+                Console.debug("${it::class.simpleName} is disabled")
 
-                success = false
+            } else {
+
+                val result = ManagersInitializer().initializeManagers(
+
+                    managers = it,
+                    context = this,
+                    defaultResources = defaultManagerResources
+                )
+
+                if (!result) {
+
+                    success = false
+                }
             }
         }
 
@@ -1234,7 +1241,7 @@ abstract class BaseApplication :
 
     protected open fun getUpdatesCodes() = setOf<Long>()
 
-    override fun isUpdating() : Boolean {
+    override fun isUpdating(): Boolean {
 
         val updating = updating.get()
 

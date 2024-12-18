@@ -28,6 +28,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
         override fun onReceive(context: Context?, intent: Intent?) {
 
+            if (!isEnabled()) {
+
+                return
+            }
+
             if (!savingOnTermination) {
 
                 return
@@ -46,6 +51,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
     private val receiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context?, intent: Intent?) {
+
+            if (!isEnabled()) {
+
+                return
+            }
 
             intent?.let {
 
@@ -88,6 +98,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
         override fun onReceive(context: Context?, intent: Intent?) {
 
+            if (!isEnabled()) {
+
+                return
+            }
+
             context?.let {
 
                 val conn = Connectivity()
@@ -122,6 +137,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
     }
 
     override fun register(subscriber: Context) {
+
+        if (!isEnabled()) {
+
+            return
+        }
 
         if (registered.get()) {
 
@@ -170,6 +190,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
     override fun unregister(subscriber: Context) {
 
+        if (!isEnabled()) {
+
+            return
+        }
+
         if (registered.get()) {
 
             try {
@@ -208,6 +233,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
     @Throws(IllegalStateException::class)
     override fun pushData(data: T) {
 
+        if (!isEnabled()) {
+
+            return
+        }
+
         if (lazySaving) {
 
             saved.set(false)
@@ -230,14 +260,24 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
         }
     }
 
-    protected open fun isLazyReady() = true
+    protected open fun isLazyReady() = isEnabled()
 
     private fun onForeground() {
+
+        if (!isEnabled()) {
+
+            return
+        }
 
         if (DEBUG.get()) Console.log("Application is in foreground")
     }
 
     protected fun forceSave() {
+
+        if (!isEnabled()) {
+
+            return
+        }
 
         onBackground("forceSave")
     }
@@ -246,6 +286,11 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
     * FIXME: The method is fired even we are surfing through the screens
     */
     private fun onBackground(from: String) {
+
+        if (!isEnabled()) {
+
+            return
+        }
 
         val tag = "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND ::"
 
