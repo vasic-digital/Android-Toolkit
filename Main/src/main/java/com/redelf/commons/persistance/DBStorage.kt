@@ -10,10 +10,9 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
-import com.redelf.commons.extensions.randomInteger
-import com.redelf.commons.extensions.randomString
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Encryption
@@ -196,7 +195,8 @@ object DBStorage : Storage<String> {
 
                     override fun getSalt(): String {
 
-                        return DATABASE_NAME.reversed().hashCode().toString().reversed()
+                        return DATABASE_NAME.reversed()
+                            .hashCode().toString().reversed().hashCodeString()
                     }
                 }
             )

@@ -1,38 +1,35 @@
 package com.redelf.commons.persistance
 
-import android.content.Context
-import com.facebook.android.crypto.keychain.AndroidConceal
-import com.facebook.android.crypto.keychain.SharedPrefsBackedKeyChain
-import com.facebook.crypto.Crypto
-import com.facebook.crypto.CryptoConfig
-import com.facebook.crypto.Entity
-import com.facebook.crypto.keychain.KeyChain
-import com.redelf.commons.logging.Console
+import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 
-class ReverseEncryption constructor(salter: Salter) : Encryption<String> {
+class ReverseEncryption constructor(
+
+    salter: Salter
+
+) : Encryption<String> {
 
     private val salt = salter.getSalt()
-    private val tag = "Encryption :: Reverse ::"
+    private val separator = salt.reversed().hashCodeString().toString().reversed().substring(0, 2)
 
     override fun init() = true
 
     @Throws(Exception::class)
     override fun encrypt(key: String, value: String): String? {
 
-        return ("${key.hashCode()}###${salt}###${value.reversed()}" +
-                "###${salt}###${key.hashCode()}")
+        return ("${key.hashCodeString()}${separator}${salt}${separator}${value.reversed()}" +
+                "${separator}${salt}${separator}${key.hashCodeString()}")
     }
 
     @Throws(Exception::class)
     override fun decrypt(key: String, value: String): String {
 
         return value
-            .replace("${key.hashCode()}###", "")
-            .replace("${salt}###", "")
-            .replace("###${salt}", "")
-            .replace("###${key.hashCode()}", "")
+            .replace("${key.hashCodeString()}${separator}", "")
+            .replace("${salt}${separator}", "")
+            .replace("${separator}${salt}", "")
+            .replace("${separator}${key.hashCodeString()}", "")
             .reversed()
     }
 }

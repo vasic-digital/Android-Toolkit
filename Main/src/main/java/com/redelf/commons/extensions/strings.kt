@@ -15,6 +15,7 @@ import org.apache.commons.compress.compressors.lz4.BlockLZ4CompressorOutputStrea
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.lang.StringBuilder
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
@@ -422,4 +423,26 @@ fun String.forClassName(): String {
     return this.replace("\"", "").replace("\'", "").trim()
 }
 
+/*
+*   TODO: Map to be dynamic for the obfuscation purposes
+*/
+private val digitToLetterMap = mapOf(
 
+    0 to 'b', 1 to 'a', 2 to 'd', 3 to 'c', 4 to 'e',
+    5 to 'j', 6 to 'g', 7 to 'i', 8 to 'h', 9 to 'f'
+)
+
+fun String.hashCodeString() : String {
+
+    val b = StringBuilder()
+
+    this.hashCode().toString().forEach { letter ->
+
+        val digit = letter.code
+        val letter = digitToLetterMap[digit]
+
+        b.append(letter)
+    }
+
+    return b.toString()
+}

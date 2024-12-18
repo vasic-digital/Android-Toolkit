@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.destruction.erasing.Erasing
+import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
@@ -82,7 +83,7 @@ constructor(
 
             val salter = object : Salter {
 
-                override fun getSalt() = keySalt
+                override fun getSalt() = keySalt.hashCodeString()
             }
 
             dataDelegate = PersistenceBuilder.instantiate(

@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.TextUtils
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Converter
@@ -12,7 +13,6 @@ import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.base.Serializer
 import com.redelf.commons.persistance.base.Storage
-import java.util.concurrent.CopyOnWriteArrayList
 
 class PersistenceBuilder(
 
@@ -22,7 +22,7 @@ class PersistenceBuilder(
 
     private val  salter: Salter = object : Salter {
 
-        override fun getSalt() = storageTag
+        override fun getSalt() = storageTag.hashCodeString().reversed()
     },
 
     private var encrypt: Boolean = false

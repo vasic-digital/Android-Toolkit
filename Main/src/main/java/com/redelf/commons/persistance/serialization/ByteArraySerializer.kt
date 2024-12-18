@@ -2,6 +2,7 @@ package com.redelf.commons.persistance.serialization
 
 import android.content.Context
 import android.util.Base64
+import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.persistance.ConcealEncryption
 import com.redelf.commons.persistance.NoEncryption
@@ -28,7 +29,7 @@ class ByteArraySerializer(
 
     salter: Salter = object : Salter {
 
-        override fun getSalt() = key.reversed().hashCode().toString()
+        override fun getSalt() = key.hashCodeString().reversed()
     }
 
 ) : Serializer {
