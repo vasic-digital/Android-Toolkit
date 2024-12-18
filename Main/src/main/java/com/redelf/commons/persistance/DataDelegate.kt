@@ -8,6 +8,7 @@ import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
@@ -20,6 +21,9 @@ import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -57,6 +61,8 @@ class DataDelegate private constructor(private val facade: Facade) :
         }
     }
 
+    private val putActions = CopyOnWriteArraySet<String>()
+
     @Synchronized
     override fun shutdown(): Boolean {
 
@@ -83,637 +89,662 @@ class DataDelegate private constructor(private val facade: Facade) :
             return false
         }
 
-        if (value is Partitioning<*> && value.isPartitioningEnabled()) {
+        val tag = "Partitioning :: Put :: Key = $key ::"
 
-            val tag = "Partitioning :: Put ::"
+        if (putActions.contains(key)) {
 
-            val type = value.getClazz()
-            val partitionsCount = value.getPartitionCount()
+            Console.warning("$tag Already writing")
+        }
 
-            if (DEBUG.get()) Console.log(
+        yieldWhile {
 
-                "$tag START, Partitions count = $partitionsCount, T = '${type.simpleName}'"
-            )
+            putActions.contains(key)
+        }
 
-            if (partitionsCount > 0) {
+        putActions.add(key)
 
-                val marked = facade.put(keyPartitions(key), partitionsCount) &&
-                        facade.put(keyType(key), type.canonicalName?.forClassName())
+        val obtain = object : Obtain<Boolean> {
 
-                if (!marked) {
+            override fun obtain(): Boolean {
 
-                    Console.error("$tag ERROR: Could not mark partitioning data")
+                if (value is Partitioning<*> && value.isPartitioningEnabled()) {
 
-                    return false
-                }
+                    val type = value.getClazz()
+                    val partitionsCount = value.getPartitionCount()
 
-                val success = AtomicBoolean(true)
-                val parallelized = value.isPartitioningParallelized()
-                val latchCount = if (parallelized) partitionsCount else 0
-                val partitioningLatch = CountDownLatch(latchCount)
+                    if (DEBUG.get()) Console.log(
 
-                for (i in 0..<partitionsCount) {
+                        "$tag START :: Partitions count = $partitionsCount, " +
+                                "Type = '${type.canonicalName?.forClassName()}'"
+                    )
 
-                    val partition = value.getPartitionData(i)
+                    if (partitionsCount > 0) {
 
-                    @Synchronized
-                    fun doPartition(
+                        val marked = facade.put(keyPartitions(key), partitionsCount) &&
+                                facade.put(keyType(key), type.canonicalName?.forClassName())
 
-                        async: Boolean,
-                        partition: Any?,
-                        callback: OnObtain<Boolean>? = null
+                        if (!marked) {
 
-                    ) : Boolean {
+                            Console.error("$tag ERROR: Could not mark partitioning data")
 
-                        try {
+                            return false
+                        }
 
-                            val dTag = "$tag DO: Partition no. $i ::"
+                        val success = AtomicBoolean(true)
+                        val parallelized = value.isPartitioningParallelized()
+                        val latchCount = if (parallelized) partitionsCount else 0
+                        val partitioningLatch = CountDownLatch(latchCount)
 
-                            if (DEBUG.get()) {
+                        for (i in 0..<partitionsCount) {
 
-                                Console.log("$dTag START")
-                            }
+                            val partition = value.getPartitionData(i)
 
-                            val action = object : Obtain<Boolean> {
+                            @Synchronized
+                            fun doPartition(
 
-                                @Synchronized
-                                override fun obtain(): Boolean {
+                                async: Boolean,
+                                partition: Any?,
+                                callback: OnObtain<Boolean>? = null
 
-                                    val oTag = "$dTag Obtain async ::"
+                            ) : Boolean {
+
+                                try {
+
+                                    val dTag = "$tag DO: Partition no. $i ::"
 
                                     if (DEBUG.get()) {
 
-                                        Console.log("$oTag START")
+                                        Console.log("$dTag START")
                                     }
 
-                                    try {
+                                    val action = object : Obtain<Boolean> {
 
-                                        if (partition == null) {
+                                        @Synchronized
+                                        override fun obtain(): Boolean {
 
-                                            callback?.onCompleted(true)
+                                            val oTag = "$dTag Obtain async ::"
 
                                             if (DEBUG.get()) {
 
-                                                Console.log("$oTag END :: Null partition")
+                                                Console.log("$oTag START")
                                             }
 
-                                            return true
-                                        }
+                                            try {
 
-                                        partition.let {
+                                                if (partition == null) {
 
-                                            @Synchronized
-                                            fun simpleWrite(): Boolean {
-
-                                                val written = facade.put(keyPartition(key, i), it)
-
-                                                if (written) {
+                                                    callback?.onCompleted(true)
 
                                                     if (DEBUG.get()) {
 
-                                                        Console.log(
-
-                                                            "$oTag WRITTEN: Partition no. $i"
-                                                        )
-                                                    }
-
-                                                } else {
-
-                                                    val msg = "FAILURE: Partition no. $i not put"
-
-                                                    val e = IOException(msg)
-
-                                                    Console.error("$oTag ERROR: ${e.message}")
-                                                    recordException(e)
-                                                }
-
-                                                if (DEBUG.get()) {
-
-                                                    Console.log("$oTag END :: Written")
-                                                }
-
-                                                return written
-                                            }
-
-                                            @Synchronized
-                                            fun rowWrite(
-
-                                                partition: Int,
-                                                row: Int,
-                                                value: Any?
-
-                                            ): Boolean {
-
-                                                if (value == null) {
-
-                                                    if (DEBUG.get()) {
-
-                                                        Console.log("$oTag END :: Null value")
+                                                        Console.log("$oTag END :: Null partition")
                                                     }
 
                                                     return true
                                                 }
 
-                                                val keyRow = keyRow(key, partition, row)
-                                                val keyRowType = keyRowType(key, partition, row)
+                                                partition.let {
 
-                                                var savedFqName = false
-                                                val savedValue = facade.put(keyRow, value)
-                                                val fqName = value::class.java.canonicalName?.forClassName()
+                                                    @Synchronized
+                                                    fun simpleWrite(): Boolean {
 
-                                                if (isNotEmpty(fqName)) {
+                                                        val written = facade.put(keyPartition(key, i), it)
 
-                                                    savedFqName = facade.put(keyRowType, fqName)
-
-                                                } else {
-
-                                                    val msg = "Failed to obtain canonical " +
-                                                            "name for the '$value', Log no. = 1"
-
-                                                    val e = IOException(msg)
-
-                                                    Console.error("$oTag ERROR: ${e.message}")
-                                                    recordException(e)
-                                                }
-
-                                                val written = savedValue && savedFqName
-
-                                                if (written) {
-
-                                                    if (DEBUG.get()) Console.log(
-
-                                                        "$oTag WRITTEN: Partition no. $partition, " +
-                                                                "Row no. $row, Qualified name: $fqName"
-                                                    )
-
-                                                } else {
-
-                                                    val msg = "Partition no. $i failure write :: " +
-                                                            "Row no. = $row, " +
-                                                            "Qualified name = $fqName, " +
-                                                            "Saved value = $savedValue, " +
-                                                            "Saved Fq. name = $savedFqName, " +
-                                                            "Log no. = 1"
-
-                                                    val e = IOException(msg)
-
-                                                    Console.error("$oTag ERROR :: ${e.message}")
-                                                    recordException(e)
-                                                }
-
-                                                return written
-                                            }
-
-                                            @Synchronized
-                                            fun rowWrite(
-
-                                                partition: Int,
-                                                row: Int,
-                                                mapKey: Any?,
-                                                value: Any?,
-                                                mapKeyType: Class<*>?,
-                                                valueType: Class<*>?
-
-                                            ): Boolean {
-
-                                                if (mapKey == null) {
-
-                                                    if (DEBUG.get()) {
-
-                                                        Console.log("$oTag END :: Null map key")
-                                                    }
-
-                                                    return true
-                                                }
-
-                                                if (value == null) {
-
-                                                    if (DEBUG.get()) {
-
-                                                        Console.log("$oTag END :: Null value / 2")
-                                                    }
-
-                                                    return true
-                                                }
-
-                                                if (mapKeyType == null) {
-
-                                                    val msg = "FAILURE: Partition no. $i, " +
-                                                            "Row no. $row, No map key type provided"
-
-                                                    val e = IOException(msg)
-
-                                                    Console.error("$oTag ERROR: ${e.message}")
-                                                    recordException(e)
-
-                                                    return false
-                                                }
-
-                                                if (valueType == null) {
-
-                                                    val msg = "FAILURE: Partition no. $i, " +
-                                                            "Row no. $row, No value type provided"
-
-                                                    val e = IOException(msg)
-
-                                                    Console.error("$oTag ERROR: ${e.message}")
-                                                    recordException(e)
-
-                                                    return false
-                                                }
-
-                                                val keyRow = keyRow(key, partition, row)
-                                                val keyRowType = keyRowType(key, partition, row)
-
-                                                var mapKeyValue: Any = mapKey
-                                                var valueValue: Any = value
-
-                                                if (mapKey is Number) {
-
-                                                    mapKeyValue = mapKey.toDouble()
-                                                }
-
-                                                if (value is Number) {
-
-                                                    valueValue = value.toLong()
-                                                }
-
-                                                val rowValue = PairDataInfo(
-
-                                                    mapKeyValue,
-                                                    valueValue,
-                                                    mapKeyType.canonicalName?.forClassName(),
-                                                    valueType.canonicalName?.forClassName()
-                                                )
-
-                                                var savedFqName = false
-                                                val savedValue = facade.put(keyRow, rowValue)
-                                                val fqName = rowValue::class.java.canonicalName?.forClassName()
-
-                                                if (isNotEmpty(fqName)) {
-
-                                                    savedFqName = facade.put(keyRowType, fqName)
-
-                                                } else {
-
-                                                    val msg = "Failed to obtain canonical " +
-                                                            "name for the '$value', Log no. = 2"
-
-                                                    val e = IOException(msg)
-
-                                                    Console.error("$oTag ERROR: ${e.message}")
-                                                    recordException(e)
-                                                }
-
-                                                val written = savedValue && savedFqName
-
-                                                if (written) {
-
-                                                    if (DEBUG.get()) Console.log(
-
-                                                        "$oTag WRITTEN: Partition no. $partition, " +
-                                                                "Row no. $row, " +
-                                                                "Qualified name: $fqName, " +
-                                                                "Pair data info: $rowValue"
-                                                    )
-
-                                                    return true
-
-                                                } else {
-
-                                                    val msg = "Partition no. $i failure write :: " +
-                                                            "Row no. = $row, " +
-                                                            "Qualified name = $fqName, " +
-                                                            "Pair data info = $rowValue, " +
-                                                            "Saved value = $savedValue, " +
-                                                            "Saved Fq. name = $savedFqName, " +
-                                                            "Log no. = 2"
-
-                                                    val e = IOException(msg)
-
-                                                    Console.error("$oTag ERROR :: ${e.message}")
-                                                    recordException(e)
-                                                }
-
-                                                return false
-                                            }
-
-                                            val collection =
-                                                partition is Collection<*> || partition is Map<*, *>
-
-                                            if (collection) {
-
-                                                when (partition) {
-
-                                                    is List<*> -> {
-
-                                                        if (setRowsCount(key, i, partition.size)) {
-
-                                                            partition.forEachIndexed {
-
-                                                                    index, value ->
-
-                                                                rowWrite(i, index, value)
-                                                            }
-
-                                                        } else {
-
-                                                            val msg = "FAILURE: Writing rows count"
-                                                            Console.error("$oTag $msg")
-                                                            val e = IOException(msg)
-                                                            callback?.onFailure(e)
-
-                                                            return false
-                                                        }
-                                                    }
-
-                                                    is Map<*, *> -> {
-
-                                                        if (setRowsCount(key, i, partition.size)) {
-
-                                                            var index = 0
-
-                                                            partition.forEach { key, value ->
-
-                                                                key?.let { k ->
-                                                                    value?.let { v ->
-
-                                                                        rowWrite(
-
-                                                                            partition = i,
-                                                                            row = index,
-                                                                            mapKey = k,
-                                                                            value = v,
-                                                                            mapKeyType = k::class.java,
-                                                                            valueType = v::class.java
-                                                                        )
-                                                                    }
-                                                                }
-
-                                                                index++
-                                                            }
-
-                                                        } else {
-
-                                                            val msg = "FAILURE: Writing rows count"
-                                                            Console.error("$oTag $msg")
-                                                            val e = IOException(msg)
-                                                            callback?.onFailure(e)
-
-                                                            return false
-                                                        }
-                                                    }
-
-                                                    is Set<*> -> {
-
-                                                        if (setRowsCount(key, i, partition.size)) {
-
-                                                            partition.forEachIndexed {
-
-                                                                    index, value ->
-
-                                                                rowWrite(i, index, value)
-                                                            }
-
-                                                        } else {
-
-                                                            val msg = "FAILURE: Writing rows count"
-                                                            Console.error("$oTag $msg")
-                                                            val e = IOException(msg)
-                                                            callback?.onFailure(e)
-
-                                                            return false
-                                                        }
-                                                    }
-
-                                                    is Queue<*> -> {
-
-                                                        if (setRowsCount(key, i, partition.size)) {
-
-                                                            partition.forEachIndexed {
-
-                                                                    index, value ->
-
-                                                                rowWrite(i, index, value)
-                                                            }
-
-                                                        } else {
-
-                                                            val msg = "FAILURE: Writing rows count"
-                                                            Console.error("$oTag $msg")
-                                                            val e = IOException(msg)
-                                                            callback?.onFailure(e)
-
-                                                            return false
-                                                        }
-                                                    }
-
-                                                    else -> {
-
-                                                        if (simpleWrite()) {
+                                                        if (written) {
 
                                                             if (DEBUG.get()) {
 
                                                                 Console.log(
 
-                                                                    "$oTag WRITTEN: " +
-                                                                            "Partition no. " +
-                                                                            "$partition " +
-                                                                            "(simple write " +
-                                                                            "/ 2)"
+                                                                    "$oTag WRITTEN: Partition no. $i"
                                                                 )
                                                             }
 
                                                         } else {
 
+                                                            val msg = "FAILURE: Partition no. $i not put"
+
+                                                            val e = IOException(msg)
+
+                                                            Console.error("$oTag ERROR: ${e.message}")
+                                                            recordException(e)
+                                                        }
+
+                                                        if (DEBUG.get()) {
+
+                                                            Console.log("$oTag END :: Written")
+                                                        }
+
+                                                        return written
+                                                    }
+
+                                                    @Synchronized
+                                                    fun rowWrite(
+
+                                                        partition: Int,
+                                                        row: Int,
+                                                        value: Any?
+
+                                                    ): Boolean {
+
+                                                        if (value == null) {
+
+                                                            if (DEBUG.get()) {
+
+                                                                Console.log("$oTag END :: Null value")
+                                                            }
+
+                                                            return true
+                                                        }
+
+                                                        val keyRow = keyRow(key, partition, row)
+                                                        val keyRowType = keyRowType(key, partition, row)
+
+                                                        var savedFqName = false
+                                                        val savedValue = facade.put(keyRow, value)
+                                                        val fqName = value::class.java.canonicalName?.forClassName()
+
+                                                        if (isNotEmpty(fqName)) {
+
+                                                            savedFqName = facade.put(keyRowType, fqName)
+
+                                                        } else {
+
+                                                            val msg = "Failed to obtain canonical " +
+                                                                    "name for the '$value', Log no. = 1"
+
+                                                            val e = IOException(msg)
+
+                                                            Console.error("$oTag ERROR: ${e.message}")
+                                                            recordException(e)
+                                                        }
+
+                                                        val written = savedValue && savedFqName
+
+                                                        if (written) {
+
+                                                            if (DEBUG.get()) Console.log(
+
+                                                                "$oTag WRITTEN: Partition no. $partition, " +
+                                                                        "Row no. $row, Qualified name: $fqName"
+                                                            )
+
+                                                        } else {
+
+                                                            val msg = "Partition no. $i failure write :: " +
+                                                                    "Row no. = $row, " +
+                                                                    "Qualified name = $fqName, " +
+                                                                    "Saved value = $savedValue, " +
+                                                                    "Saved Fq. name = $savedFqName, " +
+                                                                    "Log no. = 1"
+
+                                                            val e = IOException(msg)
+
+                                                            Console.error("$oTag ERROR :: ${e.message}")
+                                                            recordException(e)
+                                                        }
+
+                                                        return written
+                                                    }
+
+                                                    @Synchronized
+                                                    fun rowWrite(
+
+                                                        partition: Int,
+                                                        row: Int,
+                                                        mapKey: Any?,
+                                                        value: Any?,
+                                                        mapKeyType: Class<*>?,
+                                                        valueType: Class<*>?
+
+                                                    ): Boolean {
+
+                                                        if (mapKey == null) {
+
+                                                            if (DEBUG.get()) {
+
+                                                                Console.log("$oTag END :: Null map key")
+                                                            }
+
+                                                            return true
+                                                        }
+
+                                                        if (value == null) {
+
+                                                            if (DEBUG.get()) {
+
+                                                                Console.log("$oTag END :: Null value / 2")
+                                                            }
+
+                                                            return true
+                                                        }
+
+                                                        if (mapKeyType == null) {
+
+                                                            val msg = "FAILURE: Partition no. $i, " +
+                                                                    "Row no. $row, No map key type provided"
+
+                                                            val e = IOException(msg)
+
+                                                            Console.error("$oTag ERROR: ${e.message}")
+                                                            recordException(e)
+
+                                                            return false
+                                                        }
+
+                                                        if (valueType == null) {
+
+                                                            val msg = "FAILURE: Partition no. $i, " +
+                                                                    "Row no. $row, No value type provided"
+
+                                                            val e = IOException(msg)
+
+                                                            Console.error("$oTag ERROR: ${e.message}")
+                                                            recordException(e)
+
+                                                            return false
+                                                        }
+
+                                                        val keyRow = keyRow(key, partition, row)
+                                                        val keyRowType = keyRowType(key, partition, row)
+
+                                                        var mapKeyValue: Any = mapKey
+                                                        var valueValue: Any = value
+
+                                                        if (mapKey is Number) {
+
+                                                            mapKeyValue = mapKey.toDouble()
+                                                        }
+
+                                                        if (value is Number) {
+
+                                                            valueValue = value.toLong()
+                                                        }
+
+                                                        val rowValue = PairDataInfo(
+
+                                                            mapKeyValue,
+                                                            valueValue,
+                                                            mapKeyType.canonicalName?.forClassName(),
+                                                            valueType.canonicalName?.forClassName()
+                                                        )
+
+                                                        var savedFqName = false
+                                                        val savedValue = facade.put(keyRow, rowValue)
+                                                        val fqName = rowValue::class.java.canonicalName?.forClassName()
+
+                                                        if (isNotEmpty(fqName)) {
+
+                                                            savedFqName = facade.put(keyRowType, fqName)
+
+                                                        } else {
+
+                                                            val msg = "Failed to obtain canonical " +
+                                                                    "name for the '$value', Log no. = 2"
+
+                                                            val e = IOException(msg)
+
+                                                            Console.error("$oTag ERROR: ${e.message}")
+                                                            recordException(e)
+                                                        }
+
+                                                        val written = savedValue && savedFqName
+
+                                                        if (written) {
+
+                                                            if (DEBUG.get()) Console.log(
+
+                                                                "$oTag WRITTEN: Partition no. $partition, " +
+                                                                        "Row no. $row, " +
+                                                                        "Qualified name: $fqName, " +
+                                                                        "Pair data info: $rowValue"
+                                                            )
+
+                                                            return true
+
+                                                        } else {
+
+                                                            val msg = "Partition no. $i failure write :: " +
+                                                                    "Row no. = $row, " +
+                                                                    "Qualified name = $fqName, " +
+                                                                    "Pair data info = $rowValue, " +
+                                                                    "Saved value = $savedValue, " +
+                                                                    "Saved Fq. name = $savedFqName, " +
+                                                                    "Log no. = 2"
+
+                                                            val e = IOException(msg)
+
+                                                            Console.error("$oTag ERROR :: ${e.message}")
+                                                            recordException(e)
+                                                        }
+
+                                                        return false
+                                                    }
+
+                                                    val collection =
+                                                        partition is Collection<*> || partition is Map<*, *>
+
+                                                    if (collection) {
+
+                                                        when (partition) {
+
+                                                            is List<*> -> {
+
+                                                                if (setRowsCount(key, i, partition.size)) {
+
+                                                                    partition.forEachIndexed {
+
+                                                                            index, value ->
+
+                                                                        rowWrite(i, index, value)
+                                                                    }
+
+                                                                } else {
+
+                                                                    val msg = "FAILURE: Writing rows count"
+                                                                    Console.error("$oTag $msg")
+                                                                    val e = IOException(msg)
+                                                                    callback?.onFailure(e)
+
+                                                                    return false
+                                                                }
+                                                            }
+
+                                                            is Map<*, *> -> {
+
+                                                                if (setRowsCount(key, i, partition.size)) {
+
+                                                                    var index = 0
+
+                                                                    partition.forEach { key, value ->
+
+                                                                        key?.let { k ->
+                                                                            value?.let { v ->
+
+                                                                                rowWrite(
+
+                                                                                    partition = i,
+                                                                                    row = index,
+                                                                                    mapKey = k,
+                                                                                    value = v,
+                                                                                    mapKeyType = k::class.java,
+                                                                                    valueType = v::class.java
+                                                                                )
+                                                                            }
+                                                                        }
+
+                                                                        index++
+                                                                    }
+
+                                                                } else {
+
+                                                                    val msg = "FAILURE: Writing rows count"
+                                                                    Console.error("$oTag $msg")
+                                                                    val e = IOException(msg)
+                                                                    callback?.onFailure(e)
+
+                                                                    return false
+                                                                }
+                                                            }
+
+                                                            is Set<*> -> {
+
+                                                                if (setRowsCount(key, i, partition.size)) {
+
+                                                                    partition.forEachIndexed {
+
+                                                                            index, value ->
+
+                                                                        rowWrite(i, index, value)
+                                                                    }
+
+                                                                } else {
+
+                                                                    val msg = "FAILURE: Writing rows count"
+                                                                    Console.error("$oTag $msg")
+                                                                    val e = IOException(msg)
+                                                                    callback?.onFailure(e)
+
+                                                                    return false
+                                                                }
+                                                            }
+
+                                                            is Queue<*> -> {
+
+                                                                if (setRowsCount(key, i, partition.size)) {
+
+                                                                    partition.forEachIndexed {
+
+                                                                            index, value ->
+
+                                                                        rowWrite(i, index, value)
+                                                                    }
+
+                                                                } else {
+
+                                                                    val msg = "FAILURE: Writing rows count"
+                                                                    Console.error("$oTag $msg")
+                                                                    val e = IOException(msg)
+                                                                    callback?.onFailure(e)
+
+                                                                    return false
+                                                                }
+                                                            }
+
+                                                            else -> {
+
+                                                                if (simpleWrite()) {
+
+                                                                    if (DEBUG.get()) {
+
+                                                                        Console.log(
+
+                                                                            "$oTag WRITTEN: " +
+                                                                                    "Partition no. " +
+                                                                                    "$partition " +
+                                                                                    "(simple write " +
+                                                                                    "/ 2)"
+                                                                        )
+                                                                    }
+
+                                                                } else {
+
+                                                                    val msg = "FAILURE: Simple write failed"
+                                                                    Console.error("$oTag $msg")
+                                                                    val e = IOException(msg)
+                                                                    callback?.onFailure(e)
+
+                                                                    return false
+                                                                }
+                                                            }
+                                                        }
+
+                                                    } else {
+
+                                                        if (simpleWrite()) {
+
+                                                            if (DEBUG.get()) {
+
+                                                                Console.log("$oTag WRITTEN: Partition no. " +
+                                                                        "$partition (simple write / 1)")
+                                                            }
+
+                                                        } else {
+
                                                             val msg = "FAILURE: Simple write failed"
-                                                            Console.error("$oTag $msg")
+                                                            Console.error("$tag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
+
+                                                            Console.error("$oTag END :: Failed simple write / 2")
 
                                                             return false
                                                         }
                                                     }
                                                 }
 
-                                            } else {
+                                                if (DEBUG.get()) {
 
-                                                if (simpleWrite()) {
+                                                    Console.log("$oTag END")
+                                                }
 
-                                                    if (DEBUG.get()) {
+                                                callback?.onCompleted(true)
+                                                return true
 
-                                                        Console.log("$oTag WRITTEN: Partition no. " +
-                                                                "$partition (simple write / 1)")
-                                                    }
+                                            } catch (e: Exception) {
+
+                                                Console.error("$oTag ERROR: ${e.message}")
+
+                                                callback?.onFailure(e)
+                                                return false
+                                            }
+                                        }
+                                    }
+
+                                    if (async) {
+
+                                        exec(
+
+                                            onRejected = { e ->
+
+                                                Console.error("$dTag ERROR: ${e.message}")
+
+                                                recordException(e)
+                                            }
+
+                                        ) {
+
+                                            if (DEBUG.get()) {
+
+                                                Console.log("$dTag Obtain async :: PRE-START")
+                                            }
+
+                                            val res = action.obtain()
+
+                                            if (DEBUG.get()) {
+
+                                                if (res) {
+
+                                                    Console.log("$dTag Obtain async :: END :: OK")
 
                                                 } else {
 
-                                                    val msg = "FAILURE: Simple write failed"
-                                                    Console.error("$tag $msg")
-                                                    val e = IOException(msg)
-                                                    callback?.onFailure(e)
-
-                                                    Console.error("$oTag END :: Failed simple write / 2")
-
-                                                    return false
+                                                    Console.log("$dTag Obtain async :: END :: FAILURE")
                                                 }
                                             }
                                         }
 
+                                    } else {
+
                                         if (DEBUG.get()) {
 
-                                            Console.log("$oTag END")
+                                            Console.log("$dTag Obtain sync")
                                         }
 
-                                        callback?.onCompleted(true)
-                                        return true
-
-                                    } catch (e: Exception) {
-
-                                        Console.error("$oTag ERROR: ${e.message}")
-
-                                        callback?.onFailure(e)
-                                        return false
+                                        return action.obtain()
                                     }
+
+                                } catch (e: Exception) {
+
+                                    callback?.onFailure(e)
+
+                                    return false
+                                }
+
+                                return true
+                            }
+
+                            val partitionCallback = object : OnObtain<Boolean> {
+
+                                override fun onCompleted(data: Boolean) {
+
+                                    if (!data) {
+
+                                        success.set(false)
+                                    }
+
+                                    partitioningLatch.countDown()
+                                }
+
+                                override fun onFailure(error: Throwable) {
+
+                                    Console.error(error)
+
+                                    success.set(false)
+
+                                    partitioningLatch.countDown()
                                 }
                             }
 
-                            if (async) {
+                            if (parallelized) {
 
-                                exec(
-
-                                    onRejected = { e ->
-
-                                        Console.error("$dTag ERROR: ${e.message}")
-
-                                        recordException(e)
-                                    }
-
-                                ) {
-
-                                    if (DEBUG.get()) {
-
-                                        Console.log("$dTag Obtain async :: PRE-START")
-                                    }
-
-                                    val res = action.obtain()
-
-                                    if (DEBUG.get()) {
-
-                                        if (res) {
-
-                                            Console.log("$dTag Obtain async :: END :: OK")
-
-                                        } else {
-
-                                            Console.log("$dTag Obtain async :: END :: FAILURE")
-                                        }
-                                    }
-                                }
+                                doPartition(true, partition, partitionCallback)
 
                             } else {
 
-                                if (DEBUG.get()) {
+                                if (!doPartition(false, partition)) {
 
-                                    Console.log("$dTag Obtain sync")
+                                    success.set(false)
                                 }
+                            }
+                        }
 
-                                return action.obtain()
+                        if (parallelized) {
+
+                            try {
+
+                                return partitioningLatch.await(60, TimeUnit.SECONDS) && success.get()
+
+                            } catch (e: InterruptedException) {
+
+                                Console.error("$tag ERROR: ${e.message}")
+
+                                return false
                             }
 
-                        } catch (e: Exception) {
+                        } else {
 
-                            callback?.onFailure(e)
-
-                            return false
+                            return success.get()
                         }
-
-                        return true
-                    }
-
-                    val partitionCallback = object : OnObtain<Boolean> {
-
-                        override fun onCompleted(data: Boolean) {
-
-                            if (!data) {
-
-                                success.set(false)
-                            }
-
-                            partitioningLatch.countDown()
-                        }
-
-                        override fun onFailure(error: Throwable) {
-
-                            Console.error(error)
-
-                            success.set(false)
-
-                            partitioningLatch.countDown()
-                        }
-                    }
-
-                    if (parallelized) {
-
-                        doPartition(true, partition, partitionCallback)
 
                     } else {
 
-                        if (!doPartition(false, partition)) {
-
-                            success.set(false)
-                        }
-                    }
-                }
-
-                if (parallelized) {
-
-                    try {
-
-                        return partitioningLatch.await(60, TimeUnit.SECONDS) && success.get()
-
-                    } catch (e: InterruptedException) {
-
-                        Console.error("$tag ERROR: ${e.message}")
+                        Console.error("$tag END: No partitions reported")
 
                         return false
                     }
-
-                } else {
-
-                    return success.get()
                 }
 
-            } else {
+                return facade.put(key, value)
+            }
 
-                Console.error("$tag END: No partitions reported")
+            operator fun <T> get(key: String?): T? {
 
-                return false
+                val tag = "Get :: key = $key, T = '${T::class.simpleName}' ::"
+
+                if (key == null || isEmpty(key)) {
+
+                    return null
+                }
+
+                val count = getPartitionsCount(key)
+
+                if (count > 0) {
+
+                    if (DEBUG.get()) Console.log("$tag Partitioning :: START")
+
+                    return get<T?>(key = key, defaultValue = null)
+                }
+
+                return facade.get(key)
             }
         }
 
-        return facade.put(key, value)
-    }
+        val obtained = obtain.obtain()
 
-    operator fun <T> get(key: String?): T? {
+        putActions.remove(key)
 
-        val tag = "Get :: key = $key, T = '${T::class.simpleName}' ::"
-
-        if (key == null || isEmpty(key)) {
-
-            return null
-        }
-
-        val count = getPartitionsCount(key)
-
-        if (count > 0) {
-
-            if (DEBUG.get()) Console.log("$tag Partitioning :: START")
-
-            return get<T?>(key = key, defaultValue = null)
-        }
-
-        return facade.get(key)
+        return obtained
     }
 
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
