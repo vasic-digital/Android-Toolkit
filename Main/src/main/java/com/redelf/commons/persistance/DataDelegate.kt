@@ -21,6 +21,7 @@ import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -59,7 +60,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         }
     }
 
-    private val putActions = CopyOnWriteArraySet<String>()
+    private val putActions = ConcurrentHashMap<String, Any?>()
 
     @Synchronized
     override fun shutdown(): Boolean {
@@ -110,7 +111,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             return false
         }
 
-        putActions.add(key)
+        putActions.put(key, value as Any)
 
         val obtain = object : Obtain<Boolean> {
 
@@ -763,6 +764,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return obtained
     }
 
+    @Suppress("UNCHECKED_CAST")
     @Synchronized
     operator fun <T> get(key: String?): T? {
 
@@ -771,6 +773,26 @@ class DataDelegate private constructor(private val facade: Facade) :
         if (key == null || isEmpty(key)) {
 
             return null
+        }
+
+        if (putActions.contains(key)) {
+
+            if (DEBUG.get()) {
+
+                Console.debug("$tag Writing in progress")
+            }
+
+            try {
+
+                return putActions[key] as T?
+
+            } catch (e: Exception) {
+
+                Console.error("$tag ERROR: ${e.message}")
+                recordException(e)
+
+                return null
+            }
         }
 
         val count = getPartitionsCount(key)
