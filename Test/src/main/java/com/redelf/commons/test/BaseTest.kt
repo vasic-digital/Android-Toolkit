@@ -153,13 +153,11 @@ abstract class BaseTest {
 
         return EncryptedPersistence(
 
-            ctx = applicationContext,
             doLog = true,
-            logRawData = true,
             doEncrypt = doEncrypt,
+            ctx = applicationContext,
             keySalt = keySalt ?: testSession.toString(),
-            storageTag = storageTag ?: testSession.toString(),
-            logStorageKeys = DataManagement.LOGGABLE_STORAGE_KEYS
+            storageTag = storageTag ?: testSession.toString()
         )
     }
 }

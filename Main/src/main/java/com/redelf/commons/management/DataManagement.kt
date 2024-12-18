@@ -58,9 +58,6 @@ abstract class DataManagement<T> :
 
         val DEBUG = AtomicBoolean()
         val ENCRYPT = AtomicBoolean()
-        val LOG_RAW_DATA = AtomicBoolean()
-        val LOGGABLE_MANAGERS: CopyOnWriteArrayList<Class<*>> = CopyOnWriteArrayList()
-        val LOGGABLE_STORAGE_KEYS: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
 
         fun initialize(ctx: Context) {
 
@@ -71,9 +68,7 @@ abstract class DataManagement<T> :
                 ctx = ctx,
                 doLog = DEBUG.get(),
                 storageTag = "dt_mgmt",
-                doEncrypt = ENCRYPT.get(),
-                logRawData = LOG_RAW_DATA.get(),
-                logStorageKeys = LOGGABLE_STORAGE_KEYS
+                doEncrypt = ENCRYPT.get()
             )
         }
     }
@@ -210,13 +205,7 @@ abstract class DataManagement<T> :
 
     protected open fun postInitialize(ctx: Context) = Unit
 
-    /*
-        TODO: Create another version of the method that will use into the account:
-            if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) { ...
-            Instead of having it repeatedly used all over the codebase.
-    */
-    open fun canLog() = LOGGABLE_MANAGERS.isEmpty() ||
-            LOGGABLE_MANAGERS.contains(javaClass)
+    open fun canLog() = DEBUG.get()
 
     override fun abort() = Unit
 
@@ -304,10 +293,7 @@ abstract class DataManagement<T> :
         val clazz = typed?.getClazz()
         val tag = "${getLogTag()} OBTAIN :: T = '${clazz?.simpleName}' ::"
 
-        if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
-
-            if (canLog()) Console.log("$tag START")
-        }
+        if (canLog()) Console.log("$tag START")
 
         if (isLocked()) {
 
@@ -318,10 +304,7 @@ abstract class DataManagement<T> :
 
         if (data != null) {
 
-            if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
-
-                if (canLog()) Console.log("$tag END: OK")
-            }
+            if (canLog()) Console.log("$tag END: OK")
 
             return data
         }
@@ -356,14 +339,7 @@ abstract class DataManagement<T> :
                 overwriteData(pulled)
             }
 
-            if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
-
-                if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
-
-            } else {
-
-                if (canLog()) Console.log("$dataObjTag Obtained from storage: ${data != null}")
-            }
+            if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
         }
 
         if (canLog()) Console.log("$dataObjTag Intermediate: ${data != null}")
@@ -392,14 +368,7 @@ abstract class DataManagement<T> :
             if (canLog()) Console.log("$dataObjTag Instantiated: ${data != null}")
         }
 
-        if (LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
-
-            if (canLog()) Console.log("$dataObjTag Final: $data")
-
-        } else {
-
-            if (canLog()) Console.log("$dataObjTag Final: ${data != null}")
-        }
+        if (canLog()) Console.log("$dataObjTag Final: $data")
 
         return data
     }
@@ -475,16 +444,13 @@ abstract class DataManagement<T> :
 
     protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
 
-        if (canLog() && LOGGABLE_STORAGE_KEYS.contains(storageKey)) {
+        if (success == true) {
 
-            if (success == true) {
+            if (DEBUG.get()) Console.log("${getLogTag()} Data pushed")
 
-                if (DEBUG.get()) Console.log("${getLogTag()} Data pushed")
+        } else {
 
-            } else {
-
-                if (DEBUG.get()) Console.error("${getLogTag()} Data push failed", err)
-            }
+            if (DEBUG.get()) Console.error("${getLogTag()} Data push failed", err)
         }
     }
 

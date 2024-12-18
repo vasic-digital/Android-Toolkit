@@ -1,7 +1,9 @@
 package com.redelf.commons.test
 
+import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.logging.Console
+import com.redelf.commons.persistance.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
 import org.junit.Assert
 import org.junit.Before
@@ -20,34 +22,40 @@ class EncryptedPersistenceTest : BaseTest() {
     @Before
     fun prepare() {
 
-        Console.initialize()
+        Console.initialize(failOnError = true)
 
-        Console.log("Timber initialized: $this")
+        Console.log("Console initialized: $this")
 
-        val keySalt = "test.${System.currentTimeMillis()}"
-        val storageTag = "test.${System.currentTimeMillis()}"
+        GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK.set(true)
 
-        persistence = instantiatePersistence(
+        val testTag = "test.${System.currentTimeMillis()}"
 
+        DBStorage.initialize(ctx = applicationContext)
+
+        persistence = EncryptedPersistence(
+
+            doLog = true,
             doEncrypt = true,
-            keySalt = keySalt,
-            storageTag = storageTag
+            storageTag = testTag,
+            ctx = applicationContext
         )
     }
 
-    @Test  // FIXME: <---- Executes too long or it does not complete
+    @Test
     fun testEncryptedPersistence() {
 
-            //        testBoolean()
-            //        testNumbers()
-            //        testRandomPositiveNumbers()
-            //        testRandomNegativeNumbers()
-            //        testString()
-            //        testUtfString()
-            //        testClass()
-            //        testMap()
-            //        testList()
-            //        testSet()
+            testNumbers()
+            testBoolean()
+            testRandomPositiveNumbers()
+            testRandomNegativeNumbers()
+            testString()
+            testUtfString()
+
+        // FIXME:
+//            testClass()
+//            testMap()
+//            testList()
+//            testSet()
     }
 
     private fun testBoolean() {
@@ -62,7 +70,7 @@ class EncryptedPersistenceTest : BaseTest() {
         var retrievedBooleanValue = persistence.pull<Boolean>(booleanValueKey)
 
         Assert.assertNotNull(retrievedBooleanValue)
-        Assert.assertTrue(retrievedBooleanValue ?: false)
+        Assert.assertTrue(retrievedBooleanValue == true)
 
         persistOK = persistence.push(booleanValueKey, false)
 
@@ -80,7 +88,7 @@ class EncryptedPersistenceTest : BaseTest() {
 
         log("Numbers testing: START")
 
-        val numbers = listOf(1.0, 0.1, 1.0000000001)
+        val numbers = listOf(1, 2, 21, 1.0, 0.1, 1.0000000001, 100, 1000, 100000)
 
         numbers.forEach { number ->
 
@@ -181,6 +189,21 @@ class EncryptedPersistenceTest : BaseTest() {
         log("UTF string testing: END")
     }
 
+    private fun testNumber(number: Number) {
+
+        val numberValueKey = "testNumber"
+
+        val persistOK = persistence.push(numberValueKey, number)
+
+        Assert.assertTrue(persistOK)
+
+        val retrieved = persistence.pull<Any?>(numberValueKey)
+
+        Assert.assertNotNull(retrieved)
+        Assert.assertTrue(retrieved is Number)
+        Assert.assertTrue(number == retrieved)
+    }
+
     private fun testClass() {
 
         log("Class testing: START")
@@ -211,21 +234,6 @@ class EncryptedPersistenceTest : BaseTest() {
         }
 
         log("Class testing: END")
-    }
-
-    private fun testNumber(number: Number) {
-
-        val numberValueKey = "testNumber"
-
-        val persistOK = persistence.push(numberValueKey, number)
-
-        Assert.assertTrue(persistOK)
-
-        val retrieved = persistence.pull<Any?>(numberValueKey)
-
-        Assert.assertNotNull(retrieved)
-        Assert.assertTrue(retrieved is Number)
-        Assert.assertTrue(number == retrieved)
     }
 
     private fun testMap() {

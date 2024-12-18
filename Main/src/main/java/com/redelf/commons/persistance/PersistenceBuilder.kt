@@ -92,11 +92,9 @@ class PersistenceBuilder(
     }
 
     var doLog: Boolean = false
-    var logRawData: Boolean = false
     var storage: Storage<String> = DBStorage
     var converter: Converter? = DataConverter(parser)
     var serializer: Serializer? = DataSerializer(parser)
-    var keysFilter: CopyOnWriteArrayList<String> = CopyOnWriteArrayList()
     var encryption: Encryption? = instantiateDefaultEncryption(context, salter)
 
     init {
@@ -110,24 +108,6 @@ class PersistenceBuilder(
     fun setDoLog(doLog: Boolean): PersistenceBuilder {
 
         this.doLog = doLog
-        return this
-    }
-
-    fun setLogRawData(logRawData: Boolean): PersistenceBuilder {
-
-        this.logRawData = logRawData
-        return this
-    }
-
-    fun addKeysFilter(filter: String): PersistenceBuilder {
-
-        this.keysFilter.add(filter)
-        return this
-    }
-
-    fun addKeysFilters(filters: List<String>): PersistenceBuilder {
-
-        this.keysFilter.addAll(filters)
         return this
     }
 

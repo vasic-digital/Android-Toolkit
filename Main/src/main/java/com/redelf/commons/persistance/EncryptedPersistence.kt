@@ -25,10 +25,7 @@ constructor(
     private val keySalt: String = "st",
     private val doEncrypt: Boolean = true,
     private val storageTag: String = BaseApplication.getName(),
-
     private val doLog: Boolean = false,
-    private val logRawData: Boolean = false,
-    private val logStorageKeys: List<String> = emptyList()
 
 ) :
 
@@ -96,8 +93,6 @@ constructor(
                 .setParser(getParser)
                 .setDoLog(doLog)
                 .setEncrypt(doEncrypt)
-                .setLogRawData(logRawData)
-                .addKeysFilters(logStorageKeys)
                 .build()
         }
     }

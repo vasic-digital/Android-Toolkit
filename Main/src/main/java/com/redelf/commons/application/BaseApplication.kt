@@ -499,9 +499,6 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
-        DataManagement.LOGGABLE_MANAGERS.add(SettingsManager::class.java)
-        DataManagement.LOGGABLE_STORAGE_KEYS.add(SettingsManager.obtain().takeStorageKey())
-
         initTerminationListener()
         initFirebaseWithAnalytics()
         initFacebook()
