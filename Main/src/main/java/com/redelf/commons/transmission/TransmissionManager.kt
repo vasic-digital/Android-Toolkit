@@ -400,6 +400,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         }
 
         val hasFailed = AtomicBoolean()
+        val toRemove = mutableListOf<D>()
         val atLeastOneSuccess = AtomicBoolean()
         val iterator = managedData?.getIterator()
 
@@ -419,7 +420,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
                     lastSendingTime = System.currentTimeMillis()
 
-                    iterator.remove()
+                    toRemove.add(data)
 
                     if (!persistingRequired) {
 
@@ -441,6 +442,11 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
                         hasFailed.set(true)
                     }
+                }
+
+                toRemove.forEach {
+
+                    managedData?.remove(it)
                 }
 
                 onSent(data, success)
