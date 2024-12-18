@@ -127,6 +127,14 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                         try {
 
+                            if (DEBUG.get()) {
+
+                                Console.log(
+
+                                    "$tag DO: Partition no. $i"
+                                )
+                            }
+
                             val action = object : Obtain<Boolean> {
 
                                 @Synchronized
@@ -654,7 +662,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                         for (i in 0..<partitionsCount) {
 
-                            if (DEBUG.get()) Console.log("$tag Partition = $i")
+                            if (DEBUG.get()) {
+
+                                Console.log(
+
+                                    "$tag DO: Partition no. $i"
+                                )
+                            }
 
                             val type = instance.getPartitionType(i)
 
