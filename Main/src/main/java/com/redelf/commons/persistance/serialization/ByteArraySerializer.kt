@@ -24,12 +24,12 @@ class ByteArraySerializer(
     key: String,
 
     private var encrypt: Boolean,
-    private var encryption: Encryption? = null,
+    private var encryption: Encryption<String>? = null,
 
     salter: Salter = object : Salter {
 
         override fun getSalt() = key.reversed().hashCode().toString()
-    },
+    }
 
 ) : Serializer {
 
@@ -72,7 +72,7 @@ class ByteArraySerializer(
                 throw IllegalArgumentException("Encryption failed")
             }
 
-            encoded = Base64.encodeToString(encrypted, Base64.DEFAULT)
+            encoded = Base64.encodeToString(encrypted.toByteArray(), Base64.DEFAULT)
 
             editor.putString(key, encoded)
             val result = editor.commit()
@@ -103,7 +103,7 @@ class ByteArraySerializer(
 
             var decodedValue = Base64.decode(encoded, Base64.DEFAULT)
 
-            val decrypted = encryption?.decrypt(key, decodedValue)
+            val decrypted = encryption?.decrypt(key, String(decodedValue))
 
             if (decrypted == null) {
 
@@ -130,7 +130,7 @@ class ByteArraySerializer(
         return null
     }
 
-    private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption {
+    private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption<String> {
 
         if (encrypt) {
 

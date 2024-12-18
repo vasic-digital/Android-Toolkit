@@ -25,10 +25,10 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
     val DEBUG = AtomicBoolean()
 
     private var converter: Converter? = null
-    private var encryption: Encryption? = null
     private var serializer: Serializer? = null
     private var storage: Storage<String>? = null
     private const val TAG = "Facade :: DEFAULT ::"
+    private var encryption: Encryption<String>? = null
     private val listeners = Callbacks<EncryptionListener<String, String>>("enc_listeners")
 
     fun initialize(builder: PersistenceBuilder): Facade {
@@ -122,7 +122,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
             return false
         }
 
-        var cipherText: ByteArray? = null
+        var cipherText: String? = null
 
         try {
 
@@ -147,7 +147,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
             return false
         }
 
-        notifyEncrypted(key, plainText, String(cipherText))
+        notifyEncrypted(key, plainText, cipherText)
 
         val serializedText = serializer?.serialize(cipherText, value)
 
@@ -381,9 +381,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             } else {
 
-                val encrypted = cText.toByteArray()
-
-                plainText = encryption?.decrypt(key, encrypted)
+                plainText = encryption?.decrypt(key, cText)
 
                 log("$tag Key = $key :: Decrypted :: '$plainText' from '$cText'")
 

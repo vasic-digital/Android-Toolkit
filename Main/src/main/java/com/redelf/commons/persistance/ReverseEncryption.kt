@@ -11,45 +11,28 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 
-class ReverseEncryption constructor(
-
-    private val salter: Salter
-
-) : Encryption {
-
-    private val tag = "Encryption :: Reverse ::"
+class ReverseEncryption constructor(salter: Salter) : Encryption<String> {
 
     private val salt = salter.getSalt()
+    private val tag = "Encryption :: Reverse ::"
 
     override fun init() = true
 
     @Throws(Exception::class)
-    override fun encrypt(key: String?, value: String?): ByteArray? {
+    override fun encrypt(key: String, value: String): String? {
 
-        return ("${key.hashCode()}###${salter.getSalt()}###${value?.reversed()}" +
-                "###${salter.getSalt()}###${key.hashCode()}").toByteArray()
+        return ("${key.hashCode()}###${salt}###${value.reversed()}" +
+                "###${salt}###${key.hashCode()}")
     }
 
     @Throws(Exception::class)
-    override fun decrypt(key: String?, value: ByteArray?): String {
+    override fun decrypt(key: String, value: String): String {
 
-        value?.let {
-
-            return String(it)
-                .replace("${key.hashCode()}###", "")
-                .replace("${salter.getSalt()}###", "")
-                .replace("###${salter.getSalt()}", "")
-                .replace("###${key.hashCode()}", "")
-                .reversed()
-        }
-
-        return ""
-    }
-
-    private fun getKey(key: String?): String {
-
-        val raw = (key + salt).hashCode().toString().toCharArray()
-
-        return "${raw.last()}"
+        return value
+            .replace("${key.hashCode()}###", "")
+            .replace("${salt}###", "")
+            .replace("###${salt}", "")
+            .replace("###${key.hashCode()}", "")
+            .reversed()
     }
 }

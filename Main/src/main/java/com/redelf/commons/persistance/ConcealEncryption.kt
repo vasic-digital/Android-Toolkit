@@ -16,7 +16,7 @@ class ConcealEncryption constructor(
     private val crypto: Crypto,
     salter: Salter
 
-) : Encryption {
+) : Encryption<ByteArray> {
 
     private val tag = "Encryption :: Conceal ::"
 
@@ -36,10 +36,10 @@ class ConcealEncryption constructor(
     }
 
     @Throws(Exception::class)
-    override fun encrypt(key: String?, value: String?): ByteArray? {
+    override fun encrypt(key: String, value: String): ByteArray? {
 
         val entity = Entity.create(getKey(key))
-        val encrypted = crypto.encrypt(value?.toByteArray(), entity)
+        val encrypted = crypto.encrypt(value.toByteArray(), entity)
 
         if (encrypted.isEmpty()) {
 
@@ -50,7 +50,7 @@ class ConcealEncryption constructor(
     }
 
     @Throws(Exception::class)
-    override fun decrypt(key: String?, value: ByteArray?): String {
+    override fun decrypt(key: String, value: ByteArray): String {
 
         val entity = Entity.create(getKey(key))
         val decrypted = crypto.decrypt(value, entity)

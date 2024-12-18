@@ -2,26 +2,13 @@ package com.redelf.commons.persistance
 
 import com.redelf.commons.persistance.base.Encryption
 
-class NoEncryption : Encryption {
-    override fun init(): Boolean {
+class NoEncryption : Encryption<String> {
 
-        return true
-    }
+    override fun init() = true
 
     @Throws(Exception::class)
-    override fun encrypt(key: String?, value: String?): ByteArray? {
-
-        return value?.toByteArray()
-    }
+    override fun encrypt(key: String, value: String) = value
 
     @Throws(Exception::class)
-    override fun decrypt(key: String?, value: ByteArray?): String {
-
-        value?.let {
-
-            return String(it)
-        }
-
-        return ""
-    }
+    override fun decrypt(key: String, value: String) = value
 }

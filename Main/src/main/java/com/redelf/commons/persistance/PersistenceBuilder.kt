@@ -83,8 +83,8 @@ class PersistenceBuilder(
     }
 
     var doLog: Boolean = false
-    var encryption: Encryption? = null
     var storage: Storage<String> = DBStorage
+    var encryption: Encryption<String>? = null
     var converter: Converter? = DataConverter(parser)
     var serializer: Serializer? = DataSerializer(parser)
 
@@ -118,7 +118,7 @@ class PersistenceBuilder(
         return this
     }
 
-    fun setEncryption(encryption: Encryption?): PersistenceBuilder {
+    fun setEncryption(encryption: Encryption<String>?): PersistenceBuilder {
 
         this.encryption = encryption
         return this
@@ -140,7 +140,7 @@ class PersistenceBuilder(
         return DataDelegate.instantiate(this)
     }
 
-    private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption {
+    private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption<String> {
 
         if (encrypt) {
 

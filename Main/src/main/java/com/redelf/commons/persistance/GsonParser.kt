@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class GsonParser private constructor(
 
     encrypt: Boolean,
-    encryption: Encryption?,
+    encryption: Encryption<String>?,
 
     parserKey: String,
     provider: Obtain<GsonBuilder>
@@ -56,8 +56,8 @@ class GsonParser private constructor(
             try {
 
                 val key = params[2] as String? ?: ""
-                val encryption = params[1] as Encryption?
                 val encrypt = params[0] as Boolean? == true
+                val encryption = params[1] as Encryption<String>?
                 val provider: Obtain<GsonBuilder>? = params[2] as Obtain<GsonBuilder>?
 
                 return instantiate(key, encryption, encrypt, provider)
@@ -78,7 +78,7 @@ class GsonParser private constructor(
         fun instantiate(
 
             key: String,
-            encryption: Encryption?,
+            encryption: Encryption<String>?,
             encrypt: Boolean,
             provider: Obtain<GsonBuilder>?
 

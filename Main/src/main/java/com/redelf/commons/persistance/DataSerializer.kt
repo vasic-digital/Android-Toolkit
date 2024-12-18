@@ -16,7 +16,7 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
         TODO: Create a flavor that uses Jackson lib for stream-like serialization / deserialization
     */
 
-    override fun <T> serialize(cipherText: ByteArray?, originalGivenValue: T): String? {
+    override fun <T> serialize(cipherText: String?, originalGivenValue: T): String? {
 
         if (cipherText == null || cipherText.isEmpty()) {
             
@@ -38,6 +38,7 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
             val list = originalGivenValue as MutableList<*>
             
             if (!list.isEmpty()) {
+
                 keyClassName = list.get(0)?.javaClass
             }
 
@@ -84,10 +85,10 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
         val dataInfo = DataInfo(
 
-            cipherText.toString(),
+            cipherText,
             dataType,
-            keyClassName?.getName(),
-            valueClassName?.getName(),
+            keyClassName?.name,
+            valueClassName?.name,
             keyClassName?.canonicalName?.forClassName(),
             valueClassName?.canonicalName?.forClassName()
         )

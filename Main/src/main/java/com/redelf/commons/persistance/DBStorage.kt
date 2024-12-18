@@ -17,6 +17,7 @@ import com.redelf.commons.extensions.randomString
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Encryption
+import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.base.Storage
 import java.sql.SQLException
 import java.util.concurrent.CountDownLatch
@@ -50,12 +51,12 @@ object DBStorage : Storage<String> {
     private var columnValue = COLUMN_VALUE_
 
     private val executor = Executor.SINGLE
-    private var enc: Encryption = NoEncryption()
     private var prefs: SharedPreferencesStorage? = null
+    private var enc: Encryption<String> = NoEncryption()
 
     fun getString(source: String, key: String = DATABASE_NAME, prefsKey: String = source): String {
 
-        var result = prefs?.get(prefsKey) ?: ""
+        var result: String = prefs?.get(prefsKey) ?: ""
 
         if (isNotEmpty(result)) {
 
@@ -66,12 +67,7 @@ object DBStorage : Storage<String> {
 
         try {
 
-            val bytes = enc.encrypt(key, source)
-
-            bytes?.let {
-
-                result = String(bytes)
-            }
+            result = enc.encrypt(key, source) ?: ""
 
         } catch (e: Exception) {
 
@@ -194,36 +190,16 @@ object DBStorage : Storage<String> {
 
             prefs = nPrefs
 
-            enc = object : Encryption {
+            enc = ReverseEncryption(
 
-                override fun init() = true
+                object : Salter {
 
-                override fun encrypt(key: String?, value: String?): ByteArray {
+                    override fun getSalt(): String {
 
-                    fun getRandom(max: Int = 3) = randomInteger(max = max, min = 1)
-
-                    fun getRandomString() = randomString(getRandom())
-
-                    fun getSeparator() = randomString(getRandom(max = 2))
-
-                    val builder = StringBuilder()
-                    val separator = getSeparator()
-
-                    value?.forEach { letter ->
-
-                        builder.append(letter)
-                            .append(separator)
-                            .append(getRandomString())
+                        return DATABASE_NAME.reversed().hashCode().toString().reversed()
                     }
-
-                    return builder.toString().toByteArray()
                 }
-
-                override fun decrypt(key: String?, value: ByteArray?): String {
-
-                    return value?.let { String(it) } ?: ""
-                }
-            }
+            )
 
             val rawName = "$mainKey.$suffix"
             val dbName = getString(rawName, prefsKey = "$DATABASE_NAME.$DATABASE_VERSION")
