@@ -18,7 +18,7 @@ import com.redelf.commons.security.encryption.EncryptionListener
 import java.util.concurrent.atomic.AtomicBoolean
 
 class EncryptedPersistence
-@Throws(IllegalArgumentException::class)
+@Throws(IllegalArgumentException::class, IllegalStateException::class)
 constructor(
 
     ctx: Context,
@@ -99,7 +99,7 @@ constructor(
         }
     }
 
-    fun isEncryptionEnabled() = doEncrypt
+    fun isEncryptionEnabled() = doEncrypt && dataDelegate?.isEncryptionEnabled() == true
 
     fun isEncryptionDisabled() = !doEncrypt
 

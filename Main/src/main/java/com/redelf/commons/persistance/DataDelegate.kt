@@ -1,8 +1,6 @@
 package com.redelf.commons.persistance
 
 import android.content.Context
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.data.type.PairDataInfo
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.forClassName
@@ -107,6 +105,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return false
     }
 
+    fun isEncryptionEnabled() = (facade is DefaultFacade) && facade.isEncryptionEnabled()
 
     fun <T> put(key: String?, value: T): Boolean {
 
@@ -834,7 +833,7 @@ class DataDelegate private constructor(private val facade: Facade) :
     @Suppress("UNCHECKED_CAST")
     operator fun <T> get(key: String?): T? {
 
-        val tag = "Get :: key = $key, T = '${T::class.simpleName}' ::"
+        val tag = "Get :: Key = '$key' ::"
 
         if (key == null || isEmpty(key)) {
 

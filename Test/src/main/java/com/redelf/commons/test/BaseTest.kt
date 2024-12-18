@@ -6,6 +6,7 @@ import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.persistance.EncryptedPersistence
+import org.junit.Assert
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -128,7 +129,7 @@ abstract class BaseTest {
         keySalt: String? = null,
         storageTag: String? = null
 
-    ): EncryptedPersistence {
+    ): EncryptedPersistence? {
 
         val instance = instantiatePersistence(
 
@@ -137,7 +138,7 @@ abstract class BaseTest {
             storageTag = storageTag
         )
 
-        instance.initialize(ctx)
+        instance?.initialize(ctx)
 
         return instance
     }
@@ -149,15 +150,24 @@ abstract class BaseTest {
         keySalt: String? = null,
         storageTag: String? = null
 
-    ): EncryptedPersistence {
+    ): EncryptedPersistence? {
 
-        return EncryptedPersistence(
+        try {
 
-            doLog = true,
-            doEncrypt = doEncrypt,
-            ctx = applicationContext,
-            keySalt = keySalt ?: testSession.toString(),
-            storageTag = storageTag ?: testSession.toString()
-        )
+            return EncryptedPersistence(
+
+                doLog = true,
+                doEncrypt = doEncrypt,
+                ctx = applicationContext,
+                keySalt = keySalt ?: testSession.toString(),
+                storageTag = storageTag ?: testSession.toString()
+            )
+
+        } catch (e: Exception) {
+
+            Assert.fail(e.message)
+        }
+
+        return null
     }
 }

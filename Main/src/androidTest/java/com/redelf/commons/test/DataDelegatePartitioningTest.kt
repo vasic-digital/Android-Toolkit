@@ -72,23 +72,28 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.Long.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<LongWrapper?>(key)
+            val key = "Test.Long.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedItem = wrapper.takeData()
-        val comparableItem = comparable?.takeData()
+            val comparable = persistence.pull<LongWrapper?>(key)
 
-        Assert.assertNotNull(wrappedItem)
+            Assert.assertNotNull(comparable)
 
-        Assert.assertEquals(wrappedItem, comparableItem)
+            val wrappedItem = wrapper.takeData()
+            val comparableItem = comparable?.takeData()
+
+            Assert.assertNotNull(wrappedItem)
+
+            Assert.assertEquals(wrappedItem, comparableItem)
+        }
     }
 
     @Test
@@ -99,23 +104,28 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.Bool.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<BoolWrapper?>(key)
+            val key = "Test.Bool.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedItem = wrapper.takeData()
-        val comparableItem = comparable?.takeData()
+            val comparable = persistence.pull<BoolWrapper?>(key)
 
-        Assert.assertNotNull(wrappedItem)
+            Assert.assertNotNull(comparable)
 
-        Assert.assertEquals(wrappedItem, comparableItem)
+            val wrappedItem = wrapper.takeData()
+            val comparableItem = comparable?.takeData()
+
+            Assert.assertNotNull(wrappedItem)
+
+            Assert.assertEquals(wrappedItem, comparableItem)
+        }
     }
 
     @Test
@@ -126,23 +136,28 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.String.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<StringWrapper?>(key)
+            val key = "Test.String.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedItem = wrapper.takeData()
-        val comparableItem = comparable?.takeData()
+            val comparable = persistence.pull<StringWrapper?>(key)
 
-        Assert.assertNotNull(wrappedItem)
+            Assert.assertNotNull(comparable)
 
-        Assert.assertEquals(wrappedItem, comparableItem)
+            val wrappedItem = wrapper.takeData()
+            val comparableItem = comparable?.takeData()
+
+            Assert.assertNotNull(wrappedItem)
+
+            Assert.assertEquals(wrappedItem, comparableItem)
+        }
     }
 
     @Test
@@ -151,28 +166,33 @@ class DataDelegatePartitioningTest : BaseTest() {
         val list = CopyOnWriteArrayList<Double>()
         val wrapper = LongListWrapper(list)
 
-        for (x in 0..samplesCount) {
+        (0..samplesCount).forEach { x ->
 
             list.add(System.currentTimeMillis().toDouble())
         }
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.List.Long.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<LongListWrapper?>(key)
+            val key = "Test.List.Long.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedList = wrapper.takeData()
-        val comparableList = comparable?.takeData()
+            val comparable = persistence.pull<LongListWrapper?>(key)
 
-        Assert.assertEquals(wrappedList, comparableList)
+            Assert.assertNotNull(comparable)
+
+            val wrappedList = wrapper.takeData()
+            val comparableList = comparable?.takeData()
+
+            Assert.assertEquals(wrappedList, comparableList)
+        }
     }
 
     @Test
@@ -188,21 +208,26 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.List.Bool.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<BoolListWrapper?>(key)
+            val key = "Test.List.Bool.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedList = wrapper.takeData()
-        val comparableList = comparable?.takeData()
+            val comparable = persistence.pull<BoolListWrapper?>(key)
 
-        Assert.assertEquals(wrappedList, comparableList)
+            Assert.assertNotNull(comparable)
+
+            val wrappedList = wrapper.takeData()
+            val comparableList = comparable?.takeData()
+
+            Assert.assertEquals(wrappedList, comparableList)
+        }
     }
 
     @Test
@@ -218,21 +243,26 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.List.String.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<StringListWrapper?>(key)
+            val key = "Test.List.String.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedList = wrapper.takeData()
-        val comparableList = comparable?.takeData()
+            val comparable = persistence.pull<StringListWrapper?>(key)
 
-        Assert.assertEquals(wrappedList, comparableList)
+            Assert.assertNotNull(comparable)
+
+            val wrappedList = wrapper.takeData()
+            val comparableList = comparable?.takeData()
+
+            Assert.assertEquals(wrappedList, comparableList)
+        }
     }
 
     @Test
@@ -248,21 +278,26 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.List.Complex.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<ObjectListWrapper?>(key)
+            val key = "Test.List.Complex.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedList = wrapper.takeData()
-        val comparableList = comparable?.takeData()
+            val comparable = persistence.pull<ObjectListWrapper?>(key)
 
-        Assert.assertEquals(wrappedList, comparableList)
+            Assert.assertNotNull(comparable)
+
+            val wrappedList = wrapper.takeData()
+            val comparableList = comparable?.takeData()
+
+            Assert.assertEquals(wrappedList, comparableList)
+        }
     }
 
     @Test
@@ -280,21 +315,26 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.Map.UUIDtoString.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<UUIDtoStringMapWrapper?>(key)
+            val key = "Test.Map.UUIDtoString.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedMap = wrapper.takeData()
-        val comparableMap = comparable?.takeData()
+            val comparable = persistence.pull<UUIDtoStringMapWrapper?>(key)
 
-        assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
+            Assert.assertNotNull(comparable)
+
+            val wrappedMap = wrapper.takeData()
+            val comparableMap = comparable?.takeData()
+
+            assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
+        }
     }
 
     @Test
@@ -312,21 +352,26 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.Map.StringToLong.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<StringToLongMapWrapper?>(key)
+            val key = "Test.Map.StringToLong.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedMap = wrapper.takeData()
-        val comparableMap = comparable?.takeData()
+            val comparable = persistence.pull<StringToLongMapWrapper?>(key)
 
-        assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
+            Assert.assertNotNull(comparable)
+
+            val wrappedMap = wrapper.takeData()
+            val comparableMap = comparable?.takeData()
+
+            assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
+        }
     }
 
     @Test
@@ -344,21 +389,26 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val key = "Test.Map.Complex.No_Enc"
-        val saved = persistence.push(key, wrapper)
+        persistence?.let {
 
-        Assert.assertTrue(saved)
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val comparable = persistence.pull<ObjectMapWrapper?>(key)
+            val key = "Test.Map.Complex.No_Enc"
+            val saved = persistence.push(key, wrapper)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        val wrappedMap = wrapper.takeData()
-        val comparableMap = comparable?.takeData()
+            val comparable = persistence.pull<ObjectMapWrapper?>(key)
 
-        assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
+            Assert.assertNotNull(comparable)
+
+            val wrappedMap = wrapper.takeData()
+            val comparableMap = comparable?.takeData()
+
+            assertMaps(wrappedMap?.toMap(), comparableMap?.toMap())
+        }
     }
 
     @Test
@@ -366,23 +416,28 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestDataP2()
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningEnabled())
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.Part.P2.No_Enc"
+            val data = instantiateTestDataP2()
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningEnabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.Part.P2.No_Enc"
 
-        val comparable = persistence.pull<SampleDataOnlyP2?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        Assert.assertEquals(data, comparable)
+            val comparable = persistence.pull<SampleDataOnlyP2?>(key)
+
+            Assert.assertNotNull(comparable)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -390,23 +445,28 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestDataP3()
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningEnabled())
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.Part.P3.No_Enc"
+            val data = instantiateTestDataP3()
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningEnabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.Part.P3.No_Enc"
 
-        val comparable = persistence.pull<SampleDataOnlyP3?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        Assert.assertEquals(data, comparable)
+            val comparable = persistence.pull<SampleDataOnlyP3?>(key)
+
+            Assert.assertNotNull(comparable)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -414,23 +474,28 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestDataP4()
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningEnabled())
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.Part.P4.No_Enc"
+            val data = instantiateTestDataP4()
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningEnabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.Part.P4.No_Enc"
 
-        val comparable = persistence.pull<SampleDataOnlyP4?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        Assert.assertEquals(data, comparable)
+            val comparable = persistence.pull<SampleDataOnlyP4?>(key)
+
+            Assert.assertNotNull(comparable)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -438,23 +503,28 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestDataP5()
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningEnabled())
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.Part.P5.No_Enc"
+            val data = instantiateTestDataP5()
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningEnabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.Part.P5.No_Enc"
 
-        val comparable = persistence.pull<SampleDataOnlyP5?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        Assert.assertEquals(data, comparable)
+            val comparable = persistence.pull<SampleDataOnlyP5?>(key)
+
+            Assert.assertNotNull(comparable)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -462,30 +532,35 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestData(partitioning = true)
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningEnabled())
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.Part.No_Enc"
+            val data = instantiateTestData(partitioning = true)
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningEnabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.Part.No_Enc"
 
-        val comparable = persistence.pull<SampleData?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        Assert.assertEquals(data.partition1, comparable?.partition1)
-        Assert.assertEquals(data.partition2, comparable?.partition2)
-        Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+            val comparable = persistence.pull<SampleData?>(key)
 
-        Assert.assertEquals(data, comparable)
+            Assert.assertNotNull(comparable)
+
+            Assert.assertEquals(data.partition1, comparable?.partition1)
+            Assert.assertEquals(data.partition2, comparable?.partition2)
+            Assert.assertEquals(data.partition3, comparable?.partition3)
+            Assert.assertEquals(data.partition4, comparable?.partition4)
+            Assert.assertEquals(data.partition5, comparable?.partition5)
+            Assert.assertEquals(data.partition6, comparable?.partition6)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -493,32 +568,37 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestData(partitioning = true, async = false)
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningEnabled())
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.Part.No_Enc.Sync"
+            val data = instantiateTestData(partitioning = true, async = false)
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningEnabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.Part.No_Enc.Sync"
 
-        val comparable = persistence.pull<SampleData?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        comparable?.setPartitioningParallelized(false)
+            val comparable = persistence.pull<SampleData?>(key)
 
-        Assert.assertEquals(data.partition1, comparable?.partition1)
-        Assert.assertEquals(data.partition2, comparable?.partition2)
-        Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+            Assert.assertNotNull(comparable)
 
-        Assert.assertEquals(data, comparable)
+            comparable?.setPartitioningParallelized(false)
+
+            Assert.assertEquals(data.partition1, comparable?.partition1)
+            Assert.assertEquals(data.partition2, comparable?.partition2)
+            Assert.assertEquals(data.partition3, comparable?.partition3)
+            Assert.assertEquals(data.partition4, comparable?.partition4)
+            Assert.assertEquals(data.partition5, comparable?.partition5)
+            Assert.assertEquals(data.partition6, comparable?.partition6)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -526,30 +606,35 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
 
-        Assert.assertTrue(persistence.isEncryptionEnabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestData(partitioning = true)
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningEnabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
-        val key = "Test.Part.Enc"
+            val data = instantiateTestData(partitioning = true)
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningEnabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.Part.Enc"
 
-        val comparable = persistence.pull<SampleData?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        Assert.assertEquals(data.partition1, comparable?.partition1)
-        Assert.assertEquals(data.partition2, comparable?.partition2)
-        Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+            val comparable = persistence.pull<SampleData?>(key)
 
-        Assert.assertEquals(data, comparable)
+            Assert.assertNotNull(comparable)
+
+            Assert.assertEquals(data.partition1, comparable?.partition1)
+            Assert.assertEquals(data.partition2, comparable?.partition2)
+            Assert.assertEquals(data.partition3, comparable?.partition3)
+            Assert.assertEquals(data.partition4, comparable?.partition4)
+            Assert.assertEquals(data.partition5, comparable?.partition5)
+            Assert.assertEquals(data.partition6, comparable?.partition6)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -557,32 +642,37 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
 
-        Assert.assertTrue(persistence.isEncryptionEnabled())
+        Assert.assertTrue(persistence?.isEncryptionEnabled() == true)
 
-        val data = instantiateTestData(partitioning = true, async = false)
+        Assert.assertNotNull(persistence)
 
-        Assert.assertTrue(data.isPartitioningEnabled())
+        persistence?.let {
 
-        val key = "Test.Part.Enc.Sync"
+            val data = instantiateTestData(partitioning = true, async = false)
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningEnabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.Part.Enc.Sync"
 
-        val comparable = persistence.pull<SampleData?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        comparable?.setPartitioningParallelized(false)
+            val comparable = persistence.pull<SampleData?>(key)
 
-        Assert.assertEquals(data.partition1, comparable?.partition1)
-        Assert.assertEquals(data.partition2, comparable?.partition2)
-        Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+            Assert.assertNotNull(comparable)
 
-        Assert.assertEquals(data, comparable)
+            comparable?.setPartitioningParallelized(false)
+
+            Assert.assertEquals(data.partition1, comparable?.partition1)
+            Assert.assertEquals(data.partition2, comparable?.partition2)
+            Assert.assertEquals(data.partition3, comparable?.partition3)
+            Assert.assertEquals(data.partition4, comparable?.partition4)
+            Assert.assertEquals(data.partition5, comparable?.partition5)
+            Assert.assertEquals(data.partition6, comparable?.partition6)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -590,30 +680,35 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestData(partitioning = false)
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningDisabled())
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.No_Part.No_Enc"
+            val data = instantiateTestData(partitioning = false)
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningDisabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.No_Part.No_Enc"
 
-        val comparable = persistence.pull<SampleData?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        Assert.assertEquals(data.partition1, comparable?.partition1)
-        Assert.assertEquals(data.partition2, comparable?.partition2)
-        Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+            val comparable = persistence.pull<SampleData?>(key)
 
-        Assert.assertEquals(data, comparable)
+            Assert.assertNotNull(comparable)
+
+            Assert.assertEquals(data.partition1, comparable?.partition1)
+            Assert.assertEquals(data.partition2, comparable?.partition2)
+            Assert.assertEquals(data.partition3, comparable?.partition3)
+            Assert.assertEquals(data.partition4, comparable?.partition4)
+            Assert.assertEquals(data.partition5, comparable?.partition5)
+            Assert.assertEquals(data.partition6, comparable?.partition6)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -621,32 +716,37 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
 
-        Assert.assertTrue(persistence.isEncryptionDisabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestData(partitioning = false, async = false)
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningDisabled())
+            Assert.assertTrue(persistence.isEncryptionDisabled())
 
-        val key = "Test.No_Part.No_Enc.Sync"
+            val data = instantiateTestData(partitioning = false, async = false)
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningDisabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.No_Part.No_Enc.Sync"
 
-        val comparable = persistence.pull<SampleData?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        comparable?.setPartitioningParallelized(false)
+            val comparable = persistence.pull<SampleData?>(key)
 
-        Assert.assertEquals(data.partition1, comparable?.partition1)
-        Assert.assertEquals(data.partition2, comparable?.partition2)
-        Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+            Assert.assertNotNull(comparable)
 
-        Assert.assertEquals(data, comparable)
+            comparable?.setPartitioningParallelized(false)
+
+            Assert.assertEquals(data.partition1, comparable?.partition1)
+            Assert.assertEquals(data.partition2, comparable?.partition2)
+            Assert.assertEquals(data.partition3, comparable?.partition3)
+            Assert.assertEquals(data.partition4, comparable?.partition4)
+            Assert.assertEquals(data.partition5, comparable?.partition5)
+            Assert.assertEquals(data.partition6, comparable?.partition6)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -654,30 +754,35 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
 
-        Assert.assertTrue(persistence.isEncryptionEnabled())
+        Assert.assertNotNull(persistence)
 
-        val data = instantiateTestData(partitioning = false)
+        persistence?.let {
 
-        Assert.assertTrue(data.isPartitioningDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
-        val key = "Test.No_Part.Enc"
+            val data = instantiateTestData(partitioning = false)
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningDisabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.No_Part.Enc"
 
-        val comparable = persistence.pull<SampleData?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        Assert.assertEquals(data.partition1, comparable?.partition1)
-        Assert.assertEquals(data.partition2, comparable?.partition2)
-        Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+            val comparable = persistence.pull<SampleData?>(key)
 
-        Assert.assertEquals(data, comparable)
+            Assert.assertNotNull(comparable)
+
+            Assert.assertEquals(data.partition1, comparable?.partition1)
+            Assert.assertEquals(data.partition2, comparable?.partition2)
+            Assert.assertEquals(data.partition3, comparable?.partition3)
+            Assert.assertEquals(data.partition4, comparable?.partition4)
+            Assert.assertEquals(data.partition5, comparable?.partition5)
+            Assert.assertEquals(data.partition6, comparable?.partition6)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     @Test
@@ -685,32 +790,37 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
 
-        Assert.assertTrue(persistence.isEncryptionEnabled())
+        Assert.assertTrue(persistence?.isEncryptionEnabled() == true)
 
-        val data = instantiateTestData(partitioning = false, async = false)
+        Assert.assertNotNull(persistence)
 
-        Assert.assertTrue(data.isPartitioningDisabled())
+        persistence?.let {
 
-        val key = "Test.No_Part.Enc.Sync"
+            val data = instantiateTestData(partitioning = false, async = false)
 
-        val saved = persistence.push(key, data)
+            Assert.assertTrue(data.isPartitioningDisabled())
 
-        Assert.assertTrue(saved)
+            val key = "Test.No_Part.Enc.Sync"
 
-        val comparable = persistence.pull<SampleData?>(key)
+            val saved = persistence.push(key, data)
 
-        Assert.assertNotNull(comparable)
+            Assert.assertTrue(saved)
 
-        comparable?.setPartitioningParallelized(false)
+            val comparable = persistence.pull<SampleData?>(key)
 
-        Assert.assertEquals(data.partition1, comparable?.partition1)
-        Assert.assertEquals(data.partition2, comparable?.partition2)
-        Assert.assertEquals(data.partition3, comparable?.partition3)
-        Assert.assertEquals(data.partition4, comparable?.partition4)
-        Assert.assertEquals(data.partition5, comparable?.partition5)
-        Assert.assertEquals(data.partition6, comparable?.partition6)
+            Assert.assertNotNull(comparable)
 
-        Assert.assertEquals(data, comparable)
+            comparable?.setPartitioningParallelized(false)
+
+            Assert.assertEquals(data.partition1, comparable?.partition1)
+            Assert.assertEquals(data.partition2, comparable?.partition2)
+            Assert.assertEquals(data.partition3, comparable?.partition3)
+            Assert.assertEquals(data.partition4, comparable?.partition4)
+            Assert.assertEquals(data.partition5, comparable?.partition5)
+            Assert.assertEquals(data.partition6, comparable?.partition6)
+
+            Assert.assertEquals(data, comparable)
+        }
     }
 
     private fun instantiateTestData(partitioning: Boolean, async: Boolean = true): SampleData {
@@ -802,7 +912,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         val map = ConcurrentHashMap<String, List<SampleData3>>()
 
-        for (x in 0..samplesCount) {
+        (0..samplesCount).forEach { x ->
 
             val list = mutableListOf<SampleData3>()
 

@@ -16,10 +16,11 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 class PersistenceBuilder(
 
-    context: Context,
+    private val context: Context,
+
     storageTag: String = "Data",
 
-    salter: Salter = object : Salter {
+    private val  salter: Salter = object : Salter {
 
         override fun getSalt() = storageTag
     },
@@ -81,29 +82,11 @@ class PersistenceBuilder(
         )
     }
 
-    private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption {
-
-        if (encrypt) {
-
-            return ConcealEncryption(context, salter)
-        }
-
-        return NoEncryption()
-    }
-
     var doLog: Boolean = false
+    var encryption: Encryption? = null
     var storage: Storage<String> = DBStorage
     var converter: Converter? = DataConverter(parser)
     var serializer: Serializer? = DataSerializer(parser)
-    var encryption: Encryption? = instantiateDefaultEncryption(context, salter)
-
-    init {
-
-        if (encryption is ConcealEncryption && (!(encryption as ConcealEncryption).init())) {
-
-            encryption = NoEncryption()
-        }
-    }
 
     fun setDoLog(doLog: Boolean): PersistenceBuilder {
 
@@ -141,8 +124,29 @@ class PersistenceBuilder(
         return this
     }
 
+    @Throws(IllegalStateException::class)
     fun build(): DataDelegate {
 
+        if (encryption == null) {
+
+            encryption = instantiateDefaultEncryption(context, salter)
+
+            if (encryption is ConcealEncryption && (!(encryption as ConcealEncryption).init())) {
+
+                throw IllegalStateException("Could not initialized Conceal encryption")
+            }
+        }
+
         return DataDelegate.instantiate(this)
+    }
+
+    private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption {
+
+        if (encrypt) {
+
+            return ConcealEncryption(context, salter)
+        }
+
+        return NoEncryption()
     }
 }

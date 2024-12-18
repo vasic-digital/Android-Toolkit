@@ -49,6 +49,8 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
         return this
     }
 
+    fun isEncryptionEnabled() = encryption !is NoEncryption
+
     override fun register(subscriber: EncryptionListener<String, String>) {
 
         if (isRegistered(subscriber)) {

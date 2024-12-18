@@ -35,13 +35,22 @@ class EncryptedPersistenceTest : BaseTest() {
 
         DBStorage.initialize(ctx = applicationContext)
 
-        persistence = EncryptedPersistence(
+        try {
 
-            doLog = true,
-            doEncrypt = true,
-            storageTag = testTag,
-            ctx = applicationContext
-        )
+            persistence = EncryptedPersistence(
+
+                doLog = true,
+                doEncrypt = true,
+                storageTag = testTag,
+                ctx = applicationContext
+            )
+
+            Assert.assertTrue(persistence.isEncryptionEnabled())
+
+        } catch (e: Exception) {
+
+            Assert.fail(e.message)
+        }
     }
 
     @Test
@@ -196,6 +205,14 @@ class EncryptedPersistenceTest : BaseTest() {
 
         val latch = CountDownLatch(2)
 
+        var encKey = ""
+        var encRaw = ""
+        var enc = ""
+
+        var decKey = ""
+        var decEnc = ""
+        var dec = ""
+
         val callback = object : EncryptionListener<String, String> {
 
             override fun onEncrypted(
@@ -207,6 +224,10 @@ class EncryptedPersistenceTest : BaseTest() {
             ) {
 
                 Console.log("On :: Encrypted :: Key = $key, Raw = $raw, Encrypted = $encrypted")
+
+                encKey = key
+                encRaw = raw
+                enc = encrypted
 
                 latch.countDown()
             }
@@ -223,6 +244,10 @@ class EncryptedPersistenceTest : BaseTest() {
 
                     "On :: Encrypted :: Key = $key, Encrypted = $encrypted, Decrypted = $decrypted"
                 )
+
+                decKey = key
+                decEnc = encrypted
+                dec = decrypted
 
                 latch.countDown()
             }
@@ -259,6 +284,24 @@ class EncryptedPersistenceTest : BaseTest() {
 
             Assert.fail(e.message)
         }
+
+        Assert.assertTrue(encKey.isNotEmpty())
+        Assert.assertTrue(encRaw.isNotEmpty())
+        Assert.assertTrue(enc.isNotEmpty())
+
+        Assert.assertTrue(decKey.isNotEmpty())
+        Assert.assertTrue(decEnc.isNotEmpty())
+        Assert.assertTrue(dec.isNotEmpty())
+
+        Assert.assertEquals(numberValueKey, encKey)
+        Assert.assertEquals(numberValueKey, decKey)
+        Assert.assertEquals(encKey, decKey)
+
+        Assert.assertNotEquals(encRaw, enc)
+        Assert.assertNotEquals(decEnc, dec)
+
+        Assert.assertEquals(number.toString(), encRaw)
+        Assert.assertEquals(number.toString(), dec)
 
         Assert.assertNotNull(retrieved)
         Assert.assertTrue(retrieved is Number)
