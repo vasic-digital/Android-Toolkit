@@ -199,7 +199,9 @@ class GsonParser private constructor(
                 else -> {
 
                     var typeAdapter: TypeAdapter<*>? = null
-                    val tag = "$tag Deserialize :: Class = '${clazz.canonicalName?.forClassName()}'"
+
+                    val tag = "$tag Deserialize :: " +
+                            "Class = '${clazz.canonicalName?.forClassName()}' ::"
 
                     Console.log("$tag START")
 
@@ -233,8 +235,7 @@ class GsonParser private constructor(
 
                         Console.error(
 
-                            "$tag ERROR / 1 :: Class = ${clazz.canonicalName?.forClassName()}, " +
-                                    "Content = $content, Error = '${e.message}'")
+                            "$tag ERROR / 1 :: Content = $content, Error = '${e.message}'")
 
                         recordException(e)
                     }
