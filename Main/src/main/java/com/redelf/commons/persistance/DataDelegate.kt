@@ -707,7 +707,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                             val keyRow = keyRow(key, i, j)
                                             val keyRowType = keyRowType(key, i, j)
-                                            val rowType = facade.get(keyRowType, "")
+                                            val rowType = facade.get(keyRowType, "").forClassName()
 
                                             if (isEmpty(rowType)) {
 
@@ -1252,7 +1252,7 @@ class DataDelegate private constructor(private val facade: Facade) :
     @Synchronized
     private fun getSimple(type: String): Class<*>? {
 
-        return when (type) {
+        return when (type.forClassName()) {
 
             Float::class.java.canonicalName,
             Int::class.java.canonicalName,
