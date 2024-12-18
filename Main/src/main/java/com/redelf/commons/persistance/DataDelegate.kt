@@ -251,8 +251,11 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                         if (DEBUG.get()) {
 
-                                                            Console.log("$oTag Do row write :: " +
-                                                                    "'$row' -> '$value'")
+                                                            Console.log(
+
+                                                                "$oTag Do row write :: " +
+                                                                        "Key = '$row'"
+                                                            )
                                                         }
 
                                                         val keyRow = keyRow(key, partition, row)
@@ -331,7 +334,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             Console.log("$oTag Do map " +
                                                                     "row write :: " +
-                                                                    "'$mapKey' -> '$value'")
+                                                                    "Map key = '$mapKey'")
                                                         }
 
                                                         if (value == null) {
@@ -486,24 +489,37 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                                     var index = 0
 
-                                                                    partition.forEach { key, value ->
+                                                                    try {
 
-                                                                        key?.let { k ->
-                                                                            value?.let { v ->
+                                                                        partition.forEach { key, value ->
 
-                                                                                rowWrite(
+                                                                            key?.let { k ->
+                                                                                value?.let { v ->
 
-                                                                                    partition = i,
-                                                                                    row = index,
-                                                                                    mapKey = k,
-                                                                                    value = v,
-                                                                                    mapKeyType = k::class.java,
-                                                                                    valueType = v::class.java
-                                                                                )
+                                                                                    rowWrite(
+
+                                                                                        partition = i,
+                                                                                        row = index,
+                                                                                        mapKey = k,
+                                                                                        value = v,
+                                                                                        mapKeyType = k::class.java,
+                                                                                        valueType = v::class.java
+                                                                                    )
+                                                                                }
                                                                             }
+
+                                                                            index++
                                                                         }
 
-                                                                        index++
+                                                                    } catch (e: OutOfMemoryError) {
+
+                                                                        Console.error(
+
+                                                                            "$oTag ${e.message}"
+                                                                        )
+
+                                                                        recordException(e)
+                                                                        callback?.onFailure(e)
                                                                     }
 
                                                                 } else {
