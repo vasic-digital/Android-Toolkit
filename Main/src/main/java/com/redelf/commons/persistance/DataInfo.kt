@@ -3,14 +3,12 @@ package com.redelf.commons.persistance
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
-import com.redelf.commons.persistance.serialization.CustomSerializable
-import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 
 data class DataInfo(
 
     @JsonProperty("cipherText")
     @SerializedName("cipherText")
-    var cipherText: ByteArray? = null,
+    var cipherText: String? = null,
 
     @JsonProperty("dataType")
     @SerializedName("dataType")
@@ -32,7 +30,7 @@ data class DataInfo(
     @SerializedName("valueClazz")
     var valueClazz: String? = null
 
-) : CustomSerializable {
+) {
 
     companion object {
 
@@ -78,9 +76,4 @@ data class DataInfo(
             throw IllegalStateException("Not implemented yet")
         }
     }
-
-    override fun getCustomSerializations() = mapOf(
-
-        "cipherText" to DefaultCustomSerializer(ByteArray::class.java)
-    )
 }

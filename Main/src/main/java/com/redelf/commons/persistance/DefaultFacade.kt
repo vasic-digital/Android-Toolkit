@@ -330,7 +330,7 @@ object DefaultFacade : Facade {
         try {
 
             val cText = dataInfo.cipherText
-            plainText = encryption?.decrypt(key, cText)
+            plainText = encryption?.decrypt(key, cText?.toByteArray())
 
             log("$tag Key = $key :: Decrypted :: '$plainText' from '$cText'")
 

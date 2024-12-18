@@ -84,7 +84,7 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
         val dataInfo = DataInfo(
 
-            cipherText,
+            cipherText.toString(),
             dataType,
             keyClassName?.getName(),
             valueClassName?.getName(),
