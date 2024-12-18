@@ -127,12 +127,11 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                         try {
 
+                            val dTag = "$tag DO: Partition no. $i ::"
+
                             if (DEBUG.get()) {
 
-                                Console.log(
-
-                                    "$tag DO: Partition no. $i"
-                                )
+                                Console.log("$dTag START")
                             }
 
                             val action = object : Obtain<Boolean> {
@@ -140,11 +139,23 @@ class DataDelegate private constructor(private val facade: Facade) :
                                 @Synchronized
                                 override fun obtain(): Boolean {
 
+                                    val oTag = "$dTag Obtain async ::"
+
+                                    if (DEBUG.get()) {
+
+                                        Console.log("$oTag START")
+                                    }
+
                                     try {
 
                                         if (partition == null) {
 
                                             callback?.onCompleted(true)
+
+                                            if (DEBUG.get()) {
+
+                                                Console.log("$oTag END :: Null partition")
+                                            }
 
                                             return true
                                         }
@@ -162,7 +173,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                         Console.log(
 
-                                                            "$tag WRITTEN: Partition no. $i"
+                                                            "$oTag WRITTEN: Partition no. $i"
                                                         )
                                                     }
 
@@ -172,8 +183,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     val e = IOException(msg)
 
-                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    Console.error("$oTag ERROR: ${e.message}")
                                                     recordException(e)
+                                                }
+
+                                                if (DEBUG.get()) {
+
+                                                    Console.log("$oTag END :: Written")
                                                 }
 
                                                 return written
@@ -189,6 +205,11 @@ class DataDelegate private constructor(private val facade: Facade) :
                                             ): Boolean {
 
                                                 if (value == null) {
+
+                                                    if (DEBUG.get()) {
+
+                                                        Console.log("$oTag END :: Null value")
+                                                    }
 
                                                     return true
                                                 }
@@ -211,7 +232,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     val e = IOException(msg)
 
-                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    Console.error("$oTag ERROR: ${e.message}")
                                                     recordException(e)
                                                 }
 
@@ -221,7 +242,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     if (DEBUG.get()) Console.log(
 
-                                                        "$tag WRITTEN: Partition no. $partition, " +
+                                                        "$oTag WRITTEN: Partition no. $partition, " +
                                                                 "Row no. $row, Qualified name: $fqName"
                                                     )
 
@@ -236,7 +257,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     val e = IOException(msg)
 
-                                                    Console.error("$tag ERROR :: ${e.message}")
+                                                    Console.error("$oTag ERROR :: ${e.message}")
                                                     recordException(e)
                                                 }
 
@@ -257,10 +278,20 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 if (mapKey == null) {
 
+                                                    if (DEBUG.get()) {
+
+                                                        Console.log("$oTag END :: Null map key")
+                                                    }
+
                                                     return true
                                                 }
 
                                                 if (value == null) {
+
+                                                    if (DEBUG.get()) {
+
+                                                        Console.log("$oTag END :: Null value / 2")
+                                                    }
 
                                                     return true
                                                 }
@@ -272,7 +303,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     val e = IOException(msg)
 
-                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    Console.error("$oTag ERROR: ${e.message}")
                                                     recordException(e)
 
                                                     return false
@@ -285,7 +316,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     val e = IOException(msg)
 
-                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    Console.error("$oTag ERROR: ${e.message}")
                                                     recordException(e)
 
                                                     return false
@@ -330,7 +361,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     val e = IOException(msg)
 
-                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    Console.error("$oTag ERROR: ${e.message}")
                                                     recordException(e)
                                                 }
 
@@ -340,11 +371,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     if (DEBUG.get()) Console.log(
 
-                                                        "$tag WRITTEN: Partition no. $partition, " +
+                                                        "$oTag WRITTEN: Partition no. $partition, " +
                                                                 "Row no. $row, " +
                                                                 "Qualified name: $fqName, " +
                                                                 "Pair data info: $rowValue"
                                                     )
+
+                                                    return true
 
                                                 } else {
 
@@ -358,7 +391,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     val e = IOException(msg)
 
-                                                    Console.error("$tag ERROR :: ${e.message}")
+                                                    Console.error("$oTag ERROR :: ${e.message}")
                                                     recordException(e)
                                                 }
 
@@ -386,9 +419,10 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         } else {
 
                                                             val msg = "FAILURE: Writing rows count"
-                                                            Console.error("$tag $msg")
+                                                            Console.error("$oTag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
+
                                                             return false
                                                         }
                                                     }
@@ -422,9 +456,10 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         } else {
 
                                                             val msg = "FAILURE: Writing rows count"
-                                                            Console.error("$tag $msg")
+                                                            Console.error("$oTag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
+
                                                             return false
                                                         }
                                                     }
@@ -443,9 +478,10 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         } else {
 
                                                             val msg = "FAILURE: Writing rows count"
-                                                            Console.error("$tag $msg")
+                                                            Console.error("$oTag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
+
                                                             return false
                                                         }
                                                     }
@@ -464,9 +500,10 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         } else {
 
                                                             val msg = "FAILURE: Writing rows count"
-                                                            Console.error("$tag $msg")
+                                                            Console.error("$oTag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
+
                                                             return false
                                                         }
                                                     }
@@ -477,25 +514,23 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             if (DEBUG.get()) {
 
-                                                                if (DEBUG.get()) {
+                                                                Console.log(
 
-                                                                    Console.log(
-
-                                                                        "$tag WRITTEN: " +
-                                                                                "Partition no. " +
-                                                                                "$partition " +
-                                                                                "(simple write " +
-                                                                                "/ 2)"
-                                                                    )
-                                                                }
+                                                                    "$oTag WRITTEN: " +
+                                                                            "Partition no. " +
+                                                                            "$partition " +
+                                                                            "(simple write " +
+                                                                            "/ 2)"
+                                                                )
                                                             }
 
                                                         } else {
 
                                                             val msg = "FAILURE: Simple write failed"
-                                                            Console.error("$tag $msg")
+                                                            Console.error("$oTag $msg")
                                                             val e = IOException(msg)
                                                             callback?.onFailure(e)
+
                                                             return false
                                                         }
                                                     }
@@ -507,7 +542,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     if (DEBUG.get()) {
 
-                                                        Console.log("$tag WRITTEN: Partition no. " +
+                                                        Console.log("$oTag WRITTEN: Partition no. " +
                                                                 "$partition (simple write / 1)")
                                                     }
 
@@ -517,15 +552,25 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                     Console.error("$tag $msg")
                                                     val e = IOException(msg)
                                                     callback?.onFailure(e)
+
+                                                    Console.error("$oTag END :: Failed simple write / 2")
+
                                                     return false
                                                 }
                                             }
+                                        }
+
+                                        if (DEBUG.get()) {
+
+                                            Console.log("$oTag END")
                                         }
 
                                         callback?.onCompleted(true)
                                         return true
 
                                     } catch (e: Exception) {
+
+                                        Console.error("$oTag ERROR: ${e.message}")
 
                                         callback?.onFailure(e)
                                         return false
@@ -537,14 +582,41 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                 exec(
 
-                                    onRejected = { e -> recordException(e) }
+                                    onRejected = { e ->
+
+                                        Console.error("$dTag ERROR: ${e.message}")
+
+                                        recordException(e)
+                                    }
 
                                 ) {
 
-                                    action.obtain()
+                                    if (DEBUG.get()) {
+
+                                        Console.log("$dTag Obtain async :: PRE-START")
+                                    }
+
+                                    val res = action.obtain()
+
+                                    if (DEBUG.get()) {
+
+                                        if (res) {
+
+                                            Console.log("$dTag Obtain async :: END :: OK")
+
+                                        } else {
+
+                                            Console.log("$dTag Obtain async :: END :: FAILURE")
+                                        }
+                                    }
                                 }
 
                             } else {
+
+                                if (DEBUG.get()) {
+
+                                    Console.log("$dTag Obtain sync")
+                                }
 
                                 return action.obtain()
                             }
