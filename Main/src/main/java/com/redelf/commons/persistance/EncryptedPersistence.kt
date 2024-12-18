@@ -5,6 +5,7 @@ import com.google.gson.ExclusionStrategy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.destruction.erasing.Erasing
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
@@ -14,6 +15,7 @@ import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Persistence
 import com.redelf.commons.persistance.base.Salter
+import com.redelf.commons.registration.Registration
 import java.util.concurrent.atomic.AtomicBoolean
 
 class EncryptedPersistence
@@ -33,7 +35,8 @@ constructor(
     Persistence<String>,
     ShutdownSynchronized,
     TerminationSynchronized,
-    InitializationWithContext
+    InitializationWithContext,
+    Registration<EncryptedPersistenceListener>
 
 {
 
@@ -45,6 +48,7 @@ constructor(
     }
 
     private var dataDelegate: DataDelegate? = null
+    private val listeners = Callbacks<EncryptedPersistenceListener>("enc_listeners")
 
     private val gsonBuilder = object : Obtain<GsonBuilder> {
 
@@ -103,15 +107,21 @@ constructor(
 
     override fun shutdown(): Boolean {
 
+        listeners.clear()
+
         return dataDelegate?.shutdown() == true
     }
 
     override fun terminate(vararg args: Any): Boolean {
 
+        listeners.clear()
+
         return dataDelegate?.terminate(*args) == true
     }
 
     override fun initialize(ctx: Context) {
+
+        listeners.clear()
 
         dataDelegate?.initialize(ctx)
     }
@@ -154,5 +164,20 @@ constructor(
     override fun erase(): Boolean {
 
         return dataDelegate?.deleteAll() == true
+    }
+
+    override fun register(subscriber: EncryptedPersistenceListener) {
+
+        listeners.register(subscriber)
+    }
+
+    override fun unregister(subscriber: EncryptedPersistenceListener) {
+
+        listeners.unregister(subscriber)
+    }
+
+    override fun isRegistered(subscriber: EncryptedPersistenceListener): Boolean {
+
+        return listeners.isRegistered(subscriber)
     }
 }
