@@ -192,7 +192,6 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                 partition.let {
 
-                                                    
                                                     fun simpleWrite(): Boolean {
 
                                                         if (DEBUG.get()) {
@@ -230,7 +229,6 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         return written
                                                     }
 
-                                                    
                                                     fun rowWrite(
 
                                                         partition: Int,
