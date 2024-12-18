@@ -30,9 +30,9 @@ data class ObfuscatorSalt(
 
     @JsonProperty("refreshSkipCount")
     @SerializedName("refreshSkipCount")
-    val refreshSkipCount: AtomicInteger = AtomicInteger(),
+    val refreshSkipCount: AtomicInteger = AtomicInteger()
 
-    ) {
+) {
 
     override fun hashCode(): Int {
 
