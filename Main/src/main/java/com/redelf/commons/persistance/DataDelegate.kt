@@ -93,6 +93,16 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                 if (putActions.contains(key)) {
 
+                    putActions[key]?.let {
+
+                        if (it.equals(value)) {
+
+                            Console.warning("$tag Already writing this same value")
+
+                            return true
+                        }
+                    }
+
                     Console.warning("$tag Already writing")
                 }
 
@@ -146,7 +156,6 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                             val partition = value.getPartitionData(i)
 
-                            
                             fun doPartition(
 
                                 async: Boolean,
@@ -166,7 +175,6 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                     val action = object : Obtain<Boolean> {
 
-                                        
                                         override fun obtain(): Boolean {
 
                                             val oTag = "$dTag Obtain async ::"
@@ -447,10 +455,26 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         return false
                                                     }
 
-                                                    val collection =
-                                                        partition !is ByteArray &&
-                                                        (partition is Collection<*> ||
-                                                                partition is Map<*, *>)
+                                                    var collection =
+                                                        partition is Collection<*> ||
+                                                                partition is Map<*, *>
+
+                                                    value.isPartitionCollection(i)?.let {
+
+                                                        if (it != collection) {
+
+                                                            if (DEBUG.get()) {
+
+                                                                Console.log(
+
+                                                                    "$oTag Collection :: Override " +
+                                                                            "= $collection -> $it"
+                                                                )
+                                                            }
+                                                        }
+
+                                                        collection = it
+                                                    }
 
                                                     if (collection) {
 
