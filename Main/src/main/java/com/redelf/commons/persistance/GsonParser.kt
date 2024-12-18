@@ -239,7 +239,12 @@ class GsonParser private constructor(
 
         } catch (e: Exception) {
 
-            Console.error("$tag ERROR: ${e.message}")
+            Console.error(
+
+                "$tag ERROR :: Error = ${e.message}, Class = " +
+                        "${clazz.canonicalName?.forClassName()}, Content = $content"
+            )
+
             recordException(e)
         }
 
