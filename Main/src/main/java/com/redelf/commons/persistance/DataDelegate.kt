@@ -448,7 +448,9 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                     }
 
                                                     val collection =
-                                                        partition is Collection<*> || partition is Map<*, *>
+                                                        partition !is ByteArray &&
+                                                        (partition is Collection<*> ||
+                                                                partition is Map<*, *>)
 
                                                     if (collection) {
 
