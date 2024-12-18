@@ -85,7 +85,7 @@ class GsonParser private constructor(
             return null
         }
 
-        val tag = "$tag Class = '${body::class.java.canonicalName}' ::"
+        val tag = "$tag Class = '${body::class.java.canonicalName?.forClassName()}' ::"
 
         if (DEBUG.get()) Console.log("$tag START")
 
@@ -142,7 +142,7 @@ class GsonParser private constructor(
 
                 val clazz = Class.forName(t.typeName.forClassName())
 
-                Console.log("$tag Class = '${clazz.canonicalName}'")
+                Console.log("$tag Class = '${clazz.canonicalName?.forClassName()}'")
 
                 val instance: Any? = fromJson(content, clazz)
 
@@ -175,37 +175,37 @@ class GsonParser private constructor(
 
         try {
 
-            when (clazz.canonicalName) {
+            when (clazz.canonicalName?.forClassName()) {
 
-                Int::class.java.canonicalName -> return content?.toInt() as T?
+                Int::class.java.canonicalName?.forClassName() -> return content?.toInt() as T?
                 "int" -> return content?.toInt() as T?
                 "java.lang.Integer" -> return content?.toInt() as T?
-                Long::class.java.canonicalName -> return content?.toLong() as T?
+                Long::class.java.canonicalName?.forClassName() -> return content?.toLong() as T?
                 "long" -> return content?.toLong() as T?
                 "java.lang.Long" -> return content?.toLong() as T?
-                String::class.java.canonicalName -> return content as T?
+                String::class.java.canonicalName?.forClassName() -> return content as T?
                 "string" -> return content as T?
                 "java.lang.String" -> return content as T?
-                Double::class.java.canonicalName -> return content?.toDouble() as T?
+                Double::class.java.canonicalName?.forClassName() -> return content?.toDouble() as T?
                 "double" -> return content?.toDouble() as T?
                 "java.lang.Double" -> return content?.toDouble() as T?
-                Float::class.java.canonicalName -> return content?.toFloat() as T?
+                Float::class.java.canonicalName?.forClassName() -> return content?.toFloat() as T?
                 "float" -> return content?.toFloat() as T?
                 "java.lang.Float" -> return content?.toFloat() as T?
-                Boolean::class.java.canonicalName -> return content?.toBoolean() as T?
+                Boolean::class.java.canonicalName?.forClassName() -> return content?.toBoolean() as T?
                 "boolean" -> return content?.toBoolean() as T?
                 "java.lang.Boolean" -> return content?.toBoolean() as T?
 
                 else -> {
 
                     var typeAdapter: TypeAdapter<*>? = null
-                    val tag = "$tag Deserialize :: Class = '${clazz.canonicalName}'"
+                    val tag = "$tag Deserialize :: Class = '${clazz.canonicalName?.forClassName()}'"
 
                     Console.log("$tag START")
 
                     try {
 
-                        Console.log("$tag Class = '${clazz.canonicalName}'")
+                        Console.log("$tag Class = '${clazz.canonicalName?.forClassName()}'")
 
                         val instance = instantiate(clazz)
 
@@ -231,7 +231,7 @@ class GsonParser private constructor(
 
                     } catch (e: Exception) {
 
-                        Console.error("$tag ERROR: ${e.message}")
+                        Console.error("$tag ERROR :: Error = ${e.message}, ")
                         recordException(e)
                     }
                 }
@@ -264,7 +264,7 @@ class GsonParser private constructor(
         }
 
         val clazz = instance::class.java
-        val tag = "$tag Type adapter :: Class = '${clazz.canonicalName}'"
+        val tag = "$tag Type adapter :: Class = '${clazz.canonicalName?.forClassName()}'"
 
         Console.log("$tag CREATE :: Recipe = $recipe")
 
@@ -305,7 +305,7 @@ class GsonParser private constructor(
 
                                     val value = fValue
                                     val clazz = fValue::class.java
-                                    val fieldCanonical = clazz.canonicalName
+                                    val fieldCanonical = clazz.canonicalName?.forClassName()
 
                                     fun regularWrite() {
 
@@ -319,22 +319,22 @@ class GsonParser private constructor(
 
                                             when (fieldCanonical) {
 
-                                                Int::class.java.canonicalName -> out?.value(fValue as Int)
+                                                Int::class.java.canonicalName?.forClassName() -> out?.value(fValue as Int)
                                                 "int" -> out?.value(fValue as Int)
                                                 "java.lang.Integer" -> out?.value(fValue as Int)
-                                                Long::class.java.canonicalName -> out?.value(fValue as Long)
+                                                Long::class.java.canonicalName?.forClassName() -> out?.value(fValue as Long)
                                                 "long" -> out?.value(fValue as Long)
                                                 "java.lang.Long" -> out?.value(fValue as Long)
-                                                String::class.java.canonicalName -> out?.value(fValue as String)
+                                                String::class.java.canonicalName?.forClassName() -> out?.value(fValue as String)
                                                 "string" -> out?.value(fValue as String)
                                                 "java.lang.String" -> out?.value(fValue as String)
-                                                Double::class.java.canonicalName -> out?.value(fValue as Double)
+                                                Double::class.java.canonicalName?.forClassName() -> out?.value(fValue as Double)
                                                 "double" -> out?.value(fValue as Double)
                                                 "java.lang.Double" -> out?.value(fValue as Double)
-                                                Float::class.java.canonicalName -> out?.value(fValue as Float)
+                                                Float::class.java.canonicalName?.forClassName() -> out?.value(fValue as Float)
                                                 "float" -> out?.value(fValue as Float)
                                                 "java.lang.Float" -> out?.value(fValue as Float)
-                                                Boolean::class.java.canonicalName -> out?.value(fValue as Boolean)
+                                                Boolean::class.java.canonicalName?.forClassName() -> out?.value(fValue as Boolean)
                                                 "boolean" -> out?.value(fValue as Boolean)
                                                 "java.lang.Boolean" -> out?.value(fValue as Boolean)
 
@@ -369,7 +369,7 @@ class GsonParser private constructor(
                                         Console.log(
 
                                             "$wTag Custom write :: START :: " +
-                                                    "Class = '${clazz.canonicalName}'"
+                                                    "Class = '${clazz.canonicalName?.forClassName()}'"
                                         )
 
                                         recipe[fieldName]?.let { serializer ->
@@ -378,10 +378,10 @@ class GsonParser private constructor(
 
                                                 Console.log("$wTag Custom write :: Custom serializer")
 
-                                                when (clazz.canonicalName) {
+                                                when (clazz.canonicalName?.forClassName()) {
 
                                                     "byte[]",
-                                                    ByteArray::class.java.canonicalName -> {
+                                                    ByteArray::class.java.canonicalName?.forClassName() -> {
 
                                                         try {
 
@@ -397,7 +397,7 @@ class GsonParser private constructor(
 
                                                                     "Could not serialize the '" +
                                                                             "$fieldName' for " +
-                                                                            "'${instance::class.java.canonicalName}'"
+                                                                            "'${instance::class.java.canonicalName?.forClassName()}'"
                                                                 )
                                                             }
 
@@ -414,7 +414,7 @@ class GsonParser private constructor(
 
                                                             "Not supported type for default " +
                                                                     "custom serializer " +
-                                                                    "'${clazz.canonicalName}'"
+                                                                    "'${clazz.canonicalName?.forClassName()}'"
                                                         )
 
                                                         Console.error("$wTag ERROR: ${e.message}")
@@ -513,13 +513,13 @@ class GsonParser private constructor(
                                     Console.log(
 
                                         "$tag Custom write :: Custom serializer :: " +
-                                                "Class = '${clazz.canonicalName}'"
+                                                "Class = '${clazz.canonicalName?.forClassName()}'"
                                     )
 
-                                    when (clazz.canonicalName) {
+                                    when (clazz.canonicalName?.forClassName()) {
 
                                         "byte[]",
-                                        ByteArray::class.java.canonicalName -> {
+                                        ByteArray::class.java.canonicalName?.forClassName() -> {
 
                                             val result =
                                                 byteArraySerializer.deserialize(fieldName)
@@ -533,7 +533,7 @@ class GsonParser private constructor(
 
                                                 "Not supported type for default " +
                                                         "custom serializer " +
-                                                        "'${clazz.canonicalName}'"
+                                                        "'${clazz.canonicalName?.forClassName()}'"
                                             )
 
                                             Console.error("$tag ERROR: ${e.message}")
@@ -567,14 +567,14 @@ class GsonParser private constructor(
                         Console.log("$tag Field name = '$fieldName'")
 
                         val fieldClazz = clazz.getFieldByName(fieldName)?.type
-                        val fieldCanonical = fieldClazz?.canonicalName
+                        val fieldCanonical = fieldClazz?.canonicalName?.forClassName()
 
                         if (isEmpty(fieldCanonical)) {
 
                             throw IllegalArgumentException(
 
                                 "Could not find field '$fieldName' " +
-                                    "for the '${clazz.canonicalName}' class"
+                                    "for the '${clazz.canonicalName?.forClassName()}' class"
                             )
                         }
 
@@ -604,22 +604,22 @@ class GsonParser private constructor(
 
                                     when (fieldCanonical) {
 
-                                        Int::class.java.canonicalName -> return `in`.nextInt()
+                                        Int::class.java.canonicalName?.forClassName() -> return `in`.nextInt()
                                         "int" -> return `in`.nextInt()
                                         "java.lang.Integer" -> return `in`.nextInt()
-                                        Long::class.java.canonicalName -> return `in`.nextLong()
+                                        Long::class.java.canonicalName?.forClassName() -> return `in`.nextLong()
                                         "long" -> return `in`.nextLong()
                                         "java.lang.Long" -> return `in`.nextLong()
-                                        String::class.java.canonicalName -> return `in`.nextString()
+                                        String::class.java.canonicalName?.forClassName() -> return `in`.nextString()
                                         "string" -> return `in`.nextString()
                                         "java.lang.String" -> return `in`.nextString()
-                                        Double::class.java.canonicalName -> return `in`.nextDouble()
+                                        Double::class.java.canonicalName?.forClassName() -> return `in`.nextDouble()
                                         "double" -> return `in`.nextDouble()
                                         "java.lang.Double" -> return `in`.nextDouble()
-                                        Float::class.java.canonicalName -> return `in`.nextDouble()
+                                        Float::class.java.canonicalName?.forClassName() -> return `in`.nextDouble()
                                         "float" -> return `in`.nextDouble()
                                         "java.lang.Float" -> return `in`.nextDouble()
-                                        Boolean::class.java.canonicalName -> return `in`.nextBoolean()
+                                        Boolean::class.java.canonicalName?.forClassName() -> return `in`.nextBoolean()
                                         "boolean" -> return `in`.nextBoolean()
                                         "java.lang.Boolean" -> return `in`.nextBoolean()
 
@@ -707,7 +707,7 @@ class GsonParser private constructor(
             return null
         }
 
-        Console.log("$tag INSTANTIATE :: Class = '${clazz.canonicalName}' :: START")
+        Console.log("$tag INSTANTIATE :: Class = '${clazz.canonicalName?.forClassName()}' :: START")
 
         try {
 
@@ -724,7 +724,7 @@ class GsonParser private constructor(
                 Console.error(
 
                     "$tag INSTANTIATE :: END :: No public constructor " +
-                            "found for class '${clazz.canonicalName}'"
+                            "found for class '${clazz.canonicalName?.forClassName()}'"
                 )
             }
 
