@@ -18,6 +18,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import java.io.IOException
 import kotlin.collections.indexOf
+import kotlin.text.toInt
 import kotlin.text.toLong
 
 typealias EPlayer = androidx.media3.exoplayer.ExoPlayer
@@ -451,8 +452,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 try {
 
-                    // TODO:
-//                    return it.currentPosition
+                    return it.currentPosition.toInt()
 
                 } catch (e: IllegalStateException) {
 
