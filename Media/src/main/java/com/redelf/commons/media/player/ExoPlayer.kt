@@ -173,6 +173,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                     override fun onPlaybackStateChanged(state: Int) {
 
+                        if (state == Player.STATE_READY) {
+
+                            setPrepared()
+                            Console.log("$logTag Prepared")
+
+                            return
+                        }
+
                         if (state == Player.STATE_ENDED) {
 
                             stop()
@@ -193,15 +201,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                         what.onError(e)
                         Console.error("$logTag Error: ${error.errorCode}")
-                    }
-
-                    override fun onPlaybackStateChanged(state: Int) {
-
-                        if (state == Player.STATE_READY) {
-
-                            setPrepared()
-                            Console.log("$logTag Prepared")
-                        }
                     }
                 })
 
