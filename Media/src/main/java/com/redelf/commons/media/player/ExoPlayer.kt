@@ -373,11 +373,10 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 try {
 
-                    // TODO:
-//                    it.start()
-//                    setPlaying(true)
-//                    startPublishingProgress(it)
-//                    getMedia()?.onResumed()
+                    it.playWhenReady = true
+                    setPlaying(true)
+                    startPublishingProgress(it)
+                    getMedia()?.onResumed()
 
                     return true
 
