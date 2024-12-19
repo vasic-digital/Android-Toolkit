@@ -4,11 +4,17 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.OptIn
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DecoderReuseEvaluation
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
@@ -157,8 +163,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         var result = false
         val logTag = "Player :: Play :: Execution :: ${what.getIdentifier()} ::"
 
-        Console.log("$playerTag $logTag Start :: from=$startFrom")
-
+        Console.log("$playerTag $logTag Start :: From = $startFrom")
 
         val ePlayer = instantiateMediaPlayer()
 
@@ -759,6 +764,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         return false
     }
 
+    @OptIn(UnstableApi::class)
     private fun instantiateMediaPlayer(): EPlayer? {
 
         getMediaPlayer()?.let {
@@ -766,7 +772,28 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             destroyMediaPlayer(it)
         }
 
-        val exoPlayer = ExoPlayer.Builder(BaseApplication.takeContext()).build()
+        val context = BaseApplication.takeContext()
+        val exoPlayer = ExoPlayer.Builder(context).build()
+
+        exoPlayer.addAnalyticsListener(object : AnalyticsListener {
+
+            override fun onAudioInputFormatChanged(
+
+                eventTime: AnalyticsListener.EventTime,
+                format: Format,
+                decoderReuseEvaluation: DecoderReuseEvaluation?
+
+            ) {
+
+                super.onAudioInputFormatChanged(eventTime, format, decoderReuseEvaluation)
+
+                Console.log(
+
+                    "$playerTag Audio format changed: ${format.sampleMimeType}, " +
+                            "Codec: ${format.codecs}"
+                )
+            }
+        })
 
         setMediaPlayer(exoPlayer)
 
