@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -159,13 +160,13 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val ePlayer = instantiateMediaPlayer()
 
-        ePlayer.let { ep ->
+        ePlayer?.let { ep ->
 
             Console.log("$logTag Player instantiated")
 
             try {
 
-                ePlayer?.addListener(object : Player.Listener {
+                ep.addListener(object : Player.Listener {
 
                     override fun onPlaybackStateChanged(state: Int) {
 
@@ -225,8 +226,8 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                             try {
 
-                                // TODO:
-//                                mp.setDataSource(streamUrl)
+                                val mediaItem = MediaItem.fromUri(streamUrl)
+                                ep.setMediaItem(mediaItem)
 
                                 applySpeed(ep)
 
