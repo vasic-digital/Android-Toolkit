@@ -231,34 +231,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                                 applySpeed(ep)
 
-                                Retrying().execute {
-
-                                    try {
-
-                                        Console.log("$logTag Preparing")
-
-                                        // TODO:
-//                                        mp.prepare()
-
-                                        Console.log("$logTag Prepared")
-
-                                    } catch (e: Exception) {
-
-                                        Console.error("$logTag ERROR: ${e.message}")
-                                        Console.error(e)
-
-                                        false
-                                    }
-
-                                    true
-                                }
-
                                 val duration = doGetDuration()
 
                                 setCurrentDuration(duration)
 
-                                // TODO:
-//                                mp.start()
+                                ep.playWhenReady = true
 
                                 Console.log("$logTag START :: Duration = $duration")
 
@@ -376,10 +353,9 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 try {
 
-                    // TODO:
-//                    it.pause()
-//                    setPlaying(false)
-//                    getMedia()?.onPaused()
+                    it.pause()
+                    setPlaying(false)
+                    getMedia()?.onPaused()
 
                 } catch (e: IllegalStateException) {
 
