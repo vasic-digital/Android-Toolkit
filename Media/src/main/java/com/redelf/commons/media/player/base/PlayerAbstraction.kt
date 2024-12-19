@@ -129,7 +129,7 @@ abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
                     val msg = "Failed to execute the player operation"
                     val e = IllegalArgumentException("$msg $operation".trim())
 
-                    Console.error("$tag ERROR: $msg")
+                    Console.error("$tag RUN :: ERROR: $msg")
                     callback?.onFailure(e)
                 }
             }
