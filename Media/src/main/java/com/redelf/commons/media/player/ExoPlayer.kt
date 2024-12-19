@@ -168,40 +168,66 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
             try {
 
-                ep.addListener(object : Player.Listener {
+                val stateListener = object : Player.Listener {
+
+                    private val tag = "$playerTag $logTag State listener ::"
 
                     override fun onPlaybackStateChanged(state: Int) {
 
-                        if (state == Player.STATE_READY) {
+                        when (state) {
 
-                            setPrepared()
-                            Console.log("$playerTag $logTag Prepared")
+                            Player.STATE_READY -> {
 
-                            return
-                        }
+                                setPrepared()
 
-                        if (state == Player.STATE_ENDED) {
+                                Console.debug("$tag Prepared")
 
-                            stop()
+                            }
 
-                            what.onEnded()
+                            Player.STATE_ENDED -> {
 
-                            if (canNext()) {
+                                Console.debug("$tag Ended")
 
-                                next()
+                                stop()
+
+                                what.onEnded()
+
+                                if (canNext()) {
+
+                                    next()
+                                }
+                            }
+
+                            Player.STATE_BUFFERING -> {
+
+                                Console.debug("$tag Buffering")
+                            }
+
+                            Player.STATE_IDLE -> {
+
+                                Console.debug("$tag Idle")
+                            }
+
+                            else -> {
+
+                                Console.debug("$tag Unknown")
                             }
                         }
                     }
 
                     override fun onPlayerError(error: PlaybackException) {
 
-                        val msg = "ExoPlayer error: ${error.errorCode}, extra: ${error.errorCodeName}"
+                        val msg =
+                            "ExoPlayer error: ${error.errorCode}, extra: ${error.errorCodeName}"
+
                         val e = IllegalStateException(msg)
 
                         what.onError(e)
                         Console.error("$playerTag $logTag Error: ${error.errorCode}")
                     }
-                })
+                }
+
+                ep.addListener(stateListener)
 
                 if (!getPlaying()) {
 
@@ -1001,7 +1027,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         doWhat: (ep: ExoPlayer) -> Unit,
 
-    ) {
+        ) {
 
         getMediaPlayer()?.let { ep ->
 
