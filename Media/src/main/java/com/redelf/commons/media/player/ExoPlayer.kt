@@ -307,6 +307,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                                     val mediaItem = MediaItem.fromUri(streamUrl)
                                     ep.setMediaItem(mediaItem)
+                                    ep.prepare()
                                 }
 
                             } catch (e: IllegalStateException) {
