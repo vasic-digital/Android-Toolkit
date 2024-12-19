@@ -18,6 +18,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import java.io.IOException
 import kotlin.collections.indexOf
+import kotlin.text.toLong
 
 typealias EPlayer = androidx.media3.exoplayer.ExoPlayer
 
@@ -400,8 +401,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 Console.log("Seek to: $positionInMilliseconds")
 
-                // TODO:
-//                it.seekTo(positionInMilliseconds.toInt())
+                it.seekTo(positionInMilliseconds.toLong())
 
                 Console.log("Seek to: $positionInMilliseconds done")
 
