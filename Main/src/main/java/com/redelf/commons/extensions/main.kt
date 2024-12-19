@@ -26,6 +26,7 @@ import android.util.Base64OutputStream
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import arrow.core.const
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -38,6 +39,7 @@ import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -993,6 +995,40 @@ fun <T> doExec(
     }
 
     return success
+}
+
+fun CountDownLatch.safeWait(timeoutInSeconds: Int = 60, tag: String = "") {
+
+    val sTag = "Countdown latch :: Safe wait ::"
+
+    val wTag = if (tag.isEmpty()) {
+
+        sTag
+
+    } else {
+
+        "$tag $sTag"
+    }
+
+    Console.log("$wTag START")
+
+    try {
+
+        if (await(timeoutInSeconds.toLong(), TimeUnit.SECONDS)) {
+
+            Console.log("$wTag END")
+
+        } else {
+
+            Console.error("$wTag TIMEOUT")
+        }
+
+    } catch (e: InterruptedException) {
+
+        Console.error("$wTag ERROR: ${e.message}")
+
+        recordException(e)
+    }
 }
 
 @Throws(IllegalArgumentException::class)

@@ -17,14 +17,17 @@ import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.creation.instantiation.Instantiable
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.safeWait
 import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
-import com.redelf.commons.obtain.Obtain
-import java.io.IOException
+import com.redelf.commons.media.player.base.PlayerAbstraction
+import com.redelf.commons.obtain.OnObtain
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.collections.indexOf
 
 typealias EPlayer = ExoPlayer
@@ -104,7 +107,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         if (isPlaying()) {
 
-            withPlayer {
+            withPlayer(operation = "play") {
 
                 destroyMediaPlayer(it)
             }
@@ -124,7 +127,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.error("$playerTag $logTag No playable item")
 
-        return false
+        return true
     }
 
     override fun play(what: List<Media>, index: Int): Boolean {
@@ -158,7 +161,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         if (isPlaying()) {
 
-            withPlayer {
+            withPlayer(operation = "assign") {
 
                 destroyMediaPlayer(it)
             }
@@ -176,84 +179,93 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag $logTag Start :: From = $startFrom")
 
-        instantiateMediaPlayer { ep ->
+        if (!getPlaying()) {
 
-            Console.log("$playerTag $logTag Player instantiated")
+            val streamUrl = what.getStreamUrl()
 
-            try {
+            withPlayer(
 
-                val stateListener = object : Player.Listener {
+                operation = "execute",
 
-                    private val tag = "$playerTag $logTag State listener ::"
+                instantiation = object : Instantiable<EPlayer> {
 
-                    override fun onPlaybackStateChanged(state: Int) {
+                    override fun instantiate(vararg params: Any): EPlayer {
 
-                        when (state) {
-
-                            Player.STATE_READY -> {
-
-                                setPrepared()
-
-                                Console.debug("$tag Prepared")
-                            }
-
-                            Player.STATE_ENDED -> {
-
-                                Console.debug("$tag Ended")
-
-                                stop()
-
-                                what.onEnded()
-
-                                if (canNext()) {
-
-                                    next()
-                                }
-                            }
-
-                            Player.STATE_BUFFERING -> {
-
-                                Console.debug("$tag Buffering")
-                            }
-
-                            Player.STATE_IDLE -> {
-
-                                Console.debug("$tag Idle")
-                            }
-
-                            else -> {
-
-                                Console.debug("$tag Unknown")
-                            }
-                        }
-                    }
-
-                    override fun onPlayerError(error: PlaybackException) {
-
-                        val msg =
-                            "ExoPlayer error: ${error.errorCode}, extra: ${error.errorCodeName}"
-
-                        val e = IllegalStateException(msg)
-
-                        what.onError(e)
-                        Console.error("$playerTag $logTag Error: ${error.errorCode}")
+                        return instantiateMediaPlayer()
                     }
                 }
 
-                ep.addListener(stateListener)
+            ) { ep ->
 
-                if (!getPlaying()) {
+                Console.log("$playerTag $logTag Player instantiated")
 
-                    exec(
+                try {
 
-                        onRejected = { err ->
+                    val stateListener = object : Player.Listener {
 
-                            recordException(err)
+                        private val tag = "$playerTag $logTag State listener ::"
+
+                        override fun onPlaybackStateChanged(state: Int) {
+
+                            when (state) {
+
+                                Player.STATE_READY -> {
+
+                                    setPrepared()
+
+                                    Console.debug("$tag Prepared")
+                                }
+
+                                Player.STATE_ENDED -> {
+
+                                    Console.debug("$tag Ended")
+
+                                    stop()
+
+                                    what.onEnded()
+
+                                    if (canNext()) {
+
+                                        next()
+                                    }
+                                }
+
+                                Player.STATE_BUFFERING -> {
+
+                                    Console.debug("$tag Buffering")
+                                }
+
+                                Player.STATE_IDLE -> {
+
+                                    Console.debug("$tag Idle")
+                                }
+
+                                else -> {
+
+                                    Console.debug("$tag Unknown")
+                                }
+                            }
                         }
 
-                    ) {
+                        override fun onPlayerError(error: PlaybackException) {
 
-                        val streamUrl = what.getStreamUrl()
+                            val msg =
+                                "ExoPlayer error: ${error.errorCode}, extra: ${error.errorCodeName}"
+
+                            val e = IllegalStateException(msg)
+
+                            what.onError(e)
+                            Console.error("$playerTag $logTag Error: ${error.errorCode}")
+                        }
+                    }
+
+                    ep.addListener(stateListener)
+
+                    if (getPlaying()) {
+
+                        Console.error("$playerTag $logTag Already playing")
+
+                    } else {
 
                         if (isEmpty(streamUrl)) {
 
@@ -264,94 +276,59 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                             Console.log("$playerTag $logTag Stream url: $streamUrl")
 
-                            withPlayer { ep ->
+                            ep.playWhenReady = true
 
-                                try {
+                            applySpeed(ep)
+                            setVolume(1.0f)
 
-                                    ep.playWhenReady = true
+                            val mediaItem = MediaItem.fromUri(streamUrl)
+                            ep.setMediaItem(mediaItem)
 
-                                    applySpeed(ep)
-                                    setVolume(1.0f)
+                            val duration = doGetDuration()
 
-                                    val mediaItem = MediaItem.fromUri(streamUrl)
-                                    ep.setMediaItem(mediaItem)
+                            setCurrentDuration(duration)
 
-                                    val duration = doGetDuration()
+                            Console.log("$playerTag $logTag START :: Duration = $duration")
 
-                                    setCurrentDuration(duration)
+                            startPublishingProgress(ep)
 
-                                    Console.log("$playerTag $logTag START :: Duration = $duration")
+                            setPlaying(true)
 
-                                    startPublishingProgress(ep)
+                            val currentProgress: Float = if (startFrom < 0) {
 
-                                    setPlaying(true)
+                                obtainCurrentProgress(what)
 
-                                    val currentProgress: Float = if (startFrom < 0) {
+                            } else {
 
-                                        obtainCurrentProgress(what)
-
-                                    } else {
-
-                                        startFrom.toFloat()
-                                    }
-
-                                    currentProgress.let { progress ->
-
-                                        Console.log("$playerTag $logTag Progress obtained: $currentProgress")
-
-                                        seekTo(progress.toInt())
-
-                                        Console.log("$playerTag $logTag Seek")
-                                    }
-
-                                    ep.prepare()
-
-                                    what.onStarted()
-
-                                    Console.log("$playerTag $logTag On started")
-
-                                } catch (e: IllegalStateException) {
-
-                                    Console.error(e)
-
-                                } catch (e: IOException) {
-
-                                    Console.error(e)
-
-                                } catch (e: Exception) {
-
-                                    recordException(e)
-                                }
+                                startFrom.toFloat()
                             }
+
+                            currentProgress.let { progress ->
+
+                                Console.log("$playerTag $logTag Progress obtained: $currentProgress")
+
+                                seekTo(progress.toInt())
+
+                                Console.log("$playerTag $logTag Seek")
+                            }
+
+                            ep.prepare()
+
+                            what.onStarted()
+
+                            Console.log("$playerTag $logTag On started")
+
+                            true
                         }
                     }
 
-                } else {
+                } catch (e: Exception) {
 
-                    Console.error("$playerTag $logTag Already playing")
+                    Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
+                    recordException(e)
                 }
 
-            } catch (e: IOException) {
-
-                Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
-
-            } catch (e: IllegalArgumentException) {
-
-                Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
-
-            } catch (e: SecurityException) {
-
-                Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
-
-            } catch (e: IllegalStateException) {
-
-                Console.error("$playerTag $logTag ${e::class.simpleName}")
-
-                Console.error(e)
-
-            } catch (e: Throwable) {
-
-                recordException(e)
+                false
             }
         }
 
@@ -367,12 +344,21 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag stop()")
 
-        withPlayer {
+        withPlayer(
 
-            destroyMediaPlayer(it)
+            operation = "stop"
+
+        ) {
+
+            val success = destroyMediaPlayer(it)
+
+            if (success) {
+
+                getMedia()?.onStopped()
+            }
+
+            success
         }
-
-        getMedia()?.onStopped()
     }
 
     override fun stop(afterSeconds: Int) = doAfter(BROADCAST_EXTRA_STOP_CODE, afterSeconds)
@@ -385,7 +371,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         if (getPlaying()) {
 
-            withPlayer {
+            withPlayer(operation = "pause") {
 
                 try {
 
@@ -395,8 +381,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 } catch (e: IllegalStateException) {
 
-                    Console.error(e.message)
+                    Console.error("$playerTag ERROR: ${e.message}")
+                    false
                 }
+
+                true
             }
         }
     }
@@ -405,7 +394,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         if (!getPlaying()) {
 
-            withPlayer {
+            withPlayer(operation = "resume") {
 
                 try {
 
@@ -418,7 +407,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 } catch (e: IllegalStateException) {
 
                     Console.warning(e.message)
+
+                    false
                 }
+
+                true
             }
         }
 
@@ -429,7 +422,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag Seek to: $positionInMilliseconds milliseconds")
 
-        withPlayer {
+        withPlayer(operation = "seek to") {
 
             try {
 
@@ -439,6 +432,8 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 Console.log("$playerTag Seek to: $positionInMilliseconds done")
 
+                true
+
             } catch (e: IllegalStateException) {
 
                 Console.warning(e.message)
@@ -447,6 +442,8 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 Console.error(e)
             }
+
+            false
         }
 
         return true
@@ -512,7 +509,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag $tag To: ${getSpeed()}")
 
-        withPlayer {
+        withPlayer(operation = "set speed") {
 
             applySpeed(it)
         }
@@ -702,6 +699,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         } catch (e: IllegalStateException) {
 
+            Console.error("$playerTag Obtain playable failed :: ERROR: ${e.message}")
             recordException(e)
         }
 
@@ -713,7 +711,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         val tag = "Load an play ::"
         val currentPlayable = getPlayable()
 
-        Console.log("$playerTag $tag START: Playable=${currentPlayable != null}")
+        Console.log("$playerTag $tag START: Playable = ${currentPlayable != null}")
 
         currentPlayable?.let { pair ->
 
@@ -765,59 +763,55 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
     }
 
     @OptIn(UnstableApi::class)
-    private fun instantiateMediaPlayer(
+    private fun instantiateMediaPlayer(): EPlayer {
 
-        doWhat: (ep: EPlayer) -> Unit
+        val player = getMediaPlayer()
 
-    ) {
+        player?.let {
 
-        onUiThread {
-
-            val player = getMediaPlayer()
-
-            player?.let {
-
-                destroyMediaPlayer(it)
-            }
-
-            val context = BaseApplication.takeContext()
-
-            val audioAttributes = AudioAttributes.Builder()
-                .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
-                .setUsage(C.USAGE_MEDIA)
-                .build()
-
-            val exoPlayer = ExoPlayer.Builder(context)
-                .setAudioAttributes(audioAttributes, true)
-                .setHandleAudioBecomingNoisy(true)
-                .build()
-
-            exoPlayer.addAnalyticsListener(object : AnalyticsListener {
-
-                override fun onAudioInputFormatChanged(
-
-                    eventTime: AnalyticsListener.EventTime,
-                    format: Format,
-                    decoderReuseEvaluation: DecoderReuseEvaluation?
-
-                ) {
-
-                    super.onAudioInputFormatChanged(eventTime, format, decoderReuseEvaluation)
-
-                    Console.log(
-
-                        "$playerTag Audio format changed: ${format.sampleMimeType}, " +
-                                "Codec: ${format.codecs}"
-                    )
-                }
-            })
-
-            setMediaPlayer(exoPlayer)
-            doWhat(exoPlayer)
+            destroyMediaPlayer(it)
         }
+
+        val context = BaseApplication.takeContext()
+
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
+            .setUsage(C.USAGE_MEDIA)
+            .build()
+
+        val exoPlayer = ExoPlayer.Builder(context)
+            .setAudioAttributes(audioAttributes, true)
+            .setHandleAudioBecomingNoisy(true)
+            .build()
+
+        exoPlayer.addAnalyticsListener(object : AnalyticsListener {
+
+            override fun onAudioInputFormatChanged(
+
+                eventTime: AnalyticsListener.EventTime,
+                format: Format,
+                decoderReuseEvaluation: DecoderReuseEvaluation?
+
+            ) {
+
+                super.onAudioInputFormatChanged(eventTime, format, decoderReuseEvaluation)
+
+                Console.log(
+
+                    "$playerTag Audio format changed: ${format.sampleMimeType}, " +
+                            "Codec: ${format.codecs}"
+                )
+            }
+        })
+
+        setMediaPlayer(exoPlayer)
+
+        return exoPlayer
     }
 
-    private fun destroyMediaPlayer(player: EPlayer) {
+    private fun destroyMediaPlayer(player: EPlayer): Boolean {
+
+        var success = true
 
         if (getPlaying()) {
 
@@ -826,15 +820,28 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 setCurrentDuration(0)
                 player.stop()
 
-            } catch (e: IllegalStateException) {
+            } catch (e: Exception) {
 
-                Console.error(e)
+                success = false
+                recordException(e)
+                Console.error("$playerTag Stop failed :: ${e.message}")
             }
         }
 
-        player.release()
-        clearMediaPlayer()
-        setPlaying(false)
+        try {
+
+            player.release()
+            clearMediaPlayer()
+            setPlaying(false)
+
+        } catch (e: Exception) {
+
+            success = false
+            recordException(e)
+            Console.error("$playerTag Release failed :: ${e.message}")
+        }
+
+        return success
     }
 
     private fun doAfter(code: Int, afterSeconds: Int): Boolean {
@@ -945,22 +952,30 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag $tag To: ${getSpeed()}")
 
-        try {
+        if (isPlaying()) {
 
-            val playbackParameters = PlaybackParameters(getSpeed())
-            ep.playbackParameters = playbackParameters
+            withPlayer(operation = "apply speed") {
 
-            Console.log("$playerTag $tag APPLIED")
+                try {
 
-            return true
+                    val playbackParameters = PlaybackParameters(getSpeed())
+                    ep.playbackParameters = playbackParameters
 
-        } catch (e: Exception) {
+                    Console.log("$playerTag $tag APPLIED")
 
-            Console.error("$playerTag $tag NOT APPLIED")
-            Console.error(e)
+                    true
+
+                } catch (e: Exception) {
+
+                    Console.error("$playerTag $tag NOT APPLIED")
+                    Console.error(e)
+                }
+
+                false
+            }
         }
 
-        return false
+        return true
     }
 
     @Throws(IllegalStateException::class)
@@ -970,19 +985,26 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag $tag To: ${getVolume()}")
 
-        withPlayer {
+        if (isPlaying()) {
 
-            try {
+            withPlayer(operation = "apply volume") {
 
-                val vol = getVolume()
-                it.volume = vol
+                try {
 
-                Console.log("$playerTag $tag APPLIED")
+                    val vol = getVolume()
+                    it.volume = vol
 
-            } catch (e: Exception) {
+                    Console.log("$playerTag $tag APPLIED")
 
-                Console.error("$playerTag $tag NOT APPLIED")
-                Console.error(e)
+                    true
+
+                } catch (e: Exception) {
+
+                    Console.error("$playerTag $tag NOT APPLIED")
+                    Console.error(e)
+                }
+
+                false
             }
         }
 
@@ -1031,7 +1053,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         }
 
         Console.log("$playerTag $tag END :: Current = ${getCurrentDuration()}")
-
     }
 
     private fun getCurrentDuration() = currentDuration

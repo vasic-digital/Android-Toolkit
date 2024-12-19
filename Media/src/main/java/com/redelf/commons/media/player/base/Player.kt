@@ -1,4 +1,6 @@
-package com.redelf.commons.media
+package com.redelf.commons.media.player.base
+
+import com.redelf.commons.media.Media
 
 interface Player {
 
