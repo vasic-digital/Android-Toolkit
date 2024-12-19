@@ -424,7 +424,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag Seek to: $positionInMilliseconds milliseconds")
 
-        withPlayer(operation = "seek to position $positionInMilliseconds") {
+        withPlayer(operation = "seek to position $positionInMilliseconds ms") {
 
             try {
 
@@ -436,16 +436,12 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 true
 
-            } catch (e: IllegalStateException) {
-
-                Console.warning(e.message)
-
             } catch (e: Exception) {
 
-                Console.error(e)
-            }
+                Console.log("$playerTag ERROR: ${e.message}")
 
-            false
+                false
+            }
         }
 
         return true
