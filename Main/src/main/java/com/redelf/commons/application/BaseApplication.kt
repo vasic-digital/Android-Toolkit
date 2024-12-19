@@ -420,7 +420,7 @@ abstract class BaseApplication :
 
         if (detectAudioStreamed) {
 
-            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager?
+            val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager?
 
             val audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                 .setOnAudioFocusChangeListener(audioFocusChangeListener)

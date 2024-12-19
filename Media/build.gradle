@@ -40,9 +40,28 @@ android {
 
 dependencies {
 
-    api 'androidx.media3:media3-exoplayer:1.5.0'
-    api 'androidx.media3:media3-exoplayer-dash:1.5.0'
-    api 'androidx.media3:media3-ui:1.5.0'
+    final String media3Version = "1.5.0"
+
+    api "androidx.media3:media3-ui:$media3Version"
+    api "androidx.media3:media3-cast:$media3Version"
+    api "androidx.media3:media3-muxer:$media3Version"
+    api "androidx.media3:media3-common:$media3Version"
+    api "androidx.media3:media3-effect:$media3Version"
+    api "androidx.media3:media3-database:$media3Version"
+    api "androidx.media3:media3-decoder:$media3Version"
+    api "androidx.media3:media3-container:$media3Version"
+    api "androidx.media3:media3-extractor:$media3Version"
+    api "androidx.media3:media3-exoplayer:$media3Version"
+    api "androidx.media3:media3-datasource:$media3Version"
+    api "androidx.media3:media3-transformer:$media3Version"
+    api "androidx.media3:media3-exoplayer-hls:$media3Version"
+    api "androidx.media3:media3-exoplayer-ima:$media3Version"
+    api "androidx.media3:media3-exoplayer-dash:$media3Version"
+    api "androidx.media3:media3-exoplayer-rtsp:$media3Version"
+    api "androidx.media3:media3-datasource-okhttp:$media3Version"
+    api "androidx.media3:media3-datasource-cronet:$media3Version"
+    api "androidx.media3:media3-exoplayer-workmanager:$media3Version"
+    api "androidx.media3:media3-exoplayer-smoothstreaming:$media3Version"
 
     implementation project("${toolkit_context}:Main")
 
