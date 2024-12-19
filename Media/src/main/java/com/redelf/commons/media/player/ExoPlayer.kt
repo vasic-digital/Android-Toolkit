@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.redelf.commons.application.BaseApplication
@@ -884,10 +885,8 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 try {
 
-                    // TODO:
-//                    var params = mp.playbackParams.setSpeed(getSpeed())
-//                    params = params.setSpeed(getSpeed())
-//                    mp.playbackParams = params
+                    val playbackParameters = PlaybackParameters(getSpeed())
+                    mp.playbackParameters = playbackParameters
 
                     Console.log("$tag APPLIED")
 
@@ -926,9 +925,8 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 try {
 
-                    // TODO:
-//                    val vol = getVolume()
-//                    mp.setVolume(vol, vol)
+                    val vol = getVolume()
+                    mp.volume = vol
 
                     Console.log("$tag APPLIED")
 
