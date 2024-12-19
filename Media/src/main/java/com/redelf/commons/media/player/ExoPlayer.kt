@@ -422,7 +422,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag Seek to: $positionInMilliseconds milliseconds")
 
-        withPlayer(operation = "seek to") {
+        withPlayer(operation = "seek to position $positionInMilliseconds") {
 
             try {
 
