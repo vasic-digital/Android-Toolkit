@@ -195,38 +195,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                                 setPrepared()
 
                                 Console.debug("$tag Prepared")
-
-                                val duration = doGetDuration()
-
-                                setCurrentDuration(duration)
-
-                                Console.log("$playerTag $logTag START :: Duration = $duration")
-
-                                startPublishingProgress(ep)
-
-                                setPlaying(true)
-
-                                val currentProgress: Float = if (startFrom < 0) {
-
-                                    obtainCurrentProgress(what)
-
-                                } else {
-
-                                    startFrom.toFloat()
-                                }
-
-                                currentProgress.let { progress ->
-
-                                    Console.log("$playerTag $logTag Progress obtained: $currentProgress")
-
-                                    seekTo(progress.toInt())
-
-                                    Console.log("$playerTag $logTag Seek")
-                                }
-
-                                what.onStarted()
-
-                                Console.log("$playerTag $logTag On started")
                             }
 
                             Player.STATE_ENDED -> {
@@ -296,9 +264,9 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                             Console.log("$playerTag $logTag Stream url: $streamUrl")
 
-                            try {
+                            withPlayer { ep ->
 
-                                withPlayer { ep ->
+                                try {
 
                                     ep.playWhenReady = true
 
@@ -307,20 +275,53 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                                     val mediaItem = MediaItem.fromUri(streamUrl)
                                     ep.setMediaItem(mediaItem)
+
+                                    val duration = doGetDuration()
+
+                                    setCurrentDuration(duration)
+
+                                    Console.log("$playerTag $logTag START :: Duration = $duration")
+
+                                    startPublishingProgress(ep)
+
+                                    setPlaying(true)
+
+                                    val currentProgress: Float = if (startFrom < 0) {
+
+                                        obtainCurrentProgress(what)
+
+                                    } else {
+
+                                        startFrom.toFloat()
+                                    }
+
+                                    currentProgress.let { progress ->
+
+                                        Console.log("$playerTag $logTag Progress obtained: $currentProgress")
+
+                                        seekTo(progress.toInt())
+
+                                        Console.log("$playerTag $logTag Seek")
+                                    }
+
                                     ep.prepare()
+
+                                    what.onStarted()
+
+                                    Console.log("$playerTag $logTag On started")
+
+                                } catch (e: IllegalStateException) {
+
+                                    Console.error(e)
+
+                                } catch (e: IOException) {
+
+                                    Console.error(e)
+
+                                } catch (e: Exception) {
+
+                                    recordException(e)
                                 }
-
-                            } catch (e: IllegalStateException) {
-
-                                Console.error(e)
-
-                            } catch (e: IOException) {
-
-                                Console.error(e)
-
-                            } catch (e: Exception) {
-
-                                recordException(e)
                             }
                         }
                     }
