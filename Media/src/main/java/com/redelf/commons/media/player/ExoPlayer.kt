@@ -214,6 +214,10 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                                     setPrepared()
 
                                     Console.debug("$tag Prepared")
+
+                                    setPlaying(true)
+
+                                    what.onStarted()
                                 }
 
                                 Player.STATE_ENDED -> {
@@ -265,18 +269,20 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                         Console.error("$playerTag $logTag Already playing")
 
+                        false
+
                     } else {
 
                         if (isEmpty(streamUrl)) {
 
                             Console.error("$playerTag $logTag Empty stream url")
+
+                            false
                         }
 
                         streamUrl?.let {
 
                             Console.log("$playerTag $logTag Stream url: $streamUrl")
-
-                            ep.playWhenReady = true
 
                             applySpeed(ep)
                             setVolume(1.0f)
@@ -291,8 +297,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                             Console.log("$playerTag $logTag START :: Duration = $duration")
 
                             startPublishingProgress(ep)
-
-                            setPlaying(true)
 
                             val currentProgress: Float = if (startFrom < 0) {
 
@@ -312,13 +316,10 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                                 Console.log("$playerTag $logTag Seek")
                             }
 
+                            ep.playWhenReady = true
                             ep.prepare()
 
-                            what.onStarted()
-
                             Console.log("$playerTag $logTag On started")
-
-                            true
                         }
                     }
 
@@ -326,9 +327,10 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                     Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
                     recordException(e)
+                    false
                 }
 
-                false
+                true
             }
         }
 
