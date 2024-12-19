@@ -23,6 +23,8 @@ typealias EPlayer = ExoPlayer
 
 abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
+    val playerTag = "Player :: Exo ::"
+
     companion object {
 
         private var exoPlayer: EPlayer? = null
@@ -42,7 +44,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     override fun playAsync() {
 
-        Console.log("Play async")
+        Console.log("$playerTag Play async")
 
         exec {
 
@@ -86,7 +88,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val logTag = "Player :: Play :: TO EXEC. ::"
 
-        Console.log("$logTag ${what.size} :: $index :: $startFrom :: ${what[index].getIdentifier()}")
+        Console.log("$playerTag $logTag ${what.size} :: $index :: $startFrom :: ${what[index].getIdentifier()}")
 
         if (isPlaying()) {
 
@@ -96,16 +98,16 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         setMediaList(what)
         setMedia(what[index])
 
-        Console.log("$logTag Set: ${getMedia()?.getIdentifier()}")
+        Console.log("$playerTag $logTag Set: ${getMedia()?.getIdentifier()}")
 
         getMedia()?.let {
 
-            Console.log("$logTag Execute: ${it.getIdentifier()}")
+            Console.log("$playerTag $logTag Execute: ${it.getIdentifier()}")
 
             return execute(it, startFrom)
         }
 
-        Console.error("$logTag No playable item")
+        Console.error("$playerTag $logTag No playable item")
 
         return false
     }
@@ -155,14 +157,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         var result = false
         val logTag = "Player :: Play :: Execution :: ${what.getIdentifier()} ::"
 
-        Console.log("$logTag Start :: from=$startFrom")
+        Console.log("$playerTag $logTag Start :: from=$startFrom")
 
 
         val ePlayer = instantiateMediaPlayer()
 
         ePlayer?.let { ep ->
 
-            Console.log("$logTag Player instantiated")
+            Console.log("$playerTag $logTag Player instantiated")
 
             try {
 
@@ -173,7 +175,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                         if (state == Player.STATE_READY) {
 
                             setPrepared()
-                            Console.log("$logTag Prepared")
+                            Console.log("$playerTag $logTag Prepared")
 
                             return
                         }
@@ -197,7 +199,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                         val e = IllegalStateException(msg)
 
                         what.onError(e)
-                        Console.error("$logTag Error: ${error.errorCode}")
+                        Console.error("$playerTag $logTag Error: ${error.errorCode}")
                     }
                 })
 
@@ -216,12 +218,12 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                         if (isEmpty(streamUrl)) {
 
-                            Console.error("$logTag Empty stream url")
+                            Console.error("$playerTag $logTag Empty stream url")
                         }
 
                         streamUrl?.let {
 
-                            Console.log("$logTag Stream url: $streamUrl")
+                            Console.log("$playerTag $logTag Stream url: $streamUrl")
 
                             try {
 
@@ -242,15 +244,15 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                                     ep.playWhenReady = true
                                 }
 
-                                Console.log("$logTag START :: Duration = $duration")
+                                Console.log("$playerTag $logTag START :: Duration = $duration")
 
                                 startPublishingProgress(ep)
 
                                 setPlaying(true)
 
-                                Console.log("$logTag Playing set")
+                                Console.log("$playerTag $logTag Playing set")
 
-                                Console.log("$logTag Result set")
+                                Console.log("$playerTag $logTag Result set")
 
                                 val currentProgress: Float = if (startFrom < 0) {
 
@@ -263,20 +265,20 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                                 currentProgress.let { progress ->
 
-                                    Console.log("$logTag Progress obtained: $currentProgress")
+                                    Console.log("$playerTag $logTag Progress obtained: $currentProgress")
 
                                     seekTo(progress.toInt())
 
-                                    Console.log("$logTag Seek")
+                                    Console.log("$playerTag $logTag Seek")
                                 }
 
                                 what.onStarted()
 
-                                Console.log("$logTag On started")
+                                Console.log("$playerTag $logTag On started")
 
                                 if (!setVolume(1.0f)) {
 
-                                    Console.warning("$logTag Could not set the volume")
+                                    Console.warning("$playerTag $logTag Could not set the volume")
                                 }
 
                             } catch (e: IllegalStateException) {
@@ -298,24 +300,24 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 } else {
 
-                    Console.error("$logTag Already playing")
+                    Console.error("$playerTag $logTag Already playing")
                 }
 
             } catch (e: IOException) {
 
-                Console.error("$logTag ${e::class.simpleName} :: ${e.message}")
+                Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
 
             } catch (e: IllegalArgumentException) {
 
-                Console.error("$logTag ${e::class.simpleName} :: ${e.message}")
+                Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
 
             } catch (e: SecurityException) {
 
-                Console.error("$logTag ${e::class.simpleName} :: ${e.message}")
+                Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
 
             } catch (e: IllegalStateException) {
 
-                Console.error("$logTag ${e::class.simpleName}")
+                Console.error("$playerTag $logTag ${e::class.simpleName}")
 
                 Console.error(e)
 
@@ -325,7 +327,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             }
         }
 
-        Console.log("$logTag Result: $result")
+        Console.log("$playerTag $logTag Result: $result")
 
         return result
     }
@@ -337,7 +339,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     override fun stop() {
 
-        Console.log("stop()")
+        Console.log("$playerTag stop()")
 
         destroyMediaPlayer()
 
@@ -397,17 +399,17 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     override fun seekTo(positionInMilliseconds: Float): Boolean {
 
-        Console.log("Seek to: $positionInMilliseconds milliseconds")
+        Console.log("$playerTag Seek to: $positionInMilliseconds milliseconds")
 
         getMediaPlayer()?.let {
 
             try {
 
-                Console.log("Seek to: $positionInMilliseconds")
+                Console.log("$playerTag Seek to: $positionInMilliseconds")
 
                 it.seekTo(positionInMilliseconds.toLong())
 
-                Console.log("Seek to: $positionInMilliseconds done")
+                Console.log("$playerTag Seek to: $positionInMilliseconds done")
 
                 return true
 
@@ -426,7 +428,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     override fun seekTo(positionInSeconds: Int): Boolean {
 
-        Console.log("Seek to: $positionInSeconds seconds")
+        Console.log("$playerTag Seek to: $positionInSeconds seconds")
 
         return seekTo(positionInSeconds * 1000f)
     }
@@ -482,7 +484,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val tag = "SPEED :: SET ::"
 
-        Console.log("$tag To: ${getSpeed()}")
+        Console.log("$playerTag $tag To: ${getSpeed()}")
 
         return applySpeed()
     }
@@ -493,7 +495,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val tag = "VOLUME :: SET ::"
 
-        Console.log("$tag To: ${getVolume()}")
+        Console.log("$playerTag $tag To: ${getVolume()}")
 
         return applyVolume()
     }
@@ -507,11 +509,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         if (reset) {
 
-            Console.log("$tag To: ${getSpeed()}")
+            Console.log("$playerTag $tag To: ${getSpeed()}")
 
         } else {
 
-            Console.warning("$tag Failed")
+            Console.warning("$playerTag $tag Failed")
         }
 
         return reset
@@ -541,7 +543,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         // Not supported yet:
         //        val urlToCast = getPlayableItem()?.getStreamUrl()
-        //        Console.log("Casting: $urlToCast")
+        //        Console.log("$playerTag Casting: $urlToCast")
 
         return false
     }
@@ -680,11 +682,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         val tag = "Load an play ::"
         val currentPlayable = getPlayable()
 
-        Console.log("$tag START: Playable=${currentPlayable != null}")
+        Console.log("$playerTag $tag START: Playable=${currentPlayable != null}")
 
         currentPlayable?.let { pair ->
 
-            Console.log("$tag Play: ${pair.first.getIdentifier()} @ ${pair.second} sec")
+            Console.log("$playerTag $tag Play: ${pair.first.getIdentifier()} @ ${pair.second} sec")
 
             var started = false
             val playlist = pair.first.getParentPlaylist()
@@ -700,7 +702,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 }
             }
 
-            Console.log("$tag Playable items: ${getPlayableItems().size}")
+            Console.log("$playerTag $tag Playable items: ${getPlayableItems().size}")
 
             if (!started) {
 
@@ -720,13 +722,13 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
             if (started) {
 
-                Console.log("$tag END: Playing")
+                Console.log("$playerTag $tag END: Playing")
 
                 return seekTo(pair.second.toInt())
             }
         }
 
-        Console.log("$tag END: No play")
+        Console.log("$playerTag $tag END: No play")
 
         return false
     }
@@ -825,15 +827,15 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val tag = "Invoke image gallery ::"
 
-        Console.log("$tag START")
+        Console.log("$playerTag $tag START")
 
         val current = current()
 
-        Console.log("$tag Current: $current")
+        Console.log("$playerTag $tag Current: $current")
 
         current?.let {
 
-            Console.log("$tag Invoke: ${it.invokeImageGallery()}")
+            Console.log("$playerTag $tag Invoke: ${it.invokeImageGallery()}")
 
             return it.invokeImageGallery()
         }
@@ -874,7 +876,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val tag = "SPEED :: APPLY ::"
 
-        Console.log("$tag To: ${getSpeed()}")
+        Console.log("$playerTag $tag To: ${getSpeed()}")
 
         ePlayer?.let { ep ->
 
@@ -885,7 +887,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                     val playbackParameters = PlaybackParameters(getSpeed())
                     ep.playbackParameters = playbackParameters
 
-                    Console.log("$tag APPLIED")
+                    Console.log("$playerTag $tag APPLIED")
 
                 } catch (e: Exception) {
 
@@ -896,7 +898,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             return true
         }
 
-        Console.warning("$tag NOT APPLIED")
+        Console.warning("$playerTag $tag NOT APPLIED")
 
         return false
     }
@@ -906,7 +908,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val tag = "VOLUME :: APPLY ::"
 
-        Console.log("$tag To: ${getVolume()}")
+        Console.log("$playerTag $tag To: ${getVolume()}")
 
         ePlayer?.let { ep ->
 
@@ -917,7 +919,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                     val vol = getVolume()
                     ep.volume = vol
 
-                    Console.log("$tag APPLIED")
+                    Console.log("$playerTag $tag APPLIED")
 
                 } catch (e: Exception) {
 
@@ -928,7 +930,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             return true
         }
 
-        Console.warning("$tag NOT APPLIED")
+        Console.warning("$playerTag $tag NOT APPLIED")
 
         return false
     }
@@ -967,14 +969,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val tag = "Current duration :: SET ::"
 
-        Console.log("$tag START :: From = ${getCurrentDuration()}, To = $value")
+        Console.log("$playerTag $tag START :: From = ${getCurrentDuration()}, To = $value")
 
         onUiThread {
 
             currentDuration = value
         }
 
-        Console.log("$tag END :: Current = ${getCurrentDuration()}")
+        Console.log("$playerTag $tag END :: Current = ${getCurrentDuration()}")
 
     }
 
@@ -982,7 +984,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val current: Long = currentDuration
 
-        Console.log("Current duration :: GET :: Current = $current")
+        Console.log("$playerTag Current duration :: GET :: Current = $current")
 
         return current
     }
