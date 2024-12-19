@@ -4,6 +4,8 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.Retrying
@@ -163,50 +165,43 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
             try {
 
-                // TODO:
-//                mp.setOnCompletionListener {
-//
-//                    stop()
-//
-//                    what.onEnded()
-//
-//                    if (canNext()) {
-//
-//                        next()
-//                    }
-//                }
-//
-//                mp.setOnErrorListener { _, whatError, extra ->
-//
-//                    val msg = "MediaPlayer error: $whatError, extra: $extra"
-//                    val e = IllegalStateException(msg)
-//
-//                    what.onError(e)
-//
-//                    Console.error("$logTag Error: $whatError")
-//
-//                    false
-//                }
-//
-//                mp.setOnInfoListener { _, _, _ ->
-//
-//                    false
-//                }
-//
-//                mp.setOnSeekCompleteListener {
-//
-//                    Console.log("$logTag Seek completed")
-//                }
+                ePlayer?.addListener(object : Player.Listener {
+
+                    override fun onPlaybackStateChanged(state: Int) {
+
+                        if (state == Player.STATE_ENDED) {
+
+                            stop()
+
+                            what.onEnded()
+
+                            if (canNext()) {
+
+                                next()
+                            }
+                        }
+                    }
+
+                    override fun onPlayerError(error: PlaybackException) {
+
+                        val msg = "ExoPlayer error: ${error.errorCode}, extra: ${error.errorCodeName}"
+                        val e = IllegalStateException(msg)
+
+                        what.onError(e)
+                        Console.error("$logTag Error: ${error.errorCode}")
+                    }
+
+                    override fun onPlaybackStateChanged(state: Int) {
+
+                        if (state == Player.STATE_READY) {
+
+                            setPrepared()
+                            Console.log("$logTag Prepared")
+                        }
+                    }
+                })
 
                 if (!getPlaying()) {
-
-                    // TODO:
-//                    mp.setOnPreparedListener {
-//
-//                        setPrepared()
-//
-//                        Console.log("$logTag Prepared")
-//                    }
 
                     exec(
 
