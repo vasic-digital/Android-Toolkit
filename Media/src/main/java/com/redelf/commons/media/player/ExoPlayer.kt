@@ -980,14 +980,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     }
 
-    private fun getCurrentDuration(): Long {
-
-        val current: Long = currentDuration
-
-        Console.log("$playerTag Current duration :: GET :: Current = $current")
-
-        return current
-    }
+    private fun getCurrentDuration() = currentDuration
 
     override fun getMediaPlayer(): EPlayer? {
 
