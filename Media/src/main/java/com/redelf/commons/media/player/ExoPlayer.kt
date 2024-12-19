@@ -745,24 +745,27 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         return exoPlayer
     }
 
-    private fun destroyMediaPlayer(mPlayer: EPlayer? = getMediaPlayer()) {
+    private fun destroyMediaPlayer(ePlayer: EPlayer? = getMediaPlayer()) {
 
-        if (getPlaying()) {
+        onUiThread {
 
-            try {
+            if (getPlaying()) {
 
-                setCurrentDuration(0)
-                mPlayer?.stop()
+                try {
 
-            } catch (e: IllegalStateException) {
+                    setCurrentDuration(0)
+                    ePlayer?.stop()
 
-                Console.error(e)
+                } catch (e: IllegalStateException) {
+
+                    Console.error(e)
+                }
             }
-        }
 
-        mPlayer?.release()
-        clearMediaPlayer()
-        setPlaying(false)
+            ePlayer?.release()
+            clearMediaPlayer()
+            setPlaying(false)
+        }
     }
 
     private fun doAfter(code: Int, afterSeconds: Int): Boolean {
@@ -838,7 +841,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         return false
     }
 
-    private fun startPublishingProgress(mp: EPlayer?) {
+    private fun startPublishingProgress(ep: EPlayer?) {
 
         val handler = Handler(Looper.getMainLooper())
 
@@ -850,7 +853,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                     if (getPlaying()) {
 
-                        val currentPosition = mp?.currentPosition ?: 0
+                        val currentPosition = ep?.currentPosition ?: 0
                         onProgressChanged(currentPosition, 0)
 
                         handler.postDelayed(this, 1000)
@@ -867,28 +870,20 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
     }
 
     @Throws(IllegalStateException::class)
-    private fun applySpeed(mPlayer: EPlayer? = getMediaPlayer()): Boolean {
+    private fun applySpeed(ePlayer: EPlayer? = getMediaPlayer()): Boolean {
 
         val tag = "SPEED :: APPLY ::"
 
         Console.log("$tag To: ${getSpeed()}")
 
-        mPlayer?.let { mp ->
+        ePlayer?.let { ep ->
 
-            exec(
-
-                onRejected = {
-
-                        err ->
-                    recordException(err)
-                }
-
-            ) {
+            onUiThread {
 
                 try {
 
                     val playbackParameters = PlaybackParameters(getSpeed())
-                    mp.playbackParameters = playbackParameters
+                    ep.playbackParameters = playbackParameters
 
                     Console.log("$tag APPLIED")
 
@@ -907,28 +902,20 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
     }
 
     @Throws(IllegalStateException::class)
-    private fun applyVolume(mPlayer: EPlayer? = getMediaPlayer()): Boolean {
+    private fun applyVolume(ePlayer: EPlayer? = getMediaPlayer()): Boolean {
 
         val tag = "VOLUME :: APPLY ::"
 
         Console.log("$tag To: ${getVolume()}")
 
-        mPlayer?.let { mp ->
+        ePlayer?.let { ep ->
 
-            exec(
-
-                onRejected = {
-
-                        err ->
-                    recordException(err)
-                }
-
-            ) {
+            onUiThread {
 
                 try {
 
                     val vol = getVolume()
-                    mp.volume = vol
+                    ep.volume = vol
 
                     Console.log("$tag APPLIED")
 
