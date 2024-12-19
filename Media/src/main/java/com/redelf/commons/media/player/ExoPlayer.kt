@@ -10,7 +10,6 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.execution.Retrying
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.onUiThread
@@ -19,10 +18,8 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import java.io.IOException
 import kotlin.collections.indexOf
-import kotlin.text.toInt
-import kotlin.text.toLong
 
-typealias EPlayer = androidx.media3.exoplayer.ExoPlayer
+typealias EPlayer = ExoPlayer
 
 abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
@@ -228,8 +225,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                             try {
 
-                                val mediaItem = MediaItem.fromUri(streamUrl)
-                                ep.setMediaItem(mediaItem)
+                                withPlayer { ep ->
+
+                                    val mediaItem = MediaItem.fromUri(streamUrl)
+                                    ep.setMediaItem(mediaItem)
+                                }
 
                                 applySpeed(ep)
 
@@ -237,7 +237,10 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                                 setCurrentDuration(duration)
 
-                                ep.playWhenReady = true
+                                withPlayer { ep ->
+
+                                    ep.playWhenReady = true
+                                }
 
                                 Console.log("$logTag START :: Duration = $duration")
 
@@ -1010,5 +1013,20 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
     override fun unsetMediaPlayer() {
 
         exoPlayer = null
+    }
+
+    private fun withPlayer(
+
+        doWhat: (ep: ExoPlayer) -> Unit,
+
+    ) {
+
+        getMediaPlayer()?.let { ep ->
+
+            onUiThread {
+
+                doWhat(ep)
+            }
+        }
     }
 }
