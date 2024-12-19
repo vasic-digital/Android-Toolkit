@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -773,7 +775,16 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         }
 
         val context = BaseApplication.takeContext()
-        val exoPlayer = ExoPlayer.Builder(context).build()
+
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
+            .setUsage(C.USAGE_MEDIA)
+            .build()
+
+        val exoPlayer = ExoPlayer.Builder(context)
+            .setAudioAttributes(audioAttributes, true)
+            .setHandleAudioBecomingNoisy(true)
+            .build()
 
         exoPlayer.addAnalyticsListener(object : AnalyticsListener {
 
