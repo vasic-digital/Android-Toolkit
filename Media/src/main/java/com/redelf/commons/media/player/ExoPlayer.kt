@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import androidx.media3.exoplayer.ExoPlayer
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.Retrying
 import com.redelf.commons.extensions.exec
@@ -758,24 +759,16 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     private fun instantiateMediaPlayer(): EPlayer? {
 
-        // TODO:
-//        getMediaPlayer()?.let {
-//
-//            destroyMediaPlayer(it)
-//        }
-//
-//        val mPlayer = MediaPlayer()
-//
-//        val attributes = AudioAttributes.Builder()
-//            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-//            .build()
-//
-//        mPlayer.setAudioAttributes(attributes)
-//
-//        setMediaPlayer(mPlayer)
-//
-//        return mPlayer
-        return null // TODO: Remove this line
+        getMediaPlayer()?.let {
+
+            destroyMediaPlayer(it)
+        }
+
+        val exoPlayer = ExoPlayer.Builder(BaseApplication.takeContext()).build()
+
+        setMediaPlayer(exoPlayer)
+
+        return exoPlayer
     }
 
     private fun destroyMediaPlayer(mPlayer: EPlayer? = getMediaPlayer()) {
@@ -785,10 +778,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             try {
 
                 setCurrentDuration(0)
-
                 mPlayer?.stop()
-                // TODO:
-//                mPlayer?.reset()
 
             } catch (e: IllegalStateException) {
 
@@ -798,7 +788,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         mPlayer?.release()
         clearMediaPlayer()
-
         setPlaying(false)
     }
 
