@@ -1,6 +1,8 @@
 package com.redelf.commons.media.player
 
+import androidx.media3.exoplayer.ExoPlayer
 import com.redelf.commons.execution.ExecuteWithResult
+import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.Player
 import java.util.concurrent.atomic.AtomicBoolean
@@ -75,4 +77,20 @@ abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
     protected fun isPrepared() = prepared.get()
 
     protected fun setPrepared() = prepared.set(true)
+
+    protected fun withPlayer(
+
+        onUiThread: Boolean = true,
+        doWhat: (ep: MP) -> Unit
+
+    ) {
+
+        getMediaPlayer()?.let { player ->
+
+            onUiThread {
+
+                doWhat(player)
+            }
+        }
+    }
 }
