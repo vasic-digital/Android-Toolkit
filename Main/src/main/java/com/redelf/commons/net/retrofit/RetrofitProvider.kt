@@ -148,8 +148,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             timeUnit = TimeUnit.MINUTES
         )
 
-        val builder = OkHttpClient
-            .Builder()
+        val builder = OkHttpClient.Builder()
 
         if (useCronet) {
 
@@ -161,6 +160,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             .connectTimeout(connTime, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .connectionPool(pool)
+            .addInterceptor(RetryInterceptor())
 
         loggingInterceptor?.let {
 
