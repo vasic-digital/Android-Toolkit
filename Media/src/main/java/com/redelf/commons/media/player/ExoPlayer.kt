@@ -179,7 +179,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag $logTag Start :: From = $startFrom")
 
-        if (!getPlaying()) {
+        exec {
 
             val streamUrl = what.getStreamUrl()
 
@@ -200,6 +200,18 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 Console.log("$playerTag $logTag Player instantiated")
 
                 try {
+
+                    if (getPlaying()) {
+
+                        doStop(ep)
+                    }
+
+                    if (isEmpty(streamUrl)) {
+
+                        Console.error("$playerTag $logTag Empty stream url")
+
+                        false
+                    }
 
                     val stateListener = object : Player.Listener {
 
@@ -222,15 +234,20 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                                 Player.STATE_ENDED -> {
 
-                                    Console.debug("$tag Ended")
+                                    withPlayer(operation = "on ended") {
 
-                                    stop()
+                                        doStop(it)
 
-                                    what.onEnded()
+                                        Console.debug("$tag Ended")
 
-                                    if (canNext()) {
+                                        what.onEnded()
 
-                                        next()
+                                        if (canNext()) {
+
+                                            next()
+                                        }
+
+                                        true
                                     }
                                 }
 
@@ -265,62 +282,53 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                     ep.addListener(stateListener)
 
-                    if (getPlaying()) {
+                    streamUrl?.let {
 
-                        Console.error("$playerTag $logTag Already playing")
+                        Console.log("$playerTag $logTag Stream url: $streamUrl")
 
-                        false
+                        applySpeed(ep)
+                        setVolume(1.0f)
 
-                    } else {
+                        val mediaItem = MediaItem.fromUri(streamUrl)
+                        ep.setMediaItem(mediaItem)
 
-                        if (isEmpty(streamUrl)) {
+                        val duration = doGetDuration()
 
-                            Console.error("$playerTag $logTag Empty stream url")
+                        setCurrentDuration(duration)
 
-                            false
+                        Console.log("$playerTag $logTag START :: Duration = $duration")
+
+                        startPublishingProgress(ep)
+
+                        val currentProgress: Float = if (startFrom < 0) {
+
+                            obtainCurrentProgress(what)
+
+                        } else {
+
+                            startFrom.toFloat()
                         }
 
-                        streamUrl?.let {
+                        currentProgress.let { progress ->
 
-                            Console.log("$playerTag $logTag Stream url: $streamUrl")
+                            Console.log("$playerTag $logTag Progress obtained: $currentProgress")
 
-                            applySpeed(ep)
-                            setVolume(1.0f)
+                            if (currentProgress >= duration * 0.95) {
 
-                            val mediaItem = MediaItem.fromUri(streamUrl)
-                            ep.setMediaItem(mediaItem)
-
-                            val duration = doGetDuration()
-
-                            setCurrentDuration(duration)
-
-                            Console.log("$playerTag $logTag START :: Duration = $duration")
-
-                            startPublishingProgress(ep)
-
-                            val currentProgress: Float = if (startFrom < 0) {
-
-                                obtainCurrentProgress(what)
+                                seekTo(0)
 
                             } else {
 
-                                startFrom.toFloat()
-                            }
-
-                            currentProgress.let { progress ->
-
-                                Console.log("$playerTag $logTag Progress obtained: $currentProgress")
-
                                 seekTo(progress.toInt())
-
-                                Console.log("$playerTag $logTag Seek")
                             }
 
-                            ep.playWhenReady = true
-                            ep.prepare()
-
-                            Console.log("$playerTag $logTag On started")
+                            Console.log("$playerTag $logTag Seek")
                         }
+
+                        ep.playWhenReady = true
+                        ep.prepare()
+
+                        Console.log("$playerTag $logTag On started")
                     }
 
                 } catch (e: Exception) {
@@ -352,14 +360,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         ) {
 
-            val success = destroyMediaPlayer(it)
-
-            if (success) {
-
-                getMedia()?.onStopped()
-            }
-
-            success
+            doStop(it)
         }
     }
 
@@ -401,6 +402,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 try {
 
                     it.playWhenReady = true
+                    it.prepare()
 
                     setPlaying(true)
                     startPublishingProgress(it)
@@ -1068,5 +1070,16 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
     override fun unsetMediaPlayer() {
 
         exo = null
+    }
+
+    private fun doStop(ep: EPlayer): Boolean {
+
+        val success = destroyMediaPlayer(ep)
+
+        setPlaying(false)
+
+        getMedia()?.onStopped()
+
+        return success
     }
 }
