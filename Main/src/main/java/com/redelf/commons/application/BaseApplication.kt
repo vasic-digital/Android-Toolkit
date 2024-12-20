@@ -53,6 +53,7 @@ import com.redelf.commons.messaging.firebase.FcmService
 import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.net.cronet.Cronet
+import com.redelf.commons.net.retrofit.RetryInterceptor
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager
@@ -64,6 +65,7 @@ import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.reflect.KClass
 
 
@@ -226,6 +228,7 @@ abstract class BaseApplication :
     private val updatingTag = "Updating ::"
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
+    private val lastCommunicationErrorTime = AtomicLong()
     private var telephonyManager: TelephonyManager? = null
     private var firebaseAnalytics: FirebaseAnalytics? = null
     private val registeredForPhoneCallsDetection = AtomicBoolean()
@@ -244,6 +247,32 @@ abstract class BaseApplication :
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
 
     protected lateinit var prefs: SharedPreferencesStorage
+
+    private val apiCommunicationFailureListener = object : BroadcastReceiver() {
+
+        private val filterAction = RetryInterceptor.BROADCAST_ACTION_COMMUNICATION_FAILURE
+
+        fun getIntentFilter() = IntentFilter(filterAction)
+
+        override fun onReceive(ctx: Context?, intent: Intent?) {
+
+            intent?.let {
+
+                it.action?.let { action ->
+
+                    if (action == filterAction) {
+
+                        if (System.currentTimeMillis() - lastCommunicationErrorTime.get() >= 3000) {
+
+                            // TODO: Show the toast
+
+                            lastCommunicationErrorTime.set(System.currentTimeMillis())
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private val screenReceiver: BroadcastReceiver = object : BroadcastReceiver() {
 
@@ -581,6 +610,9 @@ abstract class BaseApplication :
                 intentFilter.addAction(Intent.ACTION_SCREEN_ON)
                 intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
                 registerReceiver(screenReceiver, intentFilter)
+
+                val apiIntentFilter = apiCommunicationFailureListener.getIntentFilter()
+                registerReceiver(apiCommunicationFailureListener, apiIntentFilter)
 
                 beforeManagers()
                 initializeManagers()
