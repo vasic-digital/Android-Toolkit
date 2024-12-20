@@ -46,7 +46,7 @@ class RetryInterceptor : Interceptor {
 
                 response = chain.proceed(chain.request())
 
-                if (response.isSuccessful) {
+                if (response.isSuccessful || response.code == 404) {
 
                     return response
                 }
