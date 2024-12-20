@@ -43,6 +43,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.toast
 import com.redelf.commons.intention.Intentional
 import com.redelf.commons.interprocess.InterprocessData
 import com.redelf.commons.loading.Loadable
@@ -264,7 +265,9 @@ abstract class BaseApplication :
 
                         if (System.currentTimeMillis() - lastCommunicationErrorTime.get() >= 3000) {
 
-                            // TODO: Show the toast
+                            val msg = getString(R.string.connectivity_failure)
+
+                            toast(msg)
 
                             lastCommunicationErrorTime.set(System.currentTimeMillis())
                         }

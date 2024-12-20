@@ -12,4 +12,6 @@
     <!-- Proxy: -->
     <string name="proxy_alive_check_url">https://www.yandex.com</string>
 
+    <string name="connectivity_failure">Ошибка связи</string>
+
 </resources>

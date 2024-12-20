@@ -16,4 +16,6 @@
     <string name="proxy_alive_check_url">https://www.google.com</string>
     <string name="proxy_list_url" translatable="false">https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt</string>
 
+    <string name="connectivity_failure">Communication error</string>
+
 </resources>
