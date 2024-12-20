@@ -192,6 +192,7 @@ abstract class BaseApplication :
 
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
+    open val toastOnApiCommunicationFailure = false
     open val secretsKey = "com.redelf.commons.security.secrets"
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
