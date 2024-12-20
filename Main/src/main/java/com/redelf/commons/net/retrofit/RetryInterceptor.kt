@@ -3,7 +3,6 @@ package com.redelf.commons.net.retrofit
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.application.BaseApplication.Companion.BROADCAST_ACTION_APPLICATION_SCREEN_OFF
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.logging.Console
 import okhttp3.Interceptor

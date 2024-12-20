@@ -22,15 +22,15 @@ data class RetrofitApiParameters @JsonCreator constructor(
 
     @JsonProperty("readTimeoutInSeconds")
     @SerializedName("readTimeoutInSeconds")
-    val readTimeoutInSeconds: Long? = 10,
+    val readTimeoutInSeconds: Long? = 30,
 
     @JsonProperty("connectTimeoutInSeconds")
     @SerializedName("connectTimeoutInSeconds")
-    val connectTimeoutInSeconds: Long? = 10,
+    val connectTimeoutInSeconds: Long? = 30,
 
     @JsonProperty("writeTimeoutInSeconds")
     @SerializedName("writeTimeoutInSeconds")
-    val writeTimeoutInSeconds: Long? = -1,
+    val writeTimeoutInSeconds: Long? = 30,
 
     @JsonProperty("endpoint")
     @SerializedName("endpoint")

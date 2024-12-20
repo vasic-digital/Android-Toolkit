@@ -12,7 +12,7 @@ fun retrofitApiParameters(
 
     readTimeoutInSeconds: Long = 30,
     connectTimeoutInSeconds: Long = 30,
-    writeTimeoutInSeconds: Long = -1,
+    writeTimeoutInSeconds: Long = 30,
 
     scalar: Boolean? = false,
     jackson: Boolean? = false,
