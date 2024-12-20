@@ -1,5 +1,6 @@
 package com.redelf.commons.net.retrofit
 
+import com.redelf.commons.logging.Console
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.io.IOException
@@ -8,6 +9,15 @@ class RetryInterceptor : Interceptor {
 
     private val maxRetries = 2
     private val retryDelays = listOf(5000L, 10000L)
+
+    init {
+
+        Console.log(
+
+            "Interceptor :: Retry :: Init :: " +
+                    "Max retries = $maxRetries, Delays = $retryDelays"
+        )
+    }
 
     override fun intercept(chain: Interceptor.Chain): Response {
 
