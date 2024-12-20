@@ -17,6 +17,8 @@ class RetryInterceptor : Interceptor {
 
         val DEBUG = AtomicBoolean()
 
+        const val TAG = "Interceptor :: Retry ::"
+
         const val BROADCAST_ACTION_COMMUNICATION_FAILURE =
             "RetryInterceptor.Broadcast.Action.Communication.Failure"
     }
@@ -28,11 +30,7 @@ class RetryInterceptor : Interceptor {
 
         if (DEBUG.get()) {
 
-            Console.log(
-
-                "Interceptor :: Retry :: Init :: " +
-                        "Max retries = $maxRetries, Delays = $retryDelays"
-            )
+            Console.log("$TAG Init :: Max retries = $maxRetries, Delays = $retryDelays")
         }
     }
 
@@ -63,18 +61,23 @@ class RetryInterceptor : Interceptor {
             attempt++
         }
 
+
         response?.let {
 
             return it
         }
 
+        val msg = "Failed to execute request after $maxRetries retries"
+
         exec {
 
-            val intent = Intent(BROADCAST_ACTION_APPLICATION_SCREEN_OFF)
+            Console.error("$TAG $msg")
+
+            val intent = Intent(BROADCAST_ACTION_COMMUNICATION_FAILURE)
             val applicationContext = BaseApplication.takeContext()
             LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
         }
 
-        throw IOException("Failed to execute request after $maxRetries retries")
+        throw IOException(msg)
     }
 }

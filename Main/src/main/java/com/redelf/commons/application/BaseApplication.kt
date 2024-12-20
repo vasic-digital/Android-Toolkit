@@ -257,23 +257,43 @@ abstract class BaseApplication :
 
         override fun onReceive(ctx: Context?, intent: Intent?) {
 
+            val tag = "${RetryInterceptor.TAG} Received broadcast ::"
+
+            Console.log("$tag START")
+
             intent?.let {
+
+                Console.log("$tag Intent OK")
 
                 it.action?.let { action ->
 
+                    Console.log("$tag Action :: Value = $action")
+
                     if (action == filterAction) {
 
+                        Console.log("$tag Action :: OK")
+
                         if (System.currentTimeMillis() - lastCommunicationErrorTime.get() >= 3000) {
+
+                            Console.log("$tag Show toast :: START")
 
                             val msg = getString(R.string.connectivity_failure)
 
                             toast(msg)
 
                             lastCommunicationErrorTime.set(System.currentTimeMillis())
+
+                            Console.log("$tag Show toast :: END")
+
+                        } else {
+
+                            Console.warning("$tag Show toast :: SKIPPED")
                         }
                     }
                 }
             }
+
+            Console.log("$tag END")
         }
     }
 
