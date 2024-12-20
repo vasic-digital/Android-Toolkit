@@ -13,9 +13,12 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DecoderReuseEvaluation
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.creation.instantiation.Instantiable
 import com.redelf.commons.extensions.exec
@@ -179,7 +182,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag $logTag Start :: From = $startFrom")
 
-        if (!getPlaying()) {
+        exec {
 
             val streamUrl = what.getStreamUrl()
 
@@ -200,6 +203,18 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 Console.log("$playerTag $logTag Player instantiated")
 
                 try {
+
+                    if (getPlaying()) {
+
+                        doStop(ep)
+                    }
+
+                    if (isEmpty(streamUrl)) {
+
+                        Console.error("$playerTag $logTag Empty stream url")
+
+                        false
+                    }
 
                     val stateListener = object : Player.Listener {
 
@@ -222,15 +237,20 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                                 Player.STATE_ENDED -> {
 
-                                    Console.debug("$tag Ended")
+                                    withPlayer(operation = "on ended") {
 
-                                    stop()
+                                        doStop(it)
 
-                                    what.onEnded()
+                                        Console.debug("$tag Ended")
 
-                                    if (canNext()) {
+                                        what.onEnded()
 
-                                        next()
+                                        if (canNext()) {
+
+                                            next()
+                                        }
+
+                                        true
                                     }
                                 }
 
@@ -265,62 +285,53 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                     ep.addListener(stateListener)
 
-                    if (getPlaying()) {
+                    streamUrl?.let {
 
-                        Console.error("$playerTag $logTag Already playing")
+                        Console.log("$playerTag $logTag Stream url: $streamUrl")
 
-                        false
+                        applySpeed(ep)
+                        setVolume(1.0f)
 
-                    } else {
+                        val mediaItem = MediaItem.fromUri(streamUrl)
+                        ep.setMediaItem(mediaItem)
 
-                        if (isEmpty(streamUrl)) {
+                        val duration = doGetDuration()
 
-                            Console.error("$playerTag $logTag Empty stream url")
+                        setCurrentDuration(duration)
 
-                            false
+                        Console.log("$playerTag $logTag START :: Duration = $duration")
+
+                        startPublishingProgress(ep)
+
+                        val currentProgress: Float = if (startFrom < 0) {
+
+                            obtainCurrentProgress(what)
+
+                        } else {
+
+                            startFrom.toFloat()
                         }
 
-                        streamUrl?.let {
+                        currentProgress.let { progress ->
 
-                            Console.log("$playerTag $logTag Stream url: $streamUrl")
+                            Console.log("$playerTag $logTag Progress obtained: $currentProgress")
 
-                            applySpeed(ep)
-                            setVolume(1.0f)
+                            if (currentProgress >= duration * 0.95) {
 
-                            val mediaItem = MediaItem.fromUri(streamUrl)
-                            ep.setMediaItem(mediaItem)
-
-                            val duration = doGetDuration()
-
-                            setCurrentDuration(duration)
-
-                            Console.log("$playerTag $logTag START :: Duration = $duration")
-
-                            startPublishingProgress(ep)
-
-                            val currentProgress: Float = if (startFrom < 0) {
-
-                                obtainCurrentProgress(what)
+                                seekTo(0)
 
                             } else {
 
-                                startFrom.toFloat()
-                            }
-
-                            currentProgress.let { progress ->
-
-                                Console.log("$playerTag $logTag Progress obtained: $currentProgress")
-
                                 seekTo(progress.toInt())
-
-                                Console.log("$playerTag $logTag Seek")
                             }
 
-                            ep.playWhenReady = true
-                            ep.prepare()
-
-                            Console.log("$playerTag $logTag On started")
+                            Console.log("$playerTag $logTag Seek")
                         }
+
+                        ep.playWhenReady = true
+                        ep.prepare()
+
+                        Console.log("$playerTag $logTag On started")
                     }
 
                 } catch (e: Exception) {
@@ -352,14 +363,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         ) {
 
-            val success = destroyMediaPlayer(it)
-
-            if (success) {
-
-                getMedia()?.onStopped()
-            }
-
-            success
+            doStop(it)
         }
     }
 
@@ -401,6 +405,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 try {
 
                     it.playWhenReady = true
+                    it.prepare()
 
                     setPlaying(true)
                     startPublishingProgress(it)
@@ -777,9 +782,27 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setUsage(C.USAGE_MEDIA)
             .build()
 
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+
+                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
+                DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 2,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+            )
+            .build()
+
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+            .setConnectTimeoutMs(15000)
+            .setReadTimeoutMs(30000)
+            .setAllowCrossProtocolRedirects(true)
+            .setDefaultRequestProperties(mapOf("User-Agent" to "ExoPlayer"))
+
         val exoPlayer = ExoPlayer.Builder(context)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
+            .setLoadControl(loadControl)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
             .build()
 
         exoPlayer.addAnalyticsListener(object : AnalyticsListener {
@@ -1068,5 +1091,16 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
     override fun unsetMediaPlayer() {
 
         exo = null
+    }
+
+    private fun doStop(ep: EPlayer): Boolean {
+
+        val success = destroyMediaPlayer(ep)
+
+        setPlaying(false)
+
+        getMedia()?.onStopped()
+
+        return success
     }
 }

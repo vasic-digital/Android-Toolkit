@@ -12,4 +12,6 @@
     <!-- Proxy: -->
     <string name="proxy_alive_check_url">https://www.google.rs</string>
 
+    <string name="connectivity_failure">Грешка у комуникацији</string>
+
 </resources>

@@ -44,6 +44,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.toast
 import com.redelf.commons.intention.Intentional
 import com.redelf.commons.interprocess.InterprocessData
 import com.redelf.commons.loading.Loadable
@@ -54,6 +55,7 @@ import com.redelf.commons.messaging.firebase.FcmService
 import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.net.cronet.Cronet
+import com.redelf.commons.net.retrofit.RetryInterceptor
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager
@@ -65,6 +67,7 @@ import com.redelf.commons.updating.Updatable
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.reflect.KClass
 
 
@@ -190,6 +193,7 @@ abstract class BaseApplication :
     open val useCronet = false
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
+    open val toastOnApiCommunicationFailure = false
     open val secretsKey = "com.redelf.commons.security.secrets"
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
@@ -223,6 +227,7 @@ abstract class BaseApplication :
     private val updatingTag = "Updating ::"
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
+    private val lastCommunicationErrorTime = AtomicLong()
     private var telephonyManager: TelephonyManager? = null
     private var firebaseAnalytics: FirebaseAnalytics? = null
     private val registeredForPhoneCallsDetection = AtomicBoolean()
@@ -243,6 +248,54 @@ abstract class BaseApplication :
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
 
     protected lateinit var prefs: SharedPreferencesStorage
+
+    private val apiCommunicationFailureListener = object : BroadcastReceiver() {
+
+        private val filterAction = RetryInterceptor.BROADCAST_ACTION_COMMUNICATION_FAILURE
+
+        fun getIntentFilter() = IntentFilter(filterAction)
+
+        override fun onReceive(ctx: Context?, intent: Intent?) {
+
+            val tag = "${RetryInterceptor.TAG} Received broadcast ::"
+
+            Console.log("$tag START")
+
+            intent?.let {
+
+                Console.log("$tag Intent OK")
+
+                it.action?.let { action ->
+
+                    Console.log("$tag Action :: Value = $action")
+
+                    if (action == filterAction) {
+
+                        Console.log("$tag Action :: OK")
+
+                        if (System.currentTimeMillis() - lastCommunicationErrorTime.get() >= 3000) {
+
+                            Console.log("$tag Show toast :: START")
+
+                            val msg = getString(R.string.connectivity_failure)
+
+                            toast(msg)
+
+                            lastCommunicationErrorTime.set(System.currentTimeMillis())
+
+                            Console.log("$tag Show toast :: END")
+
+                        } else {
+
+                            Console.warning("$tag Show toast :: SKIPPED")
+                        }
+                    }
+                }
+            }
+
+            Console.log("$tag END")
+        }
+    }
 
     private val screenReceiver: BroadcastReceiver = object : BroadcastReceiver() {
 
@@ -602,7 +655,13 @@ abstract class BaseApplication :
                 val intentFilter = IntentFilter()
                 intentFilter.addAction(Intent.ACTION_SCREEN_ON)
                 intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
-                registerReceiver(screenReceiver, intentFilter)
+                doRegisterReceiver(screenReceiver, intentFilter)
+
+                if (toastOnApiCommunicationFailure) {
+
+                    val apiIntentFilter = apiCommunicationFailureListener.getIntentFilter()
+                    doRegisterReceiver(apiCommunicationFailureListener, apiIntentFilter)
+                }
 
                 beforeManagers()
                 initializeManagers()
@@ -801,8 +860,8 @@ abstract class BaseApplication :
         val tokenFilter = IntentFilter(FcmService.BROADCAST_ACTION_TOKEN)
         val eventFilter = IntentFilter(FcmService.BROADCAST_ACTION_EVENT)
 
-        registerReceiver(fcmTokenReceiver, tokenFilter)
-        registerReceiver(fcmEventReceiver, eventFilter)
+        doRegisterReceiver(fcmTokenReceiver, tokenFilter)
+        doRegisterReceiver(fcmEventReceiver, eventFilter)
 
         FirebaseMessaging.getInstance()
             .token
@@ -1119,14 +1178,7 @@ abstract class BaseApplication :
 
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 
-        receiver?.let { r ->
-            filter?.let { f ->
-
-                LocalBroadcastManager.getInstance(applicationContext).registerReceiver(r, f)
-            }
-        }
-
-        return null
+        return doRegisterReceiver(receiver, filter)
     }
 
     override fun unregisterReceiver(receiver: BroadcastReceiver?) {
@@ -1407,5 +1459,17 @@ abstract class BaseApplication :
         Console.log("$updatingTag SET :: Updating = $value")
 
         updating.set(value)
+    }
+
+    private fun doRegisterReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
+
+        receiver?.let { r ->
+            filter?.let { f ->
+
+                LocalBroadcastManager.getInstance(applicationContext).registerReceiver(r, f)
+            }
+        }
+
+        return null
     }
 }

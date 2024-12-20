@@ -135,7 +135,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         loggingInterceptor: HttpLoggingInterceptor?,
         readTime: Long,
         connTime: Long,
-        writeTime: Long = -1L,
+        writeTime: Long,
         verbose: Boolean = false,
         useCronet: Boolean = true
 
@@ -143,13 +143,12 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         val pool = ConnectionPool(
 
-            maxIdleConnections = 7,
+            maxIdleConnections = 10,
             keepAliveDuration = 5,
             timeUnit = TimeUnit.MINUTES
         )
 
-        val builder = OkHttpClient
-            .Builder()
+        val builder = OkHttpClient.Builder()
 
         if (useCronet) {
 
@@ -159,8 +158,10 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         builder
             .readTimeout(readTime, TimeUnit.SECONDS)
             .connectTimeout(connTime, TimeUnit.SECONDS)
+            .writeTimeout(writeTime, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .connectionPool(pool)
+            .addInterceptor(RetryInterceptor())
 
         loggingInterceptor?.let {
 
