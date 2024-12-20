@@ -1,5 +1,10 @@
 package com.redelf.commons.net.retrofit
 
+import android.content.Intent
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.application.BaseApplication.Companion.BROADCAST_ACTION_APPLICATION_SCREEN_OFF
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.logging.Console
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -11,6 +16,9 @@ class RetryInterceptor : Interceptor {
     companion object {
 
         val DEBUG = AtomicBoolean()
+
+        const val BROADCAST_ACTION_COMMUNICATION_FAILURE =
+            "RetryInterceptor.Broadcast.Action.Communication.Failure"
     }
 
     private val maxRetries = 2
@@ -60,7 +68,12 @@ class RetryInterceptor : Interceptor {
             return it
         }
 
-        // TODO:
+        exec {
+
+            val intent = Intent(BROADCAST_ACTION_APPLICATION_SCREEN_OFF)
+            val applicationContext = BaseApplication.takeContext()
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+        }
 
         throw IOException("Failed to execute request after $maxRetries retries")
     }
