@@ -55,6 +55,13 @@ class RetryInterceptor : Interceptor {
             attempt++
         }
 
-        return response ?: throw IOException("Failed to execute request after $maxRetries retries")
+        response?.let {
+
+            return it
+        }
+
+        // TODO:
+
+        throw IOException("Failed to execute request after $maxRetries retries")
     }
 }
