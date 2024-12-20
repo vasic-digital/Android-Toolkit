@@ -609,10 +609,13 @@ abstract class BaseApplication :
                 val intentFilter = IntentFilter()
                 intentFilter.addAction(Intent.ACTION_SCREEN_ON)
                 intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
-                registerReceiver(screenReceiver, intentFilter)
+                doRegisterReceiver(screenReceiver, intentFilter)
 
-                val apiIntentFilter = apiCommunicationFailureListener.getIntentFilter()
-                registerReceiver(apiCommunicationFailureListener, apiIntentFilter)
+                if (toastOnApiCommunicationFailure) {
+
+                    val apiIntentFilter = apiCommunicationFailureListener.getIntentFilter()
+                    doRegisterReceiver(apiCommunicationFailureListener, apiIntentFilter)
+                }
 
                 beforeManagers()
                 initializeManagers()
@@ -802,8 +805,8 @@ abstract class BaseApplication :
         val tokenFilter = IntentFilter(FcmService.BROADCAST_ACTION_TOKEN)
         val eventFilter = IntentFilter(FcmService.BROADCAST_ACTION_EVENT)
 
-        registerReceiver(fcmTokenReceiver, tokenFilter)
-        registerReceiver(fcmEventReceiver, eventFilter)
+        doRegisterReceiver(fcmTokenReceiver, tokenFilter)
+        doRegisterReceiver(fcmEventReceiver, eventFilter)
 
         FirebaseMessaging.getInstance()
             .token
@@ -1120,14 +1123,7 @@ abstract class BaseApplication :
 
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 
-        receiver?.let { r ->
-            filter?.let { f ->
-
-                LocalBroadcastManager.getInstance(applicationContext).registerReceiver(r, f)
-            }
-        }
-
-        return null
+        return doRegisterReceiver(receiver, filter)
     }
 
     override fun unregisterReceiver(receiver: BroadcastReceiver?) {
@@ -1407,5 +1403,17 @@ abstract class BaseApplication :
         Console.log("$updatingTag SET :: Updating = $value")
 
         updating.set(value)
+    }
+
+    private fun doRegisterReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
+
+        receiver?.let { r ->
+            filter?.let { f ->
+
+                LocalBroadcastManager.getInstance(applicationContext).registerReceiver(r, f)
+            }
+        }
+
+        return null
     }
 }
