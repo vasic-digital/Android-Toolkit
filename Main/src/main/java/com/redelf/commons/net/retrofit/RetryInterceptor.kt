@@ -25,6 +25,8 @@ class RetryInterceptor : Interceptor {
 
     private val maxRetries = 2
     private val retryDelays = listOf(5000L, 10000L)
+    private val msg1 = "Failed to execute request"
+    private val msg2 = "Failed to execute request after $maxRetries retries"
 
     init {
 
@@ -49,11 +51,18 @@ class RetryInterceptor : Interceptor {
 
                     return response
                 }
+
             } catch (e: IOException) {
 
                 if (attempt == maxRetries) {
 
+                    fail(msg2)
+
                     throw e
+
+                } else {
+
+                    fail(msg1)
                 }
             }
 
@@ -61,23 +70,22 @@ class RetryInterceptor : Interceptor {
             attempt++
         }
 
-
         response?.let {
 
             return it
         }
 
-        val msg = "Failed to execute request after $maxRetries retries"
+        fail(msg2)
 
-        exec {
+        throw IOException(msg2)
+    }
 
-            Console.error("$TAG $msg")
+    private fun fail(msg: String) = exec {
 
-            val intent = Intent(BROADCAST_ACTION_COMMUNICATION_FAILURE)
-            val applicationContext = BaseApplication.takeContext()
-            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
-        }
+        Console.error("$TAG $msg")
 
-        throw IOException(msg)
+        val intent = Intent(BROADCAST_ACTION_COMMUNICATION_FAILURE)
+        val applicationContext = BaseApplication.takeContext()
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 }
