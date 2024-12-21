@@ -28,6 +28,8 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.player.base.PlayerAbstraction
+import com.redelf.commons.obtain.Obtain
+import java.util.UUID
 import kotlin.collections.indexOf
 
 typealias EPlayer = ExoPlayer
@@ -42,10 +44,12 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
     }
 
     private var currentDuration: Long = 0
+    private var updateRunnable: MediaRunnable? = null
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun reset() {
 
-        clearMediaItem()
+        clearMedia()
     }
 
     override fun isAutoPlayOff(): Boolean {
@@ -298,8 +302,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                         Console.log("$playerTag $logTag START :: Duration = $duration")
 
-                        startPublishingProgress(ep)
-
                         val currentProgress: Float = if (startFrom < 0) {
 
                             obtainCurrentProgress(what)
@@ -325,8 +327,10 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                             Console.log("$playerTag $logTag Seek")
                         }
 
-                        ep.playWhenReady = true
                         ep.prepare()
+                        ep.playWhenReady = true
+
+                        startPublishingProgress()
 
                         Console.log("$playerTag $logTag On started")
                     }
@@ -381,6 +385,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                     it.pause()
                     setPlaying(false)
                     getMedia()?.onPaused()
+                    stopPublishingProgress()
 
                 } catch (e: IllegalStateException) {
 
@@ -401,12 +406,12 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 try {
 
-                    it.playWhenReady = true
                     it.prepare()
+                    it.playWhenReady = true
 
                     setPlaying(true)
-                    startPublishingProgress(it)
                     getMedia()?.onResumed()
+                    startPublishingProgress()
 
                 } catch (e: IllegalStateException) {
 
@@ -935,32 +940,73 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         return false
     }
 
-    private fun startPublishingProgress(ep: EPlayer?) {
+    override fun clearMedia() {
+        super.clearMedia()
 
-        val handler = Handler(Looper.getMainLooper())
+        stopPublishingProgress()
+    }
 
-        val updateRunnable = object : Runnable {
+    private fun stopPublishingProgress() {
 
-            override fun run() {
+        updateRunnable?.let {
 
-                try {
+            try {
 
-                    if (getPlaying()) {
+                handler.removeCallbacks(it)
 
-                        val currentPosition = ep?.currentPosition ?: 0
-                        onProgressChanged(currentPosition, 0)
+            } catch (e: Exception) {
 
-                        handler.postDelayed(this, 1000)
-                    }
-
-                } catch (e: IllegalStateException) {
-
-                    Console.warning(e.message)
-                }
+                recordException(e)
             }
         }
 
-        handler.postDelayed(updateRunnable, 1000)
+        updateRunnable = null
+    }
+
+    private fun startPublishingProgress(frequency: Long = 1000L) {
+
+        updateRunnable?.let {
+
+            if (it.identifier == getMedia()?.getIdentifier()) {
+
+                return
+            }
+        }
+
+        stopPublishingProgress()
+
+        updateRunnable = MediaRunnable(
+
+            identifier = getMedia()?.getIdentifier() ?: UUID.randomUUID(),
+
+            getCurrentIdentifier = object : Obtain<UUID?> {
+
+                override fun obtain(): UUID? {
+
+                    return getMedia()?.getIdentifier()
+                }
+            },
+
+            getCurrentPosition = object : Obtain<Long> {
+
+                override fun obtain(): Long {
+
+                    return getCurrentPosition().toLong()
+                }
+            },
+
+            handler = handler,
+            frequency = frequency
+
+        ) { position, _ ->
+
+            onProgressChanged(position, 0)
+        }
+
+        updateRunnable?.let {
+
+            handler.postDelayed(it, frequency)
+        }
     }
 
     @Throws(IllegalStateException::class)
@@ -1099,9 +1145,41 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         val success = destroyMediaPlayer(ep)
 
         setPlaying(false)
-
         getMedia()?.onStopped()
+        stopPublishingProgress()
 
         return success
+    }
+
+    private class MediaRunnable(
+
+        val identifier: UUID,
+
+        private val handler: Handler,
+        private val frequency: Long,
+        private val getCurrentIdentifier: Obtain<UUID?>,
+        private val getCurrentPosition: Obtain<Long>,
+        private val callback: (Long, Int) -> Unit
+
+    ) : Runnable {
+
+        override fun run() {
+
+            if (identifier == getCurrentIdentifier.obtain()) {
+
+                val currentPosition = getCurrentPosition.obtain()
+
+                try {
+
+                    callback(currentPosition, 0)
+
+                    handler.postDelayed(this, frequency)
+
+                } catch (e: IllegalStateException) {
+
+                    Console.warning(e.message)
+                }
+            }
+        }
     }
 }

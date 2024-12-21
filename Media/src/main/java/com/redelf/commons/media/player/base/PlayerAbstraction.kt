@@ -7,7 +7,6 @@ import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
@@ -68,7 +67,7 @@ abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
         unsetMediaPlayer()
     }
 
-    protected open fun clearMediaItem() {
+    protected open fun clearMedia() {
 
         media = null
     }
