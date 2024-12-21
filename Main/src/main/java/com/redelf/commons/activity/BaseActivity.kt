@@ -78,6 +78,7 @@ abstract class BaseActivity :
         closeActivity()
     }
 
+    protected open val removeFromHistoryOnFinish = false
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
 
@@ -591,6 +592,10 @@ abstract class BaseActivity :
 
     override fun onDestroy() {
 
+        val tag = "On destroy ::"
+
+        Console.log("$tag START")
+
         dismissDialogs()
         LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(finishReceiver)
 
@@ -612,6 +617,10 @@ abstract class BaseActivity :
         }
 
         super.onDestroy()
+
+        Console.log("$tag END")
+
+        removeActivityFromHistory()
     }
 
     fun finishFrom(from: String) {
@@ -1396,4 +1405,12 @@ abstract class BaseActivity :
     }
 
     protected fun getActivityContext(): Context = this
+
+    fun removeActivityFromHistory() {
+
+        if (removeFromHistoryOnFinish) {
+
+            finishAndRemoveTask()
+        }
+    }
 }
