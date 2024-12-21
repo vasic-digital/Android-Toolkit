@@ -25,12 +25,9 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.safeWait
 import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.player.base.PlayerAbstraction
-import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.collections.indexOf
 
 typealias EPlayer = ExoPlayer
@@ -1085,10 +1082,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     override fun setMediaPlayer(value: EPlayer) {
 
+        Console.log("$playerTag Set player :: ${value.hashCode()}")
+
         exo = value
     }
 
     override fun unsetMediaPlayer() {
+
+        Console.log("$playerTag UnSet player")
 
         exo = null
     }
