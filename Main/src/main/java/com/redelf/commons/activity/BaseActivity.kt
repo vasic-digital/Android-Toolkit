@@ -642,12 +642,18 @@ abstract class BaseActivity :
 
         Console.log("$tag START")
 
-        super.finish()
+        overridePendingTransition(0, 0)
 
-        overridePendingTransition(
+        if (removeFromHistoryOnFinish) {
 
-            0, 0
-        )
+            finishAndRemoveTask()
+
+        } else {
+
+            super.finish()
+        }
+
+        overridePendingTransition(0, 0)
 
         Console.log("$tag END")
     }
