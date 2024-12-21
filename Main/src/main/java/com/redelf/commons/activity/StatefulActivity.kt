@@ -169,4 +169,20 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
         return "$tagContext :: $tag"
     }
+
+    @Suppress("DEPRECATION")
+    override fun finish() {
+
+        val tag = "ACTIVITY Activity = '${this.javaClass.simpleName}' :: TERMINATE :: FINISH"
+
+        Console.log("$tag START")
+
+        overridePendingTransition(0, 0)
+
+        finishAndRemoveTask()
+
+        overridePendingTransition(0, 0)
+
+        Console.log("$tag END")
+    }
 }
