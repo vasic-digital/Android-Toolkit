@@ -1016,30 +1016,22 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         Console.log("$playerTag $tag To: ${getSpeed()}")
 
-        if (isPlaying()) {
+        try {
 
-            withPlayer(operation = "apply speed") {
+            val playbackParameters = PlaybackParameters(getSpeed())
+            ep.playbackParameters = playbackParameters
 
-                try {
+            Console.log("$playerTag $tag APPLIED")
 
-                    val playbackParameters = PlaybackParameters(getSpeed())
-                    ep.playbackParameters = playbackParameters
+            return true
 
-                    Console.log("$playerTag $tag APPLIED")
+        } catch (e: Exception) {
 
-                    true
-
-                } catch (e: Exception) {
-
-                    Console.error("$playerTag $tag NOT APPLIED")
-                    Console.error(e)
-                }
-
-                false
-            }
+            Console.error("$playerTag $tag NOT APPLIED")
+            Console.error(e)
         }
 
-        return true
+        return false
     }
 
     @Throws(IllegalStateException::class)
