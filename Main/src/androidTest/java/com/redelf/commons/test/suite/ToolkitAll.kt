@@ -1,6 +1,7 @@
 package com.redelf.commons.test.suite
 
 import com.redelf.commons.test.DataDelegatePartitioningTest
+import com.redelf.commons.test.DataManagementTest
 import com.redelf.commons.test.EncryptedPersistenceTest
 import com.redelf.commons.test.GsonParserTest
 import com.redelf.commons.test.HttpEndpointsTest
@@ -19,7 +20,8 @@ import org.junit.runners.Suite.SuiteClasses
     ObfuscatorTest::class,
     LZ4StringCompressionTest::class,
     ByteArraySerializerTest::class,
-    GsonParserTest::class
+    GsonParserTest::class,
+    DataManagementTest::class
 
 )
 @RunWith(Suite::class)
