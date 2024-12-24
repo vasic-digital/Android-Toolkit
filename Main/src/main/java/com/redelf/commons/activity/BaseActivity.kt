@@ -1368,14 +1368,7 @@ abstract class BaseActivity :
 
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 
-        receiver?.let { r ->
-            filter?.let { f ->
-
-                LocalBroadcastManager.getInstance(getActivityContext()).registerReceiver(r, f)
-            }
-        }
-
-        return null
+        return doRegisterReceiver(receiver, filter)
     }
 
     override fun unregisterReceiver(receiver: BroadcastReceiver?) {
@@ -1387,4 +1380,16 @@ abstract class BaseActivity :
     }
 
     protected fun getActivityContext(): Context = this
+
+    protected fun doRegisterReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
+
+        receiver?.let { r ->
+            filter?.let { f ->
+
+                LocalBroadcastManager.getInstance(getActivityContext()).registerReceiver(r, f)
+            }
+        }
+
+        return null
+    }
 }

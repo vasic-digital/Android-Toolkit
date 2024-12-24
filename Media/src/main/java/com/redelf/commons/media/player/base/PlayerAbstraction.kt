@@ -26,6 +26,8 @@ abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
         private var mediaList: List<Media>? = null
     }
 
+    abstract fun getMediaPlayer(): MP?
+
     protected open fun getMedia() = media
 
     protected open fun setMedia(item: Media) {
@@ -53,8 +55,6 @@ abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
 
         volume = value
     }
-
-    protected abstract fun getMediaPlayer(): MP?
 
     protected abstract fun setMediaPlayer(value: MP)
 
