@@ -327,6 +327,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                             Console.log("$playerTag $logTag Seek")
                         }
 
+                        Console.log(
+
+                            "$playerTag $logTag Preparing :: Player hash = ${ep.hashCode()}"
+                        )
+
                         ep.prepare()
                         ep.playWhenReady = true
 
