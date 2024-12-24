@@ -1,6 +1,5 @@
 package com.redelf.commons.activity
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
@@ -9,6 +8,8 @@ import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscription {
+
+    protected open val removeFromHistoryOnFinish = false
 
     private var tagContext = ""
     private val paused = AtomicBoolean()
@@ -179,10 +180,25 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
         overridePendingTransition(0, 0)
 
-        finishAndRemoveTask()
+        if (removeFromHistoryOnFinish) {
+
+            finishAndRemoveTask()
+
+        } else {
+
+            super.finish()
+        }
 
         overridePendingTransition(0, 0)
 
         Console.log("$tag END")
+    }
+
+    protected fun removeActivityFromHistory() {
+
+        if (removeFromHistoryOnFinish) {
+
+            finishAndRemoveTask()
+        }
     }
 }

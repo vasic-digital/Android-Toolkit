@@ -78,7 +78,6 @@ abstract class BaseActivity :
         closeActivity()
     }
 
-    protected open val removeFromHistoryOnFinish = false
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
 
@@ -631,29 +630,6 @@ abstract class BaseActivity :
         Console.log("$tag START")
 
         finish()
-
-        Console.log("$tag END")
-    }
-
-    @Suppress("DEPRECATION")
-    override fun finish() {
-
-        val tag = "ACTIVITY Activity = '${this.javaClass.simpleName}' :: TERMINATE :: FINISH"
-
-        Console.log("$tag START")
-
-        overridePendingTransition(0, 0)
-
-        if (removeFromHistoryOnFinish) {
-
-            finishAndRemoveTask()
-
-        } else {
-
-            super.finish()
-        }
-
-        overridePendingTransition(0, 0)
 
         Console.log("$tag END")
     }
@@ -1411,12 +1387,4 @@ abstract class BaseActivity :
     }
 
     protected fun getActivityContext(): Context = this
-
-    fun removeActivityFromHistory() {
-
-        if (removeFromHistoryOnFinish) {
-
-            finishAndRemoveTask()
-        }
-    }
 }
