@@ -105,9 +105,9 @@ abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
 
         val action = Runnable {
 
-            val instance = if (player == null) {
+            val instance = if (instantiation != null) {
 
-                instantiation?.instantiate()
+                instantiation.instantiate()
 
             } else {
 
