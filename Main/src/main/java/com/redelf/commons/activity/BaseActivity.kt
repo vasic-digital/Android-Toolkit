@@ -78,7 +78,6 @@ abstract class BaseActivity :
         closeActivity()
     }
 
-    protected open val removeFromHistoryOnFinish = false
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
 
@@ -631,29 +630,6 @@ abstract class BaseActivity :
         Console.log("$tag START")
 
         finish()
-
-        Console.log("$tag END")
-    }
-
-    @Suppress("DEPRECATION")
-    override fun finish() {
-
-        val tag = "ACTIVITY Activity = '${this.javaClass.simpleName}' :: TERMINATE :: FINISH"
-
-        Console.log("$tag START")
-
-        overridePendingTransition(0, 0)
-
-        if (removeFromHistoryOnFinish) {
-
-            finishAndRemoveTask()
-
-        } else {
-
-            super.finish()
-        }
-
-        overridePendingTransition(0, 0)
 
         Console.log("$tag END")
     }
@@ -1392,14 +1368,7 @@ abstract class BaseActivity :
 
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 
-        receiver?.let { r ->
-            filter?.let { f ->
-
-                LocalBroadcastManager.getInstance(getActivityContext()).registerReceiver(r, f)
-            }
-        }
-
-        return null
+        return doRegisterReceiver(receiver, filter)
     }
 
     override fun unregisterReceiver(receiver: BroadcastReceiver?) {
@@ -1412,11 +1381,15 @@ abstract class BaseActivity :
 
     protected fun getActivityContext(): Context = this
 
-    fun removeActivityFromHistory() {
+    protected fun doRegisterReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 
-        if (removeFromHistoryOnFinish) {
+        receiver?.let { r ->
+            filter?.let { f ->
 
-            finishAndRemoveTask()
+                LocalBroadcastManager.getInstance(getActivityContext()).registerReceiver(r, f)
+            }
         }
+
+        return null
     }
 }

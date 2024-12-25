@@ -327,6 +327,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                             Console.log("$playerTag $logTag Seek")
                         }
 
+                        Console.log(
+
+                            "$playerTag $logTag Preparing :: Player hash = ${ep.hashCode()}"
+                        )
+
                         ep.prepare()
                         ep.playWhenReady = true
 
@@ -605,7 +610,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 val noTitle = ""
                 val iChooser = Intent.createChooser(intent, noTitle)
-                iChooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                iChooser.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK)
                 BaseApplication.takeContext().startActivity(iChooser)
 
                 return true
