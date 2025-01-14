@@ -32,6 +32,7 @@ import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.fitInsideSystemBoundaries
 import com.redelf.commons.extensions.initRegistrationWithGoogle
 import com.redelf.commons.extensions.isServiceRunning
 import com.redelf.commons.extensions.randomInteger
@@ -141,6 +142,8 @@ abstract class BaseActivity :
         }
 
         onBackPressedDispatcher.addCallback(this, backPressedCallback)
+
+        fitInsideSystemBoundaries()
 
         created = true
     }
@@ -959,7 +962,8 @@ abstract class BaseActivity :
                 if (!isFinishing) {
 
                     thisDialog = builder.create()
-                    thisDialog?.let {
+
+                    thisDialog.let {
 
                         dialogs.add(it)
                         it.show()
@@ -982,7 +986,9 @@ abstract class BaseActivity :
     private fun closeActivity() {
 
         runOnUiThread {
+
             if (!isFinishing) {
+
                 finish()
             }
         }
