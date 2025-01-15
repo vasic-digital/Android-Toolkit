@@ -11,7 +11,6 @@ import com.redelf.commons.extensions.appendText
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.toHumanReadableString
-import okio.IOException
 import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat

@@ -1,7 +1,6 @@
 package com.redelf.commons.referring.implementation
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.redelf.commons.expiration.Expiration
 import com.redelf.commons.expiration.ExpirationParametrized
 import com.redelf.commons.extensions.toDays
 import kotlinx.serialization.SerialName
