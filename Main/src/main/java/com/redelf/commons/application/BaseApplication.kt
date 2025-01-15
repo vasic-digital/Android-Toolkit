@@ -193,6 +193,7 @@ abstract class BaseApplication :
         }
     }
 
+    open val useCronet = false
     open val detectAudioStreamed = false
     open val detectPhoneCallReceived = false
     open val toastOnApiCommunicationFailure = false
@@ -568,7 +569,11 @@ abstract class BaseApplication :
 
         enableLogsRecording()
 
-        Cronet.initialize(applicationContext)
+        if (useCronet) {
+
+            Cronet.initialize(applicationContext)
+        }
+
         DataManagement.initialize(applicationContext)
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
