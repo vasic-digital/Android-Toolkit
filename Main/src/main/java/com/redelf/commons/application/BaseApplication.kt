@@ -27,6 +27,8 @@ import androidx.profileinstaller.ProfileInstaller
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsConstants
 import com.facebook.appevents.AppEventsLogger
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
@@ -68,7 +70,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.reflect.KClass
-
 
 abstract class BaseApplication :
 
@@ -622,6 +623,17 @@ abstract class BaseApplication :
 
             recordException(e)
         }
+    }
+
+    /*
+    * TODO: Incorporate support for Samsung AppStore, RuStore, Huawei AppGallery, etc.
+    */
+    fun checkGooglePlayServices(): Boolean {
+
+        val googleApiAvailability = GoogleApiAvailability.getInstance()
+        val resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this)
+
+        return resultCode == ConnectionResult.SUCCESS
     }
 
     private fun doCreate() {
