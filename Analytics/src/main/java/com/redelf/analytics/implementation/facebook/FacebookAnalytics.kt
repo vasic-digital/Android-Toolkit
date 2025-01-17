@@ -31,11 +31,7 @@ class FacebookAnalytics : Analytics {
 
         key?.let {
 
-            exec(
-
-                onRejected = { e -> recordException(e) }
-
-            ) {
+            exec {
 
                 value?.let {
 
