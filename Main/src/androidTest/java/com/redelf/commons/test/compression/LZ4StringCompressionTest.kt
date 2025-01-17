@@ -28,7 +28,8 @@ class LZ4StringCompressionTest : BaseTest() {
     @Test
     fun testLZ4() {
 
-        val text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nulla sit amet ultrices ultrices, ante massa tincidunt ante, eu tincidunt turpis ante eu ante. "
+        val text =
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nulla sit amet ultrices ultrices, ante massa tincidunt ante, eu tincidunt turpis ante eu ante. "
 
         val compressed = text.compress(lz4 = true)
         val decompressed = compressed?.decompress(lz4 = true)
@@ -48,22 +49,40 @@ class LZ4StringCompressionTest : BaseTest() {
     @Test
     fun testLZ4WithEncryption() {
 
+        val tag = "Test :: LZ4WithEncryption ::"
+
         val text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, " +
                 "nulla sit amet ultrices ultrices, ante massa tincidunt ante, eu " +
                 "tincidunt turpis ante eu ante."
 
+        Console.log("$tag START")
+
+        var start = System.currentTimeMillis()
+
         val compressed = text.compressAndEncrypt()
+
+        Console.log(
+
+            "$tag COMPRESSED :: Time = ${System.currentTimeMillis() - start} ms, " +
+                    "Size = ${compressed.toByteArray().size} bytes, " +
+                    "Original Size = ${text.toByteArray().size} bytes"
+        )
 
         Assert.assertNotNull(compressed)
         Assert.assertNotEquals(text, compressed)
 
+        start = System.currentTimeMillis()
+
         val decompressed = compressed.decryptAndDecompress()
 
+        Console.log(
+
+            "$tag DECOMPRESSED :: Time = ${System.currentTimeMillis() - start} ms, " +
+                    "Size = ${decompressed.toByteArray().size} bytes, " +
+                    "Original Size = ${text.toByteArray().size} bytes"
+        )
+
         Assert.assertEquals(text, decompressed)
-        Assert.assertTrue(compressed.isNotEmpty() == true)
-
-        val compressedLength = compressed.length
-
-        Assert.assertTrue(compressedLength > 0)
+        Assert.assertTrue(compressed.isNotEmpty())
     }
 }
