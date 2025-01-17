@@ -19,13 +19,9 @@ import java.lang.StringBuilder
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
-import net.jpountz.lz4.LZ4Factory
-
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.SecretKeySpec
 
 fun String.deobfuscate(deobfuscator: Obfuscation = DefaultObfuscator): String {
 
@@ -195,23 +191,14 @@ fun String.compressAndEncrypt(
 
     try {
 
-        val lz4Factory = LZ4Factory.fastestInstance()
-        val compressor = lz4Factory.fastCompressor()
-        val dataBytes = this.toByteArray()
-        val maxCompressedLength = compressor.maxCompressedLength(dataBytes.size)
-        val compressed = ByteArray(maxCompressedLength)
-
-        val compressedLength =
-            compressor.compress(dataBytes, 0, dataBytes.size, compressed, 0, maxCompressedLength)
-
-        val compressedData = compressed.copyOf(compressedLength)
+        val compressed = compress(true)
 
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val gcmSpec = GCMParameterSpec(128, ByteArray(12)) // 12-byte IV for GCM
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec)
 
-        val encryptedData = cipher.doFinal(compressedData)
+        val encryptedData = cipher.doFinal(compressed)
 
         return java.util.Base64.getEncoder().encodeToString(encryptedData)
 
@@ -232,9 +219,6 @@ fun String.decryptAndDecompress(
 
     try {
 
-        val lz4Factory = LZ4Factory.fastestInstance()
-        val decompressor = lz4Factory.fastDecompressor()
-
         val encryptedData = java.util.Base64.getDecoder().decode(this)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val gcmSpec = GCMParameterSpec(128, ByteArray(12)) // 12-byte IV for GCM
@@ -242,11 +226,8 @@ fun String.decryptAndDecompress(
         cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec)
 
         val decryptedData = cipher.doFinal(encryptedData)
-        val decompressedData = ByteArray(decryptedData.size)
 
-        decompressor.decompress(decryptedData, 0, decompressedData, 0, decompressedData.size)
-
-        return String(decompressedData)
+        return decryptedData.decompress(true) ?: this
 
     } catch (e: Exception) {
 

@@ -191,8 +191,6 @@ dependencies {
     testApi project("$toolkit_obfuscator_project")
     androidTestApi project("$toolkit_obfuscator_project")
 
-    implementation 'org.lz4:lz4-java:1.8.0'
-
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"

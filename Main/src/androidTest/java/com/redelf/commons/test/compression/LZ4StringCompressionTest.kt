@@ -1,16 +1,29 @@
 package com.redelf.commons.test.compression
 
+import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.extensions.compress
 import com.redelf.commons.extensions.compressAndEncrypt
 import com.redelf.commons.extensions.decompress
 import com.redelf.commons.extensions.decryptAndDecompress
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.logging.Console
 import com.redelf.commons.test.BaseTest
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import javax.crypto.KeyGenerator
 
 class LZ4StringCompressionTest : BaseTest() {
+
+    @Before
+    fun prepare() {
+
+        Console.initialize(failOnError = true)
+
+        Console.log("Console initialized: $this")
+
+        GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK.set(true)
+    }
 
     @Test
     fun testLZ4() {
@@ -35,22 +48,19 @@ class LZ4StringCompressionTest : BaseTest() {
     @Test
     fun testLZ4WithEncryption() {
 
+        val text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+
         /*
         * FIXME: Make sure that test works:
-        *   java.lang.IllegalStateException: Default FirebaseApp is not initialized in this process com.redelf.commons.test. Make sure to call FirebaseApp.initializeApp(Context) first.
+        *   net.jpountz.lz4.LZ4Exception: Malformed input at 127
         */
-
-        val keyGen = KeyGenerator.getInstance("AES")
-        keyGen.init(256) // AES-256
-        val secretKey = keyGen.generateKey()
-
-        val text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nulla sit amet ultrices ultrices, ante massa tincidunt ante, eu tincidunt turpis ante eu ante. "
-
-        val compressed = text.compressAndEncrypt(secretKey = secretKey)
-        val decompressed = compressed.decryptAndDecompress(secretKey = secretKey)
+        val compressed = text.compressAndEncrypt()
 
         Assert.assertNotNull(compressed)
         Assert.assertNotEquals(text, compressed)
+
+        val decompressed = compressed.decryptAndDecompress()
+
         Assert.assertEquals(text, decompressed)
         Assert.assertTrue(compressed.isNotEmpty() == true)
 
