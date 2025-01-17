@@ -269,7 +269,7 @@ dependencies {
     api "com.google.android.gms:play-services-cronet:18.1.0"
 
     api "com.android.installreferrer:installreferrer:2.2"
-    api "com.facebook.android:facebook-android-sdk:17.0.2"
+    api "com.facebook.android:facebook-android-sdk:18.0.0"
 
     testImplementation project("${toolkit_context}:Test")
 
