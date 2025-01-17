@@ -70,6 +70,8 @@ import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
 import kotlin.reflect.KClass
 
 abstract class BaseApplication :
@@ -80,7 +82,9 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication> {
+    ContextAvailability<BaseApplication>
+
+{
 
     companion object :
 
@@ -226,6 +230,7 @@ abstract class BaseApplication :
 
     private val updating = AtomicBoolean()
     private val updatingTag = "Updating ::"
+    private var secretKey: SecretKey? = null
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private val lastCommunicationErrorTime = AtomicLong()
@@ -233,6 +238,22 @@ abstract class BaseApplication :
     private var firebaseAnalytics: FirebaseAnalytics? = null
     private val registeredForPhoneCallsDetection = AtomicBoolean()
     private val registeredForAudioFocusDetection = AtomicBoolean()
+
+    init {
+
+        try {
+
+            val keyGen = KeyGenerator.getInstance("AES")
+            keyGen.init(256) // AES-256
+            secretKey = keyGen.generateKey()
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
+    }
+
+    open fun getSecret() = secretKey
 
     open fun canRecordApplicationLogs() = false
 
