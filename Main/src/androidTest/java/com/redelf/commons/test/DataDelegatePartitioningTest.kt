@@ -76,7 +76,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.Long.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -108,7 +108,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.Bool.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -140,7 +140,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.String.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -177,7 +177,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.List.Long.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -212,7 +212,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.List.Bool.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -247,7 +247,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.List.String.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -282,7 +282,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.List.Complex.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -319,7 +319,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.Map.UUIDtoString.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -356,7 +356,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.Map.StringToLong.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -393,7 +393,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val key = "Test.Map.Complex.No_Enc"
             val saved = persistence.push(key, wrapper)
@@ -420,7 +420,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val data = instantiateTestDataP2()
 
@@ -449,7 +449,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val data = instantiateTestDataP3()
 
@@ -478,7 +478,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val data = instantiateTestDataP4()
 
@@ -507,7 +507,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertFalse(persistence.isEncryptionDisabled())
+            Assert.assertFalse(persistence.isEncryptionEnabled())
 
             val data = instantiateTestDataP5()
 
@@ -536,7 +536,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val data = instantiateTestData(partitioning = true)
 
@@ -572,7 +572,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val data = instantiateTestData(partitioning = true, async = false)
 
@@ -684,7 +684,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val data = instantiateTestData(partitioning = false)
 
@@ -720,7 +720,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val data = instantiateTestData(partitioning = false, async = false)
 
