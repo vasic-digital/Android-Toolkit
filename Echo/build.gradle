@@ -44,19 +44,29 @@ android {
 
     compileOptions {
 
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
 
-        jvmTarget = '1.8'
+        jvmTarget = '11'
+
+        freeCompilerArgs += [
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:featureFlag=StrongSkipping"
+        ]
     }
+
     packagingOptions {
+
         jniLibs {
+
             excludes += ['META-INF/*']
         }
+
         resources {
+
             excludes += ['META-INF/*', 'LICENSE-2.0.txt', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt']
         }
     }
