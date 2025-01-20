@@ -40,7 +40,6 @@ class EncryptedPersistenceTest : BaseTest() {
             persistence = EncryptedPersistence(
 
                 doLog = true,
-                doEncrypt = true,
                 storageTag = testTag,
                 ctx = applicationContext,
             )

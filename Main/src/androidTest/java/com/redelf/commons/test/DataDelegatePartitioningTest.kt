@@ -70,7 +70,7 @@ class DataDelegatePartitioningTest : BaseTest() {
         val long = System.currentTimeMillis()
         val wrapper = LongWrapper(long)
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -102,7 +102,7 @@ class DataDelegatePartitioningTest : BaseTest() {
         val bool: Boolean = System.currentTimeMillis() % 2L == 0L
         val wrapper = BoolWrapper(bool)
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -134,7 +134,7 @@ class DataDelegatePartitioningTest : BaseTest() {
         val str = sampleUUID.toString()
         val wrapper = StringWrapper(str)
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -171,7 +171,7 @@ class DataDelegatePartitioningTest : BaseTest() {
             list.add(System.currentTimeMillis().toDouble())
         }
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -206,7 +206,7 @@ class DataDelegatePartitioningTest : BaseTest() {
             list.add(x % 2 == 0)
         }
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -241,7 +241,7 @@ class DataDelegatePartitioningTest : BaseTest() {
             list.add(UUID(x.toLong(), x.toLong()).toString())
         }
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -276,7 +276,7 @@ class DataDelegatePartitioningTest : BaseTest() {
             list.add(instantiateTestNestedDataSecondLevel(x))
         }
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -313,7 +313,7 @@ class DataDelegatePartitioningTest : BaseTest() {
             map[uuid] = x.toString()
         }
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -350,7 +350,7 @@ class DataDelegatePartitioningTest : BaseTest() {
             map[uuid.toString()] = System.currentTimeMillis()
         }
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -387,7 +387,7 @@ class DataDelegatePartitioningTest : BaseTest() {
             map[uuid] = instantiateTestNestedDataSecondLevel(x)
         }
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -414,7 +414,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testPartition2() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -443,7 +443,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testPartition3() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -472,7 +472,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testPartition4() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -501,13 +501,13 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testPartition5() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
         persistence?.let {
 
-            Assert.assertTrue(persistence.isEncryptionDisabled())
+            Assert.assertFalse(persistence.isEncryptionDisabled())
 
             val data = instantiateTestDataP5()
 
@@ -530,7 +530,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testPartitioningWithNoEncryption() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -566,7 +566,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testPartitioningWithNoEncryptionSync() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -604,7 +604,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testPartitioningWithEncryption() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -640,7 +640,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testPartitioningWithEncryptionSync() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertTrue(persistence?.isEncryptionEnabled() == true)
 
@@ -678,7 +678,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testNoPartitioningWithNoEncryption() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -714,7 +714,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testNoPartitioningWithNoEncryptionSync() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = false)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -752,7 +752,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testNoPartitioningWithEncryption() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertNotNull(persistence)
 
@@ -788,7 +788,7 @@ class DataDelegatePartitioningTest : BaseTest() {
     @Test
     fun testNoPartitioningWithEncryptionSync() {
 
-        val persistence = instantiatePersistenceAndInitialize(doEncrypt = true)
+        val persistence = instantiatePersistenceAndInitialize()
 
         Assert.assertTrue(persistence?.isEncryptionEnabled() == true)
 

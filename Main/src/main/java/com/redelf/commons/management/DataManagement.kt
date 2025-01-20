@@ -71,8 +71,7 @@ abstract class DataManagement<T> :
 
                 ctx = ctx,
                 doLog = DEBUG.get(),
-                storageTag = "dt_mgmt",
-                doEncrypt = ENCRYPT.get()
+                storageTag = "dt_mgmt"
             )
         }
     }

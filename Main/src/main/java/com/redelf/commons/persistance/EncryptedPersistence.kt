@@ -25,7 +25,6 @@ constructor(
     ctx: Context,
 
     private val keySalt: String = "st",
-    private val doEncrypt: Boolean = true,
     private val storageTag: String = BaseApplication.getName(),
     private val doLog: Boolean = false,
 
@@ -95,14 +94,13 @@ constructor(
             )
                 .setParser(getParser)
                 .setDoLog(doLog)
-                .setEncrypt(doEncrypt)
                 .build()
         }
     }
 
-    fun isEncryptionEnabled() = doEncrypt && dataDelegate?.isEncryptionEnabled() == true
+    fun isEncryptionEnabled() = dataDelegate?.isEncryptionEnabled() == true
 
-    fun isEncryptionDisabled() = !doEncrypt
+    fun isEncryptionDisabled() = !isEncryptionEnabled()
 
     override fun shutdown(): Boolean {
 

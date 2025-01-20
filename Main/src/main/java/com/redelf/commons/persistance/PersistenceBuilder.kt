@@ -25,8 +25,6 @@ class PersistenceBuilder(
         override fun getSalt() = storageTag.hashCodeString().reversed()
     },
 
-    private var encrypt: Boolean = false
-
 ) {
 
     companion object {
@@ -94,12 +92,6 @@ class PersistenceBuilder(
         return this
     }
 
-    fun setEncrypt(enc: Boolean): PersistenceBuilder {
-
-        this.encrypt = enc
-        return this
-    }
-
     fun setParser(parser: Obtain<Parser>): PersistenceBuilder {
 
         this.parser = parser
@@ -142,11 +134,6 @@ class PersistenceBuilder(
 
     private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption<String> {
 
-        if (encrypt) {
-
-            return CompressedEncryption()
-        }
-
-        return NoEncryption()
+        return CompressedEncryption()
     }
 }

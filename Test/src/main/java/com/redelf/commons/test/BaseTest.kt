@@ -124,7 +124,6 @@ abstract class BaseTest {
     protected fun instantiatePersistenceAndInitialize(
 
         ctx: Context = applicationContext,
-        doEncrypt: Boolean = true,
 
         keySalt: String? = null,
         storageTag: String? = null
@@ -133,7 +132,6 @@ abstract class BaseTest {
 
         val instance = instantiatePersistence(
 
-            doEncrypt = doEncrypt,
             keySalt = keySalt,
             storageTag = storageTag
         )
@@ -145,8 +143,6 @@ abstract class BaseTest {
 
     protected fun instantiatePersistence(
 
-        doEncrypt: Boolean = true,
-
         keySalt: String? = null,
         storageTag: String? = null
 
@@ -157,7 +153,6 @@ abstract class BaseTest {
             return EncryptedPersistence(
 
                 doLog = true,
-                doEncrypt = doEncrypt,
                 ctx = applicationContext,
                 keySalt = keySalt ?: testSession.toString(),
                 storageTag = storageTag ?: testSession.toString()
