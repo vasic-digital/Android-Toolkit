@@ -1,28 +1,20 @@
 package com.redelf.commons.persistance
 
+import com.redelf.commons.extensions.compressAndEncrypt
+import com.redelf.commons.extensions.decryptAndDecompress
 import com.redelf.commons.persistance.base.Encryption
-import com.redelf.commons.persistance.base.Salter
 
-class CompressedEncryption(
+class CompressedEncryption() : Encryption<String> {
 
-    salter: Salter
-
-) : Encryption<String> {
-
-    private val salt = salter.getSalt()
-
-    override fun init(): Boolean {
-
-        TODO("Not yet implemented")
-    }
+    override fun init() = true
 
     override fun encrypt(key: String, value: String): String? {
 
-        TODO("Not yet implemented")
+        return value.compressAndEncrypt()
     }
 
     override fun decrypt(key: String, value: String): String? {
 
-        TODO("Not yet implemented")
+        return value.decryptAndDecompress()
     }
 }
