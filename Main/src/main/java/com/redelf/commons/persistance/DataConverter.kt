@@ -19,10 +19,14 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
     override fun <T> toString(value: T): String? {
 
-
         if (value == null) {
 
             return null
+        }
+
+        if (value is String) {
+
+            return value
         }
 
         if (debug().get()) Console.log("$tag START :: Class = ${value::class.java.canonicalName}")

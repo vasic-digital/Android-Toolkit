@@ -507,7 +507,7 @@ class DataDelegatePartitioningTest : BaseTest() {
 
         persistence?.let {
 
-            Assert.assertFalse(persistence.isEncryptionEnabled())
+            Assert.assertTrue(persistence.isEncryptionEnabled())
 
             val data = instantiateTestDataP5()
 
