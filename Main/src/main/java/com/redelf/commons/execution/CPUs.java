@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class CPUs {
 
-    public String tag = "Execution ::";
+    public static String tag = "Execution ::";
 
     public int getNumberOfCores() {
 

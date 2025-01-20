@@ -21,8 +21,7 @@ enum class Executor : Execution {
         val DEBUG = AtomicBoolean()
         val THREAD_POOLED = AtomicBoolean()
 
-        private val cpus = CPUs()
-        private val cores = cpus.numberOfCores
+        private val cores = CPUs().numberOfCores
 
         private val capacity = if (cores * 3 <= 10) {
 
@@ -106,7 +105,7 @@ enum class Executor : Execution {
             val maximumPoolSize = executor.maximumPoolSize
             val available = maximumPoolSize - executor.activeCount
 
-            val msg = "${cpus.tag} Available=$available, Total=$maximumPoolSize"
+            val msg = "${CPUs.tag} Available=$available, Total=$maximumPoolSize"
 
             if (available > 0) {
 
