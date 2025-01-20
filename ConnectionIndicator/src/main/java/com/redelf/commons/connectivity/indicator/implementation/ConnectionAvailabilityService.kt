@@ -15,7 +15,7 @@ import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityHandler
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
-import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.suspendable.Obtain
 import com.redelf.commons.stateful.State
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.CountDownLatch

@@ -16,7 +16,7 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isExcluded
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.suspendable.Obtain
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.serialization.ByteArraySerializer

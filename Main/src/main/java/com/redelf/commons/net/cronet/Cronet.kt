@@ -5,7 +5,7 @@ import com.google.android.gms.net.CronetProviderInstaller
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationParametrizedSync
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.suspendable.Obtain
 import org.chromium.net.CronetEngine
 import java.util.concurrent.atomic.AtomicBoolean
 

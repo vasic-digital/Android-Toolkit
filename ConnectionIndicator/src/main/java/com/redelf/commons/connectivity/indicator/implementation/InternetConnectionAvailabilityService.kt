@@ -7,7 +7,7 @@ import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
-import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.suspendable.Obtain
 import com.redelf.commons.obtain.Obtainer
 
 class InternetConnectionAvailabilityService private constructor(origin: String) :

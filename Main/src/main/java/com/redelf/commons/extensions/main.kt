@@ -953,20 +953,18 @@ fun <T> doExec(
 
         executor?.let {
 
-            future = it.execute(callable)
+            success = it.execute(callable)
         }
 
         if (executor == null) {
 
-            future = Executor.MAIN.execute(callable)
+            success = Executor.MAIN.execute(callable)
         }
 
         if (debug) {
 
             Console.log("$logTag Callable: PRE-START")
         }
-
-        success = future?.get(timeout, timeUnit)
 
         if (debug) {
 

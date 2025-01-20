@@ -3,6 +3,7 @@ package com.redelf.commons.execution
 import android.os.Handler
 import android.os.Looper
 import com.redelf.commons.logging.Console
+import kotlinx.coroutines.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Executor
 import java.util.concurrent.Future
@@ -10,7 +11,7 @@ import java.util.concurrent.FutureTask
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
-enum class Executor : Execution, Performer<Executor> {
+enum class Executor : Execution {
 
     MAIN {
 
@@ -31,8 +32,7 @@ enum class Executor : Execution, Performer<Executor> {
 
         private val executor = TaskExecutor.instantiate(capacity)
 
-        override fun getPerformer() = executor
-
+        @OptIn(DelicateCoroutinesApi::class)
         override fun execute(what: Runnable) {
 
             if (THREAD_POOLED.get()) {
@@ -43,19 +43,37 @@ enum class Executor : Execution, Performer<Executor> {
 
             } else {
 
-                // TODO:
+                GlobalScope.launch(Dispatchers.Default) {
+
+                    what.run()
+                }
             }
         }
 
-        override fun <T> execute(callable: Callable<T>): Future<T> {
+        @OptIn(DelicateCoroutinesApi::class)
+        override fun <T> execute(callable: Callable<T>): T {
 
-            // TODO:
+            if (THREAD_POOLED.get()) {
 
-            logCapacity()
+                logCapacity()
 
-            return Exec.execute(callable, executor)
+                return Exec.execute(callable, executor).get()
+
+            } else {
+
+                val job = GlobalScope.async(Dispatchers.Default) {
+
+                    callable.call()
+                }
+
+                return runBlocking {
+
+                    job.await()
+                }
+            }
         }
 
+        @OptIn(DelicateCoroutinesApi::class)
         override fun execute(action: Runnable, delayInMillis: Long) {
 
             if (THREAD_POOLED.get()) {
@@ -66,7 +84,12 @@ enum class Executor : Execution, Performer<Executor> {
 
             } else {
 
-                // TODO:
+                GlobalScope.launch(Dispatchers.Default) {
+
+                    delay(delayInMillis)
+
+                    action.run()
+                }
             }
         }
 
@@ -99,6 +122,7 @@ enum class Executor : Execution, Performer<Executor> {
 
         private val executor = TaskExecutor.instantiateSingle()
 
+        @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
         override fun execute(what: Runnable) {
 
             if (THREAD_POOLED.get()) {
@@ -107,17 +131,35 @@ enum class Executor : Execution, Performer<Executor> {
 
             } else {
 
-                // TODO:
+                GlobalScope.launch(Dispatchers.Default.limitedParallelism(1)) {
+
+                    what.run()
+                }
             }
         }
 
-        override fun <T> execute(callable: Callable<T>): Future<T> {
+        @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+        override fun <T> execute(callable: Callable<T>): T {
 
-            // TODO:
+            if (THREAD_POOLED.get()) {
 
-            return Exec.execute(callable, executor)
+                return Exec.execute(callable, executor).get()
+
+            } else {
+
+                val job = GlobalScope.async(Dispatchers.Default.limitedParallelism(1)) {
+
+                    callable.call()
+                }
+
+                return runBlocking {
+
+                    job.await()
+                }
+            }
         }
 
+        @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
         override fun execute(action: Runnable, delayInMillis: Long) {
 
             if (THREAD_POOLED.get()) {
@@ -126,11 +168,14 @@ enum class Executor : Execution, Performer<Executor> {
 
             } else {
 
-                // TODO:
+                GlobalScope.launch(Dispatchers.Default.limitedParallelism(1)) {
+
+                    delay(delayInMillis)
+
+                    action.run()
+                }
             }
         }
-
-        override fun getPerformer() = executor
     },
 
     UI {
@@ -138,22 +183,13 @@ enum class Executor : Execution, Performer<Executor> {
         private val executor = Handler(Looper.getMainLooper())
 
         @Throws(IllegalStateException::class)
-        override fun execute(what: Runnable) {
-
-            if (!executor.post(what)) {
-
-                throw IllegalStateException("Could not accept action")
-            }
-        }
-
-        @Throws(IllegalStateException::class)
-        override fun <T> execute(callable: Callable<T>): Future<T> {
+        override fun <T> execute(callable: Callable<T>): T {
 
             val action = FutureTask(callable)
 
             execute(action)
 
-            return action
+            return action.get()
         }
 
         @Throws(IllegalStateException::class)
@@ -165,12 +201,14 @@ enum class Executor : Execution, Performer<Executor> {
             }
         }
 
-        /*
-        * TODO: Think about more proper solution for this
-        * */
-        @Throws(UnsupportedOperationException::class)
-        override fun getPerformer() =
-            throw UnsupportedOperationException("Cannot get performer for UI executor")
+        @Throws(IllegalStateException::class)
+        override fun execute(what: Runnable) {
+
+            if (!executor.post(what)) {
+
+                throw IllegalStateException("Could not accept action")
+            }
+        }
     };
 
     private object Exec {

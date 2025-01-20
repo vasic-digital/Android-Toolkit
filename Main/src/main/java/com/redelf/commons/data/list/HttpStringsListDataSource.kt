@@ -2,7 +2,7 @@ package com.redelf.commons.data.list
 
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.net.content.RemoteHttpContentFetcher
-import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.suspendable.Obtain
 import java.io.IOException
 
 class HttpStringsListDataSource(

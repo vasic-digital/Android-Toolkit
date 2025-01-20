@@ -8,7 +8,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.net.endpoint.http.HttpEndpoint
 import com.redelf.commons.net.proxy.http.HttpProxies
 import com.redelf.commons.net.proxy.http.HttpProxy
-import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.suspendable.Obtain
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong

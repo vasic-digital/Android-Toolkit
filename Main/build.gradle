@@ -408,6 +408,12 @@ task obtainAndWriteSalt {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 preBuild.dependsOn obtainAndWriteSalt
 
 if (proxyEnabled) {

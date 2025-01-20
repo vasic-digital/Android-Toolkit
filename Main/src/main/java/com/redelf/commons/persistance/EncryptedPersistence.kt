@@ -3,14 +3,13 @@ package com.redelf.commons.persistance
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.destruction.erasing.Erasing
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.suspendable.Obtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Persistence
 import com.redelf.commons.persistance.base.Salter
