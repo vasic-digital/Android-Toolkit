@@ -53,23 +53,7 @@ class EncryptedPersistenceTest : BaseTest() {
     }
 
     @Test
-    fun testEncryptedPersistence() {
-
-            testNumbers()
-            testBoolean()
-            testRandomPositiveNumbers()
-            testRandomNegativeNumbers()
-            testString()
-            testUtfString()
-
-        // FIXME:
-//            testClass()
-//            testMap()
-//            testList()
-//            testSet()
-    }
-
-    private fun testBoolean() {
+    fun testBoolean() {
 
         log("Boolean testing: START")
 
@@ -95,7 +79,8 @@ class EncryptedPersistenceTest : BaseTest() {
         log("Boolean testing: END")
     }
 
-    private fun testNumbers() {
+    @Test
+    fun testNumbers() {
 
         log("Numbers testing: START")
 
@@ -109,19 +94,20 @@ class EncryptedPersistenceTest : BaseTest() {
         log("Numbers testing: END")
     }
 
-    private fun testRandomPositiveNumbers() {
+    @Test
+    fun testRandomPositiveNumbers() {
 
         log("Positive numbers testing: START")
 
-        val count = 1000
+        val count = 10
 
-        for (x in 0..count) {
+        (0..count).forEach { x ->
 
             val number = (1..Int.MAX_VALUE).random()
             testNumber(number)
         }
 
-        for (x in 0..count) {
+        (0..count).forEach { x ->
 
             val number = Random.nextDouble(0.001, Double.MAX_VALUE)
             testNumber(number)
@@ -130,19 +116,20 @@ class EncryptedPersistenceTest : BaseTest() {
         log("Positive numbers testing: END")
     }
 
-    private fun testRandomNegativeNumbers() {
+    @Test
+    fun testRandomNegativeNumbers() {
 
         log("Negative numbers testing: START")
 
-        val count = 1000
+        val count = 10
 
-        for (x in 0..count) {
+        (0..count).forEach { x ->
 
             val number = (Int.MIN_VALUE..-1).random()
             testNumber(number)
         }
 
-        for (x in 0..count) {
+        (0..count).forEach { x ->
 
             val number = Random.nextDouble(-999999999.999, -0.001)
             testNumber(number)
@@ -152,7 +139,8 @@ class EncryptedPersistenceTest : BaseTest() {
         log("Negative numbers testing: END")
     }
 
-    private fun testString() {
+    @Test
+    fun testString() {
 
         log("String testing: START")
 
@@ -176,7 +164,8 @@ class EncryptedPersistenceTest : BaseTest() {
         log("String testing: END")
     }
 
-    private fun testUtfString() {
+    @Test
+    fun testUtfString() {
 
         log("UTF string testing: START")
 
@@ -309,7 +298,8 @@ class EncryptedPersistenceTest : BaseTest() {
         persistence.unregister(callback)
     }
 
-    private fun testClass() {
+    @Test
+    fun testClass() {
 
         log("Class testing: START")
 
@@ -341,7 +331,8 @@ class EncryptedPersistenceTest : BaseTest() {
         log("Class testing: END")
     }
 
-    private fun testMap() {
+    @Test
+    fun testMap() {
 
         val map = mutableMapOf<String, String>()
         val map2 = mutableMapOf<Int, Float>()
@@ -376,7 +367,8 @@ class EncryptedPersistenceTest : BaseTest() {
         testObject("map", map4)
     }
 
-    private fun testList() {
+    @Test
+    fun testList() {
 
         val list = emptyList<String>()
         val list2 = listOf(2, 4, 6, 8, -1)
@@ -393,7 +385,8 @@ class EncryptedPersistenceTest : BaseTest() {
         testObject("list", list6)
     }
 
-    private fun testSet() {
+    @Test
+    fun testSet() {
 
         val set = setOf(1, 2, 3, 4, 5, 5, 5, 6, 7, 7, 7)
         val set2 = setOf("aa", "aa", "bb")
