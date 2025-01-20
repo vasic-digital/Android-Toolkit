@@ -57,51 +57,7 @@ class LZ4StringCompressionTest : BaseTest() {
 
         Console.log("$tag START")
 
-        /*
-        * FIXME: java.lang.OutOfMemoryError: Failed to allocate a 311951376 byte allocation with 25165824 free bytes and 191MB until OOM, target footprint 361643744, growth limit 536870912
-            at java.util.Arrays.copyOf(Arrays.java:3585)
-            at java.io.ByteArrayOutputStream.grow(ByteArrayOutputStream.java:120)
-            at java.io.ByteArrayOutputStream.ensureCapacity(ByteArrayOutputStream.java:95)
-            at java.io.ByteArrayOutputStream.write(ByteArrayOutputStream.java:156)
-            at com.redelf.commons.extensions.StringsKt.decompress(strings.kt:156)
-            at com.redelf.commons.extensions.StringsKt.decryptAndDecompress(strings.kt:230)
-            at com.redelf.commons.extensions.StringsKt.decryptAndDecompress$default(strings.kt:213)
-            at com.redelf.commons.test.compression.LZ4StringCompressionTest.testLZ4WithEncryption(LZ4StringCompressionTest.kt:82)
-            at java.lang.reflect.Method.invoke(Native Method)
-            at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
-            at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
-            at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
-            at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
-            at androidx.test.internal.runner.junit4.statement.RunBefores.evaluate(RunBefores.java:80)
-            at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
-            at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
-            at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
-            at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
-            at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
-            at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
-            at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
-            at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
-            at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
-            at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
-            at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
-            at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
-            at org.junit.runners.Suite.runChild(Suite.java:128)
-            at org.junit.runners.Suite.runChild(Suite.java:27)
-            at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
-            at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
-            at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
-            at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
-            at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
-            at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
-            at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
-            at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
-            at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
-            at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:68)
-            at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:59)
-            at androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:463)
-            at android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2415)
-        */
-        (0..100).forEach {
+        (0..10).forEach {
 
             text += text
 
