@@ -1,9 +1,9 @@
 plugins {
 
-    id 'com.android.library'
-    id 'kotlin-android'
-    id 'kotlin-parcelize'
     id 'kotlin-kapt'
+    id 'kotlin-android'
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.0"
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
@@ -182,6 +182,11 @@ android {
         disable "Instantiatable"
         disable 'ContentDescription'
     }
+
+    buildFeatures {
+
+        compose true
+    }
 }
 
 dependencies {
@@ -195,6 +200,19 @@ dependencies {
     api project("$toolkit_obfuscator_project")
     testApi project("$toolkit_obfuscator_project")
     androidTestApi project("$toolkit_obfuscator_project")
+
+    api 'androidx.activity:activity-compose:1.10.0'
+    api platform('androidx.compose:compose-bom:2025.01.00')
+    androidTestApi platform('androidx.compose:compose-bom:2025.01.00')
+
+    api 'androidx.compose.ui:ui'
+    api 'androidx.compose.ui:ui-graphics'
+    api 'androidx.compose.material3:material3'
+    api 'androidx.compose.foundation:foundation'
+    api 'androidx.compose.ui:ui-tooling-preview'
+
+    debugApi 'androidx.compose.ui:ui-tooling'
+    debugApi 'androidx.compose.ui:ui-test-manifest'
 
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
@@ -287,9 +305,14 @@ dependencies {
     implementation "com.jakewharton.timber:timber:5.0.1"
     testImplementation "com.jakewharton.timber:timber:5.0.1"
 
-    api "com.google.code.gson:gson:2.10.1"
+    api "com.google.code.gson:gson:2.11.0"
     testApi "com.google.code.gson:gson:2.10.1"
-    androidTestApi "com.google.code.gson:gson:2.10.1"
+    androidTestApi "com.google.code.gson:gson:2.11.0"
+}
+
+composeCompiler {
+
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
 }
 
 task downloadProxies(type: Exec) {
