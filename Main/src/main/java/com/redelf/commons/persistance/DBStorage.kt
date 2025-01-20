@@ -188,7 +188,18 @@ object DBStorage : Storage<String> {
             }
 
             prefs = nPrefs
-            enc = CompressedEncryption()
+
+            enc = ReverseEncryption(
+
+                object : Salter {
+
+                    override fun getSalt(): String {
+
+                        return DATABASE_NAME.reversed()
+                            .hashCode().toString().reversed().hashCodeString()
+                    }
+                }
+            )
 
             val rawName = "$mainKey.$suffix"
             val dbName = getString(rawName, prefsKey = "$DATABASE_NAME.$DATABASE_VERSION")
