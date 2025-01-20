@@ -5,13 +5,16 @@ import android.os.Looper
 import com.redelf.commons.logging.Console
 import kotlinx.coroutines.*
 import java.util.concurrent.Callable
-import java.util.concurrent.Executor
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
 enum class Executor : Execution {
+
+    /*
+    * TODO: Check for potential exceptions
+    * */
 
     MAIN {
 
