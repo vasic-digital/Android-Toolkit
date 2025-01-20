@@ -17,11 +17,6 @@ class EncryptedPersistenceTest : BaseTest() {
 
     private lateinit var persistence: EncryptedPersistence
 
-    private class Dummy(private val value: Int) {
-
-        fun getValue() = value
-    }
-
     @Before
     fun prepare() {
 
