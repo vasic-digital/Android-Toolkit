@@ -15,6 +15,7 @@ enum class Executor : Execution, Performer<Executor> {
     MAIN {
 
         val DEBUG = AtomicBoolean()
+        val THREAD_POOLED = AtomicBoolean()
 
         private val cpus = CPUs()
         private val cores = cpus.numberOfCores
@@ -28,18 +29,27 @@ enum class Executor : Execution, Performer<Executor> {
             cores * 3 * 10
         }
 
-        val executor = TaskExecutor.instantiate(capacity)
+        private val executor = TaskExecutor.instantiate(capacity)
 
         override fun getPerformer() = executor
 
         override fun execute(what: Runnable) {
 
-            logCapacity()
+            if (THREAD_POOLED.get()) {
 
-            Exec.execute(what, executor)
+                logCapacity()
+
+                Exec.execute(what, executor)
+
+            } else {
+
+                // TODO:
+            }
         }
 
         override fun <T> execute(callable: Callable<T>): Future<T> {
+
+            // TODO:
 
             logCapacity()
 
@@ -48,9 +58,16 @@ enum class Executor : Execution, Performer<Executor> {
 
         override fun execute(action: Runnable, delayInMillis: Long) {
 
-            logCapacity()
+            if (THREAD_POOLED.get()) {
 
-            Exec.execute(action, delayInMillis, executor)
+                logCapacity()
+
+                Exec.execute(action, delayInMillis, executor)
+
+            } else {
+
+                // TODO:
+            }
         }
 
         private fun logCapacity() {
@@ -78,21 +95,39 @@ enum class Executor : Execution, Performer<Executor> {
 
     SINGLE {
 
+        val THREAD_POOLED = AtomicBoolean()
+
         private val executor = TaskExecutor.instantiateSingle()
 
         override fun execute(what: Runnable) {
 
-            Exec.execute(what, executor)
+            if (THREAD_POOLED.get()) {
+
+                Exec.execute(what, executor)
+
+            } else {
+
+                // TODO:
+            }
         }
 
         override fun <T> execute(callable: Callable<T>): Future<T> {
+
+            // TODO:
 
             return Exec.execute(callable, executor)
         }
 
         override fun execute(action: Runnable, delayInMillis: Long) {
 
-            Exec.execute(action, delayInMillis, executor)
+            if (THREAD_POOLED.get()) {
+
+                Exec.execute(action, delayInMillis, executor)
+
+            } else {
+
+                // TODO:
+            }
         }
 
         override fun getPerformer() = executor
