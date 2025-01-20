@@ -4,7 +4,7 @@ import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 
-class ReverseEncryption constructor(
+class ReverseEncryption(
 
     salter: Salter
 
