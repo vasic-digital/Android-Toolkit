@@ -6,9 +6,9 @@ import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.GsonParser
-import com.redelf.commons.test.data.CustomAsset
-import com.redelf.commons.test.data.ExtendedCustomAsset
-import com.redelf.commons.test.data.SimpleAsset
+import com.redelf.commons.test.test_data.CustomAsset
+import com.redelf.commons.test.test_data.ExtendedCustomAsset
+import com.redelf.commons.test.test_data.SimpleAsset
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test

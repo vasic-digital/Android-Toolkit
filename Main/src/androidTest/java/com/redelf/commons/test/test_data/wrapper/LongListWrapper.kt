@@ -1,9 +1,9 @@
-package com.redelf.commons.test.data.wrapper
+package com.redelf.commons.test.test_data.wrapper
 
 import com.redelf.commons.logging.Console
 import java.util.concurrent.CopyOnWriteArrayList
 
-class StringListWrapper(list: CopyOnWriteArrayList<String>) : TypeListWrapper<String>(list) {
+class LongListWrapper(list: CopyOnWriteArrayList<Double>) : TypeListWrapper<Double>(list) {
 
     constructor() : this(CopyOnWriteArrayList())
 
@@ -12,8 +12,8 @@ class StringListWrapper(list: CopyOnWriteArrayList<String>) : TypeListWrapper<St
         Console.error(error)
     }
 
-    override fun getClazz(): Class<StringListWrapper> {
+    override fun getClazz(): Class<LongListWrapper> {
 
-        return StringListWrapper::class.java
+        return LongListWrapper::class.java
     }
 }

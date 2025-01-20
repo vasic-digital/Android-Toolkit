@@ -1,4 +1,4 @@
-package com.redelf.commons.test.data.wrapper
+package com.redelf.commons.test.test_data.wrapper
 
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.data.model.Wrapper

@@ -1,7 +1,7 @@
-package com.redelf.commons.test.data.wrapper
+package com.redelf.commons.test.test_data.wrapper
 
 import com.redelf.commons.logging.Console
-import com.redelf.commons.test.data.SampleData3
+import com.redelf.commons.test.test_data.SampleData3
 import java.util.concurrent.CopyOnWriteArrayList
 
 class ObjectListWrapper(list: CopyOnWriteArrayList<SampleData3>) : TypeListWrapper<SampleData3>(list) {

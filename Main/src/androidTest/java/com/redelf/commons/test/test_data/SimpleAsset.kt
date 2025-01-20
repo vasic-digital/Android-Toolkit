@@ -1,11 +1,9 @@
-package com.redelf.commons.test.data
+package com.redelf.commons.test.test_data
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.google.gson.annotations.SerializedName
-import com.redelf.commons.persistance.serialization.CustomSerializable
-import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 
-open class CustomAsset @JsonCreator constructor(
+data class SimpleAsset @JsonCreator constructor(
 
     @SerializedName("bytes")
     var bytes: ByteArray? = null,
@@ -18,12 +16,7 @@ open class CustomAsset @JsonCreator constructor(
     @SerializedName("mime")
     var mimeType: String? = ""
 
-) : CustomSerializable {
+) {
 
     constructor() : this(null, 0L, "", "", "")
-
-    override fun getCustomSerializations() = mapOf(
-
-        "bytes" to DefaultCustomSerializer(ByteArray::class.java)
-    )
 }

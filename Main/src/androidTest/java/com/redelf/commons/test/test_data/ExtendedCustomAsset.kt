@@ -1,4 +1,4 @@
-package com.redelf.commons.test.data
+package com.redelf.commons.test.test_data
 
 import com.google.gson.annotations.SerializedName
 

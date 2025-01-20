@@ -1,12 +1,14 @@
-package com.redelf.commons.test.data.wrapper
+package com.redelf.commons.test.test_data.wrapper
 
 import com.redelf.commons.logging.Console
+import com.redelf.commons.test.test_data.SampleData3
 import org.junit.Assert
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-class StringToLongMapWrapper(map: ConcurrentHashMap<String, Long>) :
+class ObjectMapWrapper(map: ConcurrentHashMap<UUID, SampleData3>) :
 
-    TypeMapWrapper<String, Long>(map)
+    TypeMapWrapper<UUID, SampleData3>(map)
 {
 
     constructor() : this(ConcurrentHashMap())
@@ -16,9 +18,9 @@ class StringToLongMapWrapper(map: ConcurrentHashMap<String, Long>) :
         Console.error(error)
     }
 
-    override fun getClazz(): Class<StringToLongMapWrapper> {
+    override fun getClazz(): Class<ObjectMapWrapper> {
 
-        return StringToLongMapWrapper::class.java
+        return ObjectMapWrapper::class.java
     }
 
     override fun setPartitionData(number: Int, data: Any?): Boolean {
@@ -30,18 +32,11 @@ class StringToLongMapWrapper(map: ConcurrentHashMap<String, Long>) :
 
         try {
 
-            this.data = ConcurrentHashMap<String, Long>()
+            this.data = ConcurrentHashMap<UUID, SampleData3>()
 
             (data as ConcurrentHashMap<*, *>).forEach { (key, value) ->
 
-                if (value is Number) {
-
-                    this.data?.put(key.toString(), value.toLong())
-
-                } else {
-
-                    Assert.fail("Number was expected for the value: '$value'")
-                }
+                this.data?.put(UUID.fromString(key.toString()), value as SampleData3)
             }
 
             Console.log("Data set: ${this.data}")

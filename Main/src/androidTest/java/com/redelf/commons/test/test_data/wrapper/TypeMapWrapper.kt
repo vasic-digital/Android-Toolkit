@@ -1,18 +1,19 @@
-package com.redelf.commons.test.data.wrapper
+package com.redelf.commons.test.test_data.wrapper
 
+import com.google.gson.reflect.TypeToken
 import com.redelf.commons.data.model.Wrapper
-import com.redelf.commons.logging.Console
 import com.redelf.commons.partition.Partitioning
 import org.junit.Assert
+import java.lang.reflect.Type
+import java.util.concurrent.ConcurrentHashMap
 
-abstract class TypeWrapper<T>(wrapped: T?) :
+abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
 
-    Wrapper<T?>(wrapped),
-    Partitioning<TypeWrapper<T?>>
-
+    Wrapper<ConcurrentHashMap<K, T>>(map),
+    Partitioning<TypeMapWrapper<K, T>>
 {
 
-    constructor() : this(null)
+    constructor() : this(ConcurrentHashMap())
 
     override fun isPartitioningEnabled() = true
 
@@ -30,25 +31,13 @@ abstract class TypeWrapper<T>(wrapped: T?) :
         return takeData()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun setPartitionData(number: Int, data: Any?): Boolean {
+    override fun getPartitionType(number: Int): Type? {
 
         if (number > 0) {
 
             Assert.fail("Unexpected partition number: $number")
         }
 
-        try {
-
-            this.data = data as T?
-
-        } catch (e: Exception) {
-
-            Console.error(e)
-
-            return false
-        }
-
-        return true
+        return object : TypeToken<ConcurrentHashMap<K, T>>() {}.type
     }
 }

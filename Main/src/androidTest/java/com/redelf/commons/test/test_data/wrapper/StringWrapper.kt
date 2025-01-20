@@ -1,26 +1,26 @@
-package com.redelf.commons.test.data.wrapper
+package com.redelf.commons.test.test_data.wrapper
 
 import com.google.gson.reflect.TypeToken
 import com.redelf.commons.logging.Console
 import java.lang.reflect.Type
 
 
-class LongWrapper(wrapped: Long) : TypeWrapper<Long>(wrapped) {
+class StringWrapper(wrapped: String) : TypeWrapper<String>(wrapped) {
 
-    constructor() : this(0)
+    constructor() : this("")
 
     override fun failPartitionData(number: Int, error: Throwable) {
 
         Console.error(error)
     }
 
-    override fun getClazz(): Class<LongWrapper> {
+    override fun getClazz(): Class<StringWrapper> {
 
-        return LongWrapper::class.java
+        return StringWrapper::class.java
     }
 
     override fun getPartitionType(number: Int): Type? {
 
-        return object : TypeToken<Long?>() {}.type
+        return object : TypeToken<String?>() {}.type
     }
 }

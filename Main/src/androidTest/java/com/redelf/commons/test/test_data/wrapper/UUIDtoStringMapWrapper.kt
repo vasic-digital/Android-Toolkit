@@ -1,4 +1,4 @@
-package com.redelf.commons.test.data.wrapper
+package com.redelf.commons.test.test_data.wrapper
 
 import com.redelf.commons.logging.Console
 import org.junit.Assert
