@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Base64
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.persistance.CompressedEncryption
 import com.redelf.commons.persistance.ConcealEncryption
 import com.redelf.commons.persistance.NoEncryption
 import com.redelf.commons.persistance.ReverseEncryption
@@ -135,9 +136,7 @@ class ByteArraySerializer(
 
         if (encrypt) {
 
-            // FIXME:
-            // return ConcealEncryption(context, salter)
-            return ReverseEncryption(salter)
+            return CompressedEncryption()
         }
 
         return NoEncryption()
