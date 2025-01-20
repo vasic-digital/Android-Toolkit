@@ -25,6 +25,7 @@ buildscript {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
+        maven { url 'https://maven.pkg.jetbrains.space/public/p/compose/dev' }
 
         flatDir {
 
@@ -48,6 +49,7 @@ allprojects {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
+        maven { url 'https://maven.pkg.jetbrains.space/public/p/compose/dev' }
         mavenLocal()
     }
 }

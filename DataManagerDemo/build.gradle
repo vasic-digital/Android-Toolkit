@@ -1,19 +1,24 @@
 plugins {
 
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'kotlin-android'
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.0"
 }
 
 android {
 
     compileSdk 35
-    namespace 'com.redelf.commons.connectivity.indicator'
+    namespace 'com.redelf.app.demo.datamanager'
 
     defaultConfig {
 
         minSdk 28
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+        applicationId "com.redelf.app.demo.datamanager"
 
-        consumerProguardFiles "consumer-rules.pro"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -41,15 +46,21 @@ android {
                 "plugin:androidx.compose.compiler.plugins.kotlin:featureFlag=StrongSkipping"
         ]
     }
+
+    buildFeatures {
+
+        compose true
+    }
+}
+
+composeCompiler {
+
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
 }
 
 dependencies {
 
     implementation project("${toolkit_context}:Main")
-
     testImplementation project("${toolkit_context}:Main")
-    testImplementation project("${toolkit_context}:Test")
-
     androidTestImplementation project("${toolkit_context}:Main")
-    androidTestImplementation project("${toolkit_context}:Test")
 }
