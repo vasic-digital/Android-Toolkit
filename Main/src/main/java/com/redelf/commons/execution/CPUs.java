@@ -1,7 +1,5 @@
 package com.redelf.commons.execution;
 
-import android.os.Build;
-
 import com.redelf.commons.logging.Console;
 
 import java.io.File;
@@ -16,14 +14,7 @@ public class CPUs {
 
         int cores;
 
-        if (Build.VERSION.SDK_INT >= 17) {
-
-            cores = Runtime.getRuntime().availableProcessors();
-
-        } else {
-
-            cores = getNumCoresOldPhones();
-        }
+        cores = Runtime.getRuntime().availableProcessors();
 
         Console.log("%s Cores: %d", tag, cores);
 
