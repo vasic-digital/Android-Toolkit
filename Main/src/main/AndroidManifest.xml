@@ -24,10 +24,12 @@
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
 
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- FIXME: Google Play console requires statement regarding these permissions -->
+    <!--    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />-->
+    <!--    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />-->
+    <!-- FIXME: And probably this: -->
+    <!--    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />-->
+    <!--    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />-->
 
     <application
 
