@@ -1,7 +1,10 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.execution.Executor
+import org.junit.Assert
 import org.junit.Test
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class ExecutorTest : BaseTest() {
 
@@ -40,6 +43,11 @@ class ExecutorTest : BaseTest() {
 
     private fun runTestCases(executor: Executor) {
 
-        // TODO: Implement test cases
+        val expected = 3
+        val set = AtomicInteger()
+
+        // TODO: Implement test
+
+        Assert.assertEquals(expected, set.get())
     }
 }
