@@ -3,6 +3,9 @@ package com.redelf.commons.test
 import com.redelf.commons.execution.Executor
 import org.junit.Assert
 import org.junit.Test
+import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class ExecutorTest : BaseTest() {
@@ -46,7 +49,50 @@ class ExecutorTest : BaseTest() {
         val iterations = 10
         val set = AtomicInteger()
 
-        // TODO: Implement test
+        (0 until iterations).forEach { i ->
+
+            val latch = CountDownLatch(expected)
+
+            executor.execute {
+
+                set.incrementAndGet()
+                latch.countDown()
+            }
+
+            executor.execute(
+
+                Runnable {
+
+                    set.incrementAndGet()
+                    latch.countDown()
+                },
+
+                delayInMillis = 10
+            )
+
+            val callable = Callable {
+
+                set.incrementAndGet()
+                latch.countDown()
+            }
+
+            executor.execute(callable)
+
+            try {
+
+                val timeOk = latch.await(30, TimeUnit.SECONDS)
+                val timeout = !timeOk
+
+                if (timeout) {
+
+                    Assert.fail("Timeout")
+                }
+
+            } catch (e: Exception) {
+
+                Assert.fail(e.message)
+            }
+        }
 
         Assert.assertEquals(expected * iterations, set.get())
     }
