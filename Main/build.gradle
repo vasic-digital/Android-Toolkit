@@ -225,9 +225,6 @@ dependencies {
     api "com.squareup.retrofit2:converter-jackson:$retrofitHttpVersion"
     api "com.squareup.retrofit2:adapter-rxjava2:$retrofitHttpVersion"
 
-    api "com.facebook.conceal:conceal:1.1.3@aar"
-    api "org.apache.commons:commons-compress:1.27.1"
-
     api "androidx.core:core-ktx:1.15.0"
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -258,8 +255,6 @@ dependencies {
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.10.0"
-
-    api "commons-codec:commons-codec:1.17.1"
 
     api "com.github.bumptech.glide:glide:4.16.0"
     api "com.github.bumptech.glide:annotations:4.16.0"
@@ -300,6 +295,7 @@ dependencies {
 
     implementation "com.jakewharton.timber:timber:5.0.1"
     testImplementation "com.jakewharton.timber:timber:5.0.1"
+    androidTestImplementation "com.jakewharton.timber:timber:5.0.1"
 
     api "com.google.code.gson:gson:2.11.0"
     testApi "com.google.code.gson:gson:2.11.0"
@@ -321,6 +317,18 @@ dependencies {
     androidTestApi 'io.grpc:grpc-okhttp:1.56.0'
     androidTestApi 'io.grpc:grpc-protobuf:1.57.0'
     androidTestApi 'io.grpc:grpc-testing:1.56.0'
+
+    api "com.facebook.conceal:conceal:1.1.3@aar"
+    testApi "com.facebook.conceal:conceal:1.1.3@aar"
+    androidTestApi "com.facebook.conceal:conceal:1.1.3@aar"
+
+    api "org.apache.commons:commons-compress:1.27.1"
+    testApi "org.apache.commons:commons-compress:1.27.1"
+    androidTestApi "org.apache.commons:commons-compress:1.27.1"
+
+    api "commons-codec:commons-codec:1.17.1"
+    testApi "commons-codec:commons-codec:1.17.1"
+    androidTestApi "commons-codec:commons-codec:1.17.1"
 }
 
 composeCompiler {
