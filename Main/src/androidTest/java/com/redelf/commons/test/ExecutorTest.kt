@@ -3,7 +3,6 @@ package com.redelf.commons.test
 import com.redelf.commons.execution.Executor
 import org.junit.Assert
 import org.junit.Test
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 class ExecutorTest : BaseTest() {
