@@ -11,7 +11,7 @@ import java.util.concurrent.FutureTask
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
-enum class Executor : Execution {
+enum class Executor : Execution, ThreadPooledExecution {
 
     MAIN {
 
@@ -29,7 +29,9 @@ enum class Executor : Execution {
             cores * 3 * 10
         }
 
-        private val executor = TaskExecutor.instantiate(capacity)
+        private val executor = instantiateExecutor()
+
+        override fun instantiateExecutor() = TaskExecutor.instantiate(capacity)
 
         @OptIn(DelicateCoroutinesApi::class)
         override fun execute(what: Runnable) {
@@ -137,7 +139,9 @@ enum class Executor : Execution {
 
         val threadPooled = AtomicBoolean()
 
-        private val executor = TaskExecutor.instantiateSingle()
+        private val executor = instantiateExecutor()
+
+        override fun instantiateExecutor() = TaskExecutor.instantiateSingle()
 
         @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
         override fun execute(what: Runnable) {
@@ -253,6 +257,10 @@ enum class Executor : Execution {
                 recordException(e)
             }
         }
+
+
+        @Throws(UnsupportedOperationException::class)
+        override fun instantiateExecutor() = throw UnsupportedOperationException("Not supported")
     };
 
     private object Exec {
