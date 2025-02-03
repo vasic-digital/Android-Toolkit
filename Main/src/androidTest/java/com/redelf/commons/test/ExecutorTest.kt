@@ -1,6 +1,7 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.execution.Executor
+import kotlinx.coroutines.Runnable
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.Callable
@@ -53,27 +54,27 @@ class ExecutorTest : BaseTest() {
 
             val latch = CountDownLatch(expected)
 
-            executor.execute {
+            val action = Runnable {
 
                 set.incrementAndGet()
                 latch.countDown()
             }
 
+
+            executor.execute {
+
+                action.run()
+            }
+
             executor.execute(
 
-                Runnable {
-
-                    set.incrementAndGet()
-                    latch.countDown()
-                },
-
+                action = action,
                 delayInMillis = 10
             )
 
             val callable = Callable {
 
-                set.incrementAndGet()
-                latch.countDown()
+                action.run()
             }
 
             executor.execute(callable)
