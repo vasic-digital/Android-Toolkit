@@ -31,6 +31,13 @@ enum class Executor : Execution, ThreadPooledExecution {
 
         private val executor = instantiateExecutor()
 
+        override fun toggleThreadPooledExecution(enabled: Boolean) {
+
+            threadPooled.set(enabled)
+        }
+
+        override fun isThreadPooledExecution() = threadPooled.get()
+
         override fun instantiateExecutor() = TaskExecutor.instantiate(capacity)
 
         @OptIn(DelicateCoroutinesApi::class)
@@ -140,6 +147,13 @@ enum class Executor : Execution, ThreadPooledExecution {
         val threadPooled = AtomicBoolean()
 
         private val executor = instantiateExecutor()
+
+        override fun toggleThreadPooledExecution(enabled: Boolean) {
+
+            threadPooled.set(enabled)
+        }
+
+        override fun isThreadPooledExecution() = threadPooled.get()
 
         override fun instantiateExecutor() = TaskExecutor.instantiateSingle()
 
@@ -256,6 +270,14 @@ enum class Executor : Execution, ThreadPooledExecution {
                 val e = IllegalStateException("Could not accept action")
                 recordException(e)
             }
+        }
+
+        override fun isThreadPooledExecution() = false
+
+        @Throws(UnsupportedOperationException::class)
+        override fun toggleThreadPooledExecution(enabled: Boolean) {
+
+            throw UnsupportedOperationException("Not supported")
         }
 
 
