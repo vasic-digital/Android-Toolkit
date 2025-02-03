@@ -43,10 +43,11 @@ class ExecutorTest : BaseTest() {
     private fun runTestCases(executor: Executor) {
 
         val expected = 3
+        val iterations = 10
         val set = AtomicInteger()
 
         // TODO: Implement test
 
-        Assert.assertEquals(expected, set.get())
+        Assert.assertEquals(expected * iterations, set.get())
     }
 }
