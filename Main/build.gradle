@@ -301,23 +301,23 @@ dependencies {
     testApi "com.google.code.gson:gson:2.11.0"
     androidTestApi "com.google.code.gson:gson:2.11.0"
 
-    api 'io.grpc:grpc-api:1.68.2'
-    api 'io.grpc:grpc-stub:1.68.2'
-    api 'io.grpc:grpc-core:1.68.2'
-    api 'io.grpc:grpc-okhttp:1.68.2'
-    api 'io.grpc:grpc-protobuf:1.68.2'
+    api 'io.grpc:grpc-api:1.70.0'
+    api 'io.grpc:grpc-stub:1.70.0'
+    api 'io.grpc:grpc-core:1.70.0'
+    api 'io.grpc:grpc-okhttp:1.70.0'
+    api 'io.grpc:grpc-protobuf:1.70.0'
 
-    testApi 'io.grpc:grpc-api:1.68.2'
-    testApi 'io.grpc:grpc-stub:1.68.2'
-    testApi 'io.grpc:grpc-core:1.68.2'
-    testApi 'io.grpc:grpc-okhttp:1.68.2'
-    testApi 'io.grpc:grpc-protobuf:1.68.2'
+    testApi 'io.grpc:grpc-api:1.70.0'
+    testApi 'io.grpc:grpc-stub:1.70.0'
+    testApi 'io.grpc:grpc-core:1.70.0'
+    testApi 'io.grpc:grpc-okhttp:1.70.0'
+    testApi 'io.grpc:grpc-protobuf:1.70.0'
 
-    androidTestApi 'io.grpc:grpc-api:1.68.2'
-    androidTestApi 'io.grpc:grpc-stub:1.68.2'
-    androidTestApi 'io.grpc:grpc-core:1.68.2'
-    androidTestApi 'io.grpc:grpc-okhttp:1.68.2'
-    androidTestApi 'io.grpc:grpc-protobuf:1.68.2'
+    androidTestApi 'io.grpc:grpc-api:1.70.0'
+    androidTestApi 'io.grpc:grpc-stub:1.70.0'
+    androidTestApi 'io.grpc:grpc-core:1.70.0'
+    androidTestApi 'io.grpc:grpc-okhttp:1.70.0'
+    androidTestApi 'io.grpc:grpc-protobuf:1.70.0'
 
     api "com.facebook.conceal:conceal:1.1.3@aar"
     testApi "com.facebook.conceal:conceal:1.1.3@aar"
