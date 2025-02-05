@@ -136,8 +136,6 @@ android {
     kotlinOptions {
 
         jvmTarget = '11'
-
-        
     }
 
     buildTypes {
@@ -195,7 +193,6 @@ dependencies {
     androidTestApi project("$toolkit_obfuscator_project")
 
     api 'androidx.activity:activity-compose:1.10.0'
-    api platform('androidx.compose:compose-bom:2025.01.01')
 
     api 'androidx.compose.ui:ui'
     api 'androidx.compose.ui:ui-graphics'
@@ -215,10 +212,12 @@ dependencies {
     api "com.squareup.retrofit2:adapter-rxjava2:$retrofitHttpVersion"
 
     api "androidx.core:core-ktx:1.15.0"
+
     api "org.jetbrains.kotlin:kotlin-stdlib:2.0.21"
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
+
     api "com.google.firebase:firebase-core:21.1.1"
     api "com.google.firebase:firebase-auth:23.1.0"
     api "com.google.firebase:firebase-config:22.1.0"
@@ -236,12 +235,13 @@ dependencies {
     api "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
+    api "androidx.lifecycle:lifecycle-extensions:2.2.0"
     api "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion"
     api "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
     api "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
-    api "androidx.lifecycle:lifecycle-extensions:2.2.0"
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.10.0"
 
@@ -254,8 +254,6 @@ dependencies {
 
     api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
-
-    api platform("com.google.firebase:firebase-bom:33.8.0")
 
     api "io.github.nefilim.kjwt:kjwt-core:0.9.0"
     api "io.github.nefilim.kjwt:kjwt-jwks:0.9.0"
@@ -273,6 +271,9 @@ dependencies {
 
     api "com.android.installreferrer:installreferrer:2.2"
     api "com.facebook.android:facebook-android-sdk:18.0.0"
+
+    api platform("com.google.firebase:firebase-bom:33.8.0")
+    api platform('androidx.compose:compose-bom:2025.01.01')
 
     testImplementation project("${toolkit_context}:Test")
 
