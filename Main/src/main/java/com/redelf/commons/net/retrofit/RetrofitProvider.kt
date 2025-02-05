@@ -106,7 +106,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             GsonBuilder()
                 .disableHtmlEscaping()
                 .serializeNulls()
-                .setLenient()
+                .setLenient() // FIXME: This is deprecated
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create()
 
