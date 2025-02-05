@@ -21,10 +21,13 @@ buildscript {
 
     repositories {
 
-        maven { url 'https://mirror.msu.ru/nexus/content/repositories/central/' }
         mavenLocal()
-        mavenCentral()
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
+        maven { url 'https://mirror.msu.ru/nexus/content/repositories/central/' }
         maven { url "https://jitpack.io" }
+        mavenCentral()
         google()
         maven { url 'https://maven.pkg.jetbrains.space/public/p/compose/dev' }
 
@@ -47,12 +50,15 @@ allprojects {
 
     repositories {
 
+        mavenLocal()
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
         maven { url 'https://mirror.msu.ru/nexus/content/repositories/central/' }
-        mavenCentral()
         maven { url "https://jitpack.io" }
+        mavenCentral()
         google()
         maven { url 'https://maven.pkg.jetbrains.space/public/p/compose/dev' }
-        mavenLocal()
     }
 }
 
