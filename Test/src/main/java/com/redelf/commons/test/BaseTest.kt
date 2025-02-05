@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
 import com.redelf.commons.execution.TaskExecutor
 import com.redelf.commons.logging.Console
-import com.redelf.commons.management.DataManagement
 import com.redelf.commons.persistance.EncryptedPersistence
 import org.junit.Assert
 import java.io.BufferedOutputStream

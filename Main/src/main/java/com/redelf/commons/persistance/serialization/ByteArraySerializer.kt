@@ -7,7 +7,6 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.persistance.CompressedEncryption
 import com.redelf.commons.persistance.ConcealEncryption
 import com.redelf.commons.persistance.NoEncryption
-import com.redelf.commons.persistance.ReverseEncryption
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 import java.io.ByteArrayInputStream

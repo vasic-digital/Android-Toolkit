@@ -1,7 +1,6 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
-import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
