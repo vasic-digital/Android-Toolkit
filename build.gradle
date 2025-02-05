@@ -22,10 +22,13 @@ buildscript {
     repositories {
 
         mavenLocal()
+        maven { url 'https://mirror.msu.ru/nexus/content/repositories/central/' }
+        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
-        maven { url 'https://mirror.msu.ru/nexus/content/repositories/central/' }
+        maven { url 'https://maven.aliyun.com/repository/jetbrains' }
+        maven { url 'https://mirrors.ustc.edu.cn/jetbrains/' }
+        maven { url 'https://mirrors.tuna.tsinghua.edu.cn/jetbrains/' }
         maven { url "https://jitpack.io" }
         mavenCentral()
         google()
@@ -51,10 +54,13 @@ allprojects {
     repositories {
 
         mavenLocal()
+        maven { url 'https://mirror.msu.ru/nexus/content/repositories/central/' }
+        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
-        maven { url 'https://mirror.msu.ru/nexus/content/repositories/central/' }
+        maven { url 'https://maven.aliyun.com/repository/jetbrains' }
+        maven { url 'https://mirrors.ustc.edu.cn/jetbrains/' }
+        maven { url 'https://mirrors.tuna.tsinghua.edu.cn/jetbrains/' }
         maven { url "https://jitpack.io" }
         mavenCentral()
         google()
