@@ -1,5 +1,6 @@
 package com.redelf.commons.test.suite
 
+import com.redelf.commons.test.ClassesAccessTest
 import com.redelf.commons.test.DataDelegatePartitioningTest
 import com.redelf.commons.test.DataManagementTest
 import com.redelf.commons.test.EncryptedPersistenceTest
@@ -15,6 +16,7 @@ import org.junit.runners.Suite.SuiteClasses
 
 @SuiteClasses(
 
+    ClassesAccessTest::class,
     DataDelegatePartitioningTest::class,
     EncryptedPersistenceTest::class,
     HttpEndpointsTest::class,
