@@ -8,6 +8,8 @@ android {
     defaultConfig {
 
         minSdk 28
+
+        multiDexEnabled true
     }
 }
 

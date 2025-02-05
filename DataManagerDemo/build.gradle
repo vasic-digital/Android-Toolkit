@@ -20,6 +20,8 @@ android {
         applicationId "com.redelf.app.demo.datamanager"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
     }
 
     buildTypes {

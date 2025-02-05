@@ -124,6 +124,8 @@ android {
         }
 
         resValue "string", "ob_test", obfuscator.obfuscate(test)
+
+        multiDexEnabled true
     }
 
     compileOptions {
