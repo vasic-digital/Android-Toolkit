@@ -171,3 +171,6 @@
 -dontwarn okio.**
 -keep class okio.** { *; }
 -keep interface okio.** { *; }
+
+-keep class io.grpc.** { *; }
+-keep class io.grpc.internal.** { *; }

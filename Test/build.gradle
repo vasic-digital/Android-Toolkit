@@ -10,6 +10,8 @@ android {
         minSdk 28
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
     }
 
     compileOptions {
