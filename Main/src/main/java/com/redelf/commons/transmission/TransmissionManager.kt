@@ -25,8 +25,8 @@ import com.redelf.commons.modification.Add
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
-import com.redelf.commons.obtain.suspendable.Obtain
 import com.redelf.commons.obtain.OnObtain
+import com.redelf.commons.obtain.suspendable.Obtain
 import com.redelf.commons.stateful.State
 import java.security.GeneralSecurityException
 import java.util.*

@@ -5,13 +5,11 @@ import com.redelf.commons.extensions.compress
 import com.redelf.commons.extensions.compressAndEncrypt
 import com.redelf.commons.extensions.decompress
 import com.redelf.commons.extensions.decryptAndDecompress
-import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.test.BaseTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import javax.crypto.KeyGenerator
 
 class LZ4StringCompressionTest : BaseTest() {
 
