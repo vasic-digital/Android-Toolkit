@@ -138,10 +138,7 @@ android {
 
         jvmTarget = '11'
 
-        freeCompilerArgs += [
-                "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:featureFlag=StrongSkipping"
-        ]
+        
     }
 
     buildTypes {
