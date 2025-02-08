@@ -1,8 +1,8 @@
 plugins {
 
-    id 'kotlin-kapt'
-    id 'kotlin-android'
     id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
