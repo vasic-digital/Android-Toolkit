@@ -193,13 +193,13 @@ dependencies {
     testApi project("$toolkit_obfuscator_project")
     androidTestApi project("$toolkit_obfuscator_project")
 
-    api 'androidx.activity:activity-compose:1.10.0'
-
-    api 'androidx.compose.ui:ui'
-    api 'androidx.compose.ui:ui-graphics'
-    api 'androidx.compose.material3:material3'
-    api 'androidx.compose.foundation:foundation'
-    api 'androidx.compose.ui:ui-tooling-preview'
+    // TODO: Refactor / move:
+    //    api 'androidx.activity:activity-compose:1.10.0'
+    //    api 'androidx.compose.ui:ui'
+    //    api 'androidx.compose.ui:ui-graphics'
+    //    api 'androidx.compose.material3:material3'
+    //    api 'androidx.compose.foundation:foundation'
+    //    api 'androidx.compose.ui:ui-tooling-preview'
 
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
@@ -274,7 +274,9 @@ dependencies {
     api "com.facebook.android:facebook-android-sdk:18.0.0"
 
     api platform("com.google.firebase:firebase-bom:33.9.0")
-    api platform('androidx.compose:compose-bom:2025.01.01')
+
+    // TODO: Refactor / move:
+    //    api platform('androidx.compose:compose-bom:2025.01.01')
 
     testImplementation project("${toolkit_context}:Test")
 

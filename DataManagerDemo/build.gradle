@@ -3,7 +3,9 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
-    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.0"
+
+    // FIXME:
+    //    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.0"
 }
 
 android {
@@ -48,14 +50,16 @@ android {
 
     buildFeatures {
 
-        compose true
+        // FIXME:
+        //        compose true
     }
 }
 
-composeCompiler {
-
-    reportsDestination = layout.buildDirectory.dir("compose_compiler")
-}
+// FIXME:
+//composeCompiler {
+//
+//    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+//}
 
 dependencies {
 
