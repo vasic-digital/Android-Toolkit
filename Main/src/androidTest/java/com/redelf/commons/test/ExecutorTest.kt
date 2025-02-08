@@ -60,7 +60,6 @@ class ExecutorTest : BaseTest() {
                 latch.countDown()
             }
 
-
             executor.execute {
 
                 action.run()
