@@ -2,7 +2,6 @@ rootProject.name = "Android Toolkit"
 
 include ':Main'
 include ':Test'
-include ':Echo'
 include ':Access'
 include ':JCommons'
 include ':RootTools'
@@ -11,3 +10,6 @@ include ':Interprocess'
 include ':CircleImageView'
 include ':ConnectionIndicator'
 include ':FastscrollerAlphabet'
+
+include ':Applications:Echo'
+include ':Applications:DataManagerDemo'
