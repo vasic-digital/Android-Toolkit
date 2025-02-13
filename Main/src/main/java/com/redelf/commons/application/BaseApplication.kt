@@ -257,7 +257,7 @@ abstract class BaseApplication :
 
     open fun canRecordApplicationLogs() = false
 
-    protected abstract fun isProduction(): Boolean
+    abstract fun isProduction(): Boolean
 
     protected abstract fun takeSalt(): String
 
