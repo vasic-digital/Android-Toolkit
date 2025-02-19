@@ -263,15 +263,15 @@ dependencies {
     api "androidx.work:work-runtime-ktx:2.10.0"
     api "androidx.preference:preference-ktx:1.2.1"
     api "com.google.android.material:material:1.12.0"
-    api "androidx.navigation:navigation-ui-ktx:2.8.6"
-    api "androidx.navigation:navigation-fragment-ktx:2.8.6"
+    api "androidx.navigation:navigation-ui-ktx:2.8.7"
+    api "androidx.navigation:navigation-fragment-ktx:2.8.7"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     api "com.google.net.cronet:cronet-okhttp:0.1.0"
     api "com.google.android.gms:play-services-cronet:18.1.0"
 
     api "com.android.installreferrer:installreferrer:2.2"
-    api "com.facebook.android:facebook-android-sdk:18.0.0"
+    api "com.facebook.android:facebook-android-sdk:18.0.2"
 
     api platform("com.google.firebase:firebase-bom:33.9.0")
 
