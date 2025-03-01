@@ -126,6 +126,14 @@ android {
         resValue "string", "ob_test", obfuscator.obfuscate(test)
 
         multiDexEnabled true
+
+        sourceSets {
+
+            main {
+
+                java.srcDirs += "build/generated/ksp"
+            }
+        }
     }
 
     compileOptions {
