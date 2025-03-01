@@ -2,7 +2,7 @@ plugins {
 
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-kapt'
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
 }
 
 ext {
@@ -53,8 +53,6 @@ android {
     kotlinOptions {
 
         jvmTarget = '1.8'
-
-        
     }
 
     packagingOptions {
@@ -70,6 +68,13 @@ android {
         }
     }
 
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
+        }
+    }
 }
 
 dependencies {

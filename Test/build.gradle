@@ -24,8 +24,6 @@ android {
     kotlinOptions {
 
         jvmTarget = '1.8'
-
-        
     }
 
     buildTypes {
@@ -48,6 +46,14 @@ android {
     }
 
     namespace 'com.redelf.commons.test'
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
+        }
+    }
 }
 
 dependencies {

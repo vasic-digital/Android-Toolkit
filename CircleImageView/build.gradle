@@ -12,6 +12,14 @@ android {
 
         multiDexEnabled true
     }
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
+        }
+    }
 }
 
 dependencies {

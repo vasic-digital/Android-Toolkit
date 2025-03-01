@@ -1,7 +1,7 @@
 buildscript {
 
     def default_toolkit_context = ""
-    def default_kotlin_version = "2.0.21"
+    def default_kotlin_version = "2.1.0"
     def default_toolkit_version = "2.0.2"
     def default_toolkit_obfuscator_jar_home = 'JCommons/jar'
 
