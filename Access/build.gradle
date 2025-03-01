@@ -55,6 +55,14 @@ android {
             ]
         }
     }
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
+        }
+    }
 }
 
 dependencies {

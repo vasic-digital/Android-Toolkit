@@ -2,7 +2,7 @@ plugins {
 
     id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-kapt'
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
@@ -126,6 +126,14 @@ android {
         resValue "string", "ob_test", obfuscator.obfuscate(test)
 
         multiDexEnabled true
+
+        sourceSets {
+
+            main {
+
+                java.srcDirs += "build/generated/ksp"
+            }
+        }
     }
 
     compileOptions {
