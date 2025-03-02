@@ -1,4 +1,4 @@
-package com.redelf.commons.obtain
+package com.redelf.commons.obtain.suspendable
 
 interface ObtainSuspendable<T> {
 

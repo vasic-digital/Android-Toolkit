@@ -4,7 +4,7 @@ import com.google.gson.reflect.TypeToken
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toClass
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Converter
 import com.redelf.commons.persistance.base.Parser
 import java.lang.reflect.Type

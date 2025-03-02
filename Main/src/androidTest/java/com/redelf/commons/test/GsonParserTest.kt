@@ -4,7 +4,7 @@ import com.google.gson.GsonBuilder
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.GsonParser
 import com.redelf.commons.test.test_data.CustomAsset
 import com.redelf.commons.test.test_data.ExtendedCustomAsset

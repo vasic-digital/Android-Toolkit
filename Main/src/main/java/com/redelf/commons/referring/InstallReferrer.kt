@@ -6,7 +6,7 @@ import com.redelf.commons.expiration.ExpirationParametrized
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.settings.SettingsManagement
 import com.redelf.commons.settings.SettingsManager
 
