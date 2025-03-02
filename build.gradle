@@ -76,6 +76,8 @@ buildscript {
     }
 }
 
+println("toolkit_obfuscator_jar = '$toolkit_obfuscator_jar'")
+
 import com.redelf.jcommons.JObfuscator
 
 new JObfuscator("build.gradle").hello()

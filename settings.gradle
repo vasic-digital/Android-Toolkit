@@ -11,5 +11,5 @@ include ':CircleImageView'
 include ':ConnectionIndicator'
 include ':FastscrollerAlphabet'
 
-include ':Applications:Echo'
-include ':Applications:DataManagerDemo'
+include ':Application:Echo'
+include ':Application:DataManagerDemo'
