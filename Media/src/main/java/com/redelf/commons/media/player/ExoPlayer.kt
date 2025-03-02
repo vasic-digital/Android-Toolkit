@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.Format
@@ -770,6 +771,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         return false
     }
 
+    @OptIn(UnstableApi::class)
     private fun instantiateMediaPlayer(): EPlayer {
 
         val player = getMediaPlayer()
@@ -786,49 +788,48 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setUsage(C.USAGE_MEDIA)
             .build()
 
-        // FIXME:
-//        val loadControl = DefaultLoadControl.Builder()
-//            .setBufferDurationsMs(
-//
-//                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
-//                DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 2,
-//                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
-//                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
-//            )
-//            .build()
-//
-//        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
-//            .setConnectTimeoutMs(15000)
-//            .setReadTimeoutMs(30000)
-//            .setAllowCrossProtocolRedirects(true)
-//            .setDefaultRequestProperties(mapOf("User-Agent" to "ExoPlayer"))
-//
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+
+                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
+                DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 2,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+            )
+            .build()
+
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+            .setConnectTimeoutMs(15000)
+            .setReadTimeoutMs(30000)
+            .setAllowCrossProtocolRedirects(true)
+            .setDefaultRequestProperties(mapOf("User-Agent" to "ExoPlayer"))
+
         val exoPlayer = androidx.media3.exoplayer.ExoPlayer.Builder(context)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
-//            .setLoadControl(loadControl)
-//            .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
+            .setLoadControl(loadControl)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
             .build()
-//
-//        exoPlayer.addAnalyticsListener(object : AnalyticsListener {
-//
-//            override fun onAudioInputFormatChanged(
-//
-//                eventTime: AnalyticsListener.EventTime,
-//                format: Format,
-//                decoderReuseEvaluation: DecoderReuseEvaluation?
-//
-//            ) {
-//
-//                super.onAudioInputFormatChanged(eventTime, format, decoderReuseEvaluation)
-//
-//                Console.log(
-//
-//                    "$playerTag Audio format changed: ${format.sampleMimeType}, " +
-//                            "Codec: ${format.codecs}"
-//                )
-//            }
-//        })
+
+        exoPlayer.addAnalyticsListener(object : AnalyticsListener {
+
+            override fun onAudioInputFormatChanged(
+
+                eventTime: AnalyticsListener.EventTime,
+                format: Format,
+                decoderReuseEvaluation: DecoderReuseEvaluation?
+
+            ) {
+
+                super.onAudioInputFormatChanged(eventTime, format, decoderReuseEvaluation)
+
+                Console.log(
+
+                    "$playerTag Audio format changed: ${format.sampleMimeType}, " +
+                            "Codec: ${format.codecs}"
+                )
+            }
+        })
 
         setMediaPlayer(exoPlayer)
 
