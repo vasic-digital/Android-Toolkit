@@ -31,18 +31,18 @@ include ':Toolkit:FastscrollerAlphabet'
 ```groovy
 dependencies {
 
-    implementation project(":Toolkit:Main")
-    implementation project(":Toolkit:Test")
-    implementation project(":Toolkit:Access")
-    implementation project(":Toolkit:RootShell")
-    implementation project(":Toolkit:RootTools")
+    implementation project("${toolkit_context}:Main")
+    implementation project("${toolkit_context}:Test")
+    implementation project("${toolkit_context}:Access")
+    implementation project("${toolkit_context}:RootShell")
+    implementation project("${toolkit_context}:RootTools")
     implementation project(':Toolkit:Interprocess')
 
-    testImplementation project(":Toolkit:Main")
-    testImplementation project(":Toolkit:Test")
+    testImplementation project("${toolkit_context}:Main")
+    testImplementation project("${toolkit_context}:Test")
 
-    androidTestImplementation project(":Toolkit:Main")
-    androidTestImplementation project(":Toolkit:Test")
+    androidTestImplementation project("${toolkit_context}:Main")
+    androidTestImplementation project("${toolkit_context}:Test")
 }
 ```
 

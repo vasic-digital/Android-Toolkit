@@ -8,6 +8,7 @@ android {
     defaultConfig {
 
         minSdk 28
+        targetSdk 35
 
         multiDexEnabled true
     }
@@ -18,6 +19,14 @@ android {
 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
         }
     }
 }

@@ -5,7 +5,7 @@ import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console.error
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Serializer
 import java.lang.Exception

@@ -9,8 +9,11 @@ android {
     defaultConfig {
 
         minSdk 28
+        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
     }
 
     compileOptions {
@@ -48,6 +51,14 @@ android {
                     'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0',
                     'META-INF/*.kotlin_module'
             ]
+        }
+    }
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
         }
     }
 }

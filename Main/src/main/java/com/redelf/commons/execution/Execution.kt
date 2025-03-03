@@ -4,7 +4,7 @@ import java.util.concurrent.Callable
 
 interface Execution : Execute<Runnable> {
 
-    fun <T> execute(callable: Callable<T>): T
+    fun <T> execute(callable: Callable<T>): T?
 
     fun execute(action: Runnable, delayInMillis: Long)
 }

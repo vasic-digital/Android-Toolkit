@@ -9,7 +9,7 @@ import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Persistence
 import com.redelf.commons.persistance.base.Salter

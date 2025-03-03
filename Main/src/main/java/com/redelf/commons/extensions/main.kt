@@ -14,7 +14,6 @@ import android.database.Cursor
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.os.StrictMode
@@ -39,7 +38,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException

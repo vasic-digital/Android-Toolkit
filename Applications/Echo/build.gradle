@@ -1,0 +1,91 @@
+plugins {
+
+    id 'com.android.application'
+    id 'kotlin-android'
+    id("com.google.devtools.ksp") version "2.1.10-1.0.31"
+}
+
+ext {
+
+    interprocess_permission = "com.redelf.commons.interprocess.echo"
+}
+
+android {
+
+    compileSdk 35
+    namespace "${interprocess_permission}"
+
+    defaultConfig {
+
+        minSdk 28
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+        applicationId "com.redelf.commons.interprocess.echo"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders = [
+
+                interprocess_permission: interprocess_permission
+        ]
+
+        resValue "string", "interprocess_permission", interprocess_permission
+
+        multiDexEnabled true
+    }
+
+    buildTypes {
+
+        release {
+
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+
+        jvmTarget = '1.8'
+    }
+
+    packagingOptions {
+
+        jniLibs {
+
+            excludes += ['META-INF/*']
+        }
+
+        resources {
+
+            excludes += ['META-INF/*', 'LICENSE-2.0.txt', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt']
+        }
+    }
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
+        }
+    }
+}
+
+dependencies {
+
+    implementation project("${toolkit_context}:Main")
+    implementation project("${toolkit_context}:Test")
+    implementation project("${toolkit_context}:Interprocess")
+
+    testImplementation project("${toolkit_context}:Main")
+    testImplementation project("${toolkit_context}:Test")
+
+    androidTestImplementation project("${toolkit_context}:Main")
+    androidTestImplementation project("${toolkit_context}:Test")
+}

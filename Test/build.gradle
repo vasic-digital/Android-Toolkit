@@ -8,8 +8,11 @@ android {
     defaultConfig {
 
         minSdk 28
+        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
     }
 
     compileOptions {
@@ -43,6 +46,14 @@ android {
     }
 
     namespace 'com.redelf.commons.test'
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
+        }
+    }
 }
 
 dependencies {

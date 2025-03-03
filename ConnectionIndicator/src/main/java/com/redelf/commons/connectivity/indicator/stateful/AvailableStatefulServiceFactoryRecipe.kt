@@ -1,6 +1,6 @@
 package com.redelf.commons.connectivity.indicator.stateful
 
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 
 data class AvailableStatefulServiceFactoryRecipe(
 

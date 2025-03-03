@@ -3,7 +3,7 @@ package com.redelf.commons.messaging.firebase
 import com.redelf.commons.net.connectivity.ConnectionBlockingBehavior
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 
 class FcmConnectivityHandler private constructor(
 

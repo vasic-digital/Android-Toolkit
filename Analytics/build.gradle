@@ -2,8 +2,7 @@ plugins {
 
     id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-parcelize'
-    id 'kotlin-kapt'
+    id("com.google.devtools.ksp") version "2.1.10-1.0.31"
 }
 
 /*
@@ -52,6 +51,7 @@ android {
     defaultConfig {
 
         minSdk 28
+        targetSdk 35
 
         consumerProguardFiles "consumer-rules.pro"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -59,6 +59,8 @@ android {
         resValue "string", "facebook_app_id", facebookApplicationId
         resValue "string", "facebook_client_token", facebookClientToken
         resValue "string", "fb_login_protocol_scheme", facebookProtocolScheme
+
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -111,6 +113,14 @@ android {
 
         disable "Instantiatable"
         disable 'ContentDescription'
+    }
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
+        }
     }
 }
 

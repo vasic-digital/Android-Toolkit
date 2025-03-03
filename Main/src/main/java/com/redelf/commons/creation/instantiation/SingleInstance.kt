@@ -8,7 +8,7 @@ import com.redelf.commons.destruction.reset.Resettable
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 
 abstract class SingleInstance<T> :
 

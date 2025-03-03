@@ -1,7 +1,8 @@
 plugins {
 
     id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
+    id("com.google.devtools.ksp") version "2.1.10-1.0.31"
 }
 
 android {
@@ -12,9 +13,12 @@ android {
     defaultConfig {
 
         minSdk 28
+        targetSdk 35
 
         consumerProguardFiles "consumer-rules.pro"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -35,6 +39,14 @@ android {
     kotlinOptions {
 
         jvmTarget = '1.8'
+    }
+
+    sourceSets {
+
+        main {
+
+            java.srcDirs += "build/generated/ksp"
+        }
     }
 }
 

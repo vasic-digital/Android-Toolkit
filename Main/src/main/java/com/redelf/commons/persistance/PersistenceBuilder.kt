@@ -5,7 +5,7 @@ import android.text.TextUtils
 import com.google.gson.GsonBuilder
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Converter
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Parser

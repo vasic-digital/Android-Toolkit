@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 import com.redelf.commons.data.Storage;
 import com.redelf.commons.execution.Executor;
-import com.redelf.commons.obtain.suspendable.Obtain;
+import com.redelf.commons.obtain.Obtain;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;

@@ -1,7 +1,7 @@
 buildscript {
 
     def default_toolkit_context = ""
-    def default_kotlin_version = "2.0.21"
+    def default_kotlin_version = "2.1.10"
     def default_toolkit_version = "2.0.2"
     def default_toolkit_obfuscator_jar_home = 'JCommons/jar'
 
@@ -22,9 +22,17 @@ buildscript {
     repositories {
 
         mavenLocal()
-        google()
-        mavenCentral()
+        
+        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/jetbrains' }
+        maven { url 'https://mirrors.ustc.edu.cn/jetbrains/' }
+        maven { url 'https://mirrors.tuna.tsinghua.edu.cn/jetbrains/' }
         maven { url "https://jitpack.io" }
+        mavenCentral()
+        google()
+        maven { url 'https://maven.pkg.jetbrains.space/public/p/compose/dev' }
 
         flatDir {
 
@@ -45,10 +53,18 @@ allprojects {
 
     repositories {
 
-        google()
-        mavenCentral()
-        maven { url "https://jitpack.io" }
         mavenLocal()
+        
+        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/jetbrains' }
+        maven { url 'https://mirrors.ustc.edu.cn/jetbrains/' }
+        maven { url 'https://mirrors.tuna.tsinghua.edu.cn/jetbrains/' }
+        maven { url "https://jitpack.io" }
+        mavenCentral()
+        google()
+        maven { url 'https://maven.pkg.jetbrains.space/public/p/compose/dev' }
     }
 }
 
@@ -59,6 +75,8 @@ buildscript {
         classpath files("$toolkit_obfuscator_jar")
     }
 }
+
+println("toolkit_obfuscator_jar = '$toolkit_obfuscator_jar'")
 
 import com.redelf.jcommons.JObfuscator
 

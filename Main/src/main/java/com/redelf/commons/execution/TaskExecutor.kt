@@ -23,7 +23,7 @@ class TaskExecutor private constructor(
 
     companion object {
 
-        fun instantiate(capacity: Int): TaskExecutor {
+        fun instantiate(capacity: Int): ThreadPoolExecutor {
 
             return TaskExecutor(
 

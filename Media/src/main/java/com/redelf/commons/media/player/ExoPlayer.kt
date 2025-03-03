@@ -16,7 +16,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.DefaultLoadControl
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.redelf.commons.application.BaseApplication
@@ -32,7 +31,7 @@ import com.redelf.commons.obtain.Obtain
 import java.util.UUID
 import kotlin.collections.indexOf
 
-typealias EPlayer = ExoPlayer
+typealias EPlayer = androidx.media3.exoplayer.ExoPlayer
 
 abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
@@ -805,7 +804,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setAllowCrossProtocolRedirects(true)
             .setDefaultRequestProperties(mapOf("User-Agent" to "ExoPlayer"))
 
-        val exoPlayer = ExoPlayer.Builder(context)
+        val exoPlayer = androidx.media3.exoplayer.ExoPlayer.Builder(context)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .setLoadControl(loadControl)

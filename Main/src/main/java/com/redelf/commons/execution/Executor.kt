@@ -2,6 +2,7 @@ package com.redelf.commons.execution
 
 import android.os.Handler
 import android.os.Looper
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import kotlinx.coroutines.*
 import java.util.concurrent.Callable
@@ -10,16 +11,12 @@ import java.util.concurrent.FutureTask
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
-enum class Executor : Execution {
-
-    /*
-    * TODO: Check for potential exceptions
-    * */
+enum class Executor : Execution, ThreadPooledExecution {
 
     MAIN {
 
-        val DEBUG = AtomicBoolean()
-        val THREAD_POOLED = AtomicBoolean()
+        val debug = AtomicBoolean()
+        val threadPooled = AtomicBoolean()
 
         private val cores = CPUs().numberOfCores
 
@@ -32,12 +29,21 @@ enum class Executor : Execution {
             cores * 3 * 10
         }
 
-        private val executor = TaskExecutor.instantiate(capacity)
+        private val executor = instantiateExecutor()
+
+        override fun toggleThreadPooledExecution(enabled: Boolean) {
+
+            threadPooled.set(enabled)
+        }
+
+        override fun isThreadPooledExecution() = threadPooled.get()
+
+        override fun instantiateExecutor() = TaskExecutor.instantiate(capacity)
 
         @OptIn(DelicateCoroutinesApi::class)
         override fun execute(what: Runnable) {
 
-            if (THREAD_POOLED.get()) {
+            if (threadPooled.get()) {
 
                 logCapacity()
 
@@ -53,19 +59,35 @@ enum class Executor : Execution {
         }
 
         @OptIn(DelicateCoroutinesApi::class)
-        override fun <T> execute(callable: Callable<T>): T {
+        override fun <T> execute(callable: Callable<T>): T? {
 
-            if (THREAD_POOLED.get()) {
+            if (threadPooled.get()) {
 
                 logCapacity()
 
-                return Exec.execute(callable, executor).get()
+                try {
+
+                    return Exec.execute(callable, executor)?.get()
+
+                } catch (e: Exception) {
+
+                    recordException(e)
+                }
 
             } else {
 
                 val job = GlobalScope.async(Dispatchers.Default) {
 
-                    callable.call()
+                    try {
+
+                        callable.call()
+
+                    } catch (e: Exception) {
+
+                        recordException(e)
+                    }
+
+                    null
                 }
 
                 return runBlocking {
@@ -73,12 +95,14 @@ enum class Executor : Execution {
                     job.await()
                 }
             }
+
+            return null
         }
 
         @OptIn(DelicateCoroutinesApi::class)
         override fun execute(action: Runnable, delayInMillis: Long) {
 
-            if (THREAD_POOLED.get()) {
+            if (threadPooled.get()) {
 
                 logCapacity()
 
@@ -97,7 +121,7 @@ enum class Executor : Execution {
 
         private fun logCapacity() {
 
-            if (!DEBUG.get()) {
+            if (!debug.get()) {
 
                 return
             }
@@ -105,7 +129,7 @@ enum class Executor : Execution {
             val maximumPoolSize = executor.maximumPoolSize
             val available = maximumPoolSize - executor.activeCount
 
-            val msg = "${CPUs.tag} Available=$available, Total=$maximumPoolSize"
+            val msg = "${CPUs.tag} Available = $available, Total = $maximumPoolSize"
 
             if (available > 0) {
 
@@ -120,14 +144,23 @@ enum class Executor : Execution {
 
     SINGLE {
 
-        val THREAD_POOLED = AtomicBoolean()
+        val threadPooled = AtomicBoolean()
 
-        private val executor = TaskExecutor.instantiateSingle()
+        private val executor = instantiateExecutor()
+
+        override fun toggleThreadPooledExecution(enabled: Boolean) {
+
+            threadPooled.set(enabled)
+        }
+
+        override fun isThreadPooledExecution() = threadPooled.get()
+
+        override fun instantiateExecutor() = TaskExecutor.instantiateSingle()
 
         @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
         override fun execute(what: Runnable) {
 
-            if (THREAD_POOLED.get()) {
+            if (threadPooled.get()) {
 
                 Exec.execute(what, executor)
 
@@ -141,17 +174,33 @@ enum class Executor : Execution {
         }
 
         @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
-        override fun <T> execute(callable: Callable<T>): T {
+        override fun <T> execute(callable: Callable<T>): T? {
 
-            if (THREAD_POOLED.get()) {
+            if (threadPooled.get()) {
 
-                return Exec.execute(callable, executor).get()
+                try {
+
+                    return Exec.execute(callable, executor)?.get()
+
+                } catch (e: Exception) {
+
+                    recordException(e)
+                }
 
             } else {
 
                 val job = GlobalScope.async(Dispatchers.Default.limitedParallelism(1)) {
 
-                    callable.call()
+                    try {
+
+                        callable.call()
+
+                    } catch (e: Exception) {
+
+                        recordException(e)
+                    }
+
+                    null
                 }
 
                 return runBlocking {
@@ -159,12 +208,14 @@ enum class Executor : Execution {
                     job.await()
                 }
             }
+
+            return null
         }
 
         @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
         override fun execute(action: Runnable, delayInMillis: Long) {
 
-            if (THREAD_POOLED.get()) {
+            if (threadPooled.get()) {
 
                 Exec.execute(action, delayInMillis, executor)
 
@@ -184,14 +235,22 @@ enum class Executor : Execution {
 
         private val executor = Handler(Looper.getMainLooper())
 
-        @Throws(IllegalStateException::class)
-        override fun <T> execute(callable: Callable<T>): T {
+        override fun <T> execute(callable: Callable<T>): T? {
 
-            val action = FutureTask(callable)
+            try {
 
-            execute(action)
+                val action = FutureTask(callable)
 
-            return action.get()
+                execute(action)
+
+                return action.get()
+
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
+
+            return null
         }
 
         @Throws(IllegalStateException::class)
@@ -199,45 +258,81 @@ enum class Executor : Execution {
 
             if (!executor.postDelayed(action, delayInMillis)) {
 
-                throw IllegalStateException("Could not accept action")
+                val e = IllegalStateException("Could not accept action")
+                recordException(e)
             }
         }
 
-        @Throws(IllegalStateException::class)
         override fun execute(what: Runnable) {
 
             if (!executor.post(what)) {
 
-                throw IllegalStateException("Could not accept action")
+                val e = IllegalStateException("Could not accept action")
+                recordException(e)
             }
         }
+
+        override fun isThreadPooledExecution() = false
+
+        @Throws(UnsupportedOperationException::class)
+        override fun toggleThreadPooledExecution(enabled: Boolean) {
+
+            throw UnsupportedOperationException("Not supported")
+        }
+
+
+        @Throws(UnsupportedOperationException::class)
+        override fun instantiateExecutor() = throw UnsupportedOperationException("Not supported")
     };
 
     private object Exec {
 
         fun execute(action: Runnable, executor: ThreadPoolExecutor) {
 
-            executor.execute(action)
+            try {
+
+                executor.execute(action)
+
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
         }
 
-        fun <T> execute(callable: Callable<T>, executor: ThreadPoolExecutor): Future<T> {
+        fun <T> execute(callable: Callable<T>, executor: ThreadPoolExecutor): Future<T>? {
 
-            return executor.submit(callable)
+            try {
+
+                return executor.submit(callable)
+
+            } catch (e: Exception) {
+
+                recordException(e)
+            }
+
+            return null
         }
 
         fun execute(action: Runnable, delayInMillis: Long, executor: ThreadPoolExecutor) {
 
-            executor.execute {
+            try {
 
-                try {
+                executor.execute {
 
-                    Thread.sleep(delayInMillis)
-                    action.run()
+                    try {
 
-                } catch (e: InterruptedException) {
+                        Thread.sleep(delayInMillis)
+                        action.run()
 
-                    Console.error(e)
+                    } catch (e: Exception) {
+
+                        recordException(e)
+                    }
                 }
+
+            } catch (e: Exception) {
+
+                recordException(e)
             }
         }
     }

@@ -12,8 +12,8 @@ import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.suspendable.Obtain
 import com.redelf.commons.obtain.OnObtain
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.partition.Partitioning
 import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.registration.Registration

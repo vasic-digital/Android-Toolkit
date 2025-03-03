@@ -58,7 +58,7 @@ import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.net.cronet.Cronet
 import com.redelf.commons.net.retrofit.RetryInterceptor
-import com.redelf.commons.obtain.suspendable.Obtain
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
@@ -257,7 +257,7 @@ abstract class BaseApplication :
 
     open fun canRecordApplicationLogs() = false
 
-    protected abstract fun isProduction(): Boolean
+    abstract fun isProduction(): Boolean
 
     protected abstract fun takeSalt(): String
 
