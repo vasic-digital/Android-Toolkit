@@ -43,6 +43,11 @@ class Credentials @JsonCreator constructor(
         return result
     }
 
+    override fun toString(): String {
+
+        return "Credentials(username=$username, password=$password)"
+    }
+
     @Suppress("UNCHECKED_CAST")
     @Throws(ClassCastException::class)
     constructor(treeMap: LinkedTreeMap<String, Any>) : this() {
