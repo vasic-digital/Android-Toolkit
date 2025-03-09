@@ -57,7 +57,6 @@ abstract class DataManagement<T> :
         */
 
         val DEBUG = AtomicBoolean()
-        val ENCRYPT = AtomicBoolean()
 
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
         fun initialize(ctx: Context) {
@@ -283,8 +282,6 @@ abstract class DataManagement<T> :
                 current?.let {
 
                     data = current
-
-                    doPushData(current)
                 }
 
                 if (current == null) {

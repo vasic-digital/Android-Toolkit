@@ -133,6 +133,12 @@ class PersistenceBuilder(
 
     private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption<String> {
 
-        return CompressedEncryption()
+        // FIXME:
+        //  Pulling persisted data from the device tries to decrypt the partition data like
+        //  partition count, which may not encrypted (we guess)
+        //  see:
+        //  return CompressedEncryption()
+
+        return ReverseEncryption(salter)
     }
 }
