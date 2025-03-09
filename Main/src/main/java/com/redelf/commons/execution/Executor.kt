@@ -17,6 +17,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
     MAIN {
 
         private val debug = AtomicBoolean()
+        private val tag = "Executor :: MAIN ::"
         private val cores = CPUs().numberOfCores
         private val threadPooled = AtomicBoolean()
 
@@ -43,15 +44,27 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         @OptIn(DelicateCoroutinesApi::class)
         override fun execute(what: Runnable) { // TODO: Instead of Runnable use Runnable and ApiRunnable
 
+            if (isDebug()) Console.log("$tag START :: threadPooled = ${isThreadPooledExecution()}")
+
             if (threadPooled.get()) {
+
+                if (isDebug()) Console.log("$tag PRE-EXECUTING")
 
                 logCapacity()
 
+                if (isDebug()) Console.log("$tag EXECUTING")
+
                 Exec.execute(what, executor)
+
+                if (isDebug()) Console.log("$tag SENT TO EXECUTOR")
 
             } else {
 
+                if (isDebug()) Console.log("$tag LAUNCHING")
+
                 GlobalScope.launch(Dispatchers.Default) {
+
+                    if (isDebug()) Console.log("$tag EXECUTING")
 
                     try {
 
@@ -61,7 +74,11 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                         recordException(e)
                     }
+
+                    if (isDebug()) Console.log("$tag EXECUTED")
                 }
+
+                if (isDebug()) Console.log("$tag END")
             }
         }
 
