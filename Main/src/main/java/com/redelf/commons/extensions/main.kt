@@ -862,7 +862,7 @@ fun exec(
 
 ) {
 
-    val tag = if (isEmpty(tag)) {
+    val eTag = if (isEmpty(tag)) {
 
         if (debug) {
 
@@ -881,6 +881,8 @@ fun exec(
 
         ""
     }
+
+    val tag = eTag
 
     if (debug) Console.log("$tag START")
 
