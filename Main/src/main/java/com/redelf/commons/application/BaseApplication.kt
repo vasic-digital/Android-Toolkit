@@ -576,6 +576,7 @@ abstract class BaseApplication :
         initTerminationListener()
         initFirebaseWithAnalytics()
         initFacebook()
+        initializeSQLCipher()
 
         prefs = SharedPreferencesStorage(applicationContext)
 
@@ -811,6 +812,18 @@ abstract class BaseApplication :
     protected open fun onManagersLoaded() {
 
         Console.log("Managers are loaded")
+    }
+
+    private fun initializeSQLCipher() {
+
+        try {
+
+            System.loadLibrary("sqlcipher")
+
+        } catch (e: Exception) {
+
+            recordException(e)
+        }
     }
 
     private fun initializeManagers(): Boolean {

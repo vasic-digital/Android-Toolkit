@@ -291,7 +291,9 @@ dependencies {
 
     api platform("com.google.firebase:firebase-bom:33.10.0")
 
-    implementation "net.zetetic:android-database-sqlcipher:4.5.4"
+    api "androidx.sqlite:sqlite-ktx:2.4.0"
+
+    implementation "net.zetetic:sqlcipher-android:4.6.1@aar"
 
     // TODO: Refactor / move:
     //    api platform('androidx.compose:compose-bom:2025.01.01')
