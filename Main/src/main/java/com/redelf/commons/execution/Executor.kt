@@ -2,6 +2,7 @@ package com.redelf.commons.execution
 
 import android.os.Handler
 import android.os.Looper
+import com.redelf.commons.Debuggable
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import kotlinx.coroutines.*
@@ -11,14 +12,13 @@ import java.util.concurrent.FutureTask
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
-enum class Executor : Execution, ThreadPooledExecution {
+enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
     MAIN {
 
-        val debug = AtomicBoolean()
-        val threadPooled = AtomicBoolean()
-
+        private val debug = AtomicBoolean()
         private val cores = CPUs().numberOfCores
+        private val threadPooled = AtomicBoolean()
 
         private val capacity = if (cores * 3 <= 10) {
 
@@ -140,12 +140,22 @@ enum class Executor : Execution, ThreadPooledExecution {
                 Console.error(msg)
             }
         }
+
+        override fun setDebug(debug: Boolean) {
+
+            this.debug.set(debug)
+        }
+
+        override fun isDebug(): Boolean {
+
+            return debug.get()
+        }
     },
 
     SINGLE {
 
-        val threadPooled = AtomicBoolean()
-
+        private val debug = AtomicBoolean()
+        private val threadPooled = AtomicBoolean()
         private val executor = instantiateExecutor()
 
         override fun toggleThreadPooledExecution(enabled: Boolean) {
@@ -229,10 +239,21 @@ enum class Executor : Execution, ThreadPooledExecution {
                 }
             }
         }
+
+        override fun setDebug(debug: Boolean) {
+
+            this.debug.set(debug)
+        }
+
+        override fun isDebug(): Boolean {
+
+            return debug.get()
+        }
     },
 
     UI {
 
+        private val debug = AtomicBoolean()
         private val executor = Handler(Looper.getMainLooper())
 
         override fun <T> execute(callable: Callable<T>): T? {
@@ -283,6 +304,16 @@ enum class Executor : Execution, ThreadPooledExecution {
 
         @Throws(UnsupportedOperationException::class)
         override fun instantiateExecutor() = throw UnsupportedOperationException("Not supported")
+
+        override fun setDebug(debug: Boolean) {
+
+            this.debug.set(debug)
+        }
+
+        override fun isDebug(): Boolean {
+
+            return debug.get()
+        }
     };
 
     private object Exec {
