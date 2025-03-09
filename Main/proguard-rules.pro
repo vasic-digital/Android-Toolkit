@@ -21,6 +21,9 @@
   *** rewind();
 }
 
+-keep,includedescriptorclasses class net.sqlcipher.** { *; }
+-keep,includedescriptorclasses interface net.sqlcipher.** { *; }
+
 # Retrofit
 -keep class com.google.gson.** { *; }
 -keep public class com.google.gson.** {public private protected *;}
