@@ -1167,7 +1167,13 @@ abstract class BaseApplication :
 
     private fun enableStrictMode() {
 
-        Console.log("Enable Strict Mode, disabled=$STRICT_MODE_DISABLED")
+        Console.log("Enable Strict Mode :: Disabled = $STRICT_MODE_DISABLED")
+
+        if (isProduction()) {
+
+            Console.warning("Enable Strict Mode :: Production")
+            return
+        }
 
         if (STRICT_MODE_DISABLED.get()) {
 
