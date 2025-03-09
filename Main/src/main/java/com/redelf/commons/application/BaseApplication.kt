@@ -82,9 +82,7 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication>
-
-{
+    ContextAvailability<BaseApplication> {
 
     companion object :
 
@@ -1167,7 +1165,11 @@ abstract class BaseApplication :
 
     private fun enableStrictMode() {
 
-        Console.log("Enable Strict Mode :: Disabled = $STRICT_MODE_DISABLED")
+        Console.log(
+
+            "Enable Strict Mode :: " +
+                    "Disabled = $STRICT_MODE_DISABLED, Production = ${isProduction()}"
+        )
 
         if (isProduction()) {
 
@@ -1184,15 +1186,15 @@ abstract class BaseApplication :
         StrictMode.setThreadPolicy(
 
             StrictMode.ThreadPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
+                .detectNetwork()
+                .penaltyDeath()
                 .build()
         )
 
         StrictMode.setVmPolicy(
-
             StrictMode.VmPolicy.Builder()
-                .detectAllExpect("android.os.StrictMode.onUntaggedSocket")
+                .detectAll()
+                .penaltyLog()
                 .build()
         )
     }
