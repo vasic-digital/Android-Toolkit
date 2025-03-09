@@ -62,6 +62,9 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                 if (isDebug()) Console.log("$tag LAUNCHING")
 
+                /*
+                * FIXME: In certain scenarios it gets stuck
+                */
                 GlobalScope.launch(Dispatchers.Default) {
 
                     if (isDebug()) Console.log("$tag EXECUTING")
