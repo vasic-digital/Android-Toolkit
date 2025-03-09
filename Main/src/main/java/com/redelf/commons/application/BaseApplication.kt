@@ -1177,6 +1177,7 @@ abstract class BaseApplication :
 
         if (STRICT_MODE_DISABLED.get()) {
 
+            Console.warning("Enable Strict Mode :: Disabled")
             return
         }
 
