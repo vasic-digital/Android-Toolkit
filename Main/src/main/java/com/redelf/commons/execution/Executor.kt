@@ -41,7 +41,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         override fun instantiateExecutor() = TaskExecutor.instantiate(capacity)
 
         @OptIn(DelicateCoroutinesApi::class)
-        override fun execute(what: Runnable) {
+        override fun execute(what: Runnable) { // TODO: Instead of Runnable use Runnable and ApiRunnable
 
             if (threadPooled.get()) {
 
@@ -53,7 +53,14 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                 GlobalScope.launch(Dispatchers.Default) {
 
-                    what.run()
+                    try {
+
+                        what.run()
+
+                    } catch (e: Exception) {
+
+                        recordException(e)
+                    }
                 }
             }
         }
