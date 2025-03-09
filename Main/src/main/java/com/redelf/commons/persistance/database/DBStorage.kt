@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance
+package com.redelf.commons.persistance.database
 
 import android.content.ContentValues
 import android.content.Context
@@ -15,6 +15,9 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
+import com.redelf.commons.persistance.encryption.NoEncryption
+import com.redelf.commons.persistance.encryption.ReverseEncryption
+import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.base.Storage

@@ -17,7 +17,7 @@ import com.redelf.commons.lifecycle.exception.NotInitializedException
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.persistance.DBStorage
+import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.session.Session
 import com.redelf.commons.transaction.Transaction

@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Base64
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.persistance.CompressedEncryption
-import com.redelf.commons.persistance.ConcealEncryption
-import com.redelf.commons.persistance.NoEncryption
+import com.redelf.commons.persistance.encryption.CompressedEncryption
+import com.redelf.commons.persistance.encryption.ConcealEncryption
+import com.redelf.commons.persistance.encryption.NoEncryption
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 import java.io.ByteArrayInputStream

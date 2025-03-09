@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance
+package com.redelf.commons.persistance.encryption
 
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.persistance.base.Encryption

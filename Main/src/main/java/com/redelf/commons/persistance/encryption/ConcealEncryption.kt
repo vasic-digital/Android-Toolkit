@@ -1,4 +1,4 @@
-package com.redelf.commons.persistance
+package com.redelf.commons.persistance.encryption
 
 import android.content.Context
 import com.facebook.android.crypto.keychain.AndroidConceal

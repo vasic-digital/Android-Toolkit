@@ -11,6 +11,7 @@ import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Facade
 import com.redelf.commons.persistance.base.Serializer
 import com.redelf.commons.persistance.base.Storage
+import com.redelf.commons.persistance.encryption.NoEncryption
 import com.redelf.commons.registration.Registration
 import com.redelf.commons.security.encryption.EncryptionListener
 import java.io.IOException

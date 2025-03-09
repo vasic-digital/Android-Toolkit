@@ -12,6 +12,9 @@ import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.base.Serializer
 import com.redelf.commons.persistance.base.Storage
+import com.redelf.commons.persistance.database.DBStorage
+import com.redelf.commons.persistance.encryption.ConcealEncryption
+import com.redelf.commons.persistance.encryption.NoEncryption
 
 class PersistenceBuilder(
 
