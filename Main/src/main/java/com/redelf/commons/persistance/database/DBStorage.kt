@@ -2,8 +2,6 @@ package com.redelf.commons.persistance.database
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
 import android.text.TextUtils
 import com.redelf.commons.application.BaseApplication
@@ -21,10 +19,13 @@ import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.base.Storage
+import net.zetetic.database.sqlcipher.SQLiteDatabase
+import net.zetetic.database.sqlcipher.SQLiteOpenHelper
 import java.sql.SQLException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import androidx.core.text.isDigitsOnly
 
 /*
     TODO: Make sure that this is not static object
@@ -164,7 +165,48 @@ object DBStorage : Storage<String> {
         }
     }
 
-    private var dbHelper: DbHelper? = null
+    private fun mainKey() = "$DATABASE_NAME.$DATABASE_VERSION"
+
+    private fun suffix(): String {
+
+        val noSuffix = "NA"
+        val tag = "Suffix ::"
+
+        try {
+
+            val ctx = BaseApplication.takeContext()
+            val sPrefs = ctx.getSharedPreferences(mainKey(), Context.MODE_PRIVATE)
+            val nPrefs = SharedPreferencesStorage(sPrefs)
+
+            var suffix = nPrefs.get(DATABASE_NAME_SUFFIX_KEY)
+
+            if (isEmpty(suffix)) {
+
+                suffix = "_" + System.currentTimeMillis()
+
+                if (!nPrefs.put(DATABASE_NAME_SUFFIX_KEY, suffix)) {
+
+                    Console.error("Error saving key preferences: $DATABASE_NAME_SUFFIX_KEY")
+                }
+            }
+
+            return suffix ?: noSuffix
+
+        } catch (e: SQLException) {
+
+            Console.error(tag, e.message ?: "Unknown error")
+
+            recordException(e)
+        }
+
+        return noSuffix
+    }
+
+    private fun rawName() = "${mainKey()}.${suffix()}"
+
+    private fun dbName() = getString(rawName(), prefsKey = "$DATABASE_NAME.$DATABASE_VERSION")
+
+    private fun dbHelper(): DbHelper = DbHelper(BaseApplication.takeContext(), dbName())
 
     override fun initialize(ctx: Context) {
 
@@ -174,8 +216,7 @@ object DBStorage : Storage<String> {
 
         try {
 
-            val mainKey = "$DATABASE_NAME.$DATABASE_VERSION"
-            val sPrefs = ctx.getSharedPreferences(mainKey, Context.MODE_PRIVATE)
+            val sPrefs = ctx.getSharedPreferences(mainKey(), Context.MODE_PRIVATE)
             val nPrefs = SharedPreferencesStorage(sPrefs)
 
             var suffix = nPrefs.get(DATABASE_NAME_SUFFIX_KEY)
@@ -204,19 +245,14 @@ object DBStorage : Storage<String> {
                 }
             )
 
-            val rawName = "$mainKey.$suffix"
-            val dbName = getString(rawName, prefsKey = "$DATABASE_NAME.$DATABASE_VERSION")
-
             table = table()
             columnKey = columnKey()
             columnValue = columnValue()
 
             if (DEBUG.get()) Console.log(
 
-                "$tag dbName = '$dbName', rawName = '$rawName'"
+                "$tag dbName = '${dbName()}', rawName = '${rawName()}',"
             )
-
-            dbHelper = DbHelper(ctx, dbName)
 
             if (DEBUG.get()) Console.log("$tag END")
 
@@ -230,7 +266,7 @@ object DBStorage : Storage<String> {
 
     override fun shutdown(): Boolean {
 
-        dbHelper?.closeDatabase()
+        dbHelper().closeDatabase()
 
         return true
     }
@@ -317,7 +353,7 @@ object DBStorage : Storage<String> {
             val chunksRawValue = doGet("${key}_$KEY_CHUNKS")
             val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-            if (chunksRawValue.isNotEmpty() && TextUtils.isDigitsOnly(chunksRawValue)) {
+            if (chunksRawValue.isNotEmpty() && chunksRawValue.isDigitsOnly()) {
 
                 chunks = chunksRawValue.toInt()
             }
@@ -514,9 +550,9 @@ object DBStorage : Storage<String> {
 
         try {
 
-            val dbName = dbHelper?.databaseName
-            val context = dbHelper?.takeContext()
-            val result = context?.deleteDatabase(dbName) ?: false
+            val dbName = dbHelper().databaseName
+            val context = dbHelper().takeContext()
+            val result = context.deleteDatabase(dbName)
 
             if (result) {
 
@@ -627,8 +663,7 @@ object DBStorage : Storage<String> {
         return result.get()
     }
 
-    private abstract class LocalDBStorageOperation<T>(db: SQLiteDatabase?) :
-        DBStorageOperation<T>(db)
+    private abstract class LocalDBStorageOperation<T>(db: SQLiteDatabase?) : DBStorageOperation<T>(db)
 
     private fun <T> transact(operation: DBStorageOperation<T>): T? {
 
@@ -680,13 +715,13 @@ object DBStorage : Storage<String> {
 
             try {
 
-                val db = dbHelper?.writableDatabase
+                val db = dbHelper().writableDatabase
 
-                tag = "$tag db = ${db?.hashCode()} ::"
+                tag = "$tag db = ${db.hashCode()} ::"
 
                 if (DEBUG.get()) Console.log("$tag START")
 
-                db?.let {
+                db.let {
 
                     if (db.isOpen) {
 
@@ -703,11 +738,6 @@ object DBStorage : Storage<String> {
 
                         Console.warning("$tag DB is not open")
                     }
-                }
-
-                if (db == null) {
-
-                    Console.error("$tag DB is null")
                 }
 
             } catch (e: Exception) {

@@ -1,8 +1,8 @@
 package com.redelf.commons.persistance.database
 
-import android.database.sqlite.SQLiteDatabase
+import net.zetetic.database.sqlcipher.SQLiteDatabase
 
-abstract class DBStorageOperation<T>(val db: SQLiteDatabase?) {
+internal abstract class DBStorageOperation<T>(val db: SQLiteDatabase?) {
 
     abstract fun perform(): T?
 }
