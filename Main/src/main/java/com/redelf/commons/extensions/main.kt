@@ -849,11 +849,52 @@ fun exec(
 
 ) {
 
+    exec(null, false, onRejected, what)
+}
+
+fun exec(
+
+    tag: String? = null,
+    debug: Boolean = false,
+
+    onRejected: ((Throwable) -> Unit)? = { err -> recordException(err) },
+    what: Runnable
+
+) {
+
+    val tag = if (isEmpty(tag)) {
+
+        if (debug) {
+
+            "Exec ::"
+        }
+
+        ""
+
+    } else {
+
+        if (debug) {
+
+            "$tag Exec ::"
+
+        }
+
+        ""
+    }
+
+    Console.log("$tag START")
+
     try {
+
+        Console.log("$tag Sending to main executor")
 
         Executor.MAIN.execute(what)
 
+        Console.log("$tag Sent to main executor")
+
     } catch (e: RejectedExecutionException) {
+
+        Console.error("$tag ERROR: ${e.message}")
 
         onRejected?.let {
 
@@ -865,6 +906,8 @@ fun exec(
             recordException(e)
         }
     }
+
+    Console.log("$tag END")
 }
 
 
