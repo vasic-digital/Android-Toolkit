@@ -882,19 +882,19 @@ fun exec(
         ""
     }
 
-    Console.log("$tag START")
+    if (debug) Console.log("$tag START")
 
     try {
 
-        Console.log("$tag Sending to main executor")
+        if (debug) Console.log("$tag Sending to main executor")
 
         Executor.MAIN.execute(what)
 
-        Console.log("$tag Sent to main executor")
+        if (debug) Console.log("$tag Sent to main executor")
 
     } catch (e: RejectedExecutionException) {
 
-        Console.error("$tag ERROR: ${e.message}")
+        if (debug) Console.error("$tag ERROR: ${e.message}")
 
         onRejected?.let {
 
@@ -907,7 +907,7 @@ fun exec(
         }
     }
 
-    Console.log("$tag END")
+    if (debug) Console.log("$tag END")
 }
 
 
