@@ -1,5 +1,6 @@
 package com.redelf.commons.persistance.database
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.provider.BaseColumns
@@ -30,6 +31,7 @@ import androidx.core.text.isDigitsOnly
 /*
     TODO: Make sure that this is not static object
 */
+@SuppressLint("StaticFieldLeak")
 object DBStorage : Storage<String> {
 
     /*
@@ -96,7 +98,8 @@ object DBStorage : Storage<String> {
             "$columnKey TEXT," +
             "$columnValue TEXT)"
 
-    private fun sqlDelete() = "DROP TABLE IF EXISTS $table"
+    // Note: Not used at the moment
+    // private fun sqlDelete() = "DROP TABLE IF EXISTS $table"
 
     private class DbHelper(context: Context, dbName: String) :
 
@@ -206,7 +209,7 @@ object DBStorage : Storage<String> {
 
     private fun dbName() = getString(rawName(), prefsKey = "$DATABASE_NAME.$DATABASE_VERSION")
 
-    private fun dbHelper(): DbHelper = DbHelper(BaseApplication.takeContext(), dbName())
+    private val dbHelper: DbHelper = DbHelper(BaseApplication.takeContext(), dbName())
 
     override fun initialize(ctx: Context) {
 
@@ -266,7 +269,7 @@ object DBStorage : Storage<String> {
 
     override fun shutdown(): Boolean {
 
-        dbHelper().closeDatabase()
+        dbHelper.closeDatabase()
 
         return true
     }
@@ -550,8 +553,8 @@ object DBStorage : Storage<String> {
 
         try {
 
-            val dbName = dbHelper().databaseName
-            val context = dbHelper().takeContext()
+            val dbName = dbHelper.databaseName
+            val context = dbHelper.takeContext()
             val result = context.deleteDatabase(dbName)
 
             if (result) {
@@ -715,7 +718,7 @@ object DBStorage : Storage<String> {
 
             try {
 
-                val db = dbHelper().writableDatabase
+                val db = dbHelper.writableDatabase
 
                 tag = "$tag db = ${db.hashCode()} ::"
 
