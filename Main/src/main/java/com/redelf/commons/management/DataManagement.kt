@@ -298,8 +298,6 @@ abstract class DataManagement<T> :
         return data
     }
 
-    fun takeStorageKey() = storageKey
-
     @Throws(IllegalStateException::class)
     fun takeStorage(): EncryptedPersistence? {
 

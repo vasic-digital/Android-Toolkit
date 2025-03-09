@@ -139,6 +139,6 @@ class PersistenceBuilder(
         //  see:
         //  return CompressedEncryption()
 
-        return ReverseEncryption(salter)
+        return NoEncryption()
     }
 }
