@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose
 import com.redelf.commons.logging.Console
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
+import java.lang.reflect.Type
 
 fun Class<*>.hasPublicDefaultConstructor(): Boolean {
 
@@ -180,4 +181,18 @@ fun String.toClass(): Class<*>? {
     }
 
     return null
+}
+
+fun Type.getRawCassName(): String {
+
+    try {
+
+        return typeName.forClassName().replaceAfter("<", "").replace("<", "")
+
+    } catch (e: Exception) {
+
+        recordException(e)
+    }
+
+    return ""
 }

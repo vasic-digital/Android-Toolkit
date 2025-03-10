@@ -11,6 +11,7 @@ import com.redelf.commons.extensions.assign
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.getAllFields
 import com.redelf.commons.extensions.getFieldByName
+import com.redelf.commons.extensions.getRawCassName
 import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isExcluded
@@ -181,9 +182,10 @@ class GsonParser private constructor(
 
             try {
 
-                val clazz = Class.forName(t.typeName.forClassName())
+                val rawClazzName = t.getRawCassName()
+                val clazz = Class.forName(rawClazzName)
 
-                Console.log("$tag Class = '${clazz.canonicalName?.forClassName()}'")
+                Console.log("$tag Class = '$rawClazzName'")
 
                 val instance: Any? = fromJson(content, clazz)
 
@@ -194,6 +196,7 @@ class GsonParser private constructor(
             } catch (e: Exception) {
 
                 Console.error("$tag ERROR: ${e.message}")
+
                 recordException(e)
             }
         }
@@ -276,7 +279,8 @@ class GsonParser private constructor(
 
                         Console.error(
 
-                            "$tag ERROR / 1 :: Content = $content, Error = '${e.message}'")
+                            "$tag ERROR / 1 :: Content = $content, Error = '${e.message}'"
+                        )
 
                         recordException(e)
                     }
