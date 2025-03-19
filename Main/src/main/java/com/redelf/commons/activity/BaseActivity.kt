@@ -79,6 +79,7 @@ abstract class BaseActivity :
         closeActivity()
     }
 
+    protected open val fitInsideSystemBoundaries = true
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
 
@@ -143,7 +144,10 @@ abstract class BaseActivity :
 
         onBackPressedDispatcher.addCallback(this, backPressedCallback)
 
-        fitInsideSystemBoundaries()
+        if (fitInsideSystemBoundaries) {
+
+            fitInsideSystemBoundaries()
+        }
 
         created = true
     }

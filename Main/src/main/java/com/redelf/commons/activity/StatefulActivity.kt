@@ -11,6 +11,7 @@ import com.redelf.commons.extensions.fitInsideSystemBoundaries
 
 abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscription {
 
+    protected open val fitInsideSystemBoundaries = true
     protected open val removeFromHistoryOnFinish = false
 
     private var tagContext = ""
@@ -116,7 +117,10 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        fitInsideSystemBoundaries()
+        if (fitInsideSystemBoundaries) {
+
+            fitInsideSystemBoundaries()
+        }
     }
 
     override fun onPause() {
