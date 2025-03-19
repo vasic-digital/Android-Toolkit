@@ -79,7 +79,6 @@ abstract class BaseActivity :
         closeActivity()
     }
 
-    protected open val fitInsideSystemBoundaries = true
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
 
