@@ -997,7 +997,7 @@ abstract class BaseActivity :
         }
     }
 
-    protected fun addAttachment() {
+    protected open fun addAttachment() {
 
         Console.log("Add attachment")
 
