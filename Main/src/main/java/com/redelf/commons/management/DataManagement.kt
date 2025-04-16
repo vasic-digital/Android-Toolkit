@@ -480,7 +480,7 @@ abstract class DataManagement<T> :
 
     override fun reset(): Boolean {
 
-        val tag = "${getLogTag()} :: Reset ::"
+        val tag = "${getLogTag()} Reset ::"
 
         Console.log("$tag START")
 
