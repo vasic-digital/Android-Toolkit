@@ -23,6 +23,7 @@ import com.redelf.commons.session.Session
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import java.util.UUID
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -179,7 +180,7 @@ abstract class DataManagement<T> :
     override fun lock() {
 
         if (!isEnabled()) {
-            
+
             return
         }
 
@@ -331,7 +332,7 @@ abstract class DataManagement<T> :
     protected fun doPushData(data: T) {
 
         if (!isEnabled()) {
-            
+
             return
         }
 
@@ -395,11 +396,11 @@ abstract class DataManagement<T> :
     override fun reset(): Boolean {
 
         if (!isEnabled()) {
-            
+
             return true
         }
 
-        val tag = "${getLogTag()} :: Reset ::"
+        val tag = "${getLogTag()} Reset ::"
 
         Console.log("$tag START")
 
