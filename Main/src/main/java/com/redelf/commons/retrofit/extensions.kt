@@ -13,7 +13,7 @@ fun <T> Response<T>.close() {
 
         Console.log("$tag Closing")
 
-        this.close()
+        raw.close()
 
         Console.log("$tag Closed")
 
