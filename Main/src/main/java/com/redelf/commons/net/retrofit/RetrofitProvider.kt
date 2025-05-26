@@ -8,6 +8,8 @@ import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.retrofit.gson.SerializationBenchmarkLoggingInterceptor
+import com.redelf.commons.net.retrofit.interceptor.JsonValidityInterceptor
+import com.redelf.commons.net.retrofit.interceptor.RetryInterceptor
 import com.redelf.commons.obtain.ObtainParametrized
 import okhttp3.Call
 import okhttp3.CertificatePinner
@@ -137,7 +139,8 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         connTime: Long,
         writeTime: Long,
         verbose: Boolean = false,
-        useCronet: Boolean = true
+        useCronet: Boolean = true,
+        validateJson: Boolean = false
 
     ): OkHttpClient {
 
@@ -161,7 +164,13 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             .writeTimeout(writeTime, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .connectionPool(pool)
-            .addInterceptor(RetryInterceptor())
+
+        if (validateJson) {
+
+            builder.addInterceptor(JsonValidityInterceptor())
+        }
+
+        builder.addInterceptor(RetryInterceptor())
 
         loggingInterceptor?.let {
 

@@ -1,4 +1,4 @@
-package com.redelf.commons.net.retrofit
+package com.redelf.commons.net.retrofit.interceptor
 
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -90,7 +90,7 @@ class RetryInterceptor : Interceptor {
         Console.error("$TAG $msg")
 
         val intent = Intent(BROADCAST_ACTION_COMMUNICATION_FAILURE)
-        val applicationContext = BaseApplication.takeContext()
+        val applicationContext = BaseApplication.Companion.takeContext()
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 }
