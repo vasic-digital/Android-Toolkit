@@ -1,5 +1,6 @@
 package com.redelf.commons.retrofit
 
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import okhttp3.Headers
 import okhttp3.ResponseBody
@@ -48,21 +49,25 @@ class ResponseWrapper<T>(
 
 fun <T> Call<T>.safeExecute(): ResponseWrapper<T> {
 
+    val tag = "Retrofit"
     var response: Response<T>? = null
     val wrapper = ResponseWrapper<T>()
 
     try {
 
+        Console.log("$tag executing")
+
         response = this.execute()
 
-        response?.let {
+        Console.log("$tag executed")
 
-            wrapper.response = it
-            wrapper.body = it.body()
-            wrapper.errorBody = it.errorBody()
-        }
+        wrapper.response = response
+        wrapper.body = response?.body()
+        wrapper.errorBody = response?.errorBody()
 
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+
+        recordException(e)
 
         response?.close()
     }

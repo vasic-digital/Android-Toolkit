@@ -46,12 +46,13 @@ class RetryInterceptor : Interceptor {
 
                 response = chain.proceed(chain.request())
 
-                response.use {
+                if (response.isSuccessful || (response.code >= 400 && response.code <= 499)) {
 
-                    if (response.isSuccessful || response.code == 404) {
+                    return response
 
-                        return response
-                    }
+                } else {
+
+                    response.close()
                 }
 
             } catch (e: IOException) {
