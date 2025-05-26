@@ -1,4 +1,4 @@
-package com.redelf.commons.net.retrofit
+package com.redelf.commons.net.retrofit.interceptor
 
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -46,12 +46,18 @@ class RetryInterceptor : Interceptor {
 
                 response = chain.proceed(chain.request())
 
-                if (response.isSuccessful || response.code == 404) {
+                if (response.isSuccessful || (response.code >= 400 && response.code <= 499)) {
 
                     return response
+
+                } else {
+
+                    response.close()
                 }
 
             } catch (e: IOException) {
+
+                response?.close()
 
                 if (attempt == maxRetries) {
 
@@ -84,7 +90,7 @@ class RetryInterceptor : Interceptor {
         Console.error("$TAG $msg")
 
         val intent = Intent(BROADCAST_ACTION_COMMUNICATION_FAILURE)
-        val applicationContext = BaseApplication.takeContext()
+        val applicationContext = BaseApplication.Companion.takeContext()
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 }

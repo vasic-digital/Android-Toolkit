@@ -57,7 +57,7 @@ import com.redelf.commons.messaging.firebase.FcmService
 import com.redelf.commons.messaging.firebase.FirebaseConfigurationManager
 import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.net.cronet.Cronet
-import com.redelf.commons.net.retrofit.RetryInterceptor
+import com.redelf.commons.net.retrofit.interceptor.RetryInterceptor
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager

@@ -47,7 +47,7 @@ class RemoteHttpContentFetcher(
 
         return try {
 
-            val response: Response = client.newCall(request).execute()
+            val response = client.newCall(request).execute()
 
             if (response.isSuccessful) {
 
