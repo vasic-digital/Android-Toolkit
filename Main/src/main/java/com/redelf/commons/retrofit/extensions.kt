@@ -55,9 +55,12 @@ fun <T> Call<T>.safeExecute(): ResponseWrapper<T> {
 
         response = this.execute()
 
-        wrapper.response = response
-        wrapper.body = response.body()
-        wrapper.errorBody = response.errorBody()
+        response?.let {
+
+            wrapper.response = it
+            wrapper.body = it.body()
+            wrapper.errorBody = it.errorBody()
+        }
 
     } catch (_: Exception) {
 
