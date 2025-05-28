@@ -153,7 +153,7 @@ class GsonParser private constructor(
 
             return gson.toJson(body)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
