@@ -339,7 +339,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                         Console.log("$playerTag $logTag On started")
                     }
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
                     recordException(e)
@@ -447,7 +447,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 true
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.log("$playerTag ERROR: ${e.message}")
 
@@ -847,7 +847,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 setCurrentDuration(0)
                 player.stop()
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 success = false
                 recordException(e)
@@ -861,7 +861,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             clearMediaPlayer()
             setPlaying(false)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             success = false
             recordException(e)
@@ -958,7 +958,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 handler.removeCallbacks(it)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -1029,7 +1029,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
             return true
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error("$playerTag $tag NOT APPLIED")
             Console.error(e)
@@ -1058,7 +1058,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                     true
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error("$playerTag $tag NOT APPLIED")
                     Console.error(e)

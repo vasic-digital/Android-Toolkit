@@ -88,7 +88,7 @@ class DefaultConnectivityHandler private constructor(
 
                     return true
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
                 }

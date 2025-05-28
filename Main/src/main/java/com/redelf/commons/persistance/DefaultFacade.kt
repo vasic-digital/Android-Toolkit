@@ -131,7 +131,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             log("Put :: Key = $key :: Encrypted")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             err("Put :: Key = $key :: Encrypt failed :: Error = '${e.message}'")
 
@@ -194,7 +194,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             log(" Get :: Key = $key :: Converted: $result")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             err(" Get :: Key = $key :: Converter failed: ${e.message}")
 
@@ -234,7 +234,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             log("$tag Key = $key :: Converted")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             err("Key :: $key :: Converter failed: ${e.message}")
 
@@ -264,7 +264,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             log("$tag Key = $key :: Converted")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             err("Key :: $key :: Converter failed: ${e.message}")
 
@@ -325,7 +325,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             serializedText = storage?.get(key)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             err("ERROR: ${e.message}")
 
@@ -389,7 +389,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
                 notifyDecrypted(key, cText, plainText ?: "")
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             err("$tag Key = $key :: Decrypt failed: ${e.message}")
 

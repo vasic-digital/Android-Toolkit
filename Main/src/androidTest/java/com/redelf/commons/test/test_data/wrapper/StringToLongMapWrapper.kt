@@ -46,7 +46,7 @@ class StringToLongMapWrapper(map: ConcurrentHashMap<String, Long>) :
 
             Console.log("Data set: ${this.data}")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 

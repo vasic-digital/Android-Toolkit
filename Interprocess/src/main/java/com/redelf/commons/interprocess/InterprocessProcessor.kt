@@ -31,7 +31,7 @@ abstract class InterprocessProcessor : Process<Intent> {
 
             onData(ipcData)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error("Error processing data: ${e.message}")
             Console.error(e)

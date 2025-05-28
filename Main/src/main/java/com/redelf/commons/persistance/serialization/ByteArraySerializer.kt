@@ -83,7 +83,7 @@ class ByteArraySerializer(
 
             return result
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -123,7 +123,7 @@ class ByteArraySerializer(
 
             return result
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }

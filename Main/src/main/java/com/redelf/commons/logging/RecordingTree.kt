@@ -213,12 +213,12 @@ class RecordingTree(
                     e.printStackTrace()
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 e.printStackTrace()
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             e.printStackTrace()
         }

@@ -320,7 +320,7 @@ fun Context.readRawTextFile(resId: Int): String {
             stringBuilder.append('\n')
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         Console.error(e)
 
@@ -330,7 +330,7 @@ fun Context.readRawTextFile(resId: Int): String {
 
             bufferedReader.close()
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
         }
@@ -590,7 +590,7 @@ fun File.appendText(text: String): Boolean {
         writer.newLine()
         writer.close()
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         e.printStackTrace()
 
@@ -686,7 +686,7 @@ fun Context.wakeUpScreen() {
             Console.error("$tag PowerManager is null")
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
         Console.error("$tag END")
@@ -741,7 +741,7 @@ fun Context.playNotificationSound() {
         r.audioAttributes = aa
         r.play()
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         Console.error(e)
     }
@@ -774,7 +774,7 @@ fun <T> safeRemoteValue(provider: () -> T, default: T): T {
             return it
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         Console.error(e)
     }
@@ -919,7 +919,7 @@ fun exec(what: Runnable, delayInMilliseconds: Long) {
 
         Executor.MAIN.execute(what, delayInMilliseconds)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -931,7 +931,7 @@ fun exec(delayInMilliseconds: Long, what: Runnable) {
 
         Executor.MAIN.execute(what, delayInMilliseconds)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -943,7 +943,7 @@ fun exec(what: Runnable) {
 
         Executor.MAIN.execute(what)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -1031,7 +1031,7 @@ fun <T> doExec(
 
         future?.cancel(true)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -1240,7 +1240,7 @@ fun Throwable.toHumanReadableString(): String {
 
         return stringWriter.toString()
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }

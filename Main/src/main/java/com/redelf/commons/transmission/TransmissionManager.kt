@@ -156,7 +156,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
                 connectionHandler.register(connectionCallback)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
 
@@ -491,7 +491,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
             recordException(e)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -528,7 +528,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
                 success = true
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }

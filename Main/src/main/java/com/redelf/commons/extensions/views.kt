@@ -139,7 +139,7 @@ fun ImageView.rectImage(imgRes: Int) {
                 .load(imgRes)
                 .into(this)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
         }
@@ -166,7 +166,7 @@ fun ImageView.rectImage(imgUrl: String) {
                 .load(imgUrl)
                 .into(this)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
         }
@@ -204,7 +204,7 @@ fun ImageView.circularImage(imgUrl: String, cornerRadius: Int) {
                 )
                 .into(this)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
         }

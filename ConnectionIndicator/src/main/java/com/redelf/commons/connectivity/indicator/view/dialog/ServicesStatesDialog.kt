@@ -47,7 +47,7 @@ class ServicesStatesDialog(
 
                 statefulServices = AvailableStatefulServices(builder)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }

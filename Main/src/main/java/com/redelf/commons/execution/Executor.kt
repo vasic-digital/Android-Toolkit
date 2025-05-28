@@ -73,7 +73,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                         what.run()
 
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
 
                         recordException(e)
                     }
@@ -96,7 +96,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                     return Exec.execute(callable, executor)?.get()
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     recordException(e)
                 }
@@ -109,7 +109,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                         callable.call()
 
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
 
                         recordException(e)
                     }
@@ -219,7 +219,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                     return Exec.execute(callable, executor)?.get()
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     recordException(e)
                 }
@@ -232,7 +232,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                         callable.call()
 
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
 
                         recordException(e)
                     }
@@ -293,7 +293,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                 return action.get()
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -351,7 +351,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                 executor.execute(action)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -363,7 +363,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                 return executor.submit(callable)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -382,13 +382,13 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
                         Thread.sleep(delayInMillis)
                         action.run()
 
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
 
                         recordException(e)
                     }
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }

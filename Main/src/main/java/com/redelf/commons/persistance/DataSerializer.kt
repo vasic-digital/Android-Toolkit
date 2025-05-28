@@ -101,7 +101,7 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
             recordException(e)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             error(e)
         }

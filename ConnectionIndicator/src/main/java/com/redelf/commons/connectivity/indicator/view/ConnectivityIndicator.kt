@@ -207,7 +207,7 @@ class ConnectivityIndicator :
                 callback.onInitialization(true, statefulServices!!)
 
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 param.removeCallback(connectionStateCallback)
                 statefulServices?.unregister(connectionStateCallback)

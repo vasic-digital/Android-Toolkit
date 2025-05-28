@@ -41,7 +41,7 @@ class ObjectMapWrapper(map: ConcurrentHashMap<UUID, SampleData3>) :
 
             Console.log("Data set: ${this.data}")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 

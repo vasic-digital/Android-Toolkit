@@ -109,7 +109,7 @@ data class SampleData @JsonCreator constructor(
                     partition1 = CopyOnWriteArrayList()
                     partition1.addAll(data as CopyOnWriteArrayList<SampleData2>)
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
 
@@ -126,7 +126,7 @@ data class SampleData @JsonCreator constructor(
                     partition2 = ConcurrentHashMap()
                     partition2.putAll(data as ConcurrentHashMap<UUID, SampleData2>)
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
 
@@ -162,7 +162,7 @@ data class SampleData @JsonCreator constructor(
                         partition3[key] = children
                     }
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
 
@@ -178,7 +178,7 @@ data class SampleData @JsonCreator constructor(
 
                     partition4 = data as SampleData3
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
 
@@ -194,7 +194,7 @@ data class SampleData @JsonCreator constructor(
 
                     partition5 = data as String
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
 
@@ -211,7 +211,7 @@ data class SampleData @JsonCreator constructor(
                     partition6 = CopyOnWriteArrayList()
                     partition6.addAll(data as CopyOnWriteArrayList<Double>)
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
 

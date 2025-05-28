@@ -88,7 +88,7 @@ class ExecutorTest : BaseTest() {
                     Assert.fail("Timeout")
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Assert.fail(e.message)
             }

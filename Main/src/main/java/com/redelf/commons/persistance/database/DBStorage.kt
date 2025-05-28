@@ -73,7 +73,7 @@ object DBStorage : Storage<String> {
 
             result = enc.encrypt(key, source) ?: ""
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
         }
@@ -118,7 +118,7 @@ object DBStorage : Storage<String> {
 
                 db.execSQL(sqlCreate())
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error(e)
             }
@@ -155,7 +155,7 @@ object DBStorage : Storage<String> {
                         db.close()
                     }
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
                 }
@@ -387,7 +387,7 @@ object DBStorage : Storage<String> {
                 return result.toString()
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -446,7 +446,7 @@ object DBStorage : Storage<String> {
 
                             return res
 
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
 
                             Console.error(
 
@@ -517,7 +517,7 @@ object DBStorage : Storage<String> {
 
                             return res
 
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
 
                             Console.error(
 
@@ -597,7 +597,7 @@ object DBStorage : Storage<String> {
 
             return result
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(
 
@@ -652,7 +652,7 @@ object DBStorage : Storage<String> {
 
                 cursor?.close()
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error(e)
             }
@@ -685,7 +685,7 @@ object DBStorage : Storage<String> {
                     db.setTransactionSuccessful()
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error(e)
 
@@ -695,7 +695,7 @@ object DBStorage : Storage<String> {
 
                     db.endTransaction()
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
                 }
@@ -742,7 +742,7 @@ object DBStorage : Storage<String> {
                     }
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error("$tag ERROR ::", e.message ?: "Unknown error")
 
@@ -826,7 +826,7 @@ object DBStorage : Storage<String> {
                                 return true
                             }
 
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
 
                             Console.error(tag, e.message ?: "Unknown error")
 
@@ -908,7 +908,7 @@ object DBStorage : Storage<String> {
 
                 cursor?.close()
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error(
 

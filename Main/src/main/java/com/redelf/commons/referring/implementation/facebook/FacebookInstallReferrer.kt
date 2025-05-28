@@ -53,7 +53,7 @@ class FacebookInstallReferrer : InstallReferrer<FacebookInstallReferrerData>() {
                 }
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }

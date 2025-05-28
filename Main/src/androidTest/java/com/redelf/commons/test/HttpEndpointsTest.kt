@@ -86,7 +86,7 @@ class HttpEndpointsTest : EndpointsTest() {
                 onEndpoint(endpoint)
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }
@@ -139,7 +139,7 @@ class HttpEndpointsTest : EndpointsTest() {
 //                onEndpoint(endpoint)
 //            }
 //
-//        } catch (e: Exception) {
+//        } catch (e: Throwable) {
 //
 //            Assert.fail(e.message)
 //        }

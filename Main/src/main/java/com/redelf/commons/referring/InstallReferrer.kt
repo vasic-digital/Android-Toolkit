@@ -118,7 +118,7 @@ abstract class InstallReferrer<T>(
                 }
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error("$tag ERROR: ${e.message}")
             recordException(e)

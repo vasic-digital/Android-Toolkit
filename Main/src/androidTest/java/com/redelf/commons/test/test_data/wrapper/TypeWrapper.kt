@@ -42,7 +42,7 @@ abstract class TypeWrapper<T>(wrapped: T?) :
 
             this.data = data as T?
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 

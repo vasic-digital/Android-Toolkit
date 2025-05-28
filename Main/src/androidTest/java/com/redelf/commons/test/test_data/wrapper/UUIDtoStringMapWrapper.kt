@@ -40,7 +40,7 @@ class UUIDtoStringMapWrapper(map: ConcurrentHashMap<UUID, String>) :
 
             Console.log("Data set: ${this.data}")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 

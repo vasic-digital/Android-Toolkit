@@ -129,7 +129,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 ctx.registerReceiver(connectivityListener, filter)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error(e)
             }
@@ -162,7 +162,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
             registered.set(true)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -181,7 +181,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 terminationRegistered.set(true)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -205,7 +205,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 registered.set(false)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -221,7 +221,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 terminationRegistered.set(false)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }

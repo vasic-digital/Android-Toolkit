@@ -52,7 +52,7 @@ fun Any.assign(fieldName: String, fieldValue: Any?, tag: String = ""): Boolean {
             }
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         Console.error("$tag ERROR: ${e.message}")
         recordException(e)
@@ -89,7 +89,7 @@ fun Field.isExcluded(instance: Any): Boolean {
             excluded = this.isAnnotationPresent(Transient::class.java)
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -117,7 +117,7 @@ fun Class<*>.getSuperClasses(selfIncluded: Boolean = true): Set<Class<*>> {
             currentClazz = currentClazz.superclass
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -139,7 +139,7 @@ fun Class<*>.getAllFields(): Set<Field> {
             allFields.addAll(fields)
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -161,7 +161,7 @@ fun Class<*>.getFieldByName(name: String): Field? {
             }
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -175,7 +175,7 @@ fun String.toClass(): Class<*>? {
 
         return Class.forName(this.forClassName())
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -189,7 +189,7 @@ fun Type.getRawCassName(): String {
 
         return typeName.forClassName().replaceAfter("<", "").replace("<", "")
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }

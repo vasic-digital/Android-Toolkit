@@ -12,7 +12,7 @@ fun json(what: Any): String {
 
         return gson.toJson(what)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         Console.error(e)
     }

@@ -695,7 +695,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                 callback?.onCompleted(true)
                                                 return true
 
-                                            } catch (e: Exception) {
+                                            } catch (e: Throwable) {
 
                                                 Console.error("$oTag ERROR: ${e.message}")
 
@@ -748,7 +748,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                         return action.obtain()
                                     }
 
-                                } catch (e: Exception) {
+                                } catch (e: Throwable) {
 
                                     callback?.onFailure(e)
 
@@ -851,7 +851,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                 return putActions[key] as T?
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error("$tag ERROR: ${e.message}")
                 recordException(e)
@@ -1141,7 +1141,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                             return defaultValue
                                         }
 
-                                    } catch (e: Exception) {
+                                    } catch (e: Throwable) {
 
                                         Console.error(
 
@@ -1203,7 +1203,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                     }
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error("$tag ERROR: ${e.message}")
 

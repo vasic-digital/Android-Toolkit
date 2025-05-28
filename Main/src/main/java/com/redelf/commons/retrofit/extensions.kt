@@ -65,7 +65,7 @@ fun <T> Call<T>.safeExecute(): ResponseWrapper<T> {
         wrapper.body = response?.body()
         wrapper.errorBody = response?.errorBody()
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
 

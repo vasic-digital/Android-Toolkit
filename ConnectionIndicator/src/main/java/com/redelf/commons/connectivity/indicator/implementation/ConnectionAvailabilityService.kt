@@ -87,7 +87,7 @@ abstract class ConnectionAvailabilityService(
                     throw IllegalStateException("Get state timeout")
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
 

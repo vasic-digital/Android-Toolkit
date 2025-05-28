@@ -70,7 +70,7 @@ class HttpProxy(
 
                 URL(proxy)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error(e)
 
@@ -129,7 +129,7 @@ class HttpProxy(
 
             inetAddress.isReachable(timeout)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.log(e)
 
@@ -176,7 +176,7 @@ class HttpProxy(
                 Long.MAX_VALUE
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 
@@ -252,7 +252,7 @@ class HttpProxy(
 
             URL(ctx.getString(testUrlResourceId))
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 

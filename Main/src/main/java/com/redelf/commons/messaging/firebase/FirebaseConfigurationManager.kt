@@ -123,7 +123,7 @@ object FirebaseConfigurationManager :
                 loaded.set(true)
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             loaded.set(true)
 

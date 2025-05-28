@@ -32,7 +32,7 @@ class JsonValidityInterceptor : Interceptor {
 
             gson.fromJson(originalResponseString, Any::class.java)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
 

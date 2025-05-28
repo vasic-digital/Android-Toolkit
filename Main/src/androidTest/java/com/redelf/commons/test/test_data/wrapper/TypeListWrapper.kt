@@ -46,7 +46,7 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
             this.data = CopyOnWriteArrayList()
             this.data?.addAll(data as CopyOnWriteArrayList<T>)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 
