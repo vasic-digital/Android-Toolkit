@@ -26,6 +26,8 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import androidx.core.text.isDigitsOnly
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 /*
     TODO: Make sure that this is not static object
@@ -932,7 +934,18 @@ object DBStorage : Storage<String> {
             latch.countDown()
         }
 
-        latch.await()
+        try {
+
+            if (!latch.await(10, TimeUnit.SECONDS)) {
+
+                val e = TimeoutException("Latch has timed out")
+                recordException(e)
+            }
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
 
         return result
     }
