@@ -124,5 +124,5 @@ dependencies {
     androidTestImplementation project("${toolkit_context}:Main")
     androidTestImplementation project("${toolkit_context}:Test")
 
-    implementation 'com.facebook.android:facebook-android-sdk:18.0.0'
+    implementation 'com.facebook.android:facebook-android-sdk:18.0.3'
 }

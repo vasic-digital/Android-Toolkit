@@ -40,7 +40,7 @@ android {
 
 dependencies {
 
-    final String media3Version = "1.5.1"
+    final String media3Version = "1.7.1"
 
     api "androidx.media3:media3-ui:$media3Version"
     api "androidx.media3:media3-cast:$media3Version"
