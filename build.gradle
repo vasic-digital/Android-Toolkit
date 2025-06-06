@@ -22,7 +22,7 @@ buildscript {
     repositories {
 
         mavenLocal()
-        
+
         maven { url 'https://repo.huaweicloud.com/repository/maven/' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/google' }
@@ -43,6 +43,7 @@ buildscript {
     dependencies {
 
         classpath "com.android.tools.build:gradle:8.10.0"
+        classpath "com.android.tools.build:gradle:8.10.1"
         classpath "com.google.gms:google-services:4.4.2"
         classpath "com.google.firebase:firebase-crashlytics-gradle:3.0.3"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -54,7 +55,7 @@ allprojects {
     repositories {
 
         mavenLocal()
-        
+
         maven { url 'https://repo.huaweicloud.com/repository/maven/' }
         maven { url 'https://maven.aliyun.com/repository/central' }
         maven { url 'https://maven.aliyun.com/repository/google' }
