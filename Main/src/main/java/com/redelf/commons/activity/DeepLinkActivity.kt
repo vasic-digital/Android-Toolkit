@@ -30,8 +30,6 @@ abstract class DeepLinkActivity : BaseActivity() {
 
         handleDeepLink(controller, parameter)
 
-        finish()
-
         Console.log("$tag END")
     }
 
