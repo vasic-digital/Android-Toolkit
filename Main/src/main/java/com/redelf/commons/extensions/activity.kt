@@ -1,12 +1,17 @@
 package com.redelf.commons.extensions
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.view.View
 import android.view.WindowInsets
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
+import com.redelf.commons.logging.Console
 
 fun Activity.fitInsideSystemBoundaries() {
 
@@ -47,4 +52,48 @@ fun DialogFragment.fitInsideSystemBoundaries() {
             view?.setPadding(0, top, 0, bottom)
         }
     }
+}
+
+fun Activity.openLink(url: Int) {
+
+    val url = getString(url)
+
+    val tag = "Open link :: Resource = $url ::"
+
+    Console.log("$tag Url = $url")
+
+    openLink(url)
+}
+
+fun Activity.openLink(url: String) {
+
+    val tag = "Open link ::"
+
+    Console.log("$tag Url = $url")
+
+    val uri = url.toUri()
+    openUri(uri)
+}
+
+fun Activity.openUri(uri: Uri): Boolean {
+
+    val tag = "Open Uri ::"
+
+    Console.log("$tag Uri = $uri")
+
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+    try {
+
+        startActivity(intent)
+
+        return true
+
+    } catch (_: ActivityNotFoundException) {
+
+        Console.error("$tag Activity has not been found")
+    }
+
+    return false
 }

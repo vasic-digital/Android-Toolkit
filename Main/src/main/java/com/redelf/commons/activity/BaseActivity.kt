@@ -56,6 +56,7 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
+import androidx.core.net.toUri
 
 abstract class BaseActivity :
 
@@ -1047,38 +1048,6 @@ abstract class BaseActivity :
 
             finish()
         }
-    }
-
-    protected fun openLink(url: Int) {
-
-        openLink(getString(url))
-    }
-
-    protected fun openLink(url: String) {
-
-        val uri = Uri.parse(url)
-        openUri(uri)
-    }
-
-    protected fun openUri(uri: Uri): Boolean {
-
-        Console.log("openUri(): $uri")
-
-        val intent = Intent(Intent.ACTION_VIEW, uri)
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-        try {
-
-            startActivity(intent)
-
-            return true
-
-        } catch (e: ActivityNotFoundException) {
-
-            Console.error("openUri(): Activity has not been found")
-        }
-
-        return false
     }
 
     protected open fun registerWithGoogle(clientId: Int) {
