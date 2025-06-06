@@ -6,7 +6,7 @@ import com.redelf.commons.logging.Console
 
 abstract class DeepLinkActivity : BaseActivity() {
 
-    protected open val tag = "DeepLinkActivity ::"
+    protected open val tag = "Deep linking :: Activity ::"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
