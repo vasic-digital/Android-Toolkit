@@ -179,10 +179,12 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
         return "$tagContext :: $tag"
     }
 
+    protected open fun getFinishTag() = "Finish :: Activity = '${this.javaClass.simpleName}' ::"
+
     @Suppress("DEPRECATION")
     override fun finish() {
 
-        val tag = "ACTIVITY Activity = '${this.javaClass.simpleName}' :: TERMINATE :: FINISH"
+        val tag = getFinishTag()
 
         Console.log("$tag START")
 
