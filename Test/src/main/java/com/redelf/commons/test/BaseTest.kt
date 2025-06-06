@@ -157,7 +157,7 @@ abstract class BaseTest {
                 storageTag = storageTag ?: testSession.toString()
             )
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }

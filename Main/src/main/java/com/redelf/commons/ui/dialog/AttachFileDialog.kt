@@ -85,7 +85,7 @@ class AttachFileDialog(
                     Console.error("Could not create file: %s", outputFile)
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error(e)
             }

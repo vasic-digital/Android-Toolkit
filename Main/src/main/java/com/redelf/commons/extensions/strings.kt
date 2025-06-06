@@ -29,7 +29,7 @@ fun String.deobfuscate(deobfuscator: Obfuscation = DefaultObfuscator): String {
 
         return deobfuscator.deobfuscate(this)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -43,7 +43,7 @@ fun String.obfuscate(obfuscator: Obfuscation = DefaultObfuscator): String {
 
         return obfuscator.obfuscate(this)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -65,7 +65,7 @@ fun String.toBase64(): String {
 
         return encodedBytes.toString(Charsets.UTF_8)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -84,7 +84,7 @@ fun String.fromBase64(): String {
 
             return String(decodedBytes)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -202,7 +202,7 @@ fun String.compressAndEncrypt(
 
         return java.util.Base64.getEncoder().encodeToString(encryptedData)
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -229,7 +229,7 @@ fun String.decryptAndDecompress(
 
         return decryptedData.decompress(true) ?: this
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         recordException(e)
     }
@@ -283,7 +283,7 @@ fun String.toResource(type: String, fallback: Int = 0): Int {
             Console.error("$tag Not found :: $logKey")
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         Console.error("$tag Failed :: $logKey, Error = ${e.message}")
 
@@ -341,7 +341,7 @@ fun String.localized(fallback: String = ""): String {
             Console.error("$tag Not found :: Key = $this")
         }
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
 
         Console.error("$tag Failed :: Key = $this, Error = ${e.message}")
 
@@ -429,7 +429,7 @@ fun String.color(
                 return ss
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -468,7 +468,7 @@ fun String.color(
                 return ss
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }

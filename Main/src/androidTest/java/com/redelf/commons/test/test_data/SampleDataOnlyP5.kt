@@ -68,7 +68,7 @@ data class SampleDataOnlyP5 @JsonCreator constructor(
 
                     partition5 = data as String
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
 

@@ -245,7 +245,7 @@ abstract class BaseApplication :
             keyGen.init(256) // AES-256
             secretKey = keyGen.generateKey()
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -546,7 +546,7 @@ abstract class BaseApplication :
 
             return packageManager.getLaunchIntentForPackage(packageName)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -642,7 +642,7 @@ abstract class BaseApplication :
 
                 Console.error("$tag ERROR: ${e.message}")
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -656,7 +656,7 @@ abstract class BaseApplication :
 
                 Console.log("$tag END")
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -737,7 +737,7 @@ abstract class BaseApplication :
                 val facebookLogger = AppEventsLogger.newLogger(this);
                 facebookLogger.logEvent(AppEventsConstants.EVENT_NAME_ACTIVATED_APP);
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -818,7 +818,7 @@ abstract class BaseApplication :
 
             System.loadLibrary("sqlcipher")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -990,7 +990,7 @@ abstract class BaseApplication :
 
                 Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -1041,7 +1041,7 @@ abstract class BaseApplication :
 
             Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }

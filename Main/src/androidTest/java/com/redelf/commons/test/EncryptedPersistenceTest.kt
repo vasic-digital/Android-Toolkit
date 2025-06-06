@@ -40,7 +40,7 @@ class EncryptedPersistenceTest : BaseTest() {
 
             Assert.assertTrue(persistence.isEncryptionEnabled())
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }
@@ -262,7 +262,7 @@ class EncryptedPersistenceTest : BaseTest() {
                 Assert.fail("Latch timed out")
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }

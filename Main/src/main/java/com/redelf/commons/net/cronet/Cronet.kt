@@ -48,7 +48,7 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
 
             ready.set(true)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error("$tag ERROR: ${e.message}")
 

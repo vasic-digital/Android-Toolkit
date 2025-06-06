@@ -92,7 +92,7 @@ data class SampleDataOnlyP3 @JsonCreator constructor(
                     }
 
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error(e)
 

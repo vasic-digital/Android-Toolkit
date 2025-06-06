@@ -27,7 +27,7 @@ class RawStringsListDataSource(
                 return raw.split("\n")
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             if (throwOnError) {
 

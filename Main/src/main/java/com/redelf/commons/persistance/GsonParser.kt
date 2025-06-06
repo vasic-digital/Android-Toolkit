@@ -67,7 +67,7 @@ class GsonParser private constructor(
 
                 throw e
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
 
@@ -153,9 +153,17 @@ class GsonParser private constructor(
 
             return gson.toJson(body)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
+
+            val err = Exception(
+
+                "Failed to deserialize JSON, " +
+                        "Class = '${body::class.java.canonicalName?.forClassName()}'"
+            )
+
+            recordException(err)
         }
 
         return null
@@ -193,7 +201,7 @@ class GsonParser private constructor(
 
                 return instance as T?
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error("$tag ERROR: ${e.message}")
 
@@ -275,7 +283,7 @@ class GsonParser private constructor(
 
                         return gson.fromJson(content, clazz) as T?
 
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
 
                         Console.error(
 
@@ -287,7 +295,7 @@ class GsonParser private constructor(
                 }
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(
 
@@ -395,7 +403,7 @@ class GsonParser private constructor(
                                                 }
                                             }
 
-                                        } catch (e: Exception) {
+                                        } catch (e: Throwable) {
 
                                             Console.error("$tag ERROR: ${e.message}")
                                             recordException(e)
@@ -407,7 +415,7 @@ class GsonParser private constructor(
 
                                             Console.log("$rwTag END")
 
-                                        } catch (e: Exception) {
+                                        } catch (e: Throwable) {
 
                                             Console.error("$rwTag ERROR: ${e.message}")
                                             recordException(e)
@@ -451,7 +459,7 @@ class GsonParser private constructor(
                                                                 )
                                                             }
 
-                                                        } catch (e: Exception) {
+                                                        } catch (e: Throwable) {
 
                                                             Console.error("$wTag ERROR: ${e.message}")
                                                             recordException(e)
@@ -487,7 +495,7 @@ class GsonParser private constructor(
                                                         fValue
                                                     )
 
-                                                } catch (e: Exception) {
+                                                } catch (e: Throwable) {
 
                                                     Console.error("$tag ERROR: ${e.message}")
                                                     recordException(e)
@@ -527,7 +535,7 @@ class GsonParser private constructor(
                         out?.endObject()
                     }
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     recordException(e)
                 }
@@ -601,7 +609,7 @@ class GsonParser private constructor(
                                 }
                             }
 
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
 
                             Console.error("$tag ERROR: ${e.message}")
                             recordException(e)
@@ -691,7 +699,7 @@ class GsonParser private constructor(
                                         }
                                     }
 
-                                } catch (e: Exception) {
+                                } catch (e: Throwable) {
 
                                     Console.error("$tag ERROR: ${e.message}")
                                     recordException(e)
@@ -738,7 +746,7 @@ class GsonParser private constructor(
 
                     return instance
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     Console.error("$tag ERROR: ${e.message}")
                     recordException(e)
@@ -781,7 +789,7 @@ class GsonParser private constructor(
 
             return instance
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error("$tag INSTANTIATE :: ERROR: ${e.message}")
             recordException(e)

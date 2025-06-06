@@ -15,7 +15,7 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
 
             return jObfuscator.obfuscate(input)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -32,7 +32,7 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
 
             return jObfuscator.deobfuscate(input)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }

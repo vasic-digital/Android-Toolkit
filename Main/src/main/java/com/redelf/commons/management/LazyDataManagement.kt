@@ -8,6 +8,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.application.OnClearFromRecentService
 import com.redelf.commons.data.Empty
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.Connectivity
@@ -87,7 +88,10 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                     BaseApplication.BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND -> {
 
-                        onBackground(it.action ?: "")
+                        exec {
+
+                            onBackground(it.action ?: "")
+                        }
                     }
                 }
             }
@@ -129,7 +133,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 ctx.registerReceiver(connectivityListener, filter)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error(e)
             }
@@ -162,7 +166,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
             registered.set(true)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -181,7 +185,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 terminationRegistered.set(true)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -205,7 +209,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 registered.set(false)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -221,7 +225,7 @@ abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context
 
                 terminationRegistered.set(false)
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }

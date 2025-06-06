@@ -48,7 +48,7 @@ abstract class ProxiesTest : EndpointsTest() {
                 quality.set(newQuality)
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }

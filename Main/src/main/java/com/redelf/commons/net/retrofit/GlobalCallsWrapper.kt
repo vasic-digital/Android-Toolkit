@@ -23,7 +23,7 @@ object GlobalCallsWrapper : Abort {
 
                 v.cancel()
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 Console.error("$tag Cancel failed: $k", e)
             }

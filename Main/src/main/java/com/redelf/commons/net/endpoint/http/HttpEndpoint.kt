@@ -68,7 +68,7 @@ class HttpEndpoint(
 
             inetAddress.isReachable(timeout)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.log(e)
 
@@ -95,7 +95,7 @@ class HttpEndpoint(
 
             responseCode in 200..299
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.log(e)
 
@@ -138,7 +138,7 @@ class HttpEndpoint(
                 Long.MAX_VALUE
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 

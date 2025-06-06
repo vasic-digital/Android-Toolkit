@@ -102,7 +102,7 @@ abstract class HttpProxiesTest : ProxiesTest() {
                 quality.set(newQuality)
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }
@@ -144,7 +144,7 @@ abstract class HttpProxiesTest : ProxiesTest() {
                 quality.set(newQuality)
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }
@@ -218,7 +218,7 @@ abstract class HttpProxiesTest : ProxiesTest() {
                 proxy = obtained.poll()
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }
@@ -286,7 +286,7 @@ abstract class HttpProxiesTest : ProxiesTest() {
                 proxy = obtained.poll()
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }
@@ -335,7 +335,7 @@ abstract class HttpProxiesTest : ProxiesTest() {
                 }
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Assert.fail(e.message)
         }

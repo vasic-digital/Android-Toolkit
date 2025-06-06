@@ -96,7 +96,7 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
                     latch.countDown()
 
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
 
                     recordException(e)
 
@@ -121,7 +121,7 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
             return result
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             result?.error = e
 

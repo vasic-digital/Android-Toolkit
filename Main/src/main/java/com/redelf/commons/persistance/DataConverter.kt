@@ -61,7 +61,7 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
                 else -> null
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -87,7 +87,7 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
             return p.fromJson(value, type)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 
@@ -115,7 +115,7 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
             return p.fromJson(value, clazz)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error(e)
 

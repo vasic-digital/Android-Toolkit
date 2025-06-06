@@ -168,7 +168,7 @@ class GoogleInstallReferrer :
 
             Console.log("$tag END")
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             Console.error("$tag ERROR: ${e.message}")
             recordException(e)
