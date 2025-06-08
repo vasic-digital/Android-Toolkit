@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -31,11 +32,11 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
         private val capacity = if (cores * 3 <= 10) {
 
-            100 * 10
+            100 * 100
 
         } else {
 
-            cores * 3 * 10 * 10
+            cores * 3 * 10 * 100
         }
 
         private val executor = instantiateExecutor()
@@ -50,6 +51,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         override fun instantiateExecutor() = TaskExecutor.instantiate(capacity)
 
         @OptIn(DelicateCoroutinesApi::class)
+        @Throws(RejectedExecutionException::class)
         override fun execute(what: Runnable) { // TODO: Instead of Runnable use Runnable and ApiRunnable
 
             if (isDebug()) Console.log("$tag START :: threadPooled = ${isThreadPooledExecution()}")
@@ -58,13 +60,18 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                 if (isDebug()) Console.log("$tag PRE-EXECUTING")
 
-                logCapacity()
+                if (checkCapacity()) {
 
-                if (isDebug()) Console.log("$tag EXECUTING")
+                    if (isDebug()) Console.log("$tag EXECUTING")
 
-                Exec.execute(what, executor)
+                    Exec.execute(what, executor)
 
-                if (isDebug()) Console.log("$tag SENT TO EXECUTOR")
+                    if (isDebug()) Console.log("$tag SENT TO EXECUTOR")
+
+                } else {
+
+                    throw RejectedExecutionException("No capacity to execute action")
+                }
 
             } else {
 
@@ -94,20 +101,27 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         }
 
         @OptIn(DelicateCoroutinesApi::class)
+        @Throws(RejectedExecutionException::class)
         override fun <T> execute(callable: Callable<T>): T? {
 
             if (threadPooled.get()) {
 
-                logCapacity()
+                if (checkCapacity()) {
 
-                try {
+                    try {
 
-                    return Exec.execute(callable, executor)?.get()
+                        return Exec.execute(callable, executor)?.get()
 
-                } catch (e: Throwable) {
+                    } catch (e: Throwable) {
 
-                    recordException(e)
+                        recordException(e)
+                    }
+
+                } else {
+
+                    throw RejectedExecutionException("No capacity to execute action")
                 }
+
 
             } else {
 
@@ -135,13 +149,19 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         }
 
         @OptIn(DelicateCoroutinesApi::class)
+        @Throws(RejectedExecutionException::class)
         override fun execute(action: Runnable, delayInMillis: Long) {
 
             if (threadPooled.get()) {
 
-                logCapacity()
+                if (checkCapacity()) {
 
-                Exec.execute(action, delayInMillis, executor)
+                    Exec.execute(action, delayInMillis, executor)
+
+                } else {
+
+                    throw RejectedExecutionException("No capacity to execute action")
+                }
 
             } else {
 
@@ -154,26 +174,26 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
             }
         }
 
-        private fun logCapacity() {
-
-            if (!debug.get()) {
-
-                return
-            }
+        private fun checkCapacity(): Boolean {
 
             val maximumPoolSize = executor.maximumPoolSize
             val available = maximumPoolSize - executor.activeCount
 
-            val msg = "${CPUs.tag} Available = $available, Total = $maximumPoolSize"
+            if (!debug.get()) {
 
-            if (available > 0) {
+                val msg = "${CPUs.tag} Available = $available, Total = $maximumPoolSize"
 
-                Console.log(msg)
+                if (available > 1) {
 
-            } else {
+                    Console.log(msg)
 
-                Console.error(msg)
+                } else {
+
+                    Console.error(msg)
+                }
             }
+
+            return available > 1
         }
 
         override fun setDebug(debug: Boolean) {

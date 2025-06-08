@@ -1047,6 +1047,24 @@ fun <T> doExec(
 
         future?.cancel(true)
 
+    } catch (e: RejectedExecutionException) {
+
+        Console.error(e)
+
+        future?.cancel(true)
+
+    } catch (e: IllegalStateException) {
+
+        Console.error(e)
+
+        future?.cancel(true)
+
+    } catch (e: IllegalArgumentException) {
+
+        Console.error(e)
+
+        future?.cancel(true)
+
     } catch (e: Throwable) {
 
         recordException(e)
