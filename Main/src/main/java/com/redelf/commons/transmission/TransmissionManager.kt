@@ -28,6 +28,7 @@ import com.redelf.commons.net.connectivity.DefaultConnectivityHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.stateful.State
+import com.redelf.commons.versioning.Versionable
 import java.security.GeneralSecurityException
 import java.util.LinkedList
 import java.util.concurrent.RejectedExecutionException
@@ -38,7 +39,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
     Add<D>,
     Management,
     TransmissionManagement,
-    Contextual<BaseApplication> where T : Empty, T : Clearing,
+    Contextual<BaseApplication> where T : Empty, T : Clearing, T : Versionable,
                                       T : Size, T : Add<D>, T : Iterable<D>,
                                       T : Contain<D>, T : Removal<D> {
 

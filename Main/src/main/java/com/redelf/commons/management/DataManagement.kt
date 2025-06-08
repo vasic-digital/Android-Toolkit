@@ -22,6 +22,7 @@ import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.session.Session
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
+import com.redelf.commons.versioning.Versionable
 import java.util.UUID
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -35,7 +36,7 @@ abstract class DataManagement<T> :
     Abort,
     Enabling,
     Contextual<BaseApplication>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>>
+    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
 
 {
 
@@ -329,56 +330,54 @@ abstract class DataManagement<T> :
 
         onDataPushed(success = true)
 
-        // TODO: Refactoring - GBXSM-1338
+        if (!isEnabled()) {
 
-//        if (!isEnabled()) {
-//
-//            return
-//        }
-//
-//        if (isLocked()) {
-//
-//            Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
-//
-//            onDataPushed(success = false)
-//
-//            return
-//        }
-//
-//        try {
-//
-//            exec(
-//
-//                onRejected = { e -> onDataPushed(err = e) }
-//
-//            ) {
-//
-//                overwriteData(data)
-//
-//                if (persist) {
-//
-//                    try {
-//
-//                        val store = takeStorage()
-//                        val pushed = store?.push(storageKey, data)
-//
-//                        onDataPushed(success = pushed)
-//
-//                    } catch (e: RejectedExecutionException) {
-//
-//                        onDataPushed(err = e)
-//                    }
-//
-//                } else {
-//
-//                    onDataPushed(success = true)
-//                }
-//            }
-//
-//        } catch (e: RejectedExecutionException) {
-//
-//            onDataPushed(err = e)
-//        }
+            return
+        }
+
+        if (isLocked()) {
+
+            Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
+
+            onDataPushed(success = false)
+
+            return
+        }
+
+        try {
+
+            exec(
+
+                onRejected = { e -> onDataPushed(err = e) }
+
+            ) {
+
+                overwriteData(data)
+
+                if (persist) {
+
+                    try {
+
+                        val store = takeStorage()
+                        val pushed = store?.push(storageKey, data)
+
+                        onDataPushed(success = pushed)
+
+                    } catch (e: RejectedExecutionException) {
+
+                        onDataPushed(err = e)
+                    }
+
+                } else {
+
+                    onDataPushed(success = true)
+                }
+            }
+
+        } catch (e: RejectedExecutionException) {
+
+            onDataPushed(err = e)
+        }
     }
 
     protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
@@ -508,7 +507,7 @@ abstract class DataManagement<T> :
         private val parent: DataManagement<T>,
         private val operation: TransactionOperation? = null
 
-    ) : Transaction {
+    ) : Transaction where T : Versionable {
 
         companion object {
 

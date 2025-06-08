@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
+import com.google.gson.Strictness
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.retrofit.gson.SerializationBenchmarkLoggingInterceptor
 import com.redelf.commons.net.retrofit.interceptor.JsonValidityInterceptor
@@ -108,7 +109,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             GsonBuilder()
                 .disableHtmlEscaping()
                 .serializeNulls()
-                .setLenient() // FIXME: This is deprecated
+                .setStrictness(Strictness.LENIENT)
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .create()
 

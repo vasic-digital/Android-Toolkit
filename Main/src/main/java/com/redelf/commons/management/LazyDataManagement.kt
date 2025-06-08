@@ -13,9 +13,17 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.Connectivity
 import com.redelf.commons.registration.Registration
+import com.redelf.commons.versioning.Versionable
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class LazyDataManagement<T> : DataManagement<T>(), Registration<Context> {
+abstract class LazyDataManagement<T> :
+
+    DataManagement<T>(),
+    Registration<Context>
+
+        where T : Versionable
+
+{
 
     protected open val lazySaving = false
     protected open val savingOnTermination = false

@@ -1,30 +1,19 @@
-package com.redelf.commons.settings
+package com.redelf.commons.messaging.firebase
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import com.google.gson.annotations.SerializedName
 import com.redelf.commons.versioning.Versionable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
-data class Settings(
-
-    @JsonProperty("flags")
-    @SerializedName("flags")
-    var flags: ConcurrentHashMap<String, Boolean>? = ConcurrentHashMap<String, Boolean>(),
-
-    @JsonProperty("values")
-    @SerializedName("values")
-    var values: ConcurrentHashMap<String, String>? = ConcurrentHashMap<String, String>(),
-
-    @JsonProperty("numbers")
-    @SerializedName("numbers")
-    var numbers: ConcurrentHashMap<String, Long>? = ConcurrentHashMap<String, Long>(),
+data class FirebaseConfiguration(
 
     @SerializedName("dataVersion")
     @JsonProperty("dataVersion")
     private val dataVersion: AtomicLong = AtomicLong()
 
-) : Versionable {
+) : ConcurrentHashMap<String, FirebaseRemoteConfigValue>(), Versionable {
 
     override fun getVersion(): Long {
 

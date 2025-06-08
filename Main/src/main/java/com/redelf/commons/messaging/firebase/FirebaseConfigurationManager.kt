@@ -20,7 +20,7 @@ object FirebaseConfigurationManager :
 
     Loadable,
     ResourceDefaults,
-    ContextualManager<ConcurrentHashMap<String, FirebaseRemoteConfigValue>>() {
+    ContextualManager<FirebaseConfiguration>() {
 
     override val persist = false
     override val storageKey = "remote_configuration"
@@ -81,7 +81,7 @@ object FirebaseConfigurationManager :
 
                     try {
 
-                        val newMap = ConcurrentHashMap<String, FirebaseRemoteConfigValue>()
+                        val newMap = FirebaseConfiguration()
                         newMap.putAll(all)
                         pushData(newMap)
 
