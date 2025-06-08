@@ -133,25 +133,13 @@ class DataDelegate private constructor(private val facade: Facade) :
                     }
 
                     Console.warning("$tag Already writing")
-                }
-
-                yieldWhile(
-
-                    timeoutInMilliseconds = 10 * 1000
-
-                ) {
-
-                    putActions.contains(key)
-                }
-
-                if (putActions.contains(key)) {
-
-                    Console.error("$tag ERROR: Still writing")
 
                     return false
-                }
 
-                putActions.put(key, value as Any)
+                } else {
+
+                    putActions.put(key, value as Any)
+                }
 
                 if (value is Partitioning<*> && value.isPartitioningEnabled()) {
 
@@ -797,7 +785,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                             try {
 
-                                return partitioningLatch.await(60, TimeUnit.SECONDS) && success.get()
+                                return partitioningLatch.await(60, TimeUnit.SECONDS) || success.get()
 
                             } catch (e: InterruptedException) {
 
