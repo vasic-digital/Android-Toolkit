@@ -378,10 +378,16 @@ abstract class DataManagement<T> :
 
                                 lastDataVersion.set(version)
 
+                                /*
+                                    TODO: THis has to be left to end user, not manager
+                                */
+                                data.increaseVersion()
+
                                 Console.log(
 
                                     "${getLogTag()} Data pushed :: " +
-                                            "Version = ${lastDataVersion.get()}"
+                                            "Version = ${lastDataVersion.get()}, " +
+                                            "New version = ${data.getVersion()}"
                                 )
                             }
 
