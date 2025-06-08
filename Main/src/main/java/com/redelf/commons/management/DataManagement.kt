@@ -85,9 +85,6 @@ abstract class DataManagement<T> :
 
     protected abstract fun getLogTag(): String
 
-    /*
-        TODO: Cluster data object into smaller chunks so serialization and deserialization is improved
-    */
     protected open fun createDataObject(): T? = null
 
     open fun canLog() = DEBUG.get()
@@ -330,54 +327,58 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     protected fun doPushData(data: T) {
 
-        if (!isEnabled()) {
+        onDataPushed(success = true)
 
-            return
-        }
+        // TODO: Refactoring - GBXSM-1338
 
-        if (isLocked()) {
-
-            Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
-
-            onDataPushed(success = false)
-
-            return
-        }
-
-        try {
-
-            exec(
-
-                onRejected = { e -> onDataPushed(err = e) }
-
-            ) {
-
-                overwriteData(data)
-
-                if (persist) {
-
-                    try {
-
-                        val store = takeStorage()
-                        val pushed = store?.push(storageKey, data)
-
-                        onDataPushed(success = pushed)
-
-                    } catch (e: RejectedExecutionException) {
-
-                        onDataPushed(err = e)
-                    }
-
-                } else {
-
-                    onDataPushed(success = true)
-                }
-            }
-
-        } catch (e: RejectedExecutionException) {
-
-            onDataPushed(err = e)
-        }
+//        if (!isEnabled()) {
+//
+//            return
+//        }
+//
+//        if (isLocked()) {
+//
+//            Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
+//
+//            onDataPushed(success = false)
+//
+//            return
+//        }
+//
+//        try {
+//
+//            exec(
+//
+//                onRejected = { e -> onDataPushed(err = e) }
+//
+//            ) {
+//
+//                overwriteData(data)
+//
+//                if (persist) {
+//
+//                    try {
+//
+//                        val store = takeStorage()
+//                        val pushed = store?.push(storageKey, data)
+//
+//                        onDataPushed(success = pushed)
+//
+//                    } catch (e: RejectedExecutionException) {
+//
+//                        onDataPushed(err = e)
+//                    }
+//
+//                } else {
+//
+//                    onDataPushed(success = true)
+//                }
+//            }
+//
+//        } catch (e: RejectedExecutionException) {
+//
+//            onDataPushed(err = e)
+//        }
     }
 
     protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
