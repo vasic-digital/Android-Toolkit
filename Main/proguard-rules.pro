@@ -185,3 +185,22 @@
 -keep class net.zetetic.** { *; }
 
 -keep class com.stericson.** { *; }
+
+# Room database
+-keep class * extends androidx.room.RoomDatabase
+-keep class * extends androidx.room.Entity { *; }
+
+# Paging library
+-keep class androidx.paging.** { *; }
+
+# Coroutines
+-keepnames class kotlinx.coroutines.** { *; }
+
+# ViewModel and LiveData
+-keep class * extends androidx.lifecycle.ViewModel { *; }
+-keep class * extends androidx.lifecycle.LiveData { *; }
+
+# Keep parcelable classes (if you add them later)
+-keep class * implements android.os.Parcelable {
+  public static final android.os.Parcelable$Creator *;
+}

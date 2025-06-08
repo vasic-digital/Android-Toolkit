@@ -8,3 +8,4 @@
 -keep class net.zetetic.** { *; }
 
 -keep class com.stericson.** { *; }
+
