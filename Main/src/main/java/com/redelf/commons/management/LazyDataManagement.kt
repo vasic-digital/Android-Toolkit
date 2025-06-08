@@ -345,10 +345,9 @@ abstract class LazyDataManagement<T> :
                 empty = data.isEmpty()
             }
 
-            overwriteData(data)
-
             data?.let {
 
+                overwriteData(data)
                 doPushData(it)
             }
 

@@ -328,8 +328,6 @@ abstract class DataManagement<T> :
     @Throws(IllegalStateException::class)
     protected fun doPushData(data: T) {
 
-        onDataPushed(success = true)
-
         if (!isEnabled()) {
 
             return
@@ -415,7 +413,10 @@ abstract class DataManagement<T> :
 
                 if (instantiateDataObject) {
 
-                    overwriteData(createDataObject())
+                    createDataObject()?.let {
+
+                        overwriteData(it)
+                    }
 
                     data?.let {
 
@@ -486,17 +487,33 @@ abstract class DataManagement<T> :
             return
         }
 
-        overwriteData()
+        Console.log("${getLogTag()} Data :: Erase :: START")
+
+        this.data = null
+
+        Console.log("${getLogTag()} Data :: Erase :: END")
     }
 
-    protected fun overwriteData(data: T? = null) {
+    protected fun overwriteData(data: T) {
 
         if (!isEnabled()) {
 
             return
         }
 
-        this.data = data
+        if (data.getVersion() >= (this.data?.getVersion() ?: 0)) {
+
+            Console.log("${getLogTag()} Data :: Overwrite :: " +
+                    "From version = ${this.data?.getVersion() ?: 0}, " +
+                    "To version = ${data.getVersion()}"
+            )
+
+            this.data = data
+
+        } else {
+
+            Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED")
+        }
     }
 
     private fun initCallbacksTag() = "${getLogTag()} Data management initialization"
