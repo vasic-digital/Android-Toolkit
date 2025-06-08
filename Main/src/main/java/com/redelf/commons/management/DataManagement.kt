@@ -36,9 +36,7 @@ abstract class DataManagement<T> :
     Abort,
     Enabling,
     Contextual<BaseApplication>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
-
-{
+    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
 
     companion object {
 
@@ -359,7 +357,12 @@ abstract class DataManagement<T> :
                         val store = takeStorage()
                         val pushed = store?.push(storageKey, data)
 
-                        onDataPushed(success = pushed)
+                        if (store == null) {
+
+                            Console.error("${getLogTag()} Push data :: No store available")
+                        }
+
+                        onDataPushed(success = pushed == true)
 
                     } catch (e: RejectedExecutionException) {
 
@@ -503,9 +506,10 @@ abstract class DataManagement<T> :
 
         if (data.getVersion() >= (this.data?.getVersion() ?: 0)) {
 
-            Console.log("${getLogTag()} Data :: Overwrite :: " +
-                    "From version = ${this.data?.getVersion() ?: 0}, " +
-                    "To version = ${data.getVersion()}"
+            Console.log(
+                "${getLogTag()} Data :: Overwrite :: " +
+                        "From version = ${this.data?.getVersion() ?: 0}, " +
+                        "To version = ${data.getVersion()}"
             )
 
             this.data = data
@@ -567,7 +571,7 @@ abstract class DataManagement<T> :
 
             operation?.let {
 
-                val result =  parent.session.execute(operation)
+                val result = parent.session.execute(operation)
 
                 if (result) {
 
