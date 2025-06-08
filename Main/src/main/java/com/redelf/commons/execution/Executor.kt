@@ -32,11 +32,11 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
         private val capacity = if (cores * 3 <= 10) {
 
-            100 * 100
+            100
 
         } else {
 
-            cores * 3 * 10 * 100
+            cores * 3 * 10
         }
 
         private val executor = instantiateExecutor()
