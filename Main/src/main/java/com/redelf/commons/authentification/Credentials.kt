@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.data.Empty
+import com.redelf.commons.versioning.DataVersion
+import com.redelf.commons.versioning.Versionable
 
 data class Credentials @JsonCreator constructor(
 
@@ -15,9 +17,9 @@ data class Credentials @JsonCreator constructor(
 
     @JsonProperty("password")
     @SerializedName("password")
-    var password: String? = ""
+    var password: String? = "",
 
-) : Empty {
+) : Empty, DataVersion() {
 
     constructor() : this("", "")
 

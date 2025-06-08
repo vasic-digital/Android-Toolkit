@@ -23,7 +23,7 @@ abstract class SingleInstance<T> :
     @JsonIgnore
     @JsonProperty("instance")
     @SerializedName("instance")
-    private var instance: T? = null
+    protected var instance: T? = null
 
     @Throws(InstantiationException::class)
     override fun obtain(): T {
