@@ -11,7 +11,6 @@ import com.redelf.commons.net.connectivity.Reconnect
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.Obtainer
-import kotlin.jvm.Throws
 
 class FCMConnectionAvailabilityService private constructor(origin: String) :
 

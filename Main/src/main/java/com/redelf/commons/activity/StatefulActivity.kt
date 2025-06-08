@@ -1,6 +1,5 @@
 package com.redelf.commons.activity
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
