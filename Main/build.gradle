@@ -199,6 +199,7 @@ android {
 
 dependencies {
 
+    final String roomVersion = "2.7.1"
     final String okioVersion = "3.9.0"
     final String okHttpVersion = "4.12.0"
     final String jacksonVersion = "2.12.5"
@@ -302,7 +303,6 @@ dependencies {
     api "com.google.android.material:material:1.11.0"
     api "androidx.navigation:navigation-ui-ktx:2.9.0"
     api "androidx.navigation:navigation-fragment-ktx:2.9.0"
-    api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     api "com.google.net.cronet:cronet-okhttp:0.1.0"
     api "com.google.android.gms:play-services-cronet:18.1.0"
@@ -315,6 +315,16 @@ dependencies {
     api "androidx.sqlite:sqlite-ktx:2.5.1"
 
     implementation "net.zetetic:sqlcipher-android:4.9.0@aar"
+
+    api "androidx.room:room-runtime:$roomVersion"
+    api "androidx.room:room-ktx:$roomVersion"
+
+    ksp "androidx.room:room-compiler:$roomVersion"
+
+    api "androidx.room:room-paging:$roomVersion"
+    api "androidx.paging:paging-runtime-ktx:3.3.6"
+
+    api "androidx.recyclerview:recyclerview:1.4.0"
 
     // TODO: Refactor / move:
     //    api platform('androidx.compose:compose-bom:2025.01.01')
@@ -354,7 +364,6 @@ dependencies {
 
     androidTestApi 'androidx.test:runner:1.6.2'
     androidTestApi 'androidx.test.espresso:espresso-core:3.6.1'
-
 }
 
 task downloadProxies(type: Exec) {
