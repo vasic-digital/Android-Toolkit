@@ -377,6 +377,12 @@ abstract class DataManagement<T> :
                             if (success) {
 
                                 lastDataVersion.set(version)
+
+                                Console.log(
+
+                                    "${getLogTag()} Data pushed :: " +
+                                            "Version = ${lastDataVersion.get()}"
+                                )
                             }
 
                         } else {
