@@ -445,27 +445,20 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             if (DEBUG.get()) Console.log(
 
-                                                                "$oTag WRITTEN: Partition no. $partition, " +
-                                                                        "Row no. $row, " +
-                                                                        "Qualified name: $fqName, " +
-                                                                        "Pair data info: $rowValue"
+                                                                "$oTag WRITTEN: Partition " +
+                                                                        "no. $partition"
                                                             )
 
                                                             return true
 
                                                         } else {
 
-                                                            val msg = "Partition no. $i failure write :: " +
-                                                                    "Row no. = $row, " +
-                                                                    "Qualified name = $fqName, " +
-                                                                    "Pair data info = $rowValue, " +
-                                                                    "Saved value = $savedValue, " +
-                                                                    "Saved Fq. name = $savedFqName, " +
-                                                                    "Log no. = 2"
+                                                            val msg =
+                                                                "Partition no. $i failure write " +
+                                                                        ":: Log no. = 2"
 
                                                             val e = IOException(msg)
 
-                                                            Console.error("$oTag ERROR :: ${e.message}")
                                                             recordException(e)
                                                         }
 

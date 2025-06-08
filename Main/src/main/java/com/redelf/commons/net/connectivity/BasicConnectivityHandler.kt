@@ -15,18 +15,34 @@ open class BasicConnectivityHandler(
 
     override fun isNetworkAvailable(ctx: Context): Boolean {
 
-        Console.log(
+        val tag = "Network connectivity :: Handler :: ${this.javaClass.simpleName} :: " +
+                "Hash code = '${hashCode()}' ::"
 
-            "Connectivity :: Handler :: ${this.javaClass.simpleName} ${hashCode()} " +
-                    ":: isNetworkAvailable"
-        )
+        Console.log("$tag START")
 
         if (blockConnection.get()) {
+
+            Console.warning("$tag Offline due to blocking state")
 
             return false
         }
 
-        return Connectivity().isNetworkAvailable(ctx)
+        Console.log("$tag Checking")
+
+        val online = Connectivity().isNetworkAvailable(ctx)
+
+        Console.log("$tag Checked")
+
+        if (online) {
+
+            Console.log("$tag Online")
+
+        } else {
+
+            Console.warning("$tag Offline")
+        }
+
+        return online
     }
 
     override fun toggleConnection() {

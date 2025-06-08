@@ -21,7 +21,6 @@ class DefaultConnectivityHandler private constructor(
 
         private var instance: DefaultConnectivityHandler? = null
 
-        
         override fun obtain(param: Context): DefaultConnectivityHandler {
 
             return obtain(

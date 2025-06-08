@@ -15,6 +15,7 @@ import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServi
 import com.redelf.commons.connectivity.indicator.view.dialog.ServicesStatesDialog
 import com.redelf.commons.connectivity.indicator.view.dialog.ServicesStatesDialogCallback
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationAsyncParametrized
 import com.redelf.commons.lifecycle.LifecycleCallback
@@ -284,64 +285,71 @@ class ConnectivityIndicator :
 
     private fun doApplyStates() {
 
-        val state = statefulServices?.getState()
-        val button = findViewById<ImageButton?>(R.id.button)
+        exec {
 
-        val tint = when (state) {
+            val state = statefulServices?.getState()
 
-            ConnectionState.Connected -> {
+            onUiThread {
 
-                ContextCompat.getColor(context, colorStateConnected)
-            }
+                val button = findViewById<ImageButton?>(R.id.button)
 
-            ConnectionState.Disconnected -> {
+                val tint = when (state) {
 
-                ContextCompat.getColor(context, colorStateDisconnected)
-            }
+                    ConnectionState.Connected -> {
 
-            ConnectionState.Warning -> {
+                        ContextCompat.getColor(context, colorStateConnected)
+                    }
 
-                ContextCompat.getColor(context, colorStateWarning)
-            }
+                    ConnectionState.Disconnected -> {
 
-            ConnectionState.Unavailable -> {
+                        ContextCompat.getColor(context, colorStateDisconnected)
+                    }
 
-                ContextCompat.getColor(context, colorStateUnavailable)
-            }
+                    ConnectionState.Warning -> {
 
-            else -> {
+                        ContextCompat.getColor(context, colorStateWarning)
+                    }
 
-                ContextCompat.getColor(context, colorStateDisconnected)
+                    ConnectionState.Unavailable -> {
+
+                        ContextCompat.getColor(context, colorStateUnavailable)
+                    }
+
+                    else -> {
+
+                        ContextCompat.getColor(context, colorStateDisconnected)
+                    }
+                }
+
+                Console.log("${tag()} Tint color: $tint")
+
+                val icon = when (state) {
+
+                    ConnectionState.Connected -> {
+
+                        iconConnectedState
+                    }
+
+                    ConnectionState.Disconnected -> {
+
+                        iconDisconnectedState
+                    }
+
+                    ConnectionState.Warning -> {
+
+                        iconConnectedState
+                    }
+
+                    else -> {
+
+                        iconDisconnectedState
+                    }
+                }
+
+                button.setImageResource(icon)
+                button?.setColorFilter(tint)
             }
         }
-
-        Console.log("${tag()} Tint color: $tint")
-
-        val icon = when (state) {
-
-            ConnectionState.Connected -> {
-
-                iconConnectedState
-            }
-
-            ConnectionState.Disconnected -> {
-
-                iconDisconnectedState
-            }
-
-            ConnectionState.Warning -> {
-
-                iconConnectedState
-            }
-
-            else -> {
-
-                iconDisconnectedState
-            }
-        }
-
-        button.setImageResource(icon)
-        button?.setColorFilter(tint)
     }
 
     private fun presentServiceState() {
