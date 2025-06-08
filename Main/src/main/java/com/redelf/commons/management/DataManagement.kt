@@ -379,7 +379,10 @@ abstract class DataManagement<T> :
                                 lastDataVersion.set(version)
 
                                 /*
-                                    TODO: THis has to be left to end user, not manager
+                                    TODO/FIXME:
+                                     - This has to be left to end user, not manager
+                                     - Add shutdown hook (cleanup service) so saving is
+                                     performed and no data loss happens
                                 */
                                 data.increaseVersion()
 
