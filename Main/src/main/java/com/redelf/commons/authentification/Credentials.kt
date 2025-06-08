@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.data.Empty
 
-class Credentials @JsonCreator constructor(
+data class Credentials @JsonCreator constructor(
 
     @JsonProperty("username")
     @SerializedName("username")
