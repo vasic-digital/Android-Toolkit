@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.redelf.commons.extensions.recordException
 import okhttp3.Interceptor
 import okhttp3.Response
-import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import java.nio.charset.Charset
 

@@ -3,13 +3,11 @@ package com.redelf.commons.messaging.firebase
 import android.annotation.SuppressLint
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
