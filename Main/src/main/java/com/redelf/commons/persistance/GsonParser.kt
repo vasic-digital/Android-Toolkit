@@ -287,7 +287,8 @@ class GsonParser private constructor(
 
                         Console.error(
 
-                            "$tag ERROR / 1 :: Content = $content, Error = '${e.message}'"
+                            "$tag ERROR / 1 :: Content length = ${content?.length}, " +
+                                    "Class = '${clazz.simpleName}', Error = '${e.message}'"
                         )
 
                         recordException(e)
