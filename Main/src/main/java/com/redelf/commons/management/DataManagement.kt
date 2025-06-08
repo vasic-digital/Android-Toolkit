@@ -26,6 +26,7 @@ import com.redelf.commons.versioning.Versionable
 import java.util.UUID
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 abstract class DataManagement<T> :
 
@@ -36,7 +37,9 @@ abstract class DataManagement<T> :
     Abort,
     Enabling,
     Contextual<BaseApplication>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
+    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
+
+{
 
     companion object {
 
@@ -80,6 +83,7 @@ abstract class DataManagement<T> :
     private var data: T? = null
     private val locked = AtomicBoolean()
     private var enabled = AtomicBoolean(true)
+    private val lastDataVersion = AtomicLong(-1)
     private var session = Session(name = javaClass.simpleName)
 
     protected abstract fun getLogTag(): String
@@ -354,15 +358,35 @@ abstract class DataManagement<T> :
 
                     try {
 
-                        val store = takeStorage()
-                        val pushed = store?.push(storageKey, data)
+                        val version = data.getVersion()
 
-                        if (store == null) {
+                        if (version > lastDataVersion.get()) {
 
-                            Console.error("${getLogTag()} Push data :: No store available")
+                            val store = takeStorage()
+                            val pushed = store?.push(storageKey, data)
+
+                            if (store == null) {
+
+                                Console.error("${getLogTag()} Push data :: No store available")
+                            }
+
+                            val success = pushed == true
+
+                            onDataPushed(success = success)
+
+                            if (success) {
+
+                                lastDataVersion.set(version)
+                            }
+
+                        } else {
+
+                            val msg = "Can't data push version $version, " +
+                                    "the last pushed data version is ${lastDataVersion.get()}"
+
+                            val e = java.lang.IllegalArgumentException(msg)
+                            onDataPushed(err = e)
                         }
-
-                        onDataPushed(success = pushed == true)
 
                     } catch (e: RejectedExecutionException) {
 
