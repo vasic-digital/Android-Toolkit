@@ -387,7 +387,7 @@ abstract class DataManagement<T> :
 
                         } else {
 
-                            val msg = "Can't data push version $version, " +
+                            val msg = "Can't push data version $version, " +
                                     "the last pushed data version is ${lastDataVersion.get()}"
 
                             val e = java.lang.IllegalArgumentException(msg)
@@ -419,7 +419,12 @@ abstract class DataManagement<T> :
 
         } else {
 
-            if (DEBUG.get()) Console.error("${getLogTag()} Data push failed", err)
+            if (DEBUG.get()) {
+
+                val msg = err?.message ?: "Unknown"
+
+                Console.error("${getLogTag()} Data push failed, Error = '$msg'")
+            }
         }
     }
 
