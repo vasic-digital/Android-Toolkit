@@ -4,7 +4,6 @@ import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import java.io.IOException
 
 class RemoteHttpContentFetcher(

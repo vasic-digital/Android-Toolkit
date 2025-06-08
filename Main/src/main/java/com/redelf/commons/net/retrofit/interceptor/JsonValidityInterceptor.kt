@@ -1,9 +1,7 @@
 package com.redelf.commons.net.retrofit.interceptor
 
 import com.google.gson.Gson
-import com.google.gson.stream.MalformedJsonException
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Console
 import okhttp3.Interceptor
 import okhttp3.Response
 import okhttp3.ResponseBody

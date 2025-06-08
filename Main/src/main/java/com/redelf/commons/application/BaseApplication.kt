@@ -41,7 +41,6 @@ import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.extensions.detectAllExpect
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty

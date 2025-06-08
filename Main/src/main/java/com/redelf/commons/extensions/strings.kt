@@ -15,10 +15,8 @@ import org.apache.commons.compress.compressors.lz4.BlockLZ4CompressorOutputStrea
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.lang.StringBuilder
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
-
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec

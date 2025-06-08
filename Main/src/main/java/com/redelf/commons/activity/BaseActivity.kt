@@ -4,7 +4,6 @@ package com.redelf.commons.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -56,7 +55,6 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
-import androidx.core.net.toUri
 
 abstract class BaseActivity :
 

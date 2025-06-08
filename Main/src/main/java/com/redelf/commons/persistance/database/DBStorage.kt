@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.provider.BaseColumns
+import androidx.core.text.isDigitsOnly
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
@@ -13,21 +14,20 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
-import com.redelf.commons.persistance.encryption.NoEncryption
-import com.redelf.commons.persistance.encryption.ReverseEncryption
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.base.Storage
+import com.redelf.commons.persistance.encryption.NoEncryption
+import com.redelf.commons.persistance.encryption.ReverseEncryption
 import net.zetetic.database.sqlcipher.SQLiteDatabase
 import net.zetetic.database.sqlcipher.SQLiteOpenHelper
 import java.sql.SQLException
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
-import androidx.core.text.isDigitsOnly
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /*
     TODO: Make sure that this is not static object

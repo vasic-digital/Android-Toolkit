@@ -2,8 +2,8 @@ package com.redelf.commons.test
 
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Console
-import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.persistance.EncryptedPersistence
+import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.security.encryption.EncryptionListener
 import org.junit.Assert
 import org.junit.Before

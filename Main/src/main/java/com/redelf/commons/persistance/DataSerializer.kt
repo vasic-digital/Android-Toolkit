@@ -8,7 +8,6 @@ import com.redelf.commons.logging.Console.error
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Serializer
-import java.lang.Exception
 
 internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 

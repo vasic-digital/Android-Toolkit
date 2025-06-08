@@ -5,7 +5,6 @@ import com.redelf.commons.connectivity.indicator.implementation.InternetConnecti
 import com.redelf.commons.creation.BuilderParametrized
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.registration.Registration
-import java.lang.IllegalArgumentException
 import java.util.concurrent.ConcurrentHashMap
 
 class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) constructor(

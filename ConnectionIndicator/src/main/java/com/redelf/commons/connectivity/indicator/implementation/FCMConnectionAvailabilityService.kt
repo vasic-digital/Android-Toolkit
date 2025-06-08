@@ -9,9 +9,8 @@ import com.redelf.commons.messaging.firebase.FcmConnectivityHandler
 import com.redelf.commons.messaging.firebase.FcmService
 import com.redelf.commons.net.connectivity.Reconnect
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
-import com.redelf.commons.obtain.Obtainer
 import com.redelf.commons.obtain.Obtain
-import kotlin.jvm.Throws
+import com.redelf.commons.obtain.Obtainer
 
 class FCMConnectionAvailabilityService private constructor(origin: String) :
 
