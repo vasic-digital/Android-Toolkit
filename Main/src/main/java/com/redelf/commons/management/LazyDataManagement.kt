@@ -51,7 +51,7 @@ abstract class LazyDataManagement<T> :
 
                 if (it.action == OnClearFromRecentService.ACTION) {
 
-                    onBackground("Termination received")
+                    onBackground("Termination received", sync = false)
                 }
             }
         }
@@ -85,7 +85,7 @@ abstract class LazyDataManagement<T> :
 
                                 if (DEBUG.get()) Console.log("$tag OK")
 
-                                onBackground(it.action ?: "")
+                                onBackground(it.action ?: "", sync = false)
 
                             } else {
 
@@ -98,7 +98,7 @@ abstract class LazyDataManagement<T> :
 
                         exec {
 
-                            onBackground(it.action ?: "")
+                            onBackground(it.action ?: "", sync = false)
                         }
                     }
                 }
@@ -121,7 +121,7 @@ abstract class LazyDataManagement<T> :
 
                 if (!conn.isNetworkAvailable(it)) {
 
-                    onBackground("Offline")
+                    onBackground("Offline", sync = false)
                 }
             }
         }
@@ -284,20 +284,20 @@ abstract class LazyDataManagement<T> :
         if (DEBUG.get()) Console.log("Application is in foreground")
     }
 
-    protected fun forceSave() {
+    protected fun forceSave(sync: Boolean) {
 
         if (!isEnabled()) {
 
             return
         }
 
-        onBackground("forceSave")
+        onBackground("forceSave", sync)
     }
 
     /*
     * FIXME: The method is fired even we are surfing through the screens
     */
-    private fun onBackground(from: String) {
+    private fun onBackground(from: String, sync: Boolean) {
 
         if (!isEnabled()) {
 
@@ -348,7 +348,8 @@ abstract class LazyDataManagement<T> :
             data?.let {
 
                 overwriteData(data)
-                doPushData(it, sync = false)
+
+                doPushData(it, sync = sync)
             }
 
             empty?.let {
