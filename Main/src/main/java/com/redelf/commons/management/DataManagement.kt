@@ -360,7 +360,10 @@ abstract class DataManagement<T> :
 
                         val version = data.getVersion()
 
-                        if (version > lastDataVersion.get()) {
+                        /*
+                            FIXME: Polish this condition.
+                        */
+                        if (version <= 0 || version > lastDataVersion.get()) {
 
                             val store = takeStorage()
                             val pushed = store?.push(storageKey, data)
