@@ -315,7 +315,7 @@ abstract class DataManagement<T> :
     }
 
     @Throws(IllegalStateException::class)
-    open fun pushData(data: T) {
+    open fun pushData(data: T, sync: Boolean = false) {
 
         if (!isEnabled()) {
 
@@ -324,11 +324,11 @@ abstract class DataManagement<T> :
 
         if (DEBUG.get()) Console.log("${getLogTag()} Push data :: START")
 
-        doPushData(data)
+        doPushData(data, sync)
     }
 
     @Throws(IllegalStateException::class)
-    protected fun doPushData(data: T) {
+    protected fun doPushData(data: T, sync: Boolean) {
 
         if (!isEnabled()) {
 
@@ -346,11 +346,7 @@ abstract class DataManagement<T> :
 
         try {
 
-            exec(
-
-                onRejected = { e -> onDataPushed(err = e) }
-
-            ) {
+            val action = Runnable {
 
                 overwriteData(data)
 
@@ -417,6 +413,22 @@ abstract class DataManagement<T> :
                 }
             }
 
+            if (sync) {
+
+                action.run()
+
+            } else {
+
+                exec(
+
+                    onRejected = { e -> onDataPushed(err = e) }
+
+                ) {
+
+                    action.run()
+                }
+            }
+
         } catch (e: RejectedExecutionException) {
 
             onDataPushed(err = e)
@@ -470,7 +482,7 @@ abstract class DataManagement<T> :
 
                     data?.let {
 
-                        doPushData(it)
+                        doPushData(it, sync = false)
                     }
 
                 } else {

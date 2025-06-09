@@ -243,7 +243,7 @@ abstract class LazyDataManagement<T> :
     override fun isRegistered(subscriber: Context) = registered.get() && terminationRegistered.get()
 
     @Throws(IllegalStateException::class)
-    override fun pushData(data: T) {
+    override fun pushData(data: T, sync: Boolean) {
 
         if (!isEnabled()) {
 
@@ -256,7 +256,7 @@ abstract class LazyDataManagement<T> :
 
         } else {
 
-            super.pushData(data)
+            super.pushData(data, sync)
         }
     }
 
@@ -348,7 +348,7 @@ abstract class LazyDataManagement<T> :
             data?.let {
 
                 overwriteData(data)
-                doPushData(it)
+                doPushData(it, sync = false)
             }
 
             empty?.let {
