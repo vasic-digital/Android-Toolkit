@@ -178,12 +178,13 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
             val maximumPoolSize = executor.maximumPoolSize
             val available = maximumPoolSize - executor.activeCount
+            val isAvailable = available > 1
 
-            if (!debug.get()) {
+            if (debug.get()) {
 
                 val msg = "${CPUs.tag} Available = $available, Total = $maximumPoolSize"
 
-                if (available > 1) {
+                if (isAvailable) {
 
                     Console.log(msg)
 
@@ -193,7 +194,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
                 }
             }
 
-            return available > 1
+            return isAvailable
         }
 
         override fun setDebug(debug: Boolean) {
