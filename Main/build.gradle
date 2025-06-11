@@ -227,7 +227,6 @@ dependencies {
     api "com.squareup.retrofit2:converter-scalars:$retrofitHttpVersion"
     api "com.squareup.retrofit2:converter-gson:$retrofitHttpVersion"
     api "com.squareup.retrofit2:converter-jackson:$retrofitHttpVersion"
-    api "com.squareup.retrofit2:adapter-rxjava2:$retrofitHttpVersion"
 
     api "androidx.core:core-ktx:1.16.0"
     api "org.apache.commons:commons-compress:1.27.1"
