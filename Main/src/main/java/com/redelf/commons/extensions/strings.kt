@@ -352,35 +352,65 @@ fun String.color(
 
 fun StringBuilder.append(
 
-    key: String,
+    key: Int,
     value: Int,
     newLine: Boolean = true,
     separator: String = " ",
     defaultValue: String = "---"
 
-) {
+) : StringBuilder {
 
     val ctx = BaseApplication.takeContext()
 
-    this.append(key, ctx.getString(value), newLine, separator, defaultValue)
+    return this.append(ctx.getString(key), ctx.getString(value), newLine, separator, defaultValue)
 }
 
 fun StringBuilder.append(
 
-    key: String,
+    key: String?,
+    value: Int,
+    newLine: Boolean = true,
+    separator: String = " ",
+    defaultValue: String = "---"
+
+) : StringBuilder {
+
+    val ctx = BaseApplication.takeContext()
+
+    return this.append(key, ctx.getString(value), newLine, separator, defaultValue)
+}
+
+fun StringBuilder.append(
+
+    key: Int,
     value: String?,
     newLine: Boolean = true,
     separator: String = " ",
     defaultValue: String = "---"
 
-) {
+) : StringBuilder {
+
+    val ctx = BaseApplication.takeContext()
+
+    return this.append(ctx.getString(key), value, newLine, separator, defaultValue)
+}
+
+fun StringBuilder.append(
+
+    key: String?,
+    value: String?,
+    newLine: Boolean = true,
+    separator: String = " ",
+    defaultValue: String = "---"
+
+) : StringBuilder {
 
     if (newLine) {
 
         this.append("\n")
     }
 
-    this.append(key).append(separator).append(value ?: defaultValue)
+    return this.append(key ?: "").append(separator).append(value ?: defaultValue)
 }
 
 
