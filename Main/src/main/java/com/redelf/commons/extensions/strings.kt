@@ -355,21 +355,23 @@ fun StringBuilder.append(
     key: String,
     value: Int,
     newLine: Boolean = true,
-    separator: String = " "
+    separator: String = " ",
+    defaultValue: String = "---"
 
 ) {
 
     val ctx = BaseApplication.takeContext()
 
-    this.append(key, ctx.getString(value), newLine, separator)
+    this.append(key, ctx.getString(value), newLine, separator, defaultValue)
 }
 
 fun StringBuilder.append(
 
     key: String,
-    value: String,
+    value: String?,
     newLine: Boolean = true,
-    separator: String = " "
+    separator: String = " ",
+    defaultValue: String = "---"
 
 ) {
 
@@ -378,7 +380,7 @@ fun StringBuilder.append(
         this.append("\n")
     }
 
-    this.append(key).append(separator).append(value)
+    this.append(key).append(separator).append(value ?: defaultValue)
 }
 
 
