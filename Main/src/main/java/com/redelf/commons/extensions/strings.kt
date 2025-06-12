@@ -10,6 +10,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscation
+import org.apache.commons.io.StandardLineSeparator
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -347,6 +348,37 @@ fun String.color(
     }
 
     return ss
+}
+
+fun StringBuilder.append(
+
+    key: String,
+    value: Int,
+    newLine: Boolean = true,
+    separator: String = " "
+
+) {
+
+    val ctx = BaseApplication.takeContext()
+
+    this.append(key, ctx.getString(value), newLine, separator)
+}
+
+fun StringBuilder.append(
+
+    key: String,
+    value: String,
+    newLine: Boolean = true,
+    separator: String = " "
+
+) {
+
+    if (newLine) {
+
+        this.append("\n")
+    }
+
+    this.append(key).append(separator).append(value)
 }
 
 
