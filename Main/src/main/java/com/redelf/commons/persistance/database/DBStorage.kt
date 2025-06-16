@@ -12,6 +12,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.SharedPreferencesStorage
@@ -864,6 +865,12 @@ object DBStorage : Storage<String> {
             return ""
         }
 
+        if (isOnMainThread()) {
+
+            val e = IllegalArgumentException("Do put from the main thread")
+            Console.error(e)
+        }
+
         var result = ""
         val selectionArgs = arrayOf(key)
         val selection = "$columnKey = ?"
@@ -936,9 +943,15 @@ object DBStorage : Storage<String> {
 
         try {
 
+            val start = System.currentTimeMillis()
+
             if (!latch.await(10, TimeUnit.SECONDS)) {
 
-                val e = TimeoutException("Latch has timed out")
+                val e = TimeoutException(
+
+                    "Latch has timed out after ${System.currentTimeMillis() - start} millis"
+                )
+
                 recordException(e)
             }
 
