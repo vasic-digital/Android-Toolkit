@@ -717,7 +717,12 @@ abstract class BaseApplication :
 
         if (firebaseEnabled) {
 
-            FirebaseApp.initializeApp(applicationContext)
+            val app = FirebaseApp.initializeApp(applicationContext)
+
+            if (app == null) {
+
+                Console.error("No Firebase app initialized")
+            }
 
             if (firebaseAnalyticsEnabled) {
 
