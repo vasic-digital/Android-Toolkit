@@ -41,15 +41,18 @@ abstract class PinAccessActivity : AccessActivity(), Registration<CommonExecutio
         if (requestCode == activityRequestCode) {
 
             pinAuthenticated = resultCode == RESULT_OK
+
             if (pinAuthenticated) {
 
                 Console.log("PIN access success")
+
             } else {
 
                 Console.error("PIN access failed")
             }
             activityRequestCode = 0
             executionCallback.onExecution(pinAuthenticated, "onActivityResult")
+
         } else {
 
             super.onActivityResult(requestCode, resultCode, data)

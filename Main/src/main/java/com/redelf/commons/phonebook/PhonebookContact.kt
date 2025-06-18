@@ -13,11 +13,11 @@ data class PhonebookContact @JsonCreator constructor(
 
     @JsonProperty("email")
     @SerializedName("email")
-    var email: ArrayList<String>? = ArrayList(),
+    var email: MutableList<String>? = mutableListOf(),
 
     @JsonProperty("phone")
     @SerializedName("phone")
-    var phone: ArrayList<String>? = ArrayList(),
+    var phone: MutableList<String>? = mutableListOf(),
 
     @JsonProperty("avatar")
     @SerializedName("avatar")
