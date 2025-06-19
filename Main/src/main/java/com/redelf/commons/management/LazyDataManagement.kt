@@ -308,8 +308,6 @@ abstract class LazyDataManagement<T> :
 
         if (!lazySaving) {
 
-            if (DEBUG.get()) Console.warning("$tag SKIPPING")
-
             return
         }
 
