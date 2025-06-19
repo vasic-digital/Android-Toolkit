@@ -965,6 +965,25 @@ fun exec(what: Runnable) {
     }
 }
 
+@Throws(
+
+    IllegalStateException::class
+)
+fun ui(what: Runnable) {
+
+    Executor.UI.execute(what)
+}
+
+@Throws(
+
+    RejectedExecutionException::class,
+    NullPointerException::class
+)
+fun single(what: Runnable) {
+
+    Executor.SINGLE.execute(what)
+}
+
 fun exec(
 
     callable: Callable<Boolean>,
