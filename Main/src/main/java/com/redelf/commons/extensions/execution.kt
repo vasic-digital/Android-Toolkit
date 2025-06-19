@@ -15,7 +15,7 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
 
     if (DEBUG_EXEC_EXTENSION.get()) {
 
-        tag = "$label ::"
+        tag = "Exec :: $label ::"
         start = System.currentTimeMillis()
 
         Console.log("$tag START")
@@ -27,6 +27,17 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
 
         val time = System.currentTimeMillis() - start
 
-        Console.log("$tag END :: Duration = $time millis")
+        if (time >= 500) {
+
+            Console.error("$tag END :: Duration = $time millis")
+
+        } else if (time >= 200) {
+
+            Console.warning("$tag END :: Duration = $time millis")
+
+        } else {
+
+            Console.log("$tag END :: Duration = $time millis")
+        }
     }
 }
