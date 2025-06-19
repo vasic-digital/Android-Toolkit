@@ -304,12 +304,12 @@ abstract class LazyDataManagement<T> :
             return
         }
 
-        val tag = "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND ::"
-
         if (!lazySaving) {
 
             return
         }
+
+        val tag = "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND ::"
 
         if (isLazyReady()) {
 
