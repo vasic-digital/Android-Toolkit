@@ -765,6 +765,12 @@ object DBStorage : Storage<String> {
 
         if (DEBUG.get()) Console.log("$tag START")
 
+        if (isOnMainThread()) {
+
+            val e = IllegalArgumentException("Do put from the main thread")
+            Console.error(e)
+        }
+
         val result = AtomicBoolean()
         val latch = CountDownLatch(1)
 
@@ -867,7 +873,7 @@ object DBStorage : Storage<String> {
 
         if (isOnMainThread()) {
 
-            val e = IllegalArgumentException("Do put from the main thread")
+            val e = IllegalArgumentException("Do get from the main thread")
             Console.error(e)
         }
 
