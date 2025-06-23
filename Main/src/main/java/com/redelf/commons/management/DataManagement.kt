@@ -543,29 +543,23 @@ abstract class DataManagement<T> :
 
     override fun getWho(): String? = this::class.simpleName
 
-    @Throws(IllegalStateException::class)
-    protected fun getData(): T {
+    protected fun getData(): T? {
 
-        val data = obtain()
+        try {
 
-        data?.let {
+            val data = obtain()
 
-            return it
+            data?.let {
+
+                return it
+            }
+
+        } catch (e: Throwable) {
+
+            recordException(e)
         }
 
-        val who = getWho()
-        val baseMsg = "data is null"
-
-        val msg = if (isNotEmpty(who)) {
-
-            "$who obtained $baseMsg"
-
-        } else {
-
-            "Obtained $baseMsg"
-        }
-
-        throw IllegalStateException(msg)
+        return null
     }
 
     protected fun eraseData() {
