@@ -11,11 +11,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
+import android.util.DisplayMetrics
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -84,11 +86,14 @@ abstract class BaseActivity :
     protected open val detectPhoneCallReceived =
         BaseApplication.takeContext().detectPhoneCallReceived
 
+    protected open val disableSystemFontScaling = true
+    protected open val disableSystemDisplayScaling = true
+
     private var created = false
     private var unregistrar: Unregistrar? = null
+    private val requestWriteExternalStorage = 111
     private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
-    private val PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE = 111
     private var attachmentsDialog: AttachFileDialog? = null
     private lateinit var backPressedCallback: OnBackPressedCallback
 
@@ -113,7 +118,7 @@ abstract class BaseActivity :
 
                 this,
                 permissions,
-                PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE
+                requestWriteExternalStorage
             )
         }
 
@@ -222,7 +227,7 @@ abstract class BaseActivity :
                 return
             }
 
-            PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE -> {
+            requestWriteExternalStorage -> {
 
                 if (
 
@@ -259,6 +264,45 @@ abstract class BaseActivity :
 
             hideProgress(f)
         }
+    }
+
+    override fun getResources(): Resources {
+
+        val res = super.getResources()
+
+        if (disableSystemFontScaling || disableSystemDisplayScaling) {
+
+            val config = res.configuration
+
+            if (disableSystemFontScaling) {
+
+                if (config.fontScale != 1.0f) {
+
+                    Console.warning(
+
+                        "System font scale value is: ${config.fontScale}, overriding it..."
+                    )
+                }
+
+                config.fontScale = 1.0f // disable system font scaling
+            }
+
+            if (disableSystemDisplayScaling) {
+
+                val dm = res.displayMetrics
+
+                if (dm.densityDpi != DisplayMetrics.DENSITY_DEVICE_STABLE) {
+
+                    Console.warning("System density DPI is: ${dm.densityDpi}, overriding...")
+                }
+
+                config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
+            }
+
+            res.updateConfiguration(config, res.displayMetrics)
+        }
+
+        return res
     }
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
