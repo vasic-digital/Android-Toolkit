@@ -12,6 +12,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -85,6 +86,8 @@ abstract class BaseActivity :
 
     protected open val detectPhoneCallReceived =
         BaseApplication.takeContext().detectPhoneCallReceived
+
+    protected open val disableSystemFontScaling = true
 
     private var created = false
     private var unregistrar: Unregistrar? = null
@@ -258,6 +261,20 @@ abstract class BaseActivity :
 
             hideProgress(f)
         }
+    }
+
+    override fun getResources(): Resources {
+
+        val res = super.getResources()
+
+        if (disableSystemFontScaling) {
+
+            val config = res.configuration
+            config.fontScale = 1.0f // disable system font scaling
+            res.updateConfiguration(config, res.displayMetrics)
+        }
+
+        return res
     }
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
