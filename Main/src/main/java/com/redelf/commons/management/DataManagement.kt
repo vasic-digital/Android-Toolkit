@@ -545,11 +545,17 @@ abstract class DataManagement<T> :
 
     protected fun getData(): T? {
 
+        val tag = "${getLogTag()} Data :: Obtain ::"
+
         try {
+
+            if (DEBUG.get()) Console.log("$tag START")
 
             val data = obtain()
 
             data?.let {
+
+                if (DEBUG.get()) Console.log("$tag END: OK")
 
                 return it
             }
@@ -557,7 +563,11 @@ abstract class DataManagement<T> :
         } catch (e: Throwable) {
 
             recordException(e)
+
+            if (DEBUG.get()) Console.error("$tag END: FAILED", e)
         }
+
+        if (DEBUG.get()) Console.log("$tag END: NULL")
 
         return null
     }
