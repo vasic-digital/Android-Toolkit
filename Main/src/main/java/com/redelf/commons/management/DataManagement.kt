@@ -11,6 +11,7 @@ import com.redelf.commons.enable.EnablingCallback
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.interruption.Abort
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
@@ -312,6 +313,31 @@ abstract class DataManagement<T> :
         }
 
         return STORAGE
+    }
+
+    fun pushData(sync: Boolean = false): Boolean {
+
+        try {
+
+            val data = obtain()
+
+            if (data == null) {
+
+                Console.error("${getLogTag()} Push data :: Data is null")
+
+                return false
+            }
+
+            pushData(data, sync = sync)
+
+            return true
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return false
     }
 
     @Throws(IllegalStateException::class)
