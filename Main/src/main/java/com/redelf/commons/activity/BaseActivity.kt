@@ -4,7 +4,6 @@ package com.redelf.commons.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -57,7 +56,6 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
-import androidx.core.net.toUri
 
 abstract class BaseActivity :
 
@@ -91,9 +89,9 @@ abstract class BaseActivity :
 
     private var created = false
     private var unregistrar: Unregistrar? = null
+    private val requestWriteExternalStorage = 111
     private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
-    private val PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE = 111
     private var attachmentsDialog: AttachFileDialog? = null
     private lateinit var backPressedCallback: OnBackPressedCallback
 
@@ -118,7 +116,7 @@ abstract class BaseActivity :
 
                 this,
                 permissions,
-                PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE
+                requestWriteExternalStorage
             )
         }
 
@@ -224,7 +222,7 @@ abstract class BaseActivity :
                 return
             }
 
-            PRIVATE_REQUEST_WRITE_EXTERNAL_STORAGE -> {
+            requestWriteExternalStorage -> {
 
                 if (
 
@@ -270,6 +268,15 @@ abstract class BaseActivity :
         if (disableSystemFontScaling) {
 
             val config = res.configuration
+
+            if (config.fontScale != 1.0f) {
+
+                Console.warning(
+
+                    "System font scale value is: ${config.fontScale}, overriding it..."
+                )
+            }
+
             config.fontScale = 1.0f // disable system font scaling
             res.updateConfiguration(config, res.displayMetrics)
         }
