@@ -17,6 +17,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
+import android.util.DisplayMetrics
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -86,6 +87,7 @@ abstract class BaseActivity :
         BaseApplication.takeContext().detectPhoneCallReceived
 
     protected open val disableSystemFontScaling = true
+    protected open val disableSystemDisplayScaling = true
 
     private var created = false
     private var unregistrar: Unregistrar? = null
@@ -265,19 +267,35 @@ abstract class BaseActivity :
 
         val res = super.getResources()
 
-        if (disableSystemFontScaling) {
+        if (disableSystemFontScaling || disableSystemDisplayScaling) {
 
             val config = res.configuration
 
-            if (config.fontScale != 1.0f) {
+            if (disableSystemFontScaling) {
 
-                Console.warning(
+                if (config.fontScale != 1.0f) {
 
-                    "System font scale value is: ${config.fontScale}, overriding it..."
-                )
+                    Console.warning(
+
+                        "System font scale value is: ${config.fontScale}, overriding it..."
+                    )
+                }
+
+                config.fontScale = 1.0f // disable system font scaling
             }
 
-            config.fontScale = 1.0f // disable system font scaling
+            if (disableSystemDisplayScaling) {
+
+                val dm = res.displayMetrics
+
+                if (dm.densityDpi != DisplayMetrics.DENSITY_DEVICE_STABLE) {
+
+                    Console.warning("System density DPI is: ${dm.densityDpi}, overriding...")
+                }
+
+                config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
+            }
+
             res.updateConfiguration(config, res.displayMetrics)
         }
 
