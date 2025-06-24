@@ -11,6 +11,7 @@ import com.redelf.commons.enable.EnablingCallback
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.interruption.Abort
 import com.redelf.commons.lifecycle.exception.InitializingException
@@ -242,6 +243,16 @@ abstract class DataManagement<T> :
         if (canLog()) Console.log("$dataObjTag Has initial: ${data != null}")
 
         if (data == null && persist) {
+
+            if (isOnMainThread()) {
+
+                val e = IllegalStateException(
+
+                    "DataManagement should not obtain storage data on the main thread"
+                )
+
+                recordException(e)
+            }
 
             var empty: Boolean? = null
             val key = storageKey
