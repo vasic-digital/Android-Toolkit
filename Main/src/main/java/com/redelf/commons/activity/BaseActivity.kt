@@ -58,13 +58,21 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
 
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity() {
+    StatefulActivity()
+
+{
+
+    companion object {
+
+        val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(false)
+    }
 
     protected var googleSignInRequestCode = AtomicInteger()
 
@@ -287,7 +295,7 @@ abstract class BaseActivity :
 
         val tag = "Resource override ::"
 
-        Console.log("$tag START")
+        if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
 
         try {
 
@@ -296,29 +304,39 @@ abstract class BaseActivity :
 
             if (disableSystemFontScaling && config.fontScale != 1.0f) {
 
-                Console.log("$tag Current font scale: ${config.fontScale}")
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
                 config.fontScale = 1.0f
             }
 
             if (disableSystemDisplayScaling) {
 
-                Console.log("$tag Current config density dpi: ${config.densityDpi}")
-                Console.log("$tag Current metrics density dpi: ${metrics.densityDpi}")
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current config density dpi: ${config.densityDpi}")
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current metrics density dpi: ${metrics.densityDpi}")
 
-                config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
-                metrics.densityDpi = DisplayMetrics.DENSITY_XXHIGH
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+                    config.densityDpi = DisplayMetrics.DENSITY_450
+                    metrics.densityDpi = DisplayMetrics.DENSITY_450
+
+                } else {
+
+                    config.densityDpi = DisplayMetrics.DENSITY_440
+                    metrics.densityDpi = DisplayMetrics.DENSITY_440
+                }
             }
 
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 
-                Console.log("$tag Current weight adjustment: ${config.fontWeightAdjustment}")
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current weight adjustment: ${config.fontWeightAdjustment}")
 
                 config.fontWeightAdjustment = 0
             }
 
             res.updateConfiguration(config, metrics)
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END")
 
         } catch (e: Throwable) {
 

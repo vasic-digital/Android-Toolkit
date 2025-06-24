@@ -4,6 +4,10 @@ import com.redelf.commons.application.BaseApplication
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
+/*
+* TODO: Connect with dependency flags, such as: if (DEBUG_RESOURCES_OVERRIDES.get())
+*  so we do not have many, many if elses in our code but everything wrapped under the Console.
+*/
 object Console : LogParametrized {
 
     fun filesystemGranted(): Boolean {
