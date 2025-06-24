@@ -60,15 +60,15 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.pow
 import kotlin.math.round
+import kotlin.math.sqrt
 import kotlin.reflect.KClass
 
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity()
-
-{
+    StatefulActivity() {
 
     companion object {
 
@@ -96,8 +96,8 @@ abstract class BaseActivity :
     protected open val detectPhoneCallReceived =
         BaseApplication.takeContext().detectPhoneCallReceived
 
-    protected open val disableSystemFontScaling = true
-    protected open val disableSystemDisplayScaling = true
+    protected open val disableSystemFontScaling = false
+    protected open val disableSystemDisplayScaling = false
 
     private var created = false
     private var unregistrar: Unregistrar? = null
@@ -307,32 +307,7 @@ abstract class BaseActivity :
 
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
-                if (DisplayMetrics.DENSITY_DEVICE_STABLE > DisplayMetrics.DENSITY_450) {
-
-                    config.fontScale = 0.85f
-
-                } else {
-
-                    config.fontScale = 1.0f
-                }
-            }
-
-            if (disableSystemDisplayScaling) {
-
-                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current config density dpi: ${config.densityDpi}")
-                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current metrics density dpi: ${metrics.densityDpi}")
-
-                if (config.densityDpi > DisplayMetrics.DENSITY_450) {
-
-                    config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
-                }
-            }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-
-                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current weight adjustment: ${config.fontWeightAdjustment}")
-
-                config.fontWeightAdjustment = 0
+                config.fontScale = 0.75f
             }
 
             res.updateConfiguration(config, metrics)
