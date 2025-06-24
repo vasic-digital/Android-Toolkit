@@ -60,6 +60,7 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.round
 import kotlin.reflect.KClass
 
 abstract class BaseActivity :
@@ -302,11 +303,18 @@ abstract class BaseActivity :
             val config = res.configuration
             val metrics = res.displayMetrics
 
-            if (disableSystemFontScaling && config.fontScale != 1.0f) {
+            if (disableSystemFontScaling) {
 
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
-                config.fontScale = 1.0f
+                if (DisplayMetrics.DENSITY_DEVICE_STABLE > DisplayMetrics.DENSITY_450) {
+
+                    config.fontScale = 0.85f
+
+                } else {
+
+                    config.fontScale = 1.0f
+                }
             }
 
             if (disableSystemDisplayScaling) {
@@ -314,18 +322,8 @@ abstract class BaseActivity :
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current config density dpi: ${config.densityDpi}")
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current metrics density dpi: ${metrics.densityDpi}")
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-
-                    config.densityDpi = DisplayMetrics.DENSITY_450
-                    metrics.densityDpi = DisplayMetrics.DENSITY_450
-
-                } else {
-
-                    config.densityDpi = DisplayMetrics.DENSITY_440
-                    metrics.densityDpi = DisplayMetrics.DENSITY_440
-                }
+                config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
             }
-
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 
