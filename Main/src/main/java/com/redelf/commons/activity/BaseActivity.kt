@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
@@ -18,6 +19,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
 import android.util.DisplayMetrics
+import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -37,6 +39,7 @@ import com.redelf.commons.extensions.fitInsideSystemBoundaries
 import com.redelf.commons.extensions.initRegistrationWithGoogle
 import com.redelf.commons.extensions.isServiceRunning
 import com.redelf.commons.extensions.randomInteger
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.broadcast.Broadcast
 import com.redelf.commons.obtain.OnObtain
@@ -103,6 +106,13 @@ abstract class BaseActivity :
         BaseApplication.takeContext().initTerminationListener()
 
         super.onCreate(savedInstanceState)
+
+        WebView(this).apply {
+
+            settings.textZoom = 100
+            settings.loadWithOverviewMode = true
+            settings.useWideViewPort = true
+        }
 
         val recordLogs = BaseApplication.takeContext().canRecordApplicationLogs()
 
@@ -265,41 +275,56 @@ abstract class BaseActivity :
 
     override fun getResources(): Resources {
 
-        val res = super.getResources()
+        return if (disableSystemFontScaling || disableSystemDisplayScaling) {
 
-        if (disableSystemFontScaling || disableSystemDisplayScaling) {
+            applyResourceOverrides(super.getResources())
+
+        } else {
+
+            super.getResources()
+        }
+    }
+
+    private fun applyResourceOverrides(res: Resources): Resources {
+
+        try {
 
             val config = res.configuration
+            val metrics = res.displayMetrics
 
-            if (disableSystemFontScaling) {
+            if (disableSystemFontScaling && config.fontScale != 1.0f) {
 
-                if (config.fontScale != 1.0f) {
-
-                    Console.warning(
-
-                        "System font scale value is: ${config.fontScale}, overriding it..."
-                    )
-                }
-
-                config.fontScale = 1.0f // disable system font scaling
+                config.fontScale = 1.0f
             }
 
             if (disableSystemDisplayScaling) {
 
-                val dm = res.displayMetrics
-
-                if (dm.densityDpi != DisplayMetrics.DENSITY_DEVICE_STABLE) {
-
-                    Console.warning("System density DPI is: ${dm.densityDpi}, overriding...")
-                }
-
                 config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
+                metrics.densityDpi = DisplayMetrics.DENSITY_XXHIGH
             }
 
-            res.updateConfiguration(config, res.displayMetrics)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+                config.fontWeightAdjustment = 0
+            }
+
+            res.updateConfiguration(config, metrics)
+
+        } catch (e: Throwable) {
+
+            recordException(e)
         }
 
         return res
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(newBase)
+
+        if (disableSystemFontScaling || disableSystemDisplayScaling) {
+
+            applyOverrideConfiguration(Configuration())
+        }
     }
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
