@@ -322,7 +322,10 @@ abstract class BaseActivity :
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current config density dpi: ${config.densityDpi}")
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current metrics density dpi: ${metrics.densityDpi}")
 
-                config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
+                if (config.densityDpi > DisplayMetrics.DENSITY_450) {
+
+                    config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
+                }
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
