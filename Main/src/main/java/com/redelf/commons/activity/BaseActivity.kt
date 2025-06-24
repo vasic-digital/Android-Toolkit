@@ -285,7 +285,7 @@ abstract class BaseActivity :
 
     private fun applyResourceOverrides(res: Resources): Resources {
 
-        val tag = "Resource override :: "
+        val tag = "Resource override ::"
 
         Console.log("$tag START")
 
