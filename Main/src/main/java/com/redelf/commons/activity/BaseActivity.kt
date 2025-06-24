@@ -64,9 +64,7 @@ import kotlin.reflect.KClass
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity()
-
-{
+    StatefulActivity() {
 
     protected var googleSignInRequestCode = AtomicInteger()
 
@@ -287,6 +285,10 @@ abstract class BaseActivity :
 
     private fun applyResourceOverrides(res: Resources): Resources {
 
+        val tag = "Resource override :: "
+
+        Console.log("$tag START")
+
         try {
 
             val config = res.configuration
@@ -294,14 +296,21 @@ abstract class BaseActivity :
 
             if (disableSystemFontScaling && config.fontScale != 1.0f) {
 
+                Console.log("$tag Current font scale: ${config.fontScale}")
+
                 config.fontScale = 1.0f
             }
 
             if (disableSystemDisplayScaling) {
 
+                Console.log("$tag Current config density dpi: ${config.densityDpi}")
+                Console.log("$tag Current metrics density dpi: ${metrics.densityDpi}")
+
                 config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
                 metrics.densityDpi = DisplayMetrics.DENSITY_XXHIGH
             }
+
+            Console.log("$tag Current weight adjustment: ${config.fontWeightAdjustment}")
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 
