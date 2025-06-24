@@ -310,9 +310,10 @@ abstract class BaseActivity :
                 metrics.densityDpi = DisplayMetrics.DENSITY_XXHIGH
             }
 
-            Console.log("$tag Current weight adjustment: ${config.fontWeightAdjustment}")
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+                Console.log("$tag Current weight adjustment: ${config.fontWeightAdjustment}")
 
                 config.fontWeightAdjustment = 0
             }
