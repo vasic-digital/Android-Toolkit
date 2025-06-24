@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
@@ -18,6 +19,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
 import android.util.DisplayMetrics
+import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -37,6 +39,7 @@ import com.redelf.commons.extensions.fitInsideSystemBoundaries
 import com.redelf.commons.extensions.initRegistrationWithGoogle
 import com.redelf.commons.extensions.isServiceRunning
 import com.redelf.commons.extensions.randomInteger
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.broadcast.Broadcast
 import com.redelf.commons.obtain.OnObtain
@@ -55,15 +58,22 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.pow
+import kotlin.math.round
+import kotlin.math.sqrt
 import kotlin.reflect.KClass
 
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity()
+    StatefulActivity() {
 
-{
+    companion object {
+
+        val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(false)
+    }
 
     protected var googleSignInRequestCode = AtomicInteger()
 
@@ -86,8 +96,8 @@ abstract class BaseActivity :
     protected open val detectPhoneCallReceived =
         BaseApplication.takeContext().detectPhoneCallReceived
 
-    protected open val disableSystemFontScaling = true
-    protected open val disableSystemDisplayScaling = true
+    protected open val disableSystemFontScaling = false
+    protected open val disableSystemDisplayScaling = false
 
     private var created = false
     private var unregistrar: Unregistrar? = null
@@ -103,6 +113,13 @@ abstract class BaseActivity :
         BaseApplication.takeContext().initTerminationListener()
 
         super.onCreate(savedInstanceState)
+
+        WebView(this).apply {
+
+            settings.textZoom = 100
+            settings.loadWithOverviewMode = true
+            settings.useWideViewPort = true
+        }
 
         val recordLogs = BaseApplication.takeContext().canRecordApplicationLogs()
 
@@ -268,41 +285,53 @@ abstract class BaseActivity :
 
     override fun getResources(): Resources {
 
-        val res = super.getResources()
+        return if (disableSystemFontScaling || disableSystemDisplayScaling) {
 
-        if (disableSystemFontScaling || disableSystemDisplayScaling) {
+            applyResourceOverrides(super.getResources())
+
+        } else {
+
+            super.getResources()
+        }
+    }
+
+    private fun applyResourceOverrides(res: Resources): Resources {
+
+        val tag = "Resource override ::"
+
+        if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
+
+        try {
 
             val config = res.configuration
+            val metrics = res.displayMetrics
 
             if (disableSystemFontScaling) {
 
-                if (config.fontScale != 1.0f) {
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
-                    Console.warning(
-
-                        "System font scale value is: ${config.fontScale}, overriding it..."
-                    )
-                }
-
-                config.fontScale = 1.0f // disable system font scaling
+                config.fontScale = 0.75f
             }
 
-            if (disableSystemDisplayScaling) {
+            res.updateConfiguration(config, metrics)
 
-                val dm = res.displayMetrics
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END")
 
-                if (dm.densityDpi != DisplayMetrics.DENSITY_DEVICE_STABLE) {
+        } catch (e: Throwable) {
 
-                    Console.warning("System density DPI is: ${dm.densityDpi}, overriding...")
-                }
-
-                config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE
-            }
-
-            res.updateConfiguration(config, res.displayMetrics)
+            recordException(e)
         }
 
         return res
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(newBase)
+
+        if (disableSystemFontScaling || disableSystemDisplayScaling) {
+
+            applyOverrideConfiguration(Configuration())
+        }
     }
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
