@@ -90,11 +90,10 @@ abstract class BaseActivity :
         closeActivity()
     }
 
-    protected open val disableSystemFontScaling = false
-    protected open val disableSystemDisplayScaling = false
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
-    protected open val detectPhoneCallReceived = BaseApplication.takeContext().detectPhoneCallReceived
+    protected open val detectPhoneCallReceived =
+        BaseApplication.takeContext().detectPhoneCallReceived
 
     private var created = false
     private var unregistrar: Unregistrar? = null
@@ -281,7 +280,7 @@ abstract class BaseActivity :
 
         val res = super.getResources()
 
-        return if (disableSystemFontScaling || disableSystemDisplayScaling) {
+        return if (rescaleInterface() == true) {
 
             applyResourceOverrides(res)
 
@@ -293,66 +292,56 @@ abstract class BaseActivity :
 
     private fun applyResourceOverrides(res: Resources): Resources {
 
-        if (disableSystemFontScaling) {
+        val tag = "Resource override ::"
 
-            val tag = "Resource override ::"
+        if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
 
-            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
+        try {
 
-            try {
+            val config = res.configuration
+            val metrics = res.displayMetrics
 
-                val config = res.configuration
-                val metrics = res.displayMetrics
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
-                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
+            config.fontScale = 1f
 
-                config.fontScale = 1f
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (1): ${config.fontScale}")
 
-                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (1): ${config.fontScale}")
+            val current = DisplayMetrics.DENSITY_DEVICE_STABLE
 
-                val current = DisplayMetrics.DENSITY_DEVICE_STABLE
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current density: $current")
 
-                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current density: $current")
+            if (current >= DisplayMetrics.DENSITY_440) {
 
-                if (current >= DisplayMetrics.DENSITY_440) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
 
-                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                    config.fontScale = 0.85f
 
-                        config.fontScale = 0.85f
+                } else {
 
-                    } else {
-
-                        config.fontScale = 1.1f
-                    }
-
-                } else if (current <= DisplayMetrics.DENSITY_340) {
-
-                    config.fontScale = 0.95f
-
-                    if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (2): ${config.fontScale}")
+                    config.fontScale = 1.1f
                 }
 
-                res.updateConfiguration(config, metrics)
+            } else if (current <= DisplayMetrics.DENSITY_340) {
 
-                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END")
+                config.fontScale = 0.95f
 
-            } catch (e: Throwable) {
-
-                recordException(e)
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (2): ${config.fontScale}")
             }
+
+            res.updateConfiguration(config, metrics)
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END")
+
+        } catch (e: Throwable) {
+
+            recordException(e)
         }
 
         return res
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase)
-
-        if (disableSystemFontScaling || disableSystemDisplayScaling) {
-
-            applyOverrideConfiguration(Configuration())
-        }
-    }
+    protected open fun rescaleInterface(): Boolean? = null
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
 
