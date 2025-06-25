@@ -2,11 +2,13 @@ package com.redelf.commons.execution
 
 import android.os.Handler
 import android.os.Looper
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import java.util.concurrent.Callable
 import java.util.concurrent.Executor
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -39,7 +41,7 @@ enum class Executor : Execution, Performer<Executor> {
             Exec.execute(what, executor)
         }
 
-        override fun <T> execute(callable: Callable<T>): Future<T> {
+        override fun <T> execute(callable: Callable<T>): Future<T>? {
 
             logCapacity()
 
@@ -85,7 +87,7 @@ enum class Executor : Execution, Performer<Executor> {
             Exec.execute(what, executor)
         }
 
-        override fun <T> execute(callable: Callable<T>): Future<T> {
+        override fun <T> execute(callable: Callable<T>): Future<T>? {
 
             return Exec.execute(callable, executor)
         }
@@ -142,27 +144,51 @@ enum class Executor : Execution, Performer<Executor> {
 
         fun execute(action: Runnable, executor: ThreadPoolExecutor) {
 
-            executor.execute(action)
+            try {
+
+                executor.execute(action)
+
+            } catch (e: RejectedExecutionException) {
+
+                recordException(e)
+            }
         }
 
-        fun <T> execute(callable: Callable<T>, executor: ThreadPoolExecutor): Future<T> {
+        fun <T> execute(callable: Callable<T>, executor: ThreadPoolExecutor): Future<T>? {
 
-            return executor.submit(callable)
+            try {
+
+                return executor.submit(callable)
+
+            } catch (e: RejectedExecutionException) {
+
+                recordException(e)
+            }
+
+            return null
         }
 
         fun execute(action: Runnable, delayInMillis: Long, executor: ThreadPoolExecutor) {
 
-            executor.execute {
+            try {
 
-                try {
+                executor.execute {
 
-                    Thread.sleep(delayInMillis)
-                    action.run()
+                    try {
 
-                } catch (e: InterruptedException) {
+                        Thread.sleep(delayInMillis)
 
-                    Console.error(e)
+                        action.run()
+
+                    } catch (e: InterruptedException) {
+
+                        Console.error(e)
+                    }
                 }
+
+            } catch (e: RejectedExecutionException) {
+
+                recordException(e)
             }
         }
     }

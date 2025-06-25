@@ -11,7 +11,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
@@ -60,19 +59,56 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.math.pow
-import kotlin.math.round
-import kotlin.math.sqrt
 import kotlin.reflect.KClass
 
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity() {
+    StatefulActivity()
+
+{
 
     companion object {
 
+        val RESOURCE_OVERRIDE_READY = AtomicBoolean()
         val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(false)
+
+        @Synchronized
+        fun setOverrideReadyState(from: String, ready: Boolean) {
+
+            val tag = "Override ready :: SET :: From = '$from'"
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
+
+            RESOURCE_OVERRIDE_READY.set(ready)
+
+            if (RESOURCE_OVERRIDE_READY.get() != ready) {
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) {
+
+                    Console.error(
+
+                        "$tag END :: Failed to set to $ready, Value = $RESOURCE_OVERRIDE_READY"
+                    )
+                }
+
+            } else {
+
+                val msg = "$tag END :: Value = $RESOURCE_OVERRIDE_READY"
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) {
+
+                    if (ready) {
+
+                        Console.debug(msg)
+
+                    } else {
+
+                        Console.log(msg)
+                    }
+                }
+            }
+        }
     }
 
     protected var googleSignInRequestCode = AtomicInteger()
@@ -280,13 +316,13 @@ abstract class BaseActivity :
 
         val res = super.getResources()
 
-        return if (rescaleInterface() == true) {
+        return if (canRescaleInterface() == true) {
 
             applyResourceOverrides(res)
 
         } else {
 
-            res
+            resetResourceOverrides(res)
         }
     }
 
@@ -302,10 +338,6 @@ abstract class BaseActivity :
             val metrics = res.displayMetrics
 
             if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
-
-            config.fontScale = 1f
-
-            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (1): ${config.fontScale}")
 
             val current = DisplayMetrics.DENSITY_DEVICE_STABLE
 
@@ -341,7 +373,66 @@ abstract class BaseActivity :
         return res
     }
 
-    protected open fun rescaleInterface(): Boolean? = null
+    private fun resetResourceOverrides(res: Resources): Resources {
+
+        val tag = "Resource override :: Reset ::"
+
+        if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
+
+        try {
+
+            val config = res.configuration
+
+            if (config.fontScale == 1f) {
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END :: Nothing to reset")
+
+                return res
+            }
+
+            val metrics = res.displayMetrics
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
+
+            val current = DisplayMetrics.DENSITY_DEVICE_STABLE
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current density: $current")
+
+            config.fontScale = 1f
+
+            res.updateConfiguration(config, metrics)
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END")
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return res
+    }
+
+    private fun canRescaleInterface(): Boolean {
+
+        val ready = RESOURCE_OVERRIDE_READY.get()
+
+        if (DEBUG_RESOURCES_OVERRIDES.get()) {
+
+            val tag = "Override ready :: GET :: From = '${this::class.simpleName}.${this.hashCode()}' ::"
+            val msg = "$tag Value = $ready"
+
+            if (ready) {
+
+                Console.debug(msg)
+
+            } else {
+
+                Console.log(msg)
+            }
+        }
+
+        return ready
+    }
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
 
