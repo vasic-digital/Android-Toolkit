@@ -68,11 +68,13 @@ import kotlin.reflect.KClass
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity() {
+    StatefulActivity()
+
+{
 
     companion object {
 
-        val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(false)
+        val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(true)
     }
 
     protected var googleSignInRequestCode = AtomicInteger()
@@ -308,6 +310,30 @@ abstract class BaseActivity :
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
                 config.fontScale = 0.75f
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (1): ${config.fontScale}")
+            }
+
+            if (disableSystemDisplayScaling) {
+
+                val current = DisplayMetrics.DENSITY_DEVICE_STABLE
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current density: $current")
+
+                if (current > DisplayMetrics.DENSITY_450) {
+
+                    config.fontScale = 0.85f
+                }
+
+                if (current <= DisplayMetrics.DENSITY_340) {
+
+                    if (disableSystemFontScaling) {
+
+                        config.fontScale = 0.95f
+
+                        if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (2): ${config.fontScale}")
+                    }
+                }
             }
 
             res.updateConfiguration(config, metrics)
