@@ -74,7 +74,7 @@ abstract class BaseActivity :
 
     companion object {
 
-        val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(true)
+        val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(false)
     }
 
     protected var googleSignInRequestCode = AtomicInteger()
@@ -309,30 +309,30 @@ abstract class BaseActivity :
 
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
-                config.fontScale = 0.75f
+                config.fontScale = 1f
 
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (1): ${config.fontScale}")
-            }
-
-            if (disableSystemDisplayScaling) {
 
                 val current = DisplayMetrics.DENSITY_DEVICE_STABLE
 
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current density: $current")
 
-                if (current > DisplayMetrics.DENSITY_450) {
+                if (current >= DisplayMetrics.DENSITY_440) {
 
-                    config.fontScale = 0.85f
-                }
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
 
-                if (current <= DisplayMetrics.DENSITY_340) {
+                        config.fontScale = 0.85f
 
-                    if (disableSystemFontScaling) {
+                    } else {
 
-                        config.fontScale = 0.95f
-
-                        if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (2): ${config.fontScale}")
+                        config.fontScale = 1.1f
                     }
+
+                } else if (current <= DisplayMetrics.DENSITY_340) {
+
+                    config.fontScale = 0.95f
+
+                    if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (2): ${config.fontScale}")
                 }
             }
 
