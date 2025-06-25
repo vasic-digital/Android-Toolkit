@@ -68,9 +68,7 @@ import kotlin.reflect.KClass
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity()
-
-{
+    StatefulActivity() {
 
     companion object {
 
@@ -92,14 +90,11 @@ abstract class BaseActivity :
         closeActivity()
     }
 
-    protected open val canSendOnTransmissionServiceConnected = true
-    protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
-
-    protected open val detectPhoneCallReceived =
-        BaseApplication.takeContext().detectPhoneCallReceived
-
     protected open val disableSystemFontScaling = false
     protected open val disableSystemDisplayScaling = false
+    protected open val canSendOnTransmissionServiceConnected = true
+    protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
+    protected open val detectPhoneCallReceived = BaseApplication.takeContext().detectPhoneCallReceived
 
     private var created = false
     private var unregistrar: Unregistrar? = null
@@ -284,28 +279,30 @@ abstract class BaseActivity :
 
     override fun getResources(): Resources {
 
+        val res = super.getResources()
+
         return if (disableSystemFontScaling || disableSystemDisplayScaling) {
 
-            applyResourceOverrides(super.getResources())
+            applyResourceOverrides(res)
 
         } else {
 
-            super.getResources()
+            res
         }
     }
 
     private fun applyResourceOverrides(res: Resources): Resources {
 
-        val tag = "Resource override ::"
+        if (disableSystemFontScaling) {
 
-        if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
+            val tag = "Resource override ::"
 
-        try {
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
 
-            val config = res.configuration
-            val metrics = res.displayMetrics
+            try {
 
-            if (disableSystemFontScaling) {
+                val config = res.configuration
+                val metrics = res.displayMetrics
 
                 if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
@@ -334,15 +331,15 @@ abstract class BaseActivity :
 
                     if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (2): ${config.fontScale}")
                 }
+
+                res.updateConfiguration(config, metrics)
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END")
+
+            } catch (e: Throwable) {
+
+                recordException(e)
             }
-
-            res.updateConfiguration(config, metrics)
-
-            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END")
-
-        } catch (e: Throwable) {
-
-            recordException(e)
         }
 
         return res
