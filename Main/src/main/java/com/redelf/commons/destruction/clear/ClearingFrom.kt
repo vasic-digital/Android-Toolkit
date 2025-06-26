@@ -1,6 +1,6 @@
 package com.redelf.commons.destruction.clear
 
-interface ClearingFrom {
+interface ClearingFrom : Clear {
 
     fun clear(from: String)
 }
