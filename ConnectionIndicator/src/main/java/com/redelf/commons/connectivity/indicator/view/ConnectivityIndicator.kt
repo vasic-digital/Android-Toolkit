@@ -267,7 +267,7 @@ class ConnectivityIndicator :
 
                     val button = findViewById<ImageButton?>(R.id.button)
 
-                    button.setOnClickListener {
+                    button?.setOnClickListener {
 
                         doApplyStates()
                         presentServiceState()
