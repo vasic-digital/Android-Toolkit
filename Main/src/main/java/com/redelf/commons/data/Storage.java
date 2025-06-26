@@ -17,6 +17,7 @@ public class Storage {
     public static <T> T get(String key, T defaultValue) {
 
         final T res =  DataManagement.STORAGE.pull(key) ;
+
         return res == null ? defaultValue : res;
     }
 

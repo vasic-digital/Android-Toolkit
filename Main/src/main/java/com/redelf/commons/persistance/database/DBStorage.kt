@@ -951,7 +951,7 @@ object DBStorage : Storage<String> {
 
             val start = System.currentTimeMillis()
 
-            if (!latch.await(10, TimeUnit.SECONDS)) {
+            if (!latch.await(60, TimeUnit.SECONDS)) {
 
                 val e = TimeoutException(
 
