@@ -351,7 +351,7 @@ abstract class BaseActivity :
 
                 } else {
 
-                    config.fontScale = 1.1f
+                    config.fontScale = 1.05f
                 }
 
             } else if (current <= DisplayMetrics.DENSITY_340) {
