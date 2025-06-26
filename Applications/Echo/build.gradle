@@ -2,7 +2,7 @@ plugins {
 
     id 'com.android.application'
     id 'kotlin-android'
-    id("com.google.devtools.ksp") version "2.1.10-1.0.31"
+    id("com.google.devtools.ksp") version "2.2.0-2.0.2"
 }
 
 ext {
@@ -12,13 +12,13 @@ ext {
 
 android {
 
-    compileSdk 35
+    compileSdk 36
     namespace "${interprocess_permission}"
 
     defaultConfig {
 
         minSdk 28
-        targetSdk 35
+        targetSdk 36
         versionCode 1
         versionName "1.0"
         applicationId "com.redelf.commons.interprocess.echo"

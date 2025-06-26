@@ -2,7 +2,7 @@ plugins {
 
     id 'com.android.library'
     id 'kotlin-android'
-    id("com.google.devtools.ksp") version "2.1.10-1.0.31"
+    id("com.google.devtools.ksp") version "2.2.0-2.0.2"
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
@@ -89,13 +89,13 @@ def proxyRemoteProdPassword = obfuscator.obfuscate(pRemoteProdPassword)
 
 android {
 
-    compileSdk 35
+    compileSdk 36
     namespace 'com.redelf.commons'
 
     defaultConfig {
 
         minSdk 28
-        targetSdk 35
+        targetSdk 36
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -202,9 +202,9 @@ dependencies {
     final String roomVersion = "2.7.1"
     final String okioVersion = "3.9.0"
     final String okHttpVersion = "4.12.0"
-    final String jacksonVersion = "2.12.5"
+    final String jacksonVersion = "2.19.1"
     final String lifecycleVersion = "2.9.1"
-    final String retrofitHttpVersion = "2.11.0"
+    final String retrofitHttpVersion = "3.0.0"
 
     api project("$toolkit_obfuscator_project")
     testApi project("$toolkit_obfuscator_project")
@@ -231,28 +231,28 @@ dependencies {
     api "androidx.core:core-ktx:1.16.0"
     api "org.apache.commons:commons-compress:1.27.1"
 
-    api "org.jetbrains.kotlin:kotlin-stdlib:2.1.10"
+    api "org.jetbrains.kotlin:kotlin-stdlib:2.1.21"
     api "com.facebook.conceal:conceal:2.0.2@aar"
 
     api "androidx.core:core-ktx:1.16.0"
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 
     api "com.google.firebase:firebase-core:21.1.1"
     api "com.google.firebase:firebase-auth:23.2.1"
     api "com.google.firebase:firebase-config:22.1.2"
-    api "com.google.firebase:firebase-analytics:22.4.0"
-    api "com.google.firebase:firebase-analytics-ktx:22.4.0"
-    api "com.google.firebase:firebase-messaging:24.1.1"
+    api "com.google.firebase:firebase-analytics:22.5.0"
+    api "com.google.firebase:firebase-analytics-ktx:22.5.0"
+    api "com.google.firebase:firebase-messaging:24.1.2"
     api "com.google.firebase:firebase-crashlytics:19.4.4"
     api "com.google.android.gms:play-services-auth:21.3.0"
     api "com.google.firebase:firebase-auth:23.2.1"
     api "com.google.firebase:firebase-config:22.1.2"
-    api "com.google.firebase:firebase-analytics:22.4.0"
-    api "com.google.firebase:firebase-analytics-ktx:22.4.0"
-    api "com.google.firebase:firebase-messaging:24.1.1"
+    api "com.google.firebase:firebase-analytics:22.5.0"
+    api "com.google.firebase:firebase-analytics-ktx:22.5.0"
+    api "com.google.firebase:firebase-messaging:24.1.2"
     api "com.google.firebase:firebase-crashlytics:19.4.4"
     api "com.google.android.gms:play-services-auth:21.3.0"
 
@@ -275,7 +275,7 @@ dependencies {
 
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.10.1"
-    api "commons-codec:commons-codec:1.17.1"
+    api "commons-codec:commons-codec:1.18.0"
 
     api "com.github.bumptech.glide:glide:4.16.0"
     api "com.github.bumptech.glide:annotations:4.16.0"
@@ -287,14 +287,14 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
 
-    api platform("com.google.firebase:firebase-bom:33.15.0")
+    api platform("com.google.firebase:firebase-bom:33.16.0")
 
-    api "io.github.nefilim.kjwt:kjwt-core:0.9.0"
-    api "io.github.nefilim.kjwt:kjwt-jwks:0.9.0"
+    api "io.github.nefilim.kjwt:kjwt-core:1.0.0"
+    api "io.github.nefilim.kjwt:kjwt-jwks:1.0.0"
 
-    api "com.airbnb.android:lottie:5.2.0"
-    api "androidx.work:work-runtime-ktx:2.10.1"
-    api "androidx.work:work-runtime-ktx:2.10.1"
+    api "com.airbnb.android:lottie:6.6.7"
+    api "androidx.work:work-runtime-ktx:2.10.2"
+    api "androidx.work:work-runtime-ktx:2.10.2"
     api "androidx.preference:preference-ktx:1.2.1"
     api "com.google.android.material:material:1.12.0"
     api "androidx.navigation:navigation-ui-ktx:2.9.0"
@@ -309,7 +309,7 @@ dependencies {
     api "com.android.installreferrer:installreferrer:2.2"
     api "com.facebook.android:facebook-android-sdk:18.0.3"
 
-    api platform("com.google.firebase:firebase-bom:33.15.0")
+    api platform("com.google.firebase:firebase-bom:33.16.0")
 
     api "androidx.sqlite:sqlite-ktx:2.5.1"
 
