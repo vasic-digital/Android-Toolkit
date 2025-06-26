@@ -16,7 +16,7 @@ open class BasicConnectivityHandler(
     override fun isNetworkAvailable(ctx: Context): Boolean {
 
         val tag = "Network connectivity :: Handler :: ${this.javaClass.simpleName} :: " +
-                "Hash code = '${hashCode()}' ::"
+                "Hash  = '${hashCode()}' ::"
 
         Console.log("$tag START")
 
