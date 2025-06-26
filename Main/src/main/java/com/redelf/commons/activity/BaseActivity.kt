@@ -11,7 +11,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
@@ -60,19 +59,56 @@ import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.math.pow
-import kotlin.math.round
-import kotlin.math.sqrt
 import kotlin.reflect.KClass
 
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity() {
+    StatefulActivity()
+
+{
 
     companion object {
 
+        val RESOURCE_OVERRIDE_READY = AtomicBoolean()
         val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(false)
+
+        @Synchronized
+        fun setOverrideReadyState(from: String, ready: Boolean) {
+
+            val tag = "Override ready :: SET :: From = '$from'"
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
+
+            RESOURCE_OVERRIDE_READY.set(ready)
+
+            if (RESOURCE_OVERRIDE_READY.get() != ready) {
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) {
+
+                    Console.error(
+
+                        "$tag END :: Failed to set to $ready, Value = $RESOURCE_OVERRIDE_READY"
+                    )
+                }
+
+            } else {
+
+                val msg = "$tag END :: Value = $RESOURCE_OVERRIDE_READY"
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) {
+
+                    if (ready) {
+
+                        Console.debug(msg)
+
+                    } else {
+
+                        Console.log(msg)
+                    }
+                }
+            }
+        }
     }
 
     protected var googleSignInRequestCode = AtomicInteger()
@@ -92,12 +128,8 @@ abstract class BaseActivity :
 
     protected open val canSendOnTransmissionServiceConnected = true
     protected open val detectAudioStreamed = BaseApplication.takeContext().detectAudioStreamed
-
     protected open val detectPhoneCallReceived =
         BaseApplication.takeContext().detectPhoneCallReceived
-
-    protected open val disableSystemFontScaling = false
-    protected open val disableSystemDisplayScaling = false
 
     private var created = false
     private var unregistrar: Unregistrar? = null
@@ -285,13 +317,15 @@ abstract class BaseActivity :
 
     override fun getResources(): Resources {
 
-        return if (disableSystemFontScaling || disableSystemDisplayScaling) {
+        val res = super.getResources()
 
-            applyResourceOverrides(super.getResources())
+        return if (canRescaleInterface() == true) {
+
+            applyResourceOverrides(res)
 
         } else {
 
-            super.getResources()
+            resetResourceOverrides(res)
         }
     }
 
@@ -306,11 +340,28 @@ abstract class BaseActivity :
             val config = res.configuration
             val metrics = res.displayMetrics
 
-            if (disableSystemFontScaling) {
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
 
-                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
+            val current = DisplayMetrics.DENSITY_DEVICE_STABLE
 
-                config.fontScale = 0.75f
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current density: $current")
+
+            if (current >= DisplayMetrics.DENSITY_440) {
+
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+
+                    config.fontScale = 0.85f
+
+                } else {
+
+                    config.fontScale = 1.05f
+                }
+
+            } else if (current <= DisplayMetrics.DENSITY_340) {
+
+                config.fontScale = 0.95f
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag New font scale (2): ${config.fontScale}")
             }
 
             res.updateConfiguration(config, metrics)
@@ -325,13 +376,65 @@ abstract class BaseActivity :
         return res
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase)
+    private fun resetResourceOverrides(res: Resources): Resources {
 
-        if (disableSystemFontScaling || disableSystemDisplayScaling) {
+        val tag = "Resource override :: Reset ::"
 
-            applyOverrideConfiguration(Configuration())
+        if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag START")
+
+        try {
+
+            val config = res.configuration
+
+            if (config.fontScale == 1f) {
+
+                if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END :: Nothing to reset")
+
+                return res
+            }
+
+            val metrics = res.displayMetrics
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current font scale: ${config.fontScale}")
+
+            val current = DisplayMetrics.DENSITY_DEVICE_STABLE
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag Current density: $current")
+
+            config.fontScale = 1f
+
+            res.updateConfiguration(config, metrics)
+
+            if (DEBUG_RESOURCES_OVERRIDES.get()) Console.log("$tag END")
+
+        } catch (e: Throwable) {
+
+            recordException(e)
         }
+
+        return res
+    }
+
+    private fun canRescaleInterface(): Boolean {
+
+        val ready = RESOURCE_OVERRIDE_READY.get()
+
+        if (DEBUG_RESOURCES_OVERRIDES.get()) {
+
+            val tag = "Override ready :: GET :: From = '${this::class.simpleName}.${this.hashCode()}' ::"
+            val msg = "$tag Value = $ready"
+
+            if (ready) {
+
+                Console.debug(msg)
+
+            } else {
+
+                Console.log(msg)
+            }
+        }
+
+        return ready
     }
 
     protected open fun onKeyboardVisibilityEvent(isOpen: Boolean) {
