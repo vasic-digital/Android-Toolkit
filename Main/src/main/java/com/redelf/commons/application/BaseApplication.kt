@@ -202,6 +202,7 @@ abstract class BaseApplication :
     protected open val firebaseEnabled = true
     protected open val facebookEnabled = false
     protected open val firebaseAnalyticsEnabled = false
+    protected open val deepLinkingEnabled = false
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
@@ -432,6 +433,10 @@ abstract class BaseApplication :
             }
         }
     }
+
+    fun isDeepLinkingEnabled() = deepLinkingEnabled
+
+    fun isDeepLinkingDisabled() = !isDeepLinkingEnabled()
 
     fun registerPhoneStateListener() {
 

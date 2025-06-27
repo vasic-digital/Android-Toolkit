@@ -2,6 +2,7 @@ package com.redelf.commons.activity
 
 import android.net.Uri
 import android.os.Bundle
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 
 abstract class DeepLinkActivity : BaseActivity() {
@@ -10,6 +11,12 @@ abstract class DeepLinkActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (BaseApplication.takeContext().isDeepLinkingDisabled()) {
+
+            Console.warning("$tag Deep linking is disabled")
+            return
+        }
 
         Console.log("$tag START")
 
