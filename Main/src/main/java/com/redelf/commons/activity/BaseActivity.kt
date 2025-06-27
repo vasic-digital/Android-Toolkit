@@ -117,7 +117,6 @@ abstract class BaseActivity :
     protected var attachmentObtainedUris: MutableList<Uri> = mutableListOf()
     protected var attachmentObtainedFiles: MutableList<File> = mutableListOf()
 
-    protected val executor = Executor.MAIN
     protected val dismissDialogsRunnable = Runnable { dismissDialogs() }
 
     protected val dismissDialogsAndTerminateRunnable = Runnable {
@@ -316,7 +315,7 @@ abstract class BaseActivity :
 
         val res = super.getResources()
 
-        return if (canRescaleInterface() == true) {
+        return if (canRescaleInterface()) {
 
             applyResourceOverrides(res)
 
@@ -1013,7 +1012,7 @@ abstract class BaseActivity :
 
     protected open fun disposeAttachment(attachment: File) {
 
-        executor.execute {
+        exec {
 
             if (attachment.exists()) {
 
@@ -1247,7 +1246,7 @@ abstract class BaseActivity :
                 return
             }
 
-            val action = Runnable {
+            exec {
 
                 val dir = external.absolutePath +
                         File.separator +
@@ -1265,7 +1264,8 @@ abstract class BaseActivity :
                     )
 
                     showError(R.string.error_attaching_file)
-                    return@Runnable
+
+                    return@exec
                 }
 
                 var ins: InputStream? = null
@@ -1290,7 +1290,7 @@ abstract class BaseActivity :
 
                                 closable.close()
 
-                            } catch (e: IOException) {
+                            } catch (_: IOException) {
 
                                 // Ignore, not spam
                             }
@@ -1338,7 +1338,8 @@ abstract class BaseActivity :
 
                         Console.error("Could not create file: ${outputFile.absolutePath}")
                         showError(R.string.error_attaching_file)
-                        return@Runnable
+
+                        return@exec
                     }
 
                     ins = contentResolver.openInputStream(it)
@@ -1380,8 +1381,6 @@ abstract class BaseActivity :
                     closeAll()
                 }
             }
-
-            executor.execute(action)
         }
     }
 
