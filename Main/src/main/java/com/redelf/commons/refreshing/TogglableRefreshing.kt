@@ -1,8 +1,10 @@
 package com.redelf.commons.refreshing
 
-interface AutoRefreshing : Refreshing {
+interface TogglableRefreshing : Refreshable {
 
     fun startRefreshing()
 
     fun stopRefreshing()
+
+    fun toggleRefreshing()
 }

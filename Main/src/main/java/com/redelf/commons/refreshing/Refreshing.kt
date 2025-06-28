@@ -1,3 +1,6 @@
 package com.redelf.commons.refreshing
 
-interface Refreshing
+interface Refreshing : Refreshable {
+
+    fun refresh(): Boolean
+}
