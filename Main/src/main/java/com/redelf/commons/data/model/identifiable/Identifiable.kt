@@ -16,17 +16,21 @@ abstract class Identifiable<I> {
     @Throws(ClassCastException::class)
     constructor(data: LinkedTreeMap<String, Any>) : this()
 
+    @Synchronized
     open fun getId(): I? {
 
-        if (id == null) {
+        if (id == null) @Synchronized {
 
-            setId(initializeId())
+            id = initializeId()
         }
 
         return id
     }
 
-    fun setId(id: I) {
+    @Synchronized
+    fun takeId() = id
+
+    open fun setId(id: I) {
 
         this.id = id
     }
