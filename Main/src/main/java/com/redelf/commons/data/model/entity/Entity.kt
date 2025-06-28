@@ -13,8 +13,16 @@ abstract class Entity : IdentifiableLong, Serializable {
     @Throws(ClassCastException::class)
     constructor(data: LinkedTreeMap<String, Any>) : super(data)
 
-
+    @Synchronized
     override fun initializeId(): Long {
+
+        takeId()?.let @Synchronized { id ->
+
+            if (id != 0L) @Synchronized {
+
+                return id
+            }
+        }
 
         return idProvider().generateNewId()
     }
