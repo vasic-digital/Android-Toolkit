@@ -3,6 +3,9 @@ package com.redelf.commons.persistance
 import android.content.Context
 import android.content.SharedPreferences
 import android.text.TextUtils
+import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.extensions.exec
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.base.Storage
 
 class SharedPreferencesStorage internal constructor(
@@ -45,9 +48,13 @@ class SharedPreferencesStorage internal constructor(
         return getEditor()!!.putString(key, value.toString()).commit()
     }
 
-    override fun get(key: String?): String? {
+    override fun get(key: String?, callback: OnObtain<String?>) {
 
-        return preferences.getString(key, "")
+        exec {
+
+            val result = preferences.getString(key, "")
+            callback.onCompleted(result)
+        }
     }
 
     override fun delete(key: String?): Boolean {
@@ -55,9 +62,13 @@ class SharedPreferencesStorage internal constructor(
         return getEditor()?.remove(key)?.commit() == true
     }
 
-    override fun contains(key: String?): Boolean {
+    override fun contains(key: String?, callback: OnObtain<Boolean>) {
 
-        return preferences.contains(key)
+        exec {
+
+            val contains = preferences.contains(key)
+            callback.onCompleted(contains)
+        }
     }
 
     override fun deleteAll(): Boolean {

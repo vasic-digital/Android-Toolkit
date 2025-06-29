@@ -3,6 +3,7 @@ package com.redelf.commons.execution
 import android.os.Handler
 import android.os.Looper
 import com.redelf.commons.Debuggable
+import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -379,7 +380,15 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
             try {
 
-                executor.execute(action)
+                if (isOnMainThread()) {
+
+                    executor.execute(action)
+
+                } else {
+
+                    action.run()
+                }
+
 
             } catch (e: Throwable) {
 

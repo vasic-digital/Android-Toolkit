@@ -3,6 +3,7 @@ package com.redelf.commons.persistance.database
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.provider.BaseColumns
 import androidx.core.text.isDigitsOnly
 import com.redelf.commons.application.BaseApplication
@@ -15,6 +16,7 @@ import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
@@ -23,7 +25,9 @@ import com.redelf.commons.persistance.encryption.NoEncryption
 import com.redelf.commons.persistance.encryption.ReverseEncryption
 import net.zetetic.database.sqlcipher.SQLiteDatabase
 import net.zetetic.database.sqlcipher.SQLiteOpenHelper
+import okio.IOException
 import java.sql.SQLException
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -47,7 +51,6 @@ object DBStorage : Storage<String> {
     private const val MAX_CHUNK_SIZE = 500
     private const val DATABASE_VERSION = 1
     private const val DATABASE_NAME = "sdb"
-    private const val DATABASE_NAME_SUFFIX_KEY = "DATABASE.NAME.SUFFIX.KEY"
 
     private const val TABLE_ = "dt"
     private const val COLUMN_KEY_ = "ky"
@@ -58,42 +61,14 @@ object DBStorage : Storage<String> {
     private var columnValue = COLUMN_VALUE_
 
     private val executor = Executor.SINGLE
-    private var prefs: SharedPreferencesStorage? = null
+
     private var enc: Encryption<String> = NoEncryption()
 
-    fun getString(source: String, key: String = DATABASE_NAME, prefsKey: String = source): String {
+    private fun table() = table
 
-        var result: String = prefs?.get(prefsKey) ?: ""
+    private fun columnValue() = columnValue
 
-        if (isNotEmpty(result)) {
-
-            return result
-        }
-
-        result = source
-
-        try {
-
-            result = enc.encrypt(key, source) ?: ""
-
-        } catch (e: Throwable) {
-
-            Console.error(e)
-        }
-
-        if (prefs?.put(prefsKey, result) != true) {
-
-            Console.error("Error saving key preferences: $source")
-        }
-
-        return result
-    }
-
-    private fun table() = getString(TABLE_)
-
-    private fun columnValue() = getString(COLUMN_VALUE_)
-
-    private fun columnKey() = getString(COLUMN_KEY_)
+    private fun columnKey() = columnKey
 
     private fun sqlCreate() = "CREATE TABLE $table (" +
             "${BaseColumns._ID} INTEGER PRIMARY KEY," +
@@ -172,44 +147,11 @@ object DBStorage : Storage<String> {
 
     private fun mainKey() = "$DATABASE_NAME.$DATABASE_VERSION"
 
-    private fun suffix(): String {
-
-        val noSuffix = "NA"
-        val tag = "Suffix ::"
-
-        try {
-
-            val ctx = BaseApplication.takeContext()
-            val sPrefs = ctx.getSharedPreferences(mainKey(), Context.MODE_PRIVATE)
-            val nPrefs = SharedPreferencesStorage(sPrefs)
-
-            var suffix = nPrefs.get(DATABASE_NAME_SUFFIX_KEY)
-
-            if (isEmpty(suffix)) {
-
-                suffix = "_" + System.currentTimeMillis()
-
-                if (!nPrefs.put(DATABASE_NAME_SUFFIX_KEY, suffix)) {
-
-                    Console.error("Error saving key preferences: $DATABASE_NAME_SUFFIX_KEY")
-                }
-            }
-
-            return suffix ?: noSuffix
-
-        } catch (e: SQLException) {
-
-            Console.error(tag, e.message ?: "Unknown error")
-
-            recordException(e)
-        }
-
-        return noSuffix
-    }
+    private fun suffix() = DATABASE_NAME.hashCode().toString().reversed().substring(0, 2)
 
     private fun rawName() = "${mainKey()}.${suffix()}"
 
-    private fun dbName() = getString(rawName(), prefsKey = "$DATABASE_NAME.$DATABASE_VERSION")
+    private fun dbName() = "$DATABASE_NAME.$DATABASE_VERSION"
 
     private val dbHelper: DbHelper = DbHelper(BaseApplication.takeContext(), dbName())
 
@@ -221,36 +163,8 @@ object DBStorage : Storage<String> {
 
         try {
 
-            val sPrefs = ctx.getSharedPreferences(mainKey(), Context.MODE_PRIVATE)
-            val nPrefs = SharedPreferencesStorage(sPrefs)
-
-            var suffix = nPrefs.get(DATABASE_NAME_SUFFIX_KEY)
-
-            if (isEmpty(suffix)) {
-
-                suffix = "_" + System.currentTimeMillis()
-
-                if (!nPrefs.put(DATABASE_NAME_SUFFIX_KEY, suffix)) {
-
-                    Console.error("Error saving key preferences: $DATABASE_NAME_SUFFIX_KEY")
-                }
-            }
-
-            prefs = nPrefs
-
-            enc = ReverseEncryption(
-
-                object : Salter {
-
-                    override fun getSalt(): String {
-
-                        return DATABASE_NAME.reversed()
-                            .hashCode().toString().reversed().hashCodeString()
-                    }
-                }
-            )
-
             table = table()
+            enc = NoEncryption()
             columnKey = columnKey()
             columnValue = columnValue()
 
@@ -345,57 +259,128 @@ object DBStorage : Storage<String> {
         }
     }
 
-    override fun get(key: String?): String {
+    override fun get(key: String?, callback: OnObtain<String?>) {
 
         if (isEmpty(key)) {
 
-            return ""
+            val e = IllegalArgumentException("Empty key")
+            callback.onFailure(e)
+            return
         }
 
         try {
 
             var chunks = -1
-            val chunksRawValue = doGet("${key}_$KEY_CHUNKS")
-            val tag = "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-            if (chunksRawValue.isNotEmpty() && chunksRawValue.isDigitsOnly()) {
+            doGet(
 
-                chunks = chunksRawValue.toInt()
-            }
+                "${key}_$KEY_CHUNKS",
 
-            if (chunks < 1) {
+                object : OnObtain<String?> {
 
-                return ""
+                    override fun onCompleted(data: String?) {
 
-            } else if (chunks == 1) {
+                        val chunksRawValue = data
 
-                if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
+                        val tag =
+                            "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
-                return doGet("${key}_${KEY_CHUNK}_0")
+                        val condition = chunksRawValue?.isNotEmpty() == true
+                                && chunksRawValue.isDigitsOnly()
 
-            } else {
+                        if (condition) {
 
-                if (DEBUG.get()) Console.log("$tag START :: Chunk :: Chunks count = $chunks")
+                            chunks = chunksRawValue.toInt()
+                        }
 
-                val result = StringBuilder()
+                        if (chunks < 1) {
 
-                for (i in 0..chunks - 1) {
+                            callback.onCompleted("")
 
-                    val chunked = doGet("${key}_${KEY_CHUNK}_$i")
-                    result.append(chunked)
+                        } else if (chunks == 1) {
 
-                    if (DEBUG.get()) Console.log("$tag Chunk :: Loaded chunk = ${i + 1} / $chunks")
+                            if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
+
+                            doGet("${key}_${KEY_CHUNK}_0", callback)
+
+                        } else {
+
+                            if (DEBUG.get()) {
+
+                                Console.log("$tag START :: Chunk :: Chunks count = $chunks")
+                            }
+
+                            val result = StringBuilder()
+                            var failure: Throwable? = null
+                            val pieces = ConcurrentHashMap<Int, String?>()
+
+                            for (i in 0..chunks - 1) {
+
+                                doGet(
+
+                                    "${key}_${KEY_CHUNK}_$i",
+
+                                    object : OnObtain<String?> {
+
+                                        override fun onCompleted(data: String?) {
+
+                                            pieces[i] = data
+
+                                            if (pieces.size == chunks) {
+
+                                                pieces.keys.toMutableList().sorted()
+                                                    .forEach { index ->
+
+                                                        val part = pieces[index]
+
+                                                        if (part?.isNotEmpty() == true) {
+
+                                                            result.append(part)
+
+                                                            if (DEBUG.get()) {
+
+                                                                Console.log(
+
+                                                                    "$tag Chunk :: " +
+                                                                            "Loaded chunk = " +
+                                                                            "${i + 1} / $chunks"
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+
+                                            }
+                                        }
+
+                                        override fun onFailure(error: Throwable) {
+
+                                            failure?.let {
+
+                                                recordException(error)
+                                            }
+
+                                            if (failure == null) {
+
+                                                failure = error
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
                 }
-
-                return result.toString()
-            }
+            )
 
         } catch (e: Throwable) {
 
-            recordException(e)
+            callback.onFailure(e)
         }
-
-        return ""
     }
 
     override fun delete(key: String?): Boolean {
@@ -566,33 +551,6 @@ object DBStorage : Storage<String> {
                     "$tag END: DB '$dbName' has been deleted"
                 )
 
-                if (prefs?.delete(DATABASE_NAME_SUFFIX_KEY) != true) {
-
-                    Console.error("Error deleting key preferences: $DATABASE_NAME_SUFFIX_KEY")
-                }
-
-                if (prefs?.delete(TABLE_) != true) {
-
-                    Console.error("Error deleting key preferences: $TABLE_")
-                }
-
-                if (prefs?.delete(COLUMN_KEY_) != true) {
-
-                    Console.error("Error deleting key preferences: $COLUMN_KEY_")
-                }
-
-                if (prefs?.delete(COLUMN_VALUE_) != true) {
-
-                    Console.error("Error deleting key preferences: $COLUMN_VALUE_")
-                }
-
-                val dbKey = "$DATABASE_NAME.$DATABASE_VERSION"
-
-                if (prefs?.delete(dbKey) != true) {
-
-                    Console.error("Error deleting key preferences: $dbKey")
-                }
-
             } else {
 
                 Console.error("$tag FAILED")
@@ -614,9 +572,25 @@ object DBStorage : Storage<String> {
         return false
     }
 
-    override fun contains(key: String?): Boolean {
+    override fun contains(key: String?, callback: OnObtain<Boolean>) {
 
-        return isNotEmpty(get(key))
+        get(
+
+            key,
+
+            object : OnObtain<String?> {
+
+                override fun onCompleted(data: String?) {
+
+                    callback.onCompleted(data?.isNotEmpty() == true)
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 
     override fun count(): Long {
@@ -668,7 +642,8 @@ object DBStorage : Storage<String> {
         return result.get()
     }
 
-    private abstract class LocalDBStorageOperation<T>(db: SQLiteDatabase?) : DBStorageOperation<T>(db)
+    private abstract class LocalDBStorageOperation<T>(db: SQLiteDatabase?) :
+        DBStorageOperation<T>(db)
 
     private fun <T> transact(operation: DBStorageOperation<T>): T? {
 
@@ -864,108 +839,103 @@ object DBStorage : Storage<String> {
         return result.get()
     }
 
-    private fun doGet(key: String?): String {
+    private fun doGet(key: String?, callback: OnObtain<String?>) {
 
         if (isEmpty(key)) {
 
-            return ""
+            val e = IllegalArgumentException("Empty key")
+            callback.onFailure(e)
+            return
         }
 
         if (isOnMainThread()) {
 
             val e = IllegalArgumentException("Do get from the main thread")
-            Console.error(e)
+            callback.onFailure(e)
+            return
         }
 
-        var result = ""
-        val selectionArgs = arrayOf(key)
-        val selection = "$columnKey = ?"
-        val latch = CountDownLatch(1)
-        val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
-        val tag = "Get :: DO :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
+        exec(
 
-        if (DEBUG.get()) Console.log("$tag START")
+            onRejected = { e -> callback.onFailure(e) }
 
-        withDb { db ->
+        ) {
 
-            if (db?.isOpen == false) {
+            val tag = "Get :: DO :: key = $key :: " +
+                    "column_key = $columnValue :: column_value = $columnValue ::"
 
-                Console.warning("DB is not open")
+            if (DEBUG.get()) Console.log("$tag START")
 
-                latch.countDown()
+            withDb { db ->
 
-                return@withDb
-            }
+                var result = ""
+                val selection = "$columnKey = ?"
+                val selectionArgs = arrayOf(key)
+                val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
 
-            try {
+                if (db?.isOpen == false) {
 
-                val cursor = db?.query(
+                    val e = IOException("DB is not open")
+                    callback.onFailure(e)
+                    return@withDb
+                }
 
-                    table,
-                    projection,
-                    selection,
-                    selectionArgs,
-                    null,
-                    null,
-                    null
-                )
+                var cursor: Cursor? = null
 
-                cursor?.let {
+                try {
 
-                    with(it) {
+                    cursor = db?.query(
 
-                        while (moveToNext() && isEmpty(result)) {
+                        table,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        null
+                    )
 
-                            result = getString(getColumnIndexOrThrow(columnValue))
+                    cursor?.let {
+
+                        with(it) {
+
+                            while (moveToNext() && isEmpty(result)) {
+
+                                try {
+
+                                    val idx = getColumnIndexOrThrow(columnValue)
+                                    result = getString(idx)
+
+                                } catch (e: Throwable) {
+
+                                    callback.onFailure(e)
+                                    result = e.message ?: "error"
+                                }
+                            }
                         }
+                    }
+
+                    cursor?.close()
+
+                } catch (e: Throwable) {
+
+                    callback.onFailure(e)
+                    return@withDb
+
+                } finally {
+
+                    try {
+
+                        cursor?.close()
+
+                    } catch (e: Throwable) {
+
+                        recordException(e)
                     }
                 }
 
-                cursor?.close()
-
-            } catch (e: Throwable) {
-
-                Console.error(
-
-                    "$tag SQL args :: Selection: $selection, Selection args:" +
-                            " ${selectionArgs.toMutableList()}, projection: " +
-                            "${projection.toMutableList()}", e.message ?: "Unknown error"
-                )
-
-                Console.error(e)
+                callback.onCompleted(result)
             }
-
-            if (isNotEmpty(result)) {
-
-                if (DEBUG.get()) Console.log("$tag END")
-
-            } else {
-
-                if (DEBUG.get()) Console.log("$tag END: Nothing found")
-            }
-
-            latch.countDown()
         }
-
-        try {
-
-            val start = System.currentTimeMillis()
-
-            if (!latch.await(60, TimeUnit.SECONDS)) {
-
-                val e = TimeoutException(
-
-                    "Latch has timed out after ${System.currentTimeMillis() - start} millis"
-                )
-
-                recordException(e)
-            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
-
-        return result
     }
 }

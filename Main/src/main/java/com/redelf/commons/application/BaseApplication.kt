@@ -59,6 +59,7 @@ import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.net.cronet.Cronet
 import com.redelf.commons.net.retrofit.interceptor.RetryInterceptor
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
@@ -1357,43 +1358,87 @@ abstract class BaseApplication :
             Console.error(e)
         }
 
-        getUpdatesCodes().forEach { code ->
+        val codes = getUpdatesCodes()
 
-            /*
-                TODO: Incorporate until which version code is the update applicable (if needed)
-            */
-            if (versionCode >= code && isUpdateAvailable(code)) {
+        if (codes.isEmpty()) {
 
-                if (!isUpdating()) {
+            setUpdating(false)
+        }
 
-                    setUpdating(true)
+        val iterator = codes.iterator()
+
+        fun getAndUpdate() {
+
+            if (iterator.hasNext()) {
+
+                val code = iterator.next()
+
+                if (versionCode >= code) { // TODO: <--- Incorporate until which version code is the update applicable (if needed)
+
+                    isUpdateAvailable(
+
+                        code,
+
+                        object : OnObtain<Boolean> {
+
+                            override fun onCompleted(data: Boolean) {
+
+                                if (!data) {
+
+                                    getAndUpdate()
+
+                                    return
+                                }
+
+                                if (!isUpdating()) {
+
+                                    setUpdating(true)
+                                }
+
+                                Console.log("$tag Code :: $versionCode :: START")
+
+                                try {
+
+                                    val success = update(code)
+
+                                    if (success) {
+
+                                        onUpdated(code)
+
+                                        Console.log("$tag Code :: $versionCode :: END")
+
+                                    } else {
+
+                                        onUpdatedFailed(code)
+                                    }
+
+                                    getAndUpdate()
+
+                                } catch (e: MigrationNotReadyException) {
+
+                                    Console.warning("${e.message}, Code = $versionCode")
+
+                                    getAndUpdate()
+                                }
+                            }
+
+                            override fun onFailure(error: Throwable) {
+
+                                recordException(error)
+
+                                setUpdating(false)
+                            }
+                        }
+                    )
                 }
 
-                Console.log("$tag Code :: $versionCode :: START")
+            } else {
 
-                try {
-
-                    val success = update(code)
-
-                    if (success) {
-
-                        onUpdated(code)
-
-                        Console.log("$tag Code :: $versionCode :: END")
-
-                    } else {
-
-                        onUpdatedFailed(code)
-                    }
-
-                } catch (e: MigrationNotReadyException) {
-
-                    Console.warning("${e.message}, Code = $versionCode")
-                }
+                setUpdating(false)
             }
         }
 
-        setUpdating(false)
+        getAndUpdate()
     }
 
     override fun update(identifier: Long) = false
@@ -1424,7 +1469,26 @@ abstract class BaseApplication :
         }
     }
 
-    override fun isUpdateApplied(identifier: Long) = !isUpdateAvailable(identifier)
+    override fun isUpdateApplied(identifier: Long, callback: OnObtain<Boolean>) {
+
+        isUpdateAvailable(
+
+            identifier,
+
+            object : OnObtain<Boolean> {
+
+                override fun onCompleted(data: Boolean) {
+
+                    callback.onCompleted(!data)
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
+    }
 
     protected open fun setupObfuscator(): Boolean {
 
@@ -1448,22 +1512,38 @@ abstract class BaseApplication :
 
     protected open fun getObfuscatorEndpointToken() = ""
 
-    protected fun isUpdateAvailable(identifier: Long): Boolean {
+    protected fun isUpdateAvailable(identifier: Long, callback: OnObtain<Boolean>) {
 
         val key = "$prefsKeyUpdate.$identifier"
-        val value = prefs.get(key)
-        val updateAvailable = isEmpty(value)
 
-        if (updateAvailable) {
+        prefs.get(
 
-            Console.log("Update :: Available :: identifier = '$identifier'")
+            key,
 
-        } else {
+            object : OnObtain<String?> {
 
-            Console.log("Update :: Already applied :: identifier = '$identifier'")
-        }
+                override fun onCompleted(data: String?) {
 
-        return updateAvailable
+                    val updateAvailable = isEmpty(data)
+
+                    if (updateAvailable) {
+
+                        Console.log("Update :: Available :: identifier = '$identifier'")
+
+                    } else {
+
+                        Console.log("Update :: Already applied :: identifier = '$identifier'")
+                    }
+
+                    callback.onCompleted(updateAvailable)
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 
     private fun onAppBackgroundState() {
