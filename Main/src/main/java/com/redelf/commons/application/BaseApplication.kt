@@ -585,33 +585,33 @@ abstract class BaseApplication :
 
         enableLogsRecording()
 
-        if (useCronet) {
-
-            exec {
-
-                Cronet.initialize(applicationContext)
-            }
-        }
-
-        DataManagement.initialize(applicationContext)
-
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerActivityLifecycleCallbacks(this)
 
-        managers.addAll(populateManagers())
+        exec {
 
-        val contextDependableManagers = mutableListOf<DataManagement<*>>()
+            if (useCronet) {
 
-        contextDependentManagers.forEach { contextDependentManager ->
+                Cronet.initialize(applicationContext)
+            }
 
-            contextDependableManagers.add(contextDependentManager.obtain())
+            DataManagement.initialize(applicationContext)
+
+            managers.addAll(populateManagers())
+
+            val contextDependableManagers = mutableListOf<DataManagement<*>>()
+
+            contextDependentManagers.forEach { contextDependentManager ->
+
+                contextDependableManagers.add(contextDependentManager.obtain())
+            }
+
+            managers.addAll(listOf(contextDependableManagers))
+
+            defaultManagerResources.putAll(populateDefaultManagerResources())
+
+            doCreate()
         }
-
-        managers.addAll(listOf(contextDependableManagers))
-
-        defaultManagerResources.putAll(populateDefaultManagerResources())
-
-        doCreate()
     }
 
     fun initTerminationListener() {
