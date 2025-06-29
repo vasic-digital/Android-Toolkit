@@ -8,6 +8,7 @@ import com.redelf.commons.data.type.Typed
 import com.redelf.commons.destruction.reset.Resettable
 import com.redelf.commons.enable.Enabling
 import com.redelf.commons.enable.EnablingCallback
+import com.redelf.commons.environment.Environment
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
@@ -38,6 +39,7 @@ abstract class DataManagement<T> :
     Lockable,
     Abort,
     Enabling,
+    Environment,
     Contextual<BaseApplication>,
     ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
 
@@ -95,6 +97,8 @@ abstract class DataManagement<T> :
     open fun canLog() = DEBUG.get()
 
     override fun abort() = Unit
+
+    override fun getEnvironment() = "default"
 
     override fun enable(callback: EnablingCallback?) {
 
