@@ -608,7 +608,9 @@ abstract class DataManagement<T> :
             return
         }
 
-        if (data.getVersion() >= (this.data?.getVersion() ?: 0)) {
+        // FIXME: Polish and re-enable, add environment into the account
+        //  when it is changed (to reset version to 0)
+        //        if (data.getVersion() >= (this.data?.getVersion() ?: 0)) {
 
             Console.log(
                 "${getLogTag()} Data :: Overwrite :: " +
@@ -618,10 +620,10 @@ abstract class DataManagement<T> :
 
             this.data = data
 
-        } else {
-
-            Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED")
-        }
+        //        } else {
+        //
+        //            Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED")
+        //        }
     }
 
     private fun initCallbacksTag() = "${getLogTag()} Data management initialization"
