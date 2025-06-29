@@ -98,7 +98,7 @@ abstract class DataManagement<T> :
 
     override fun abort() = Unit
 
-    override fun getEnvironment() = "default"
+    override fun getEnvironment() = Environment.DEFAULT
 
     override fun enable(callback: EnablingCallback?) {
 
