@@ -39,6 +39,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
+import com.redelf.commons.atomic.AtomicIntWrapper
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
@@ -81,7 +82,9 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication> {
+    ContextAvailability<BaseApplication>
+
+{
 
     companion object :
 
@@ -95,9 +98,6 @@ abstract class BaseApplication :
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
 
-        var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
-        var TOP_ACTIVITIES = mutableListOf<Class<out Activity>>()
-
         const val ACTIVITY_LIFECYCLE_TAG = "Activity lifecycle ::"
         const val BROADCAST_ACTION_APPLICATION_SCREEN_OFF = "APPLICATION_STATE.SCREEN_OFF"
         const val BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND = "APPLICATION_STATE.BACKGROUND"
@@ -110,7 +110,16 @@ abstract class BaseApplication :
 
         override fun takeIntent(): Intent? = CONTEXT.takeIntent()
 
-        private var isAppInBackground = AtomicBoolean()
+        private val FOREGROUND_ACTIVITIES_COUNT = AtomicInteger()
+
+        private fun foregroundActivityCounter(): AtomicIntWrapper {
+
+            return AtomicIntWrapper(
+
+                "Foreground activity counter",
+                FOREGROUND_ACTIVITIES_COUNT
+            )
+        }
 
         fun restart(context: Context) {
 
@@ -190,6 +199,16 @@ abstract class BaseApplication :
 
             return ""
         }
+
+        fun getForegroundActivityCount(): Int {
+
+            return foregroundActivityCounter().get()
+        }
+
+        fun isAppInForeground(): Boolean {
+
+            return getForegroundActivityCount() > 0
+        }
     }
 
     open val useCronet = false
@@ -253,6 +272,8 @@ abstract class BaseApplication :
     open fun getSecret() = secretKey
 
     open fun canRecordApplicationLogs() = false
+
+    open fun getTopActivity(): Class<*>? = null
 
     abstract fun isProduction(): Boolean
 
@@ -941,10 +962,11 @@ abstract class BaseApplication :
 
     override fun getActivityCount(): Int {
 
-        return TOP_ACTIVITY.size
+        return getForegroundActivityCount()
     }
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+
         super.onActivityPreCreated(activity, savedInstanceState)
     }
 
@@ -981,24 +1003,7 @@ abstract class BaseApplication :
 
     override fun onActivityPreResumed(activity: Activity) {
 
-        val clazz = activity::class.java
-
-        Executor.UI.execute {
-
-            try {
-
-                TOP_ACTIVITY.add(clazz)
-                TOP_ACTIVITIES.add(clazz)
-
-                Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${clazz.simpleName}")
-
-                Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
-
-            } catch (e: Throwable) {
-
-                recordException(e)
-            }
-        }
+        // Ignore
 
         super.onActivityPreResumed(activity)
     }
@@ -1011,8 +1016,11 @@ abstract class BaseApplication :
     override fun onActivityResumed(activity: Activity) {
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
+    }
 
-        if (isAppInBackground.get()) {
+    override fun onActivityPostResumed(activity: Activity) {
+
+        if (foregroundActivityCounter().get() == 0) {
 
             val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
             sendBroadcast(intent)
@@ -1020,10 +1028,7 @@ abstract class BaseApplication :
             Console.debug("$ACTIVITY_LIFECYCLE_TAG Foreground")
         }
 
-        isAppInBackground.set(false)
-    }
-
-    override fun onActivityPostResumed(activity: Activity) {
+        foregroundActivityCounter().incrementAndGet()
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG POST-RESUMED :: ${activity.javaClass.simpleName}")
 
@@ -1032,14 +1037,21 @@ abstract class BaseApplication :
 
     override fun onActivityPrePaused(activity: Activity) {
 
+        val value = foregroundActivityCounter().decrementAndGet()
+
+        if (value < 0) {
+
+            foregroundActivityCounter().set(0)
+        }
+
+        if (foregroundActivityCounter().get() == 0) {
+
+            onAppBackgroundState()
+        }
+
         try {
 
             val clazz = activity::class.java
-
-            if (TOP_ACTIVITIES.contains(clazz)) {
-
-                TOP_ACTIVITIES.remove(clazz)
-            }
 
             Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
 
@@ -1055,16 +1067,7 @@ abstract class BaseApplication :
 
     override fun onActivityPostPaused(activity: Activity) {
 
-        Console.log(
-
-            "$ACTIVITY_LIFECYCLE_TAG POST-PAUSED :: ${activity.javaClass.simpleName}, " +
-                    "Active: ${TOP_ACTIVITY.size}"
-        )
-
-        if (TOP_ACTIVITIES.size <= 1) {
-
-            onAppBackgroundState()
-        }
+        // Ignore
 
         super.onActivityPostPaused(activity)
     }
@@ -1109,35 +1112,7 @@ abstract class BaseApplication :
 
     override fun onActivityPreDestroyed(activity: Activity) {
 
-        val iterator = TOP_ACTIVITY.iterator()
-
-        while (iterator.hasNext()) {
-
-            val item = iterator.next()
-
-            if (item == activity::class.java) {
-
-                iterator.remove()
-            }
-        }
-
         Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
-
-        if (TOP_ACTIVITIES.isEmpty()) {
-
-            Console.debug("$ACTIVITY_LIFECYCLE_TAG No top activity")
-
-            onAppBackgroundState()
-
-        } else {
-
-            if (TOP_ACTIVITY.isNotEmpty()) {
-
-                val clazz = TOP_ACTIVITY.last()
-
-                Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
-            }
-        }
 
         super.onActivityPreDestroyed(activity)
     }
@@ -1492,8 +1467,6 @@ abstract class BaseApplication :
     }
 
     private fun onAppBackgroundState() {
-
-        isAppInBackground.set(true)
 
         val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
         sendBroadcast(intent)

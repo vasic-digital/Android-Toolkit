@@ -294,9 +294,6 @@ abstract class LazyDataManagement<T> :
         onBackground("forceSave", sync)
     }
 
-    /*
-    * FIXME: The method is fired even we are surfing through the screens
-    */
     private fun onBackground(from: String, sync: Boolean) {
 
         if (!isEnabled()) {
@@ -309,7 +306,7 @@ abstract class LazyDataManagement<T> :
             return
         }
 
-        val tag = "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND ::"
+        val tag = "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
 
         if (isLazyReady()) {
 
