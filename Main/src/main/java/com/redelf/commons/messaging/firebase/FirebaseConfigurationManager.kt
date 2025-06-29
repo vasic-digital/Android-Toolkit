@@ -18,7 +18,9 @@ object FirebaseConfigurationManager :
 
     Loadable,
     ResourceDefaults,
-    ContextualManager<FirebaseConfiguration>() {
+    ContextualManager<FirebaseConfiguration>()
+
+{
 
     override val persist = false
     override val storageKey = "remote_configuration"
