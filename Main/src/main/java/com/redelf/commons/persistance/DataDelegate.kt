@@ -811,45 +811,53 @@ class DataDelegate private constructor(private val facade: Facade) :
     }
 
     @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(key: String?): T? {
+    operator fun <T> get(key: String?, callback: OnObtain<T?>) {
 
         val tag = "Get :: Key = '$key' ::"
 
         if (key == null || isEmpty(key)) {
 
-            return null
+            val e = IllegalArgumentException("Empty key")
+            callback.onFailure(e)
+            return
         }
 
-        if (putActions.contains(key)) {
+        exec {
 
-            if (DEBUG.get()) {
+            if (putActions.contains(key)) {
 
-                Console.debug("$tag Writing in progress")
+                if (DEBUG.get()) {
+
+                    Console.debug("$tag Writing in progress")
+                }
+
+                try {
+
+                    callback.onCompleted(putActions[key] as T?)
+
+                } catch (e: Throwable) {
+
+                    Console.error("$tag ERROR: ${e.message}")
+
+                    callback.onFailure(e)
+                }
+
+                return@exec
             }
 
-            try {
+            val count = getPartitionsCount(key)
 
-                return putActions[key] as T?
+            if (count > 0) {
 
-            } catch (e: Throwable) {
+                if (DEBUG.get()) Console.log("$tag Partitioning :: START")
 
-                Console.error("$tag ERROR: ${e.message}")
-                recordException(e)
+                callback.onCompleted(get<T?>(key = key, defaultValue = null))
 
-                return null
+                return@exec
             }
+
+            facade.get(key, callback)
         }
-
-        val count = getPartitionsCount(key)
-
-        if (count > 0) {
-
-            if (DEBUG.get()) Console.log("$tag Partitioning :: START")
-
-            return get<T?>(key = key, defaultValue = null)
-        }
-
-        return facade.get(key)
     }
 
     
