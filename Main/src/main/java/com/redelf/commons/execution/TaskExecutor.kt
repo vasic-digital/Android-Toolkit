@@ -33,7 +33,7 @@ class TaskExecutor private constructor(
             )
         }
 
-        fun instantiateSingle(queueCapacity: Int = 10 * 1000): ThreadPoolExecutor {
+        fun instantiateSingle(): ThreadPoolExecutor {
 
             return ThreadPoolExecutor(
 
@@ -41,7 +41,7 @@ class TaskExecutor private constructor(
                 1, // maximumPoolSize
                 0L, // keepAliveTime
                 TimeUnit.MILLISECONDS, // unit for keepAliveTime
-                LinkedBlockingQueue(queueCapacity)
+                LinkedBlockingQueue()
             )
         }
     }
