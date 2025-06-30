@@ -380,14 +380,17 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
             try {
 
-                if (isOnMainThread()) {
+                executor.execute(action)
 
-                    executor.execute(action)
-
-                } else {
-
-                    action.run()
-                }
+                // TODO: Make sure we can use this idea
+                //                if (isOnMainThread()) {
+                //
+                //                    executor.execute(action)
+                //
+                //                } else {
+                //
+                //                    action.run()
+                //                }
 
 
             } catch (e: Throwable) {

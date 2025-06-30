@@ -33,9 +33,7 @@ class DataDelegate private constructor(private val facade: Facade) :
     ShutdownSynchronized,
     TerminationSynchronized,
     InitializationWithContext,
-    Registration<EncryptionListener<String, String>>
-
-{
+    Registration<EncryptionListener<String, String>> {
 
     /*
      * TODO:
@@ -72,7 +70,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.terminate(*args)
     }
 
-    
+
     override fun initialize(ctx: Context) {
 
         return facade.initialize(ctx)
@@ -178,7 +176,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                 partition: Any?,
                                 callback: OnObtain<Boolean>? = null
 
-                            ) : Boolean {
+                            ): Boolean {
 
                                 try {
 
@@ -223,7 +221,8 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                             Console.log("$oTag Do simple write")
                                                         }
 
-                                                        val written = facade.put(keyPartition(key, i), it)
+                                                        val written =
+                                                            facade.put(keyPartition(key, i), it)
 
                                                         if (written) {
 
@@ -237,7 +236,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                         } else {
 
-                                                            val msg = "FAILURE: Partition no. $i not put"
+                                                            val msg =
+                                                                "FAILURE: Partition no. $i not put"
 
                                                             val e = IOException(msg)
 
@@ -281,20 +281,24 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         }
 
                                                         val keyRow = keyRow(key, partition, row)
-                                                        val keyRowType = keyRowType(key, partition, row)
+                                                        val keyRowType =
+                                                            keyRowType(key, partition, row)
 
                                                         var savedFqName = false
                                                         val savedValue = facade.put(keyRow, value)
-                                                        val fqName = value::class.java.canonicalName?.forClassName()
+                                                        val fqName =
+                                                            value::class.java.canonicalName?.forClassName()
 
                                                         if (isNotEmpty(fqName)) {
 
-                                                            savedFqName = facade.put(keyRowType, fqName)
+                                                            savedFqName =
+                                                                facade.put(keyRowType, fqName)
 
                                                         } else {
 
-                                                            val msg = "Failed to obtain canonical " +
-                                                                    "name for the '$value', Log no. = 1"
+                                                            val msg =
+                                                                "Failed to obtain canonical " +
+                                                                        "name for the '$value', Log no. = 1"
 
                                                             val e = IOException(msg)
 
@@ -314,12 +318,13 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                         } else {
 
-                                                            val msg = "Partition no. $i failure write :: " +
-                                                                    "Row no. = $row, " +
-                                                                    "Qualified name = $fqName, " +
-                                                                    "Saved value = $savedValue, " +
-                                                                    "Saved Fq. name = $savedFqName, " +
-                                                                    "Log no. = 1"
+                                                            val msg =
+                                                                "Partition no. $i failure write :: " +
+                                                                        "Row no. = $row, " +
+                                                                        "Qualified name = $fqName, " +
+                                                                        "Saved value = $savedValue, " +
+                                                                        "Saved Fq. name = $savedFqName, " +
+                                                                        "Log no. = 1"
 
                                                             val e = IOException(msg)
 
@@ -330,7 +335,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         return written
                                                     }
 
-                                                    
+
                                                     fun rowWrite(
 
                                                         partition: Int,
@@ -354,9 +359,11 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                         if (DEBUG.get()) {
 
-                                                            Console.log("$oTag Do map " +
-                                                                    "row write :: " +
-                                                                    "Map key = '$mapKey'")
+                                                            Console.log(
+                                                                "$oTag Do map " +
+                                                                        "row write :: " +
+                                                                        "Map key = '$mapKey'"
+                                                            )
                                                         }
 
                                                         if (value == null) {
@@ -371,8 +378,9 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                         if (mapKeyType == null) {
 
-                                                            val msg = "FAILURE: Partition no. $i, " +
-                                                                    "Row no. $row, No map key type provided"
+                                                            val msg =
+                                                                "FAILURE: Partition no. $i, " +
+                                                                        "Row no. $row, No map key type provided"
 
                                                             val e = IOException(msg)
 
@@ -384,8 +392,9 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                         if (valueType == null) {
 
-                                                            val msg = "FAILURE: Partition no. $i, " +
-                                                                    "Row no. $row, No value type provided"
+                                                            val msg =
+                                                                "FAILURE: Partition no. $i, " +
+                                                                        "Row no. $row, No value type provided"
 
                                                             val e = IOException(msg)
 
@@ -396,7 +405,8 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         }
 
                                                         val keyRow = keyRow(key, partition, row)
-                                                        val keyRowType = keyRowType(key, partition, row)
+                                                        val keyRowType =
+                                                            keyRowType(key, partition, row)
 
                                                         var mapKeyValue: Any = mapKey
                                                         var valueValue: Any = value
@@ -420,17 +430,21 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                         )
 
                                                         var savedFqName = false
-                                                        val savedValue = facade.put(keyRow, rowValue)
-                                                        val fqName = rowValue::class.java.canonicalName?.forClassName()
+                                                        val savedValue =
+                                                            facade.put(keyRow, rowValue)
+                                                        val fqName =
+                                                            rowValue::class.java.canonicalName?.forClassName()
 
                                                         if (isNotEmpty(fqName)) {
 
-                                                            savedFqName = facade.put(keyRowType, fqName)
+                                                            savedFqName =
+                                                                facade.put(keyRowType, fqName)
 
                                                         } else {
 
-                                                            val msg = "Failed to obtain canonical " +
-                                                                    "name for the '$value', Log no. = 2"
+                                                            val msg =
+                                                                "Failed to obtain canonical " +
+                                                                        "name for the '$value', Log no. = 2"
 
                                                             val e = IOException(msg)
 
@@ -496,7 +510,12 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             is List<*> -> {
 
-                                                                if (setRowsCount(key, i, partition.size)) {
+                                                                if (setRowsCount(
+                                                                        key,
+                                                                        i,
+                                                                        partition.size
+                                                                    )
+                                                                ) {
 
                                                                     partition.forEachIndexed {
 
@@ -507,7 +526,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                                 } else {
 
-                                                                    val msg = "FAILURE: Writing rows count"
+                                                                    val msg =
+                                                                        "FAILURE: Writing rows count"
                                                                     Console.error("$oTag $msg")
                                                                     val e = IOException(msg)
                                                                     callback?.onFailure(e)
@@ -518,7 +538,12 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             is Map<*, *> -> {
 
-                                                                if (setRowsCount(key, i, partition.size)) {
+                                                                if (setRowsCount(
+                                                                        key,
+                                                                        i,
+                                                                        partition.size
+                                                                    )
+                                                                ) {
 
                                                                     var index = 0
 
@@ -557,7 +582,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                                 } else {
 
-                                                                    val msg = "FAILURE: Writing rows count"
+                                                                    val msg =
+                                                                        "FAILURE: Writing rows count"
                                                                     Console.error("$oTag $msg")
                                                                     val e = IOException(msg)
                                                                     callback?.onFailure(e)
@@ -568,7 +594,12 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             is Set<*> -> {
 
-                                                                if (setRowsCount(key, i, partition.size)) {
+                                                                if (setRowsCount(
+                                                                        key,
+                                                                        i,
+                                                                        partition.size
+                                                                    )
+                                                                ) {
 
                                                                     partition.forEachIndexed {
 
@@ -579,7 +610,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                                 } else {
 
-                                                                    val msg = "FAILURE: Writing rows count"
+                                                                    val msg =
+                                                                        "FAILURE: Writing rows count"
                                                                     Console.error("$oTag $msg")
                                                                     val e = IOException(msg)
                                                                     callback?.onFailure(e)
@@ -590,7 +622,12 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             is Queue<*> -> {
 
-                                                                if (setRowsCount(key, i, partition.size)) {
+                                                                if (setRowsCount(
+                                                                        key,
+                                                                        i,
+                                                                        partition.size
+                                                                    )
+                                                                ) {
 
                                                                     partition.forEachIndexed {
 
@@ -601,7 +638,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                                 } else {
 
-                                                                    val msg = "FAILURE: Writing rows count"
+                                                                    val msg =
+                                                                        "FAILURE: Writing rows count"
                                                                     Console.error("$oTag $msg")
                                                                     val e = IOException(msg)
                                                                     callback?.onFailure(e)
@@ -628,7 +666,8 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                                 } else {
 
-                                                                    val msg = "FAILURE: Simple write failed"
+                                                                    val msg =
+                                                                        "FAILURE: Simple write failed"
                                                                     Console.error("$oTag $msg")
                                                                     val e = IOException(msg)
                                                                     callback?.onFailure(e)
@@ -649,8 +688,10 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                             if (DEBUG.get()) {
 
-                                                                Console.log("$oTag WRITTEN: Partition no. " +
-                                                                        "$partition (simple write / 1)")
+                                                                Console.log(
+                                                                    "$oTag WRITTEN: Partition no. " +
+                                                                            "$partition (simple write / 1)"
+                                                                )
                                                             }
 
                                                         } else {
@@ -777,7 +818,10 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                             try {
 
-                                return partitioningLatch.await(60, TimeUnit.SECONDS) || success.get()
+                                return partitioningLatch.await(
+                                    60,
+                                    TimeUnit.SECONDS
+                                ) || success.get()
 
                             } catch (e: InterruptedException) {
 
@@ -845,515 +889,609 @@ class DataDelegate private constructor(private val facade: Facade) :
                 return@exec
             }
 
-            val count = getPartitionsCount(key)
+            getPartitionsCount(
 
-            if (count > 0) {
+                key,
 
-                if (DEBUG.get()) Console.log("$tag Partitioning :: START")
+                object : OnObtain<Int?> {
 
-                callback.onCompleted(get<T?>(key = key, defaultValue = null))
+                    override fun onCompleted(data: Int?) {
 
-                return@exec
-            }
+                        data?.let { count ->
 
-            facade.get(key, callback)
+                            if (count > 0) {
+
+                                if (DEBUG.get()) Console.log("$tag Partitioning :: START")
+
+                                get<T?>(key = key, defaultValue = null, callback)
+
+                            } else {
+
+                                facade.get(key, callback)
+                            }
+                        }
+
+                        if (data == null) {
+
+                            facade.get(key, callback)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
         }
     }
 
-    
+
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
-    operator fun <T> get(key: String?, defaultValue: T?): T? {
+    operator fun <T> get(key: String?, defaultValue: T?, callback: OnObtain<T?>) {
 
         if (key == null || isEmpty(key)) {
 
-            return defaultValue
+            callback.onCompleted(defaultValue)
+            return
         }
 
-        val clazz = getType(key)
-        val partitionsCount = getPartitionsCount(key)
+        fun onPartitionsCount(partitionsCount: Int, clazz: Class<*>?) {
 
-        if (partitionsCount > 0) {
+            if (partitionsCount > 0) {
 
-            val tag = "Partitioning :: Get :: key = $key, T = '${clazz?.simpleName}' :: "
+                val tag = "Partitioning :: Get :: key = $key, T = '${clazz?.simpleName}' :: "
 
-            if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
+                if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
 
-            try {
+                try {
 
-                clazz?.newInstance()?.let { instance ->
+                    clazz?.newInstance()?.let { instance ->
 
-                    if (DEBUG.get()) Console.log("$tag INSTANTIATED")
+                        if (DEBUG.get()) Console.log("$tag INSTANTIATED")
 
-                    if (instance is Partitioning<*>) {
+                        if (instance is Partitioning<*>) {
 
-                        if (DEBUG.get()) Console.log("$tag IS PARTITIONING")
+                            if (DEBUG.get()) Console.log("$tag IS PARTITIONING")
 
-                        for (i in 0..<partitionsCount) {
+                            for (i in 0..<partitionsCount) {
 
-                            if (DEBUG.get()) {
+                                if (DEBUG.get()) {
 
-                                Console.log(
+                                    Console.log(
 
-                                    "$tag DO: Partition no. $i"
-                                )
-                            }
+                                        "$tag DO: Partition no. $i"
+                                    )
+                                }
 
-                            val type = instance.getPartitionType(i)
+                                val type = instance.getPartitionType(i)
 
-                            type?.let { t ->
+                                type?.let { t ->
 
-                                val rowsCount = getRowsCount(key, i)
+                                    val rowsCount = getRowsCount(key, i)
 
-                                if (rowsCount > 0) {
+                                    if (rowsCount > 0) {
 
-                                    val pt = t as ParameterizedType
-                                    val inT = Class.forName(pt.rawType.typeName.forClassName())
+                                        val pt = t as ParameterizedType
+                                        val inT = Class.forName(pt.rawType.typeName.forClassName())
 
-                                    try {
+                                        try {
 
-                                        val partition = if (inT.canonicalName?.forClassName() == "java.util.List") {
+                                            val partition =
+                                                if (inT.canonicalName?.forClassName() == "java.util.List") {
 
-                                            mutableListOf<Any?>()
+                                                    mutableListOf<Any?>()
 
-                                        } else {
+                                                } else {
 
-                                            inT.newInstance()
-                                        }
-
-                                        for (j in 0..<rowsCount) {
-
-                                            val keyRow = keyRow(key, i, j)
-                                            val keyRowType = keyRowType(key, i, j)
-                                            val rowType = facade.get(keyRowType, "").forClassName()
-
-                                            if (isEmpty(rowType)) {
-
-                                                Console.error(
-
-                                                    "$tag FAILURE: No row type :: Key =" +
-                                                            " '$keyRowType', " +
-                                                            "Partition = $i, Row = $j"
-                                                )
-
-                                                return defaultValue
-
-                                            } else {
-
-                                                if (DEBUG.get()) Console.log(
-
-                                                    "$tag Row type: '$rowType'"
-                                                )
-                                            }
-
-                                            var rowClazz: Class<*>? = null
-
-                                            try {
-
-                                                val simpleClass = getSimple(rowType)
-
-                                                simpleClass?.let {
-
-                                                    rowClazz = it
+                                                    inT.newInstance()
                                                 }
 
-                                                if (simpleClass == null) {
+                                            for (j in 0..<rowsCount) {
 
-                                                    val rType = rowType.forClassName()
+                                                val keyRow = keyRow(key, i, j)
+                                                val keyRowType = keyRowType(key, i, j)
+                                                val rowType =
+                                                    facade.get(keyRowType, "").forClassName()
 
-                                                    rowClazz = when(rType) {
+                                                if (isEmpty(rowType)) {
 
-                                                        "string",
-                                                        "java.lang.String",
-                                                        "kotlin.String" -> String::class.java
+                                                    Console.error(
 
-                                                        "int",
-                                                        "java.lang.Integer",
-                                                        "kotlin.Integer" -> Int::class.java
+                                                        "$tag FAILURE: No row type :: Key =" +
+                                                                " '$keyRowType', " +
+                                                                "Partition = $i, Row = $j"
+                                                    )
 
-                                                        "long",
-                                                        "java.lang.Long",
-                                                        "kotlin.Long" -> Long::class.java
+                                                    return defaultValue
 
-                                                        "float",
-                                                        "java.lang.Float",
-                                                        "kotlin.Float" -> Float::class.java
+                                                } else {
 
-                                                        "double",
-                                                        "java.lang.Double",
-                                                        "kotlin.Double" -> Double::class.java
+                                                    if (DEBUG.get()) Console.log(
 
-                                                        "bool",
-                                                        "boolean",
-                                                        "java.lang.Boolean",
-                                                        "kotlin.Boolean" -> Boolean::class.java
+                                                        "$tag Row type: '$rowType'"
+                                                    )
+                                                }
 
+                                                var rowClazz: Class<*>? = null
 
-                                                        else -> Class.forName(rType)
+                                                try {
+
+                                                    val simpleClass = getSimple(rowType)
+
+                                                    simpleClass?.let {
+
+                                                        rowClazz = it
                                                     }
 
+                                                    if (simpleClass == null) {
 
-                                                }
+                                                        val rType = rowType.forClassName()
 
-                                            } catch (e: ClassNotFoundException) {
+                                                        rowClazz = when (rType) {
 
-                                                Console.error(e)
-                                            }
+                                                            "string",
+                                                            "java.lang.String",
+                                                            "kotlin.String" -> String::class.java
 
-                                            rowClazz?.let { clz ->
+                                                            "int",
+                                                            "java.lang.Integer",
+                                                            "kotlin.Integer" -> Int::class.java
 
-                                                val obtained = facade.getByClass(keyRow, clz)
+                                                            "long",
+                                                            "java.lang.Long",
+                                                            "kotlin.Long" -> Long::class.java
 
-                                                obtained?.let { obt ->
+                                                            "float",
+                                                            "java.lang.Float",
+                                                            "kotlin.Float" -> Float::class.java
 
-                                                    when (partition) {
+                                                            "double",
+                                                            "java.lang.Double",
+                                                            "kotlin.Double" -> Double::class.java
 
-                                                        is MutableList<*> -> {
+                                                            "bool",
+                                                            "boolean",
+                                                            "java.lang.Boolean",
+                                                            "kotlin.Boolean" -> Boolean::class.java
 
-                                                            val vts = instantiate(
 
-                                                                what = rowClazz,
-                                                                arg = obt
-                                                            )
-
-                                                            (partition as MutableList<Any>).add(vts)
+                                                            else -> Class.forName(rType)
                                                         }
 
-                                                        is MutableMap<*, *> -> {
 
-                                                            if (obt is PairDataInfo) {
+                                                    }
 
-                                                                obt.first.let { first ->
-                                                                    obt.second.let { second ->
+                                                } catch (e: ClassNotFoundException) {
 
-                                                                        val clz1 = Class.forName(
+                                                    Console.error(e)
+                                                }
 
-                                                                            (obt.firstType ?: "").forClassName()
-                                                                        )
+                                                rowClazz?.let { clz ->
 
-                                                                        val clz2 = Class.forName(
+                                                    val obtained = facade.getByClass(keyRow, clz)
 
-                                                                            (obt.secondType ?: "").forClassName()
-                                                                        )
+                                                    obtained?.let { obt ->
 
-                                                                        if (DEBUG.get()) Console.log(
+                                                        when (partition) {
 
-                                                                            "$tag Row key type: '${clz1.simpleName}', " +
-                                                                                    "Row value type: '${clz2.simpleName}'"
-                                                                        )
+                                                            is MutableList<*> -> {
 
-                                                                        val kts = instantiate(
+                                                                val vts = instantiate(
 
-                                                                            what = clz1,
-                                                                            arg = first
-                                                                        )
+                                                                    what = rowClazz,
+                                                                    arg = obt
+                                                                )
 
-                                                                        val vts = instantiate(
+                                                                (partition as MutableList<Any>).add(
+                                                                    vts
+                                                                )
+                                                            }
 
-                                                                            what = clz2,
-                                                                            arg = second
-                                                                        )
+                                                            is MutableMap<*, *> -> {
 
-                                                                        (partition as MutableMap<Any, Any>).put(
-                                                                            kts,
-                                                                            vts
-                                                                        )
+                                                                if (obt is PairDataInfo) {
+
+                                                                    obt.first.let { first ->
+                                                                        obt.second.let { second ->
+
+                                                                            val clz1 =
+                                                                                Class.forName(
+
+                                                                                    (obt.firstType
+                                                                                        ?: "").forClassName()
+                                                                                )
+
+                                                                            val clz2 =
+                                                                                Class.forName(
+
+                                                                                    (obt.secondType
+                                                                                        ?: "").forClassName()
+                                                                                )
+
+                                                                            if (DEBUG.get()) Console.log(
+
+                                                                                "$tag Row key type: '${clz1.simpleName}', " +
+                                                                                        "Row value type: '${clz2.simpleName}'"
+                                                                            )
+
+                                                                            val kts = instantiate(
+
+                                                                                what = clz1,
+                                                                                arg = first
+                                                                            )
+
+                                                                            val vts = instantiate(
+
+                                                                                what = clz2,
+                                                                                arg = second
+                                                                            )
+
+                                                                            (partition as MutableMap<Any, Any>).put(
+                                                                                kts,
+                                                                                vts
+                                                                            )
+                                                                        }
                                                                     }
-                                                                }
 
-                                                            } else {
+                                                                } else {
+
+                                                                    Console.error(
+
+                                                                        "$tag FAILURE: " +
+                                                                                "Unsupported map child " +
+                                                                                "type " +
+                                                                                "'${obt::class.simpleName}'"
+                                                                    )
+
+                                                                    return defaultValue
+                                                                }
+                                                            }
+
+                                                            is MutableSet<*> -> {
+
+                                                                (partition as MutableSet<Any>).add(
+                                                                    obt
+                                                                )
+                                                            }
+
+                                                            else -> {
 
                                                                 Console.error(
 
-                                                                    "$tag FAILURE: " +
-                                                                            "Unsupported map child " +
-                                                                            "type " +
-                                                                            "'${obt::class.simpleName}'"
+                                                                    "$tag FAILURE: Unsupported " +
+                                                                            "partition type '${t.typeName}'"
                                                                 )
 
                                                                 return defaultValue
                                                             }
                                                         }
+                                                    }
 
-                                                        is MutableSet<*> -> {
+                                                    if (obtained == null) {
 
-                                                            (partition as MutableSet<Any>).add(obt)
-                                                        }
+                                                        Console.error(
 
-                                                        else -> {
+                                                            "$tag FAILURE: Obtained row is null"
+                                                        )
 
-                                                            Console.error(
-
-                                                                "$tag FAILURE: Unsupported " +
-                                                                        "partition type '${t.typeName}'"
-                                                            )
-
-                                                            return defaultValue
-                                                        }
+                                                        return defaultValue
                                                     }
                                                 }
 
-                                                if (obtained == null) {
+                                                if (rowClazz == null) {
 
-                                                    Console.error(
-
-                                                        "$tag FAILURE: Obtained row is null"
-                                                    )
+                                                    Console.error("$tag FAILURE: Row class is null")
 
                                                     return defaultValue
                                                 }
                                             }
 
-                                            if (rowClazz == null) {
+                                            var set = false
 
-                                                Console.error("$tag FAILURE: Row class is null")
+                                            set = instance.setPartitionData(i, partition)
+
+                                            if (set) {
+
+                                                if (DEBUG.get()) {
+
+                                                    Console.log("$tag Set: $i")
+                                                }
+
+                                            } else {
+
+                                                Console.error("$tag FAILURE: Not set: $i")
+
+                                                return defaultValue
+                                            }
+
+                                        } catch (e: Throwable) {
+
+                                            Console.error(
+
+                                                "$tag ERROR :: " +
+                                                        "Partition canonical name: ${inT.canonicalName?.forClassName()}"
+                                            )
+
+                                            instance.failPartitionData(i, e)
+                                        }
+
+                                    } else {
+
+                                        val partition = facade.getByType(keyPartition(key, i), t)
+
+                                        partition?.let { part ->
+
+                                            if (DEBUG.get()) Console.log("$tag Obtained: $i")
+
+                                            val set = instance.setPartitionData(i, part)
+
+                                            if (set) {
+
+                                                if (DEBUG.get()) Console.log("$tag Set: $i")
+
+                                            } else {
+
+                                                Console.error("$tag FAILURE: Not set: $i")
 
                                                 return defaultValue
                                             }
                                         }
 
-                                        var set = false
+                                        if (partition == null && DEBUG.get()) {
 
-                                        set = instance.setPartitionData(i, partition)
-
-                                        if (set) {
-
-                                            if (DEBUG.get()) {
-
-                                                Console.log("$tag Set: $i")
-                                            }
-
-                                        } else {
-
-                                            Console.error("$tag FAILURE: Not set: $i")
-
-                                            return defaultValue
-                                        }
-
-                                    } catch (e: Throwable) {
-
-                                        Console.error(
-
-                                            "$tag ERROR :: " +
-                                                "Partition canonical name: ${inT.canonicalName?.forClassName()}"
-                                        )
-
-                                        instance.failPartitionData(i, e)
-                                    }
-
-                                } else {
-
-                                    val partition = facade.getByType(keyPartition(key, i), t)
-
-                                    partition?.let { part ->
-
-                                        if (DEBUG.get()) Console.log("$tag Obtained: $i")
-
-                                        val set = instance.setPartitionData(i, part)
-
-                                        if (set) {
-
-                                            if (DEBUG.get()) Console.log("$tag Set: $i")
-
-                                        } else {
-
-                                            Console.error("$tag FAILURE: Not set: $i")
-
-                                            return defaultValue
+                                            Console.log("$tag WARNING: Null partition: $i")
                                         }
                                     }
+                                }
 
-                                    if (partition == null && DEBUG.get()) {
+                                if (type == null) {
 
-                                        Console.log("$tag WARNING: Null partition: $i")
-                                    }
+                                    Console.error(
+
+                                        "$tag FAILURE: No partition type " +
+                                                "defined for partition: $i"
+                                    )
+
+                                    return defaultValue
                                 }
                             }
 
-                            if (type == null) {
+                            return instance as T
 
-                                Console.error(
+                        } else {
 
-                                    "$tag FAILURE: No partition type " +
-                                            "defined for partition: $i"
-                                )
+                            Console.error("$tag END: No partitions reported")
 
-                                return defaultValue
-                            }
+                            return defaultValue
                         }
-
-                        return instance as T
-
-                    } else {
-
-                        Console.error("$tag END: No partitions reported")
-
-                        return defaultValue
                     }
+
+                } catch (e: Throwable) {
+
+                    Console.error("$tag ERROR: ${e.message}")
+
+                    recordException(e)
                 }
-
-            } catch (e: Throwable) {
-
-                Console.error("$tag ERROR: ${e.message}")
-
-                recordException(e)
             }
+
+            return facade.get(key, defaultValue) ?: defaultValue
         }
 
-        return facade.get(key, defaultValue) ?: defaultValue
+        val clazz = getType(key)
+        val partitionsCount = getPartitionsCount(key) // TODO: Connect
+
+
     }
 
     fun count(): Long = facade.count()
 
-    
-    fun delete(key: String?): Boolean {
+
+    fun delete(key: String?, callback: OnObtain<Boolean?>) {
 
         if (key == null || isEmpty(key)) {
 
-            return false
+            val e = IllegalArgumentException("Empty key")
+            callback.onFailure(e)
+            return
         }
 
-        val partitionsCount = getPartitionsCount(key)
+        getPartitionsCount(
 
-        val tag = "Partitioning :: Delete ::"
+            key,
 
-        if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
+            object : OnObtain<Int?> {
 
-        if (partitionsCount > 0) {
+                override fun onCompleted(data: Int?) {
 
-            val typeRemoved = facade.delete(keyType(key))
-            val markRemoved = facade.delete(keyPartitions(key))
+                    var partitionsCount = 0
 
-            if (!markRemoved) {
+                    data?.let {
 
-                Console.error("$tag ERROR: Could not un-mark partitioning data")
+                        partitionsCount = it
+                    }
 
-                return false
-            }
+                    val tag = "Partitioning :: Delete ::"
 
-            if (!typeRemoved) {
+                    if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
 
-                Console.error("$tag ERROR: Could not un-mark type data")
+                    if (partitionsCount > 0) {
 
-                return false
-            }
+                        val typeRemoved = facade.delete(keyType(key))
+                        val markRemoved = facade.delete(keyPartitions(key))
 
-            for (i in 0..<partitionsCount) {
+                        if (!markRemoved) {
 
-                val rowsCount = getRowsCount(key, i)
-                val removed = facade.delete(keyPartition(key, i))
+                            val e = IllegalStateException("Could not un-mark partitioning data")
+                            callback.onFailure(e)
+                            return
+                        }
 
-                if (rowsCount <= 0) {
+                        if (!typeRemoved) {
 
-                    if (removed) {
+                            val e = IllegalStateException("Could not un-mark type data")
+                            callback.onFailure(e)
+                            return
+                        }
 
-                        if (DEBUG.get()) Console.log("$tag REMOVED: Partition no. $i")
+                        // TODO: Continue here
+                        for (i in 0..<partitionsCount) {
+
+                            val rowsCount = getRowsCount(key, i)
+                            val removed = facade.delete(keyPartition(key, i))
+
+                            if (rowsCount <= 0) {
+
+                                if (removed) {
+
+                                    if (DEBUG.get()) Console.log("$tag REMOVED: Partition no. $i")
+
+                                } else {
+
+                                    val msg = "FAILURE: Partition no. $i not removed, Log no. = 2"
+
+                                    val e = IOException(msg)
+
+                                    Console.error("$tag ERROR: ${e.message}")
+                                    recordException(e)
+                                }
+
+                            } else {
+
+                                for (j in 0..<rowsCount) {
+
+                                    val rRemoved = facade.delete(keyRow(key, i, j)) &&
+                                            facade.delete(keyRowType(key, i, j))
+
+                                    if (rRemoved) {
+
+                                        if (DEBUG.get()) Console.log(
+
+                                            "$tag REMOVED: Partition no. $i, Row no. $j"
+                                        )
+
+                                    } else {
+
+                                        val msg = "FAILURE: Partition no. $i not removed, Row no. $j"
+
+                                        val e = IOException(msg)
+
+                                        Console.error("$tag ERROR: ${e.message}")
+                                        recordException(e)
+                                    }
+                                }
+
+                                if (deleteRowsCount(key, i)) {
+
+                                    if (DEBUG.get()) Console.log(
+
+                                        "$tag REMOVED: Partition no. $i, Rows count deletion"
+                                    )
+
+                                } else {
+
+                                    val msg = "FAILURE: Partition no. $i, Rows count deletion"
+
+                                    val e = IOException(msg)
+
+                                    Console.error("$tag ERROR: ${e.message}")
+                                    recordException(e)
+                                }
+                            }
+                        }
 
                     } else {
 
-                        val msg = "FAILURE: Partition no. $i not removed, Log no. = 2"
-
-                        val e = IOException(msg)
-
-                        Console.error("$tag ERROR: ${e.message}")
-                        recordException(e)
+                        callback.onCompleted(facade.delete(key))
                     }
+                }
 
-                } else {
+                override fun onFailure(error: Throwable) {
 
-                    for (j in 0..<rowsCount) {
+                    callback.onFailure(error)
+                }
+            }
+        )
+    }
 
-                        val rRemoved = facade.delete(keyRow(key, i, j)) &&
-                                facade.delete(keyRowType(key, i, j))
 
-                        if (rRemoved) {
+    fun contains(key: String?, callback: OnObtain<Boolean>) {
 
-                            if (DEBUG.get()) Console.log(
+        exec {
 
-                                "$tag REMOVED: Partition no. $i, Row no. $j"
-                            )
+            if (key == null || isEmpty(key)) {
 
-                        } else {
+                val e = IllegalArgumentException("Empty key")
+                callback.onFailure(e)
+                return@exec
+            }
 
-                            val msg = "FAILURE: Partition no. $i not removed, Row no. $j"
+            getPartitionsCount(
 
-                            val e = IOException(msg)
+                key,
 
-                            Console.error("$tag ERROR: ${e.message}")
-                            recordException(e)
+                object : OnObtain<Int?> {
+
+                    override fun onCompleted(data: Int?) {
+
+                        data?.let { partitionsCount ->
+
+                            if (partitionsCount > 0) {
+
+                                callback.onCompleted(true)
+
+                            } else {
+
+                                facade.contains(key, callback)
+                            }
+                        }
+
+                        if (data == null) {
+
+                            facade.contains(key, callback)
                         }
                     }
 
-                    if (deleteRowsCount(key, i)) {
+                    override fun onFailure(error: Throwable) {
 
-                        if (DEBUG.get()) Console.log(
-
-                            "$tag REMOVED: Partition no. $i, Rows count deletion"
-                        )
-
-                    } else {
-
-                        val msg = "FAILURE: Partition no. $i, Rows count deletion"
-
-                        val e = IOException(msg)
-
-                        Console.error("$tag ERROR: ${e.message}")
-                        recordException(e)
+                        callback.onFailure(error)
                     }
                 }
-            }
+            )
         }
-
-        return facade.delete(key)
-    }
-
-    
-    operator fun contains(key: String?): Boolean {
-
-        if (key == null || isEmpty(key)) {
-
-            return false
-        }
-
-        val partitionsCount = getPartitionsCount(key)
-
-        if (partitionsCount > 0) {
-
-            return true
-        }
-
-        return facade.contains(key)
     }
 
     /*
          DANGER ZONE:
     */
-    
     fun destroy() {
 
         facade.destroy()
     }
 
-    
     fun deleteAll(): Boolean {
 
         return facade.deleteAll()
     }
 
-    
-    private fun getPartitionsCount(key: String): Int {
+    private fun getPartitionsCount(key: String, callback: OnObtain<Int?>) {
 
-        return facade.get(keyPartitions(key), 0)
+        exec {
+
+            facade.get(keyPartitions(key), 0, callback)
+        }
     }
 
-    
-    private fun getRowsCount(key: String, partition: Int): Int {
+    private fun getRowsCount(key: String, partition: Int, callback: OnObtain<Int?>) {
 
-        val rowsKey = keyRows(key, partition)
+        exec {
 
-        return facade.get(rowsKey, 0)
+            val rowsKey = keyRows(key, partition)
+
+            facade.get(rowsKey, 0, callback)
+        }
     }
 
-    
     private fun setRowsCount(key: String, partition: Int, rows: Int): Boolean {
 
         val rowsKey = keyRows(key, partition)
@@ -1361,7 +1499,6 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.put(rowsKey, rows)
     }
 
-    
     private fun deleteRowsCount(key: String, partition: Int): Boolean {
 
         val rowsKey = keyRows(key, partition)
@@ -1369,20 +1506,45 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.delete(rowsKey)
     }
 
-    private fun getType(key: String): Class<*>? {
+    private fun getType(key: String, callback: OnObtain<Class<*>?>) {
 
-        val value = facade.get(keyType(key), "")
+        exec {
 
-        try {
+            facade.get(
 
-            return Class.forName(value.forClassName())
+                keyType(key), "",
 
-        } catch (e: ClassNotFoundException) {
+                object : OnObtain<String?> {
 
-            Console.error(e)
+                    override fun onCompleted(data: String?) {
+
+                        data?.let { value ->
+
+                            try {
+
+                                val result = Class.forName(value.forClassName())
+
+                                callback.onCompleted(result)
+
+                            } catch (e: Throwable) {
+
+                                callback.onFailure(e)
+                            }
+                        }
+
+                        if (data == null) {
+
+                            callback.onCompleted(null)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
         }
-
-        return null
     }
 
     private fun keyType(key: String) = "$key.type"
@@ -1403,9 +1565,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         SecurityException::class,
         IllegalAccessException::class,
         InstantiationException::class
-
     )
-    
     private fun instantiate(what: Class<*>?, arg: Any?): Any {
 
         arg?.let {
@@ -1451,7 +1611,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                         val constructorIsValid = constructor.parameterCount == 1 &&
                                 constructor.parameterTypes[0].canonicalName?.forClassName() ==
-                                    argument::class.java.canonicalName?.forClassName()
+                                argument::class.java.canonicalName?.forClassName()
 
                         if (constructorIsValid) {
 
@@ -1472,7 +1632,7 @@ class DataDelegate private constructor(private val facade: Facade) :
         return what.newInstance()
     }
 
-    
+
     private fun getSimple(type: String): Class<*>? {
 
         return when (type.forClassName()) {
