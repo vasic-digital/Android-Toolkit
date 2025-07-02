@@ -8,6 +8,7 @@ import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -37,11 +38,28 @@ object FirebaseConfigurationManager :
 
     override fun isLoaded() = isLazyReady()
 
-    override fun reset(): Boolean {
+    override fun reset(callback: OnObtain<Boolean?>) {
 
-        loaded.set(false)
+        super.reset(
 
-        return super.reset()
+            object : OnObtain<Boolean?> {
+
+                override fun onCompleted(data: Boolean?) {
+
+                    if (data == true) {
+
+                        loaded.set(false)
+                    }
+
+                    callback.onCompleted(data == true)
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 
     override fun load() {
@@ -79,25 +97,42 @@ object FirebaseConfigurationManager :
 
                     Console.log("$LOG_TAG Config params obtained: $all")
 
-                    try {
+                    val newMap = FirebaseConfiguration()
+                    newMap.putAll(all)
 
-                        val newMap = FirebaseConfiguration()
-                        newMap.putAll(all)
-                        pushData(newMap)
+                    pushData(
 
-                    } catch (e: IllegalStateException) {
+                        newMap,
 
-                        recordException(e)
-                    }
 
-                    latch.countDown()
+                        object : OnObtain<Boolean?> {
+
+                            override fun onCompleted(data: Boolean?) {
+
+                                loaded.set(true)
+
+                                latch.countDown()
+                            }
+
+                            override fun onFailure(error: Throwable) {
+
+                                recordException(error)
+
+                                loaded.set(true)
+
+                                latch.countDown()
+                            }
+                        }
+                    )
 
                 } else {
 
                     Console.error("$LOG_TAG Config params update failed")
-                }
 
-                loaded.set(true)
+                    loaded.set(true)
+
+                    latch.countDown()
+                }
 
             }.addOnFailureListener {
 

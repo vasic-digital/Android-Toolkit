@@ -352,7 +352,7 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
-    open fun pushData(callback: OnObtain<Boolean?>?) {
+    open fun pushData(data: T?, callback: OnObtain<Boolean?>?) {
 
         if (!isEnabled()) {
 
@@ -360,35 +360,30 @@ abstract class DataManagement<T> :
             return
         }
 
-        exec {
+        if (DEBUG.get()) Console.log("${getLogTag()} Push data")
 
-            obtain(
+        data?.let {
 
-                object : OnObtain<T?> {
+            doPushData(it, callback)
+        }
 
-                    override fun onCompleted(data: T?) {
+        if (data == null) {
 
-                        if (data == null) {
+            val dObject = createDataObject()
 
-                            Console.error("${getLogTag()} Push data :: Data is null")
+            dObject?.let {
 
-                            callback?.onCompleted(false)
-                        }
+                doPushData(it, callback)
+            }
 
-                        data?.let {
+            if (dObject == null) {
 
-                            if (DEBUG.get()) Console.log("${getLogTag()} Push data :: START")
+                val msg = "Data object creation failed, can't push data"
 
-                            doPushData(it, callback)
-                        }
-                    }
+                Console.error("${getLogTag()} Push data :: $msg")
 
-                    override fun onFailure(error: Throwable) {
-
-                        recordException(error)
-                    }
-                }
-            )
+                callback?.onFailure(IllegalStateException(msg))
+            }
         }
     }
 
@@ -752,6 +747,8 @@ abstract class DataManagement<T> :
                                 data?.let {
 
                                     parent.pushData(
+
+                                        it,
 
                                         object : OnObtain<Boolean?> {
 

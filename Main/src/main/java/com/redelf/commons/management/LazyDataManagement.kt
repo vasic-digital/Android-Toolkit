@@ -20,10 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class LazyDataManagement<T> :
 
     DataManagement<T>(),
-    Registration<Context>
-
-        where T : Versionable
-
+    Registration<Context> where T : Versionable
 {
 
     protected open val lazySaving = false
@@ -243,7 +240,7 @@ abstract class LazyDataManagement<T> :
 
     override fun isRegistered(subscriber: Context) = registered.get() && terminationRegistered.get()
 
-    override fun pushData(callback: OnObtain<Boolean?>?) {
+    override fun pushData(data: T?, callback: OnObtain<Boolean?>?) {
 
         if (!isEnabled()) {
 
@@ -257,7 +254,7 @@ abstract class LazyDataManagement<T> :
 
         } else {
 
-            super.pushData(callback)
+            super.pushData(data, callback)
         }
     }
 
@@ -297,7 +294,8 @@ abstract class LazyDataManagement<T> :
             return
         }
 
-        val tag = "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
+        val tag =
+            "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
 
         if (isLazyReady()) {
 

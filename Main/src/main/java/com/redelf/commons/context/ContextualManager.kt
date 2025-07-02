@@ -7,10 +7,7 @@ import com.redelf.commons.versioning.Versionable
 abstract class ContextualManager<T> :
 
     LazyDataManagement<T>(),
-    Contextual<BaseApplication>
-
-        where T : Versionable
-
+    Contextual<BaseApplication> where T : Versionable
 {
 
     private lateinit var ctx: BaseApplication
