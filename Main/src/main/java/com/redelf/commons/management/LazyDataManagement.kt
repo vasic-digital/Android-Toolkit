@@ -12,6 +12,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.Connectivity
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.registration.Registration
 import com.redelf.commons.versioning.Versionable
 import java.util.concurrent.atomic.AtomicBoolean
@@ -51,7 +52,7 @@ abstract class LazyDataManagement<T> :
 
                 if (it.action == OnClearFromRecentService.ACTION) {
 
-                    onBackground("Termination received", sync = false)
+                    onBackground("Termination received")
                 }
             }
         }
@@ -85,7 +86,7 @@ abstract class LazyDataManagement<T> :
 
                                 if (DEBUG.get()) Console.log("$tag OK")
 
-                                onBackground(it.action ?: "", sync = false)
+                                onBackground(it.action ?: "")
 
                             } else {
 
@@ -98,7 +99,7 @@ abstract class LazyDataManagement<T> :
 
                         exec {
 
-                            onBackground(it.action ?: "", sync = false)
+                            onBackground(it.action ?: "")
                         }
                     }
                 }
@@ -121,7 +122,7 @@ abstract class LazyDataManagement<T> :
 
                 if (!conn.isNetworkAvailable(it)) {
 
-                    onBackground("Offline", sync = false)
+                    onBackground("Offline")
                 }
             }
         }
@@ -242,11 +243,11 @@ abstract class LazyDataManagement<T> :
 
     override fun isRegistered(subscriber: Context) = registered.get() && terminationRegistered.get()
 
-    @Throws(IllegalStateException::class)
-    override fun pushData(data: T, sync: Boolean) {
+    override fun pushData(callback: OnObtain<Boolean?>?) {
 
         if (!isEnabled()) {
 
+            callback?.onCompleted(false)
             return
         }
 
@@ -256,7 +257,7 @@ abstract class LazyDataManagement<T> :
 
         } else {
 
-            super.pushData(data, sync)
+            super.pushData(callback)
         }
     }
 
@@ -284,17 +285,7 @@ abstract class LazyDataManagement<T> :
         if (DEBUG.get()) Console.log("Application is in foreground")
     }
 
-    protected fun forceSave(sync: Boolean) {
-
-        if (!isEnabled()) {
-
-            return
-        }
-
-        onBackground("forceSave", sync)
-    }
-
-    private fun onBackground(from: String, sync: Boolean) {
+    private fun onBackground(from: String) {
 
         if (!isEnabled()) {
 
@@ -332,34 +323,47 @@ abstract class LazyDataManagement<T> :
 
             if (DEBUG.get()) Console.log("$tag SAVING")
 
-            val data = obtain()
-            var empty: Boolean? = null
+            obtain(
 
-            if (data is Empty) {
+                object : OnObtain<T?> {
 
-                empty = data.isEmpty()
-            }
+                    override fun onCompleted(data: T?) {
 
-            data?.let {
+                        var empty: Boolean? = null
 
-                overwriteData(data)
+                        if (data is Empty) {
 
-                doPushData(it, sync = sync)
-            }
+                            empty = data.isEmpty()
+                        }
 
-            empty?.let {
+                        data?.let {
 
-                if (DEBUG.get()) Console.log("$tag SAVED :: Empty = $it")
-            }
+                            overwriteData(it)
 
-            if (empty == null) {
+                            doPushData(it)
+                        }
 
-                if (DEBUG.get()) Console.log("$tag SAVED")
-            }
+                        empty?.let {
 
-        } catch (e: IllegalStateException) {
+                            if (DEBUG.get()) Console.log("$tag SAVED :: Empty = $it")
+                        }
 
-            Console.error(tag, e)
+                        if (empty == null) {
+
+                            if (DEBUG.get()) Console.log("$tag SAVED")
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        recordException(error)
+                    }
+                }
+            )
+
+        } catch (e: Throwable) {
+
+            recordException(e)
         }
 
         if (DEBUG.get()) Console.log("$tag END")
