@@ -6,6 +6,7 @@ import com.redelf.commons.context.Contextual
 import com.redelf.commons.data.Empty
 import com.redelf.commons.data.type.Typed
 import com.redelf.commons.destruction.reset.Resettable
+import com.redelf.commons.destruction.reset.ResettableAsync
 import com.redelf.commons.enable.Enabling
 import com.redelf.commons.enable.EnablingCallback
 import com.redelf.commons.environment.Environment
@@ -28,6 +29,7 @@ import com.redelf.commons.session.Session
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
+import net.bytebuddy.implementation.bytecode.Throw
 import java.util.UUID
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -39,9 +41,9 @@ abstract class DataManagement<T> :
     Lockable,
     Enabling,
     Management,
-    Resettable,
     Environment,
     ObtainAsync<T?>,
+    ResettableAsync,
     Contextual<BaseApplication>,
     ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
 
@@ -390,7 +392,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    protected fun doPushData(data: T, callback: OnObtain<Boolean?>?) {
+    protected fun doPushData(data: T, callback: OnObtain<Boolean?>? = null) {
 
         if (!isEnabled()) {
 
@@ -498,99 +500,125 @@ abstract class DataManagement<T> :
         }
     }
 
-    override fun reset(): Boolean {
+    override fun reset(callback: OnObtain<Boolean?>) {
 
         if (!isEnabled()) {
 
-            return true
+            callback.onCompleted(false)
+            return
         }
 
         val tag = "${getLogTag()} Reset ::"
 
         Console.log("$tag START")
 
-        try {
+        exec {
 
-            session.reset()
+            try {
 
-            if (isNotEmpty(storageKey)) {
+                session.reset()
 
-                Console.log("$tag Storage key: $storageKey")
+                if (isNotEmpty(storageKey)) {
 
-                val s = takeStorage()
+                    Console.log("$tag Storage key: $storageKey")
 
-                if (instantiateDataObject) {
+                    fun completeReset(success: Boolean?) {
 
-                    createDataObject()?.let {
+                        eraseData()
 
-                        overwriteData(it)
+                        if (success == true) {
+
+                            Console.log("$tag END")
+
+                        } else {
+
+                            Console.error("$tag END: FAILED")
+                        }
+
+                        callback.onCompleted(success)
                     }
 
-                    data?.let {
+                    val s = takeStorage()
 
-                        doPushData(it, sync = false)
+                    if (instantiateDataObject) {
+
+                        createDataObject()?.let {
+
+                            overwriteData(it)
+
+                            data?.let {
+
+                                doPushData(
+
+                                    it,
+
+                                    object : OnObtain<Boolean?> {
+
+                                        override fun onCompleted(data: Boolean?) {
+
+                                            completeReset(data)
+                                        }
+
+                                        override fun onFailure(error: Throwable) {
+
+                                            callback.onFailure(error)
+                                        }
+                                    }
+                                )
+                            }
+
+                            if (data == null) {
+
+                                Console.error("$tag Data object creation failed")
+                                completeReset(false)
+                                return@exec
+                            }
+                        }
+
+                    } else {
+
+                        s?.delete(
+
+                            storageKey,
+
+                            object : OnObtain<Boolean?> {
+
+                                override fun onCompleted(data: Boolean?) {
+
+                                    if (data == true) {
+
+                                        Console.log("$tag Storage key '$storageKey' deleted")
+
+                                    } else {
+
+                                        Console.error("$tag Storage key '$storageKey' deletion failed")
+                                    }
+
+                                    completeReset(data)
+                                }
+
+                                override fun onFailure(error: Throwable) {
+
+                                    callback.onFailure(error)
+                                }
+                            })
                     }
 
                 } else {
 
-                    s?.delete(storageKey)
+                    Console.warning("$tag Empty storage key")
+
+                    callback.onCompleted(false)
                 }
 
-            } else {
+            } catch (e: Throwable) {
 
-                Console.warning("$tag Empty storage key")
+                callback.onFailure(e)
             }
-
-            eraseData()
-
-            Console.log("$tag END")
-
-            return true
-
-        } catch (e: RejectedExecutionException) {
-
-            Console.error(tag, e)
-
-        } catch (e: IllegalStateException) {
-
-            Console.error(tag, e)
         }
-
-        Console.error("$tag END: FAILED (2)")
-
-        return false
     }
 
     override fun getWho(): String? = this::class.simpleName
-
-    protected fun getData(): T? {
-
-        val tag = "${getLogTag()} Data :: Obtain ::"
-
-        try {
-
-            if (DEBUG.get()) Console.log("$tag START")
-
-            val data = obtain()
-
-            data?.let {
-
-                if (DEBUG.get()) Console.log("$tag END: OK")
-
-                return it
-            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-
-            if (DEBUG.get()) Console.error("$tag END: FAILED", e)
-        }
-
-        if (DEBUG.get()) Console.log("$tag END: NULL")
-
-        return null
-    }
 
     protected fun eraseData() {
 
@@ -630,8 +658,6 @@ abstract class DataManagement<T> :
             Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED")
         }
     }
-
-    private fun initCallbacksTag() = "${getLogTag()} Data management initialization"
 
     class DataTransaction<T>(
 
@@ -701,43 +727,69 @@ abstract class DataManagement<T> :
             return true
         }
 
-        override fun end(): Boolean {
+        override fun end(callback: OnObtain<Boolean>) {
 
-            if (canLog) Console.log("$tag Session: $session :: ENDING :: $name")
+            exec {
 
-            if (session != parent.session.takeIdentifier()) {
+                if (canLog) Console.log("$tag Session: $session :: ENDING :: $name")
 
-                if (canLog) Console.warning("$tag Session: $session :: SKIPPED :: $name")
+                if (session != parent.session.takeIdentifier()) {
 
-                return false
-            }
+                    if (canLog) Console.warning("$tag Session: $session :: SKIPPED :: $name")
 
-            var result = false
-
-            try {
-
-                val data = parent.obtain()
-
-                data?.let {
-
-                    parent.pushData(it)
-
-                    result = true
-
-                    if (canLog) Console.log("$tag Session: $session :: ENDED :: $name")
+                    callback.onCompleted(false)
+                    return@exec
                 }
 
-            } catch (e: IllegalStateException) {
+                try {
 
-                Console.error(e)
+                    parent.obtain(
+
+                        object : OnObtain<T?> {
+
+                            override fun onCompleted(data: T?) {
+
+                                data?.let {
+
+                                    parent.pushData(
+
+                                        object : OnObtain<Boolean?> {
+
+                                            override fun onCompleted(data: Boolean?) {
+
+                                                val result = data == true
+
+                                                if (canLog) Console.log("$tag Session: $session :: ENDED :: $name")
+
+                                                callback.onCompleted(result)
+                                            }
+
+                                            override fun onFailure(error: Throwable) {
+
+                                                callback.onFailure(error)
+                                            }
+                                        }
+                                    )
+                                }
+
+                                if (data == null) {
+
+                                    callback.onCompleted(false)
+                                }
+                            }
+
+                            override fun onFailure(error: Throwable) {
+
+                                callback.onFailure(error)
+                            }
+                        }
+                    )
+
+                } catch (e: Throwable) {
+
+                    callback.onFailure(e)
+                }
             }
-
-            if (!result) {
-
-                if (canLog) Console.log("$tag Session: $session :: ENDING :: Failed: $name")
-            }
-
-            return result
         }
 
         fun getSession() = parent.session.takeName()
