@@ -974,285 +974,285 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                         // TODO: Continue here
 
-                                        if (rowsCount > 0) {
-
-                                            val pt = t as ParameterizedType
-                                            val inT =
-                                                Class.forName(pt.rawType.typeName.forClassName())
-
-                                            try {
-
-                                                val partition =
-                                                    if (inT.canonicalName?.forClassName() == "java.util.List") {
-
-                                                        mutableListOf<Any?>()
-
-                                                    } else {
-
-                                                        inT.newInstance()
-                                                    }
-
-                                                for (j in 0..<rowsCount) {
-
-                                                    val keyRow = keyRow(key, i, j)
-                                                    val keyRowType = keyRowType(key, i, j)
-
-                                                    val rowType =
-                                                        facade.get(keyRowType, "").forClassName()
-
-                                                    if (isEmpty(rowType)) {
-
-                                                        Console.error(
-
-                                                            "$tag FAILURE: No row type :: Key =" +
-                                                                    " '$keyRowType', " +
-                                                                    "Partition = $i, Row = $j"
-                                                        )
-
-                                                        return defaultValue
-
-                                                    } else {
-
-                                                        if (DEBUG.get()) Console.log(
-
-                                                            "$tag Row type: '$rowType'"
-                                                        )
-                                                    }
-
-                                                    var rowClazz: Class<*>? = null
-
-                                                    try {
-
-                                                        val simpleClass = getSimple(rowType)
-
-                                                        simpleClass?.let {
-
-                                                            rowClazz = it
-                                                        }
-
-                                                        if (simpleClass == null) {
-
-                                                            val rType = rowType.forClassName()
-
-                                                            rowClazz = when (rType) {
-
-                                                                "string",
-                                                                "java.lang.String",
-                                                                "kotlin.String" -> String::class.java
-
-                                                                "int",
-                                                                "java.lang.Integer",
-                                                                "kotlin.Integer" -> Int::class.java
-
-                                                                "long",
-                                                                "java.lang.Long",
-                                                                "kotlin.Long" -> Long::class.java
-
-                                                                "float",
-                                                                "java.lang.Float",
-                                                                "kotlin.Float" -> Float::class.java
-
-                                                                "double",
-                                                                "java.lang.Double",
-                                                                "kotlin.Double" -> Double::class.java
-
-                                                                "bool",
-                                                                "boolean",
-                                                                "java.lang.Boolean",
-                                                                "kotlin.Boolean" -> Boolean::class.java
-
-
-                                                                else -> Class.forName(rType)
-                                                            }
-
-
-                                                        }
-
-                                                    } catch (e: ClassNotFoundException) {
-
-                                                        Console.error(e)
-                                                    }
-
-                                                    rowClazz?.let { clz ->
-
-                                                        val obtained =
-                                                            facade.getByClass(keyRow, clz)
-
-                                                        obtained?.let { obt ->
-
-                                                            when (partition) {
-
-                                                                is MutableList<*> -> {
-
-                                                                    val vts = instantiate(
-
-                                                                        what = rowClazz,
-                                                                        arg = obt
-                                                                    )
-
-                                                                    (partition as MutableList<Any>).add(
-                                                                        vts
-                                                                    )
-                                                                }
-
-                                                                is MutableMap<*, *> -> {
-
-                                                                    if (obt is PairDataInfo) {
-
-                                                                        obt.first.let { first ->
-                                                                            obt.second.let { second ->
-
-                                                                                val clz1 =
-                                                                                    Class.forName(
-
-                                                                                        (obt.firstType
-                                                                                            ?: "").forClassName()
-                                                                                    )
-
-                                                                                val clz2 =
-                                                                                    Class.forName(
-
-                                                                                        (obt.secondType
-                                                                                            ?: "").forClassName()
-                                                                                    )
-
-                                                                                if (DEBUG.get()) Console.log(
-
-                                                                                    "$tag Row key type: '${clz1.simpleName}', " +
-                                                                                            "Row value type: '${clz2.simpleName}'"
-                                                                                )
-
-                                                                                val kts =
-                                                                                    instantiate(
-
-                                                                                        what = clz1,
-                                                                                        arg = first
-                                                                                    )
-
-                                                                                val vts =
-                                                                                    instantiate(
-
-                                                                                        what = clz2,
-                                                                                        arg = second
-                                                                                    )
-
-                                                                                (partition as MutableMap<Any, Any>).put(
-                                                                                    kts,
-                                                                                    vts
-                                                                                )
-                                                                            }
-                                                                        }
-
-                                                                    } else {
-
-                                                                        Console.error(
-
-                                                                            "$tag FAILURE: " +
-                                                                                    "Unsupported map child " +
-                                                                                    "type " +
-                                                                                    "'${obt::class.simpleName}'"
-                                                                        )
-
-                                                                        return defaultValue
-                                                                    }
-                                                                }
-
-                                                                is MutableSet<*> -> {
-
-                                                                    (partition as MutableSet<Any>).add(
-                                                                        obt
-                                                                    )
-                                                                }
-
-                                                                else -> {
-
-                                                                    Console.error(
-
-                                                                        "$tag FAILURE: Unsupported " +
-                                                                                "partition type '${t.typeName}'"
-                                                                    )
-
-                                                                    return defaultValue
-                                                                }
-                                                            }
-                                                        }
-
-                                                        if (obtained == null) {
-
-                                                            Console.error(
-
-                                                                "$tag FAILURE: Obtained row is null"
-                                                            )
-
-                                                            return defaultValue
-                                                        }
-                                                    }
-
-                                                    if (rowClazz == null) {
-
-                                                        Console.error("$tag FAILURE: Row class is null")
-
-                                                        return defaultValue
-                                                    }
-                                                }
-
-                                                var set = false
-
-                                                set = instance.setPartitionData(i, partition)
-
-                                                if (set) {
-
-                                                    if (DEBUG.get()) {
-
-                                                        Console.log("$tag Set: $i")
-                                                    }
-
-                                                } else {
-
-                                                    Console.error("$tag FAILURE: Not set: $i")
-
-                                                    return defaultValue
-                                                }
-
-                                            } catch (e: Throwable) {
-
-                                                Console.error(
-
-                                                    "$tag ERROR :: " +
-                                                            "Partition canonical name: ${inT.canonicalName?.forClassName()}"
-                                                )
-
-                                                instance.failPartitionData(i, e)
-                                            }
-
-                                        } else {
-
-                                            val partition =
-                                                facade.getByType(keyPartition(key, i), t)
-
-                                            partition?.let { part ->
-
-                                                if (DEBUG.get()) Console.log("$tag Obtained: $i")
-
-                                                val set = instance.setPartitionData(i, part)
-
-                                                if (set) {
-
-                                                    if (DEBUG.get()) Console.log("$tag Set: $i")
-
-                                                } else {
-
-                                                    Console.error("$tag FAILURE: Not set: $i")
-
-                                                    return defaultValue
-                                                }
-                                            }
-
-                                            if (partition == null && DEBUG.get()) {
-
-                                                Console.log("$tag WARNING: Null partition: $i")
-                                            }
-                                        }
+//                                        if (rowsCount > 0) {
+//
+//                                            val pt = t as ParameterizedType
+//                                            val inT =
+//                                                Class.forName(pt.rawType.typeName.forClassName())
+//
+//                                            try {
+//
+//                                                val partition =
+//                                                    if (inT.canonicalName?.forClassName() == "java.util.List") {
+//
+//                                                        mutableListOf<Any?>()
+//
+//                                                    } else {
+//
+//                                                        inT.newInstance()
+//                                                    }
+//
+//                                                for (j in 0..<rowsCount) {
+//
+//                                                    val keyRow = keyRow(key, i, j)
+//                                                    val keyRowType = keyRowType(key, i, j)
+//
+//                                                    val rowType =
+//                                                        facade.get(keyRowType, "").forClassName()
+//
+//                                                    if (isEmpty(rowType)) {
+//
+//                                                        Console.error(
+//
+//                                                            "$tag FAILURE: No row type :: Key =" +
+//                                                                    " '$keyRowType', " +
+//                                                                    "Partition = $i, Row = $j"
+//                                                        )
+//
+//                                                        return defaultValue
+//
+//                                                    } else {
+//
+//                                                        if (DEBUG.get()) Console.log(
+//
+//                                                            "$tag Row type: '$rowType'"
+//                                                        )
+//                                                    }
+//
+//                                                    var rowClazz: Class<*>? = null
+//
+//                                                    try {
+//
+//                                                        val simpleClass = getSimple(rowType)
+//
+//                                                        simpleClass?.let {
+//
+//                                                            rowClazz = it
+//                                                        }
+//
+//                                                        if (simpleClass == null) {
+//
+//                                                            val rType = rowType.forClassName()
+//
+//                                                            rowClazz = when (rType) {
+//
+//                                                                "string",
+//                                                                "java.lang.String",
+//                                                                "kotlin.String" -> String::class.java
+//
+//                                                                "int",
+//                                                                "java.lang.Integer",
+//                                                                "kotlin.Integer" -> Int::class.java
+//
+//                                                                "long",
+//                                                                "java.lang.Long",
+//                                                                "kotlin.Long" -> Long::class.java
+//
+//                                                                "float",
+//                                                                "java.lang.Float",
+//                                                                "kotlin.Float" -> Float::class.java
+//
+//                                                                "double",
+//                                                                "java.lang.Double",
+//                                                                "kotlin.Double" -> Double::class.java
+//
+//                                                                "bool",
+//                                                                "boolean",
+//                                                                "java.lang.Boolean",
+//                                                                "kotlin.Boolean" -> Boolean::class.java
+//
+//
+//                                                                else -> Class.forName(rType)
+//                                                            }
+//
+//
+//                                                        }
+//
+//                                                    } catch (e: ClassNotFoundException) {
+//
+//                                                        Console.error(e)
+//                                                    }
+//
+//                                                    rowClazz?.let { clz ->
+//
+//                                                        val obtained =
+//                                                            facade.getByClass(keyRow, clz)
+//
+//                                                        obtained?.let { obt ->
+//
+//                                                            when (partition) {
+//
+//                                                                is MutableList<*> -> {
+//
+//                                                                    val vts = instantiate(
+//
+//                                                                        what = rowClazz,
+//                                                                        arg = obt
+//                                                                    )
+//
+//                                                                    (partition as MutableList<Any>).add(
+//                                                                        vts
+//                                                                    )
+//                                                                }
+//
+//                                                                is MutableMap<*, *> -> {
+//
+//                                                                    if (obt is PairDataInfo) {
+//
+//                                                                        obt.first.let { first ->
+//                                                                            obt.second.let { second ->
+//
+//                                                                                val clz1 =
+//                                                                                    Class.forName(
+//
+//                                                                                        (obt.firstType
+//                                                                                            ?: "").forClassName()
+//                                                                                    )
+//
+//                                                                                val clz2 =
+//                                                                                    Class.forName(
+//
+//                                                                                        (obt.secondType
+//                                                                                            ?: "").forClassName()
+//                                                                                    )
+//
+//                                                                                if (DEBUG.get()) Console.log(
+//
+//                                                                                    "$tag Row key type: '${clz1.simpleName}', " +
+//                                                                                            "Row value type: '${clz2.simpleName}'"
+//                                                                                )
+//
+//                                                                                val kts =
+//                                                                                    instantiate(
+//
+//                                                                                        what = clz1,
+//                                                                                        arg = first
+//                                                                                    )
+//
+//                                                                                val vts =
+//                                                                                    instantiate(
+//
+//                                                                                        what = clz2,
+//                                                                                        arg = second
+//                                                                                    )
+//
+//                                                                                (partition as MutableMap<Any, Any>).put(
+//                                                                                    kts,
+//                                                                                    vts
+//                                                                                )
+//                                                                            }
+//                                                                        }
+//
+//                                                                    } else {
+//
+//                                                                        Console.error(
+//
+//                                                                            "$tag FAILURE: " +
+//                                                                                    "Unsupported map child " +
+//                                                                                    "type " +
+//                                                                                    "'${obt::class.simpleName}'"
+//                                                                        )
+//
+//                                                                        return defaultValue
+//                                                                    }
+//                                                                }
+//
+//                                                                is MutableSet<*> -> {
+//
+//                                                                    (partition as MutableSet<Any>).add(
+//                                                                        obt
+//                                                                    )
+//                                                                }
+//
+//                                                                else -> {
+//
+//                                                                    Console.error(
+//
+//                                                                        "$tag FAILURE: Unsupported " +
+//                                                                                "partition type '${t.typeName}'"
+//                                                                    )
+//
+//                                                                    return defaultValue
+//                                                                }
+//                                                            }
+//                                                        }
+//
+//                                                        if (obtained == null) {
+//
+//                                                            Console.error(
+//
+//                                                                "$tag FAILURE: Obtained row is null"
+//                                                            )
+//
+//                                                            return defaultValue
+//                                                        }
+//                                                    }
+//
+//                                                    if (rowClazz == null) {
+//
+//                                                        Console.error("$tag FAILURE: Row class is null")
+//
+//                                                        return defaultValue
+//                                                    }
+//                                                }
+//
+//                                                var set = false
+//
+//                                                set = instance.setPartitionData(i, partition)
+//
+//                                                if (set) {
+//
+//                                                    if (DEBUG.get()) {
+//
+//                                                        Console.log("$tag Set: $i")
+//                                                    }
+//
+//                                                } else {
+//
+//                                                    Console.error("$tag FAILURE: Not set: $i")
+//
+//                                                    return defaultValue
+//                                                }
+//
+//                                            } catch (e: Throwable) {
+//
+//                                                Console.error(
+//
+//                                                    "$tag ERROR :: " +
+//                                                            "Partition canonical name: ${inT.canonicalName?.forClassName()}"
+//                                                )
+//
+//                                                instance.failPartitionData(i, e)
+//                                            }
+//
+//                                        } else {
+//
+//                                            val partition =
+//                                                facade.getByType(keyPartition(key, i), t)
+//
+//                                            partition?.let { part ->
+//
+//                                                if (DEBUG.get()) Console.log("$tag Obtained: $i")
+//
+//                                                val set = instance.setPartitionData(i, part)
+//
+//                                                if (set) {
+//
+//                                                    if (DEBUG.get()) Console.log("$tag Set: $i")
+//
+//                                                } else {
+//
+//                                                    Console.error("$tag FAILURE: Not set: $i")
+//
+//                                                    return defaultValue
+//                                                }
+//                                            }
+//
+//                                            if (partition == null && DEBUG.get()) {
+//
+//                                                Console.log("$tag WARNING: Null partition: $i")
+//                                            }
+//                                        }
                                     }
 
                                     getRowsCount(
@@ -1331,7 +1331,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                             override fun onCompleted(data: Int?) {
 
-                                onPartitionsCount(data ?: 0, clazz)
+                                onPartitionsCount(data ?: 0, clazz, callback)
                             }
 
                             override fun onFailure(error: Throwable) {
@@ -1400,71 +1400,84 @@ class DataDelegate private constructor(private val facade: Facade) :
                             return
                         }
 
-                        // TODO: Continue here
                         for (i in 0..<partitionsCount) {
 
-                            val rowsCount = getRowsCount(key, i)
-                            val removed = facade.delete(keyPartition(key, i))
+                            getRowsCount(key, i, object : OnObtain<Int?> {
 
-                            if (rowsCount <= 0) {
+                                override fun onCompleted(data: Int?) {
 
-                                if (removed) {
+                                    val rowsCount = data ?: 0
 
-                                    if (DEBUG.get()) Console.log("$tag REMOVED: Partition no. $i")
+                                    val removed = facade.delete(keyPartition(key, i))
 
-                                } else {
+                                    if (rowsCount <= 0) {
 
-                                    val msg = "FAILURE: Partition no. $i not removed, Log no. = 2"
+                                        if (removed) {
 
-                                    val e = IOException(msg)
+                                            if (DEBUG.get()) Console.log("$tag REMOVED: Partition no. $i")
 
-                                    Console.error("$tag ERROR: ${e.message}")
-                                    recordException(e)
-                                }
+                                        } else {
 
-                            } else {
+                                            val msg =
+                                                "FAILURE: Partition no. $i not removed, Log no. = 2"
 
-                                for (j in 0..<rowsCount) {
+                                            val e = IOException(msg)
 
-                                    val rRemoved = facade.delete(keyRow(key, i, j)) &&
-                                            facade.delete(keyRowType(key, i, j))
-
-                                    if (rRemoved) {
-
-                                        if (DEBUG.get()) Console.log(
-
-                                            "$tag REMOVED: Partition no. $i, Row no. $j"
-                                        )
+                                            Console.error("$tag ERROR: ${e.message}")
+                                            recordException(e)
+                                        }
 
                                     } else {
 
-                                        val msg =
-                                            "FAILURE: Partition no. $i not removed, Row no. $j"
+                                        for (j in 0..<rowsCount) {
 
-                                        val e = IOException(msg)
+                                            val rRemoved = facade.delete(keyRow(key, i, j)) &&
+                                                    facade.delete(keyRowType(key, i, j))
 
-                                        Console.error("$tag ERROR: ${e.message}")
-                                        recordException(e)
+                                            if (rRemoved) {
+
+                                                if (DEBUG.get()) Console.log(
+
+                                                    "$tag REMOVED: Partition no. $i, Row no. $j"
+                                                )
+
+                                            } else {
+
+                                                val msg =
+                                                    "FAILURE: Partition no. $i not removed, Row no. $j"
+
+                                                val e = IOException(msg)
+
+                                                Console.error("$tag ERROR: ${e.message}")
+                                                recordException(e)
+                                            }
+                                        }
+
+                                        if (deleteRowsCount(key, i)) {
+
+                                            if (DEBUG.get()) Console.log(
+
+                                                "$tag REMOVED: Partition no. $i, Rows count deletion"
+                                            )
+
+                                        } else {
+
+                                            val msg =
+                                                "FAILURE: Partition no. $i, Rows count deletion"
+
+                                            val e = IOException(msg)
+
+                                            Console.error("$tag ERROR: ${e.message}")
+                                            recordException(e)
+                                        }
                                     }
                                 }
 
-                                if (deleteRowsCount(key, i)) {
+                                override fun onFailure(error: Throwable) {
 
-                                    if (DEBUG.get()) Console.log(
-
-                                        "$tag REMOVED: Partition no. $i, Rows count deletion"
-                                    )
-
-                                } else {
-
-                                    val msg = "FAILURE: Partition no. $i, Rows count deletion"
-
-                                    val e = IOException(msg)
-
-                                    Console.error("$tag ERROR: ${e.message}")
-                                    recordException(e)
+                                    callback.onFailure(error)
                                 }
-                            }
+                            })
                         }
 
                     } else {
