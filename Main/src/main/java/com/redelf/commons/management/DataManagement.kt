@@ -20,6 +20,8 @@ import com.redelf.commons.lifecycle.exception.NotInitializedException
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.ObtainAsync
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.session.Session
@@ -33,13 +35,13 @@ import java.util.concurrent.atomic.AtomicLong
 
 abstract class DataManagement<T> :
 
-    Management,
-    Obtain<T?>,
-    Resettable,
-    Lockable,
     Abort,
+    Lockable,
     Enabling,
+    Management,
+    Resettable,
     Environment,
+    ObtainAsync<T?>,
     Contextual<BaseApplication>,
     ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
 
@@ -216,11 +218,12 @@ abstract class DataManagement<T> :
     final override fun isUnlocked() = !isLocked()
 
     @Throws(InitializingException::class, NotInitializedException::class)
-    override fun obtain(): T? {
+    override fun obtain(callback: OnObtain<T?>) {
 
         if (!isEnabled()) {
 
-            return null
+            callback.onCompleted(null)
+            return
         }
 
         val clazz = typed?.getClazz()
@@ -232,14 +235,16 @@ abstract class DataManagement<T> :
 
             Console.warning("$tag Locked")
 
-            return null
+            callback.onCompleted(null)
+            return
         }
 
         if (data != null) {
 
             if (canLog()) Console.log("$tag END: OK")
 
-            return data
+            callback.onCompleted(data)
+            return
         }
 
         val dataObjTag = "$tag Data object ::"
