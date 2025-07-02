@@ -43,9 +43,7 @@ abstract class DataManagement<T> :
     Environment,
     ObtainAsync<T?>,
     Contextual<BaseApplication>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
-
-{
+    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
 
     companion object {
 
@@ -220,103 +218,120 @@ abstract class DataManagement<T> :
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(callback: OnObtain<T?>) {
 
-        if (!isEnabled()) {
+        exec {
 
-            callback.onCompleted(null)
-            return
-        }
+            if (!isEnabled()) {
 
-        val clazz = typed?.getClazz()
-        val tag = "${getLogTag()} OBTAIN :: T = '${clazz?.simpleName}' ::"
-
-        if (canLog()) Console.log("$tag START")
-
-        if (isLocked()) {
-
-            Console.warning("$tag Locked")
-
-            callback.onCompleted(null)
-            return
-        }
-
-        if (data != null) {
-
-            if (canLog()) Console.log("$tag END: OK")
-
-            callback.onCompleted(data)
-            return
-        }
-
-        val dataObjTag = "$tag Data object ::"
-
-        if (canLog()) Console.log("$dataObjTag Has initial: ${data != null}")
-
-        if (data == null && persist) {
-
-            if (isOnMainThread()) {
-
-                val e = IllegalStateException(
-
-                    "DataManagement should not obtain storage data on the main thread"
-                )
-
-                recordException(e)
+                callback.onCompleted(null)
+                return@exec
             }
+
+            val clazz = typed?.getClazz()
+            val tag = "${getLogTag()} OBTAIN :: T = '${clazz?.simpleName}' ::"
+
+            if (canLog()) Console.log("$tag START")
+
+            if (isLocked()) {
+
+                Console.warning("$tag Locked")
+
+                callback.onCompleted(null)
+                return@exec
+            }
+
+            if (data != null) {
+
+                if (canLog()) Console.log("$tag END: OK")
+
+                callback.onCompleted(data)
+                return@exec
+            }
+
+            val dataObjTag = "$tag Data object ::"
+
+            if (canLog()) Console.log("$dataObjTag Has initial: ${data != null}")
 
             var empty: Boolean? = null
             val key = storageKey
-            val pulled = STORAGE.pull<T?>(key)
 
-            if (pulled is Empty) {
+            fun onPulled(pulled: T?) {
 
-                empty = pulled.isEmpty()
-            }
+                if (pulled is Empty) {
 
-            empty?.let {
-
-                if (canLog()) Console.log("$dataObjTag Pulled :: Empty = $it")
-            }
-
-            if (empty == null) {
-
-                if (canLog()) Console.log("$dataObjTag Pulled :: Null = ${data == null}")
-            }
-
-            pulled?.let {
-
-                overwriteData(pulled)
-            }
-
-            if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
-        }
-
-        if (canLog()) Console.log("$dataObjTag Intermediate: ${data != null}")
-
-        if (instantiateDataObject) {
-
-            var current: T? = data
-
-            if (current == null) {
-
-                current = createDataObject()
-
-                current?.let {
-
-                    data = current
+                    empty = pulled.isEmpty()
                 }
 
-                if (current == null) {
+                empty?.let {
 
-                    throw IllegalStateException("Data object creation failed")
+                    if (canLog()) Console.log("$dataObjTag Pulled :: Empty = $it")
                 }
+
+                if (empty == null) {
+
+                    if (canLog()) Console.log("$dataObjTag Pulled :: Null = ${data == null}")
+                }
+
+                pulled?.let {
+
+                    overwriteData(pulled)
+                }
+
+                if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
+
+                if (canLog()) Console.log("$dataObjTag Intermediate: ${data != null}")
+
+                if (instantiateDataObject) {
+
+                    var current: T? = data
+
+                    if (current == null) {
+
+                        current = createDataObject()
+
+                        current?.let {
+
+                            data = current
+                        }
+
+                        if (current == null) {
+
+                            throw IllegalStateException("Data object creation failed")
+                        }
+                    }
+
+                    if (canLog()) Console.log("$dataObjTag Instantiated: ${data != null}")
+                }
+
+                if (canLog()) Console.log("$dataObjTag Final: $data")
+
+                callback.onCompleted(data)
             }
 
-            if (canLog()) Console.log("$dataObjTag Instantiated: ${data != null}")
+            if (data == null && persist) {
+
+                STORAGE.pull(
+
+                    key,
+
+                    object : OnObtain<T?> {
+
+                        override fun onCompleted(data: T?) {
+
+                            onPulled(data)
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            callback.onFailure(error)
+                        }
+                    }
+                )
+
+            } else {
+
+                onPulled(data)
+            }
         }
-
-        if (canLog()) Console.log("$dataObjTag Final: $data")
-
-        return data
     }
 
     @Throws(IllegalStateException::class)
@@ -335,49 +350,52 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
-    fun pushData(sync: Boolean = false): Boolean {
-
-        try {
-
-            val data = obtain()
-
-            if (data == null) {
-
-                Console.error("${getLogTag()} Push data :: Data is null")
-
-                return false
-            }
-
-            pushData(data, sync = sync)
-
-            return true
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
-
-        return false
-    }
-
-    @Throws(IllegalStateException::class)
-    open fun pushData(data: T, sync: Boolean = false) {
+    open fun pushData(callback: OnObtain<Boolean?>?) {
 
         if (!isEnabled()) {
 
+            callback?.onCompleted(false)
             return
         }
 
-        if (DEBUG.get()) Console.log("${getLogTag()} Push data :: START")
+        exec {
 
-        doPushData(data, sync)
+            obtain(
+
+                object : OnObtain<T?> {
+
+                    override fun onCompleted(data: T?) {
+
+                        if (data == null) {
+
+                            Console.error("${getLogTag()} Push data :: Data is null")
+
+                            callback?.onCompleted(false)
+                        }
+
+                        data?.let {
+
+                            if (DEBUG.get()) Console.log("${getLogTag()} Push data :: START")
+
+                            doPushData(it, callback)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        recordException(error)
+                    }
+                }
+            )
+        }
     }
 
-    @Throws(IllegalStateException::class)
-    protected fun doPushData(data: T, sync: Boolean) {
+    protected fun doPushData(data: T, callback: OnObtain<Boolean?>?) {
 
         if (!isEnabled()) {
 
+            onDataPushed(success = false)
+            callback?.onCompleted(data = false)
             return
         }
 
@@ -386,98 +404,80 @@ abstract class DataManagement<T> :
             Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
 
             onDataPushed(success = false)
-
+            callback?.onCompleted(data = false)
             return
         }
 
-        try {
+        exec {
 
-            val action = Runnable {
+            overwriteData(data)
 
-                overwriteData(data)
+            if (persist) {
 
-                if (persist) {
+                try {
 
-                    try {
+                    val version = data.getVersion()
 
-                        val version = data.getVersion()
+                    /*
+                        FIXME: Polish this condition.
+                    */
+                    if (version <= 0 || version > lastDataVersion.get()) {
 
-                        /*
-                            FIXME: Polish this condition.
-                        */
-                        if (version <= 0 || version > lastDataVersion.get()) {
+                        val store = takeStorage()
+                        val pushed = store?.push(storageKey, data)
 
-                            val store = takeStorage()
-                            val pushed = store?.push(storageKey, data)
+                        if (store == null) {
 
-                            if (store == null) {
-
-                                Console.error("${getLogTag()} Push data :: No store available")
-                            }
-
-                            val success = pushed == true
-
-                            onDataPushed(success = success)
-
-                            if (success) {
-
-                                lastDataVersion.set(version)
-
-                                /*
-                                    TODO/FIXME:
-                                     - This has to be left to end user, not manager
-                                     - Add shutdown hook (cleanup service) so saving is
-                                     performed and no data loss happens
-                                */
-                                data.increaseVersion()
-
-                                Console.log(
-
-                                    "${getLogTag()} Data pushed :: " +
-                                            "Version = ${lastDataVersion.get()}, " +
-                                            "New version = ${data.getVersion()}"
-                                )
-                            }
-
-                        } else {
-
-                            val msg = "Can't push data version $version, " +
-                                    "the last pushed data version is ${lastDataVersion.get()}"
-
-                            val e = java.lang.IllegalArgumentException(msg)
-                            onDataPushed(err = e)
+                            Console.error("${getLogTag()} Push data :: No store available")
                         }
 
-                    } catch (e: RejectedExecutionException) {
+                        val success = pushed == true
+
+                        if (success) {
+
+                            lastDataVersion.set(version)
+
+                            /*
+                                TODO/FIXME:
+                                 - This has to be left to end user, not manager
+                                 - Add shutdown hook (cleanup service) so saving is
+                                 performed and no data loss happens
+                            */
+                            data.increaseVersion()
+
+                            Console.log(
+
+                                "${getLogTag()} Data pushed :: " +
+                                        "Version = ${lastDataVersion.get()}, " +
+                                        "New version = ${data.getVersion()}"
+                            )
+                        }
+
+                        onDataPushed(success = success)
+                        callback?.onCompleted(data = success)
+
+                    } else {
+
+                        val msg = "Can't push data version $version, " +
+                                "the last pushed data version is ${lastDataVersion.get()}"
+
+                        val e = java.lang.IllegalArgumentException(msg)
 
                         onDataPushed(err = e)
+                        callback?.onFailure(e)
                     }
 
-                } else {
+                } catch (e: RejectedExecutionException) {
 
-                    onDataPushed(success = true)
+                    onDataPushed(err = e)
+                    callback?.onFailure(e)
                 }
-            }
-
-            if (sync) {
-
-                action.run()
 
             } else {
 
-                exec(
-
-                    onRejected = { e -> onDataPushed(err = e) }
-
-                ) {
-
-                    action.run()
-                }
+                onDataPushed(success = true)
+                callback?.onCompleted(data = true)
             }
-
-        } catch (e: RejectedExecutionException) {
-
-            onDataPushed(err = e)
         }
     }
 
