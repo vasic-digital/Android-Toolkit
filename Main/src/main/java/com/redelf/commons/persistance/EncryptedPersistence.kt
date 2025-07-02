@@ -10,8 +10,10 @@ import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Persistence
+import com.redelf.commons.persistance.base.PersistenceAsync
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.registration.Registration
 import com.redelf.commons.security.encryption.EncryptionListener
@@ -30,9 +32,9 @@ constructor(
 ) :
 
     Erasing,
-    Persistence<String>,
     ShutdownSynchronized,
     TerminationSynchronized,
+    PersistenceAsync<String>,
     InitializationWithContext,
     Registration<EncryptionListener<String, String>>
 
@@ -138,9 +140,9 @@ constructor(
         return dataDelegate?.put(key, what) == true
     }
 
-    override fun delete(what: String): Boolean {
+    override fun delete(what: String, callback: OnObtain<Boolean?>) {
 
-        return dataDelegate?.delete(what) == true
+        dataDelegate?.delete(what, callback)
     }
 
     override fun contains(key: String): Boolean {
