@@ -938,8 +938,6 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         fun onPartitionsCount(partitionsCount: Int, clazz: Class<*>?, callback: OnObtain<T?>) {
 
-            // TODO: Continue here
-
             if (partitionsCount > 0) {
 
                 val tag = "Partitioning :: Get :: key = $key, T = '${clazz?.simpleName}' :: "
@@ -948,7 +946,9 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                 try {
 
-                    clazz?.newInstance()?.let { instance ->
+                    val nInstance = clazz?.newInstance()
+
+                    nInstance?.let { instance ->
 
                         if (DEBUG.get()) Console.log("$tag INSTANTIATED")
 
@@ -970,7 +970,9 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                 type?.let { t ->
 
-                                    fun onRowsCount(rowsCount: Int): T? {
+                                    fun onRowsCount(rowsCount: Int, callback: OnObtain<T?>) {
+
+                                        // TODO: Continue here
 
                                         if (rowsCount > 0) {
 
@@ -1252,9 +1254,23 @@ class DataDelegate private constructor(private val facade: Facade) :
                                         }
                                     }
 
-                                    val rowsCount = getRowsCount(key, i)
+                                    getRowsCount(
 
+                                        key, i,
 
+                                        object : OnObtain<Int?> {
+
+                                            override fun onCompleted(data: Int?) {
+
+                                                onRowsCount(data ?: 0, callback)
+                                            }
+
+                                            override fun onFailure(error: Throwable) {
+
+                                                callback.onFailure(error)
+                                            }
+                                        }
+                                    )
                                 }
 
                                 if (type == null) {
@@ -1265,29 +1281,35 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                 "defined for partition: $i"
                                     )
 
-                                    return defaultValue
+                                    callback.onCompleted(defaultValue)
+
+                                    break
                                 }
                             }
-
-                            return instance as T
 
                         } else {
 
                             Console.error("$tag END: No partitions reported")
 
-                            return defaultValue
+                            callback.onCompleted(defaultValue)
                         }
+                    }
+
+                    if (nInstance == null) {
+
+                        val e = IllegalArgumentException("Null instance instantiated")
+                        callback.onFailure(e)
                     }
 
                 } catch (e: Throwable) {
 
-                    Console.error("$tag ERROR: ${e.message}")
-
-                    recordException(e)
+                    callback.onFailure(e)
                 }
-            }
 
-            return facade.get(key, defaultValue) ?: defaultValue
+            } else {
+
+                facade.get(key, defaultValue, callback)
+            }
         }
 
         getType(
