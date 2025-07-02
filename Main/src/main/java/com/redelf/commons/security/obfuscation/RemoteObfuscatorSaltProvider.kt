@@ -1,6 +1,8 @@
 package com.redelf.commons.security.obfuscation
 
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.net.content.RemoteHttpContentFetcher
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.security.management.SecretsManager
 
 class RemoteObfuscatorSaltProvider(
@@ -15,8 +17,11 @@ class RemoteObfuscatorSaltProvider(
         return RemoteHttpContentFetcher(endpoint, token).fetch()
     }
 
-    override fun obtain(): ObfuscatorSalt? {
+    override fun obtain(callback: OnObtain<ObfuscatorSalt?>) {
 
-        return SecretsManager.obtain().getObfuscationSalt(this)
+        exec {
+
+            SecretsManager.obtain().getObfuscationSalt(this@RemoteObfuscatorSaltProvider, callback)
+        }
     }
 }

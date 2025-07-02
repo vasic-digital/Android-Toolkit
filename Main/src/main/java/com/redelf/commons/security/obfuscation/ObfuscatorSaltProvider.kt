@@ -1,5 +1,5 @@
 package com.redelf.commons.security.obfuscation
 
-import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.ObtainAsync
 
-interface ObfuscatorSaltProvider : Obtain<ObfuscatorSalt?>
+interface ObfuscatorSaltProvider : ObtainAsync<ObfuscatorSalt?>
