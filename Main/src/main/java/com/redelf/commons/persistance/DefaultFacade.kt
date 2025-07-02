@@ -370,11 +370,6 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
         storage?.contains(key, callback)
     }
 
-    override fun destroy() {
-
-        listeners.clear()
-    }
-
     private fun log(message: String) {
 
         if (DEBUG.get()) {

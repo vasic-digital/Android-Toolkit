@@ -118,14 +118,14 @@ constructor(
         dataDelegate?.initialize(ctx)
     }
 
-    override fun <T> pull(key: String): T? {
+    override fun <T> pull(key: String, callback: OnObtain<T?>) {
 
         if (DEBUG.get()) {
 
             Console.log("$LOG_TAG :: Pull: key = '$key' ::")
         }
 
-        return dataDelegate?.get(key)
+        dataDelegate?.get(key, callback)
     }
 
     override fun <T> push(key: String, what: T): Boolean {
@@ -145,9 +145,9 @@ constructor(
         dataDelegate?.delete(what, callback)
     }
 
-    override fun contains(key: String): Boolean {
+    override fun contains(key: String, callback: OnObtain<Boolean>) {
 
-        return dataDelegate?.contains(key) == true
+        dataDelegate?.contains(key, callback)
     }
 
     /*

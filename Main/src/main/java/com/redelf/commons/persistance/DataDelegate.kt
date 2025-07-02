@@ -1602,14 +1602,6 @@ class DataDelegate private constructor(private val facade: Facade) :
         }
     }
 
-    /*
-         DANGER ZONE:
-    */
-//    fun destroy() {
-//
-//        facade.destroy()
-//    }
-
     fun deleteAll(): Boolean {
 
         return facade.deleteAll()
