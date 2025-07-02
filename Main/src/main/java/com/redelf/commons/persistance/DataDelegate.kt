@@ -855,7 +855,7 @@ class DataDelegate private constructor(private val facade: Facade) :
     }
 
     @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(key: String?, callback: OnObtain<T?>) {
+    fun <T> get(key: String?, callback: OnObtain<T?>) {
 
         val tag = "Get :: Key = '$key' ::"
 
@@ -928,7 +928,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
 
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
-    operator fun <T> get(key: String?, defaultValue: T?, callback: OnObtain<T?>) {
+    fun <T> get(key: String?, defaultValue: T?, callback: OnObtain<T?>) {
 
         if (key == null || isEmpty(key)) {
 
@@ -996,6 +996,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                                     val keyRow = keyRow(key, i, j)
                                                     val keyRowType = keyRowType(key, i, j)
+
                                                     val rowType =
                                                         facade.get(keyRowType, "").forClassName()
 
