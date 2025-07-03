@@ -1,14 +1,18 @@
 package com.redelf.commons.security.obfuscation
 
+import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.atomic.AtomicBoolean
 
-object DefaultObfuscator : Obfuscation {
+object DefaultObfuscator : ObfuscationAsync {
 
     private val READY = AtomicBoolean()
 
     private val defaultSaltProvider = object : ObfuscatorSaltProvider {
 
-        override fun obtain() = ObfuscatorSalt()
+        override fun obtain(callback: OnObtain<ObfuscatorSalt?>) {
+
+            callback.onCompleted(ObfuscatorSalt())
+        }
     }
 
     private var STRATEGY: SaltedObfuscator = Obfuscator(saltProvider = defaultSaltProvider)
@@ -26,18 +30,18 @@ object DefaultObfuscator : Obfuscation {
 
     fun getStrategy() = STRATEGY
 
-    override fun obfuscate(input: String): String {
+    override fun obfuscate(input: String, callback: OnObtain<String>) {
 
-        return STRATEGY.obfuscate(input)
+        return STRATEGY.obfuscate(input, callback)
     }
 
-    override fun deobfuscate(input: String): String {
+    override fun deobfuscate(input: String, callback: OnObtain<String>) {
 
-        return STRATEGY.deobfuscate(input)
+        return STRATEGY.deobfuscate(input, callback)
     }
 
-    override fun name(): String {
+    override fun name(callback: OnObtain<String>) {
 
-        return STRATEGY.name()
+        STRATEGY.name(callback)
     }
 }
