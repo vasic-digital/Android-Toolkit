@@ -29,7 +29,6 @@ import com.redelf.commons.session.Session
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
-import net.bytebuddy.implementation.bytecode.Throw
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
@@ -44,6 +43,7 @@ abstract class DataManagement<T> :
     Lockable,
     Enabling,
     Management,
+    Resettable,
     Environment,
     ObtainAsync<T?>,
     ResettableAsync,
@@ -407,6 +407,56 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
+    fun pushData(data: T?): Boolean {
+
+        if (isOnMainThread()) {
+
+            val msg = "Push data is not recommended to perform on the main thread"
+            val e = IllegalStateException(msg)
+            recordException(e)
+        }
+
+        val success = AtomicBoolean()
+        val latch = CountDownLatch(1)
+
+        pushData(
+
+            data,
+
+            object : OnObtain<Boolean?> {
+
+                override fun onCompleted(data: Boolean?) {
+
+                    success.set(data == true)
+
+                    latch.countDown()
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    recordException(error)
+
+                    latch.countDown()
+                }
+            }
+        )
+
+        try {
+
+            if (!latch.await(60, TimeUnit.SECONDS)) {
+
+                val e = TimeoutException("${getWho()} reset latch timed out")
+                recordException(e)
+            }
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return false
+    }
+
     open fun pushData(data: T?, callback: OnObtain<Boolean?>?) {
 
         if (!isEnabled()) {
@@ -548,6 +598,54 @@ abstract class DataManagement<T> :
                 Console.error("${getLogTag()} Data push failed, Error = '$msg'")
             }
         }
+    }
+
+    override fun reset(): Boolean {
+
+        if (isOnMainThread()) {
+
+            val msg = "Reset is not recommended to perform on the main thread"
+            val e = IllegalStateException(msg)
+            recordException(e)
+        }
+
+        val success = AtomicBoolean()
+        val latch = CountDownLatch(1)
+
+        reset(
+
+            object : OnObtain<Boolean?> {
+
+                override fun onCompleted(data: Boolean?) {
+
+                    success.set(data == true)
+
+                    latch.countDown()
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    recordException(error)
+
+                    latch.countDown()
+                }
+            }
+        )
+
+        try {
+
+            if (!latch.await(60, TimeUnit.SECONDS)) {
+
+                val e = TimeoutException("${getWho()} reset latch timed out")
+                recordException(e)
+            }
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return false
     }
 
     override fun reset(callback: OnObtain<Boolean?>) {
