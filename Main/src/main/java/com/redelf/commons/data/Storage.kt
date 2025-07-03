@@ -66,9 +66,9 @@ object Storage {
         return result
     }
 
-    fun <T> get(key: String, defaultValue: T?): T? {
+    fun <T> get(key: String, defaultValue: T): T {
 
-        var result: T? = defaultValue
+        var result: T = defaultValue
         val latch = CountDownLatch(1)
 
         DataManagement.STORAGE.pull<Any?>(
@@ -81,7 +81,7 @@ object Storage {
 
                     try {
 
-                        result = data as T?
+                        result = data as T
 
                     } catch (e: Throwable) {
 
