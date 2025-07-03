@@ -1123,6 +1123,62 @@ fun CountDownLatch.safeWait(timeoutInSeconds: Int = 60, tag: String = "") {
     }
 }
 
+fun <X> sync(
+
+    timeout: Long = 60,
+    timeUnit: TimeUnit = TimeUnit.SECONDS,
+    what: (callback: OnObtain<X?>) -> Unit
+
+): X?  {
+
+    var result: X? = null
+    val latch = CountDownLatch(1)
+
+    try {
+
+        what(
+
+            object : OnObtain<X?> {
+
+                override fun onCompleted(data: X?) {
+
+                    result = data
+
+                    latch.countDown()
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    recordException(error)
+
+                    latch.countDown()
+                }
+            }
+        )
+
+    } catch (e: Throwable) {
+
+        recordException(e)
+
+        latch.countDown()
+    }
+
+    try {
+
+        if (!latch.await(timeout, timeUnit)) {
+
+            val e = TimeoutException("Data manager obtain latch expired")
+            recordException(e)
+        }
+
+    } catch (e: Throwable) {
+
+        recordException(e)
+    }
+
+    return result
+}
+
 @Throws(IllegalArgumentException::class)
 fun encodeBytes(bytes: ByteArray): String {
 

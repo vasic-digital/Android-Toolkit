@@ -15,6 +15,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.sync
 import com.redelf.commons.interruption.Abort
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
@@ -880,6 +881,15 @@ abstract class DataManagement<T> :
             if (canLog) Console.log("$tag Session: $session :: PERFORMED :: $name")
 
             return true
+        }
+
+        override fun end(): Boolean {
+
+            return sync { callback ->
+
+                end(callback)
+
+            } ?: false
         }
 
         override fun end(callback: OnObtain<Boolean>) {
