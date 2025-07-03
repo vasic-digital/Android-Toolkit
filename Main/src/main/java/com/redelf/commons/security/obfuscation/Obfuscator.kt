@@ -69,10 +69,34 @@ class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltPr
         )
     }
 
-    override fun name(): String {
+    override fun name(callback: OnObtain<String>) {
 
-        val salt = saltProvider.obtain()?.takeValue() ?: ""
+        saltProvider.obtain(
 
-        return JObfuscator(salt).name()
+            object : OnObtain<ObfuscatorSalt?> {
+
+                override fun onCompleted(data: ObfuscatorSalt?) {
+
+                    try {
+
+                        val salt =  data?.takeValue() ?: ""
+                        val jObfuscator = JObfuscator(salt)
+
+                        val result = jObfuscator.name()
+
+                        callback.onCompleted(result)
+
+                    } catch (e: Throwable) {
+
+                        callback.onFailure(e)
+                    }
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 }

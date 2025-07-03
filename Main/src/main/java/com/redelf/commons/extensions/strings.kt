@@ -8,8 +8,11 @@ import android.util.Base64
 import androidx.core.content.ContextCompat
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscation
+import com.redelf.commons.security.obfuscation.ObfuscationAsync
+import okhttp3.Callback
 import org.apache.commons.compress.compressors.lz4.BlockLZ4CompressorInputStream
 import org.apache.commons.compress.compressors.lz4.BlockLZ4CompressorOutputStream
 import java.io.ByteArrayInputStream
@@ -21,32 +24,24 @@ import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-fun String.deobfuscate(deobfuscator: Obfuscation = DefaultObfuscator): String {
+fun String.deobfuscate(
 
-    try {
+    deobfuscator: ObfuscationAsync = DefaultObfuscator,
+    callback: OnObtain<String>
 
-        return deobfuscator.deobfuscate(this)
+) {
 
-    } catch (e: Throwable) {
-
-        recordException(e)
-    }
-
-    return ""
+    deobfuscator.deobfuscate(this, callback)
 }
 
-fun String.obfuscate(obfuscator: Obfuscation = DefaultObfuscator): String {
+fun String.obfuscate(
 
-    try {
+    obfuscator: ObfuscationAsync = DefaultObfuscator,
+    callback: OnObtain<String>
 
-        return obfuscator.obfuscate(this)
+) {
 
-    } catch (e: Throwable) {
-
-        recordException(e)
-    }
-
-    return ""
+    obfuscator.obfuscate(this, callback)
 }
 
 fun String.isBase64Encoded(): Boolean {
@@ -497,68 +492,74 @@ fun String.hashCodeString(): String {
 
         val digit = letter.code
         val letter = digitToLetterMap[digit]
-fun StringBuilder.append(
+        fun StringBuilder.append(
 
-    key: Int,
-    value: Int,
-    newLine: Boolean = true,
-    separator: String = " ",
-    defaultValue: String = "---"
+            key: Int,
+            value: Int,
+            newLine: Boolean = true,
+            separator: String = " ",
+            defaultValue: String = "---"
 
-) : StringBuilder {
+        ): StringBuilder {
 
-    val ctx = BaseApplication.takeContext()
+            val ctx = BaseApplication.takeContext()
 
-    return this.append(ctx.getString(key), ctx.getString(value), newLine, separator, defaultValue)
-}
+            return this.append(
+                ctx.getString(key),
+                ctx.getString(value),
+                newLine,
+                separator,
+                defaultValue
+            )
+        }
 
-fun StringBuilder.append(
+        fun StringBuilder.append(
 
-    key: String?,
-    value: Int,
-    newLine: Boolean = true,
-    separator: String = " ",
-    defaultValue: String = "---"
+            key: String?,
+            value: Int,
+            newLine: Boolean = true,
+            separator: String = " ",
+            defaultValue: String = "---"
 
-) : StringBuilder {
+        ): StringBuilder {
 
-    val ctx = BaseApplication.takeContext()
+            val ctx = BaseApplication.takeContext()
 
-    return this.append(key, ctx.getString(value), newLine, separator, defaultValue)
-}
+            return this.append(key, ctx.getString(value), newLine, separator, defaultValue)
+        }
 
-fun StringBuilder.append(
+        fun StringBuilder.append(
 
-    key: Int,
-    value: String?,
-    newLine: Boolean = true,
-    separator: String = " ",
-    defaultValue: String = "---"
+            key: Int,
+            value: String?,
+            newLine: Boolean = true,
+            separator: String = " ",
+            defaultValue: String = "---"
 
-) : StringBuilder {
+        ): StringBuilder {
 
-    val ctx = BaseApplication.takeContext()
+            val ctx = BaseApplication.takeContext()
 
-    return this.append(ctx.getString(key), value, newLine, separator, defaultValue)
-}
+            return this.append(ctx.getString(key), value, newLine, separator, defaultValue)
+        }
 
-fun StringBuilder.append(
+        fun StringBuilder.append(
 
-    key: String?,
-    value: String?,
-    newLine: Boolean = true,
-    separator: String = " ",
-    defaultValue: String = "---"
+            key: String?,
+            value: String?,
+            newLine: Boolean = true,
+            separator: String = " ",
+            defaultValue: String = "---"
 
-) : StringBuilder {
+        ): StringBuilder {
 
-    if (newLine) {
+            if (newLine) {
 
-        this.append("\n")
-    }
+                this.append("\n")
+            }
 
-    return this.append(key ?: "").append(separator).append(value ?: defaultValue)
-}
+            return this.append(key ?: "").append(separator).append(value ?: defaultValue)
+        }
 
 
         b.append(letter)
