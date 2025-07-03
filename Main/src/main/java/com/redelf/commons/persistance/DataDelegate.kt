@@ -1423,89 +1423,110 @@ class DataDelegate private constructor(private val facade: Facade) :
             return
         }
 
-        getPartitionsCount(
+        exec {
 
-            key,
+            getPartitionsCount(
 
-            object : OnObtain<Int?> {
+                key,
 
-                override fun onCompleted(data: Int?) {
+                object : OnObtain<Int?> {
 
-                    var partitionsCount = 0
+                    override fun onCompleted(data: Int?) {
 
-                    data?.let {
+                        var partitionsCount = 0
 
-                        partitionsCount = it
-                    }
+                        data?.let {
 
-                    val tag = "Partitioning :: Delete ::"
-
-                    if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
-
-                    if (partitionsCount > 0) {
-
-                        val typeRemoved = facade.delete(keyType(key))
-                        val markRemoved = facade.delete(keyPartitions(key))
-
-                        if (!markRemoved) {
-
-                            val e = IllegalStateException("Could not un-mark partitioning data")
-                            callback.onFailure(e)
-                            return
+                            partitionsCount = it
                         }
 
-                        if (!typeRemoved) {
+                        val tag = "Partitioning :: Delete ::"
 
-                            val e = IllegalStateException("Could not un-mark type data")
-                            callback.onFailure(e)
-                            return
-                        }
+                        if (DEBUG.get()) Console.log("$tag START, Partitions = $partitionsCount")
 
-                        for (i in 0..<partitionsCount) {
+                        if (partitionsCount > 0) {
 
-                            getRowsCount(key, i, object : OnObtain<Int?> {
+                            val typeRemoved = facade.delete(keyType(key))
+                            val markRemoved = facade.delete(keyPartitions(key))
 
-                                override fun onCompleted(data: Int?) {
+                            if (!markRemoved) {
 
-                                    val rowsCount = data ?: 0
+                                val e = IllegalStateException("Could not un-mark partitioning data")
+                                callback.onFailure(e)
+                                return
+                            }
 
-                                    val removed = facade.delete(keyPartition(key, i))
+                            if (!typeRemoved) {
 
-                                    if (rowsCount <= 0) {
+                                val e = IllegalStateException("Could not un-mark type data")
+                                callback.onFailure(e)
+                                return
+                            }
 
-                                        if (removed) {
+                            for (i in 0..<partitionsCount) {
 
-                                            if (DEBUG.get()) Console.log("$tag REMOVED: Partition no. $i")
+                                getRowsCount(key, i, object : OnObtain<Int?> {
+
+                                    override fun onCompleted(data: Int?) {
+
+                                        val rowsCount = data ?: 0
+
+                                        val removed = facade.delete(keyPartition(key, i))
+
+                                        if (rowsCount <= 0) {
+
+                                            if (removed) {
+
+                                                if (DEBUG.get()) Console.log("$tag REMOVED: Partition no. $i")
+
+                                            } else {
+
+                                                val msg =
+                                                    "FAILURE: Partition no. $i not removed, Log no. = 2"
+
+                                                val e = IOException(msg)
+
+                                                Console.error("$tag ERROR: ${e.message}")
+                                                recordException(e)
+                                            }
 
                                         } else {
 
-                                            val msg =
-                                                "FAILURE: Partition no. $i not removed, Log no. = 2"
+                                            for (j in 0..<rowsCount) {
 
-                                            val e = IOException(msg)
+                                                val rRemoved = facade.delete(keyRow(key, i, j)) &&
+                                                        facade.delete(keyRowType(key, i, j))
 
-                                            Console.error("$tag ERROR: ${e.message}")
-                                            recordException(e)
-                                        }
+                                                if (rRemoved) {
 
-                                    } else {
+                                                    if (DEBUG.get()) Console.log(
 
-                                        for (j in 0..<rowsCount) {
+                                                        "$tag REMOVED: Partition no. $i, Row no. $j"
+                                                    )
 
-                                            val rRemoved = facade.delete(keyRow(key, i, j)) &&
-                                                    facade.delete(keyRowType(key, i, j))
+                                                } else {
 
-                                            if (rRemoved) {
+                                                    val msg =
+                                                        "FAILURE: Partition no. $i not removed, Row no. $j"
+
+                                                    val e = IOException(msg)
+
+                                                    Console.error("$tag ERROR: ${e.message}")
+                                                    recordException(e)
+                                                }
+                                            }
+
+                                            if (deleteRowsCount(key, i)) {
 
                                                 if (DEBUG.get()) Console.log(
 
-                                                    "$tag REMOVED: Partition no. $i, Row no. $j"
+                                                    "$tag REMOVED: Partition no. $i, Rows count deletion"
                                                 )
 
                                             } else {
 
                                                 val msg =
-                                                    "FAILURE: Partition no. $i not removed, Row no. $j"
+                                                    "FAILURE: Partition no. $i, Rows count deletion"
 
                                                 val e = IOException(msg)
 
@@ -1513,46 +1534,28 @@ class DataDelegate private constructor(private val facade: Facade) :
                                                 recordException(e)
                                             }
                                         }
-
-                                        if (deleteRowsCount(key, i)) {
-
-                                            if (DEBUG.get()) Console.log(
-
-                                                "$tag REMOVED: Partition no. $i, Rows count deletion"
-                                            )
-
-                                        } else {
-
-                                            val msg =
-                                                "FAILURE: Partition no. $i, Rows count deletion"
-
-                                            val e = IOException(msg)
-
-                                            Console.error("$tag ERROR: ${e.message}")
-                                            recordException(e)
-                                        }
                                     }
-                                }
 
-                                override fun onFailure(error: Throwable) {
+                                    override fun onFailure(error: Throwable) {
 
-                                    callback.onFailure(error)
-                                }
-                            })
+                                        callback.onFailure(error)
+                                    }
+                                })
+                            }
+
+                        } else {
+
+                            callback.onCompleted(facade.delete(key))
                         }
+                    }
 
-                    } else {
+                    override fun onFailure(error: Throwable) {
 
-                        callback.onCompleted(facade.delete(key))
+                        callback.onFailure(error)
                     }
                 }
-
-                override fun onFailure(error: Throwable) {
-
-                    callback.onFailure(error)
-                }
-            }
-        )
+            )
+        }
     }
 
 
