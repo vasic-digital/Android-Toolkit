@@ -63,8 +63,6 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
             try {
 
-                val data = obtain()
-
                 fun onSecrets(data: Secrets?) {
 
                     var result = data?.obfuscationSalt?: ObfuscatorSalt()
@@ -134,7 +132,7 @@ class SecretsManager private constructor(storageKeyToSet: String) :
                     callback.onCompleted(result)
                 }
 
-                data.obtain(
+                obtain(
 
                     object : OnObtain<Secrets?> {
 
