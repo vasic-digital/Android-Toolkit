@@ -220,6 +220,8 @@ abstract class DataManagement<T> :
 
     final override fun isUnlocked() = !isLocked()
 
+    fun getData(): T? = obtain()
+
     fun obtain(): T? {
 
         var result: T? = null
