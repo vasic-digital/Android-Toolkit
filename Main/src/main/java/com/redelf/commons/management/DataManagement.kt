@@ -31,7 +31,10 @@ import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
 import net.bytebuddy.implementation.bytecode.Throw
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -216,6 +219,56 @@ abstract class DataManagement<T> :
     }
 
     final override fun isUnlocked() = !isLocked()
+
+    fun obtain(): T? {
+
+        var result: T? = null
+        val latch = CountDownLatch(1)
+
+        try {
+
+            obtain(
+
+                object : OnObtain<T?> {
+
+                    override fun onCompleted(data: T?) {
+
+                        result = data
+
+                        latch.countDown()
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        recordException(error)
+
+                        latch.countDown()
+                    }
+                }
+            )
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+
+            latch.countDown()
+        }
+
+        try {
+
+            if (!latch.await(60, TimeUnit.SECONDS)) {
+
+                val e = TimeoutException("Data manager obtain latch expired")
+                recordException(e)
+            }
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return result
+    }
 
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(callback: OnObtain<T?>) {
