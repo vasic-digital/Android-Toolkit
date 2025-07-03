@@ -32,6 +32,7 @@ import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.PropertiesHash
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -240,32 +241,28 @@ fun Context.clearAllSharedPreferences(): Boolean {
     return result
 }
 
-fun Context.deobfuscateString(resId: Int): String {
+fun Context.deobfuscateString(resId: Int, callback: OnObtain<String>) {
 
     try {
 
-        return getString(resId).deobfuscate()
+        return getString(resId).deobfuscate(callback = callback)
 
     } catch (e: NotFoundException) {
 
-        recordException(e)
+        callback.onFailure(e)
     }
-
-    return ""
 }
 
-fun Context.obfuscateString(resId: Int): String {
+fun Context.obfuscateString(resId: Int, callback: OnObtain<String>) {
 
     try {
 
-        return getString(resId).obfuscate()
+        getString(resId).obfuscate(callback = callback)
 
     } catch (e: NotFoundException) {
 
-        recordException(e)
+        callback.onFailure(e)
     }
-
-    return ""
 }
 
 fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_ACTIVITY_REQUEST) {
