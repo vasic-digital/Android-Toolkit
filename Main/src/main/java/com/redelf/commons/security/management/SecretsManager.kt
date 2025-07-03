@@ -90,11 +90,11 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
                                 transaction.end(
 
-                                    object : OnObtain<Boolean> {
+                                    object : OnObtain<Boolean?> {
 
-                                        override fun onCompleted(data: Boolean) {
+                                        override fun onCompleted(data: Boolean?) {
 
-                                            if (!data) {
+                                            if (data != true) {
 
                                                 val msg = "Failed to end obfuscation salt transaction"
                                                 val e = Exception(msg)
