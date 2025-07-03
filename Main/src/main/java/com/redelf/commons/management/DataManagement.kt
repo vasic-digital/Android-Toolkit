@@ -892,7 +892,7 @@ abstract class DataManagement<T> :
             } ?: false
         }
 
-        override fun end(callback: OnObtain<Boolean>) {
+        override fun end(callback: OnObtain<Boolean?>) {
 
             exec {
 
