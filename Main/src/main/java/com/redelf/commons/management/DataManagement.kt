@@ -407,6 +407,13 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
+    fun pushData(): Boolean {
+
+        val data = obtain()
+
+        return pushData(data)
+    }
+
     fun pushData(data: T?): Boolean {
 
         if (isOnMainThread()) {
