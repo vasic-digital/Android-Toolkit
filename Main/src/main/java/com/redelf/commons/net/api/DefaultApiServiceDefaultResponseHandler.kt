@@ -58,6 +58,7 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
                 val error = if (DEBUG.get()) {
 
                     val url = response.raw().request.url
+
                     val errorBody = try {
 
                         response.errorBody()?.string()
