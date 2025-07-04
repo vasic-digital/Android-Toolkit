@@ -341,18 +341,21 @@ fun Context.readRawTextFile(resId: Int): String {
     return stringBuilder.toString().trim()
 }
 
-fun Activity.onUI(doWhat: () -> Unit) {
+fun Activity.onUI(fallback: (() -> Unit)? = null, doWhat: () -> Unit) {
 
-    if (!isFinishing) {
+    runOnUiThread {
 
-        runOnUiThread {
+        if (isFinishing) {
+
+            fallback?.let {
+
+                it()
+            }
+
+        } else {
 
             doWhat()
         }
-
-    } else {
-
-        Console.log("Context is finishing")
     }
 }
 
