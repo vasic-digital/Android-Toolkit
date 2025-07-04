@@ -10,7 +10,6 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
 import com.redelf.commons.security.obfuscation.Obfuscation
-import org.apache.commons.io.StandardLineSeparator
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException

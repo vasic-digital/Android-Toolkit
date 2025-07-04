@@ -1,13 +1,13 @@
 package com.redelf.commons.activity
 
 import android.os.Bundle
-import com.redelf.commons.logging.Console
-import com.redelf.commons.extensions.isEmpty
-import com.redelf.commons.callback.Callbacks
 import androidx.appcompat.app.AppCompatActivity
-import java.util.concurrent.atomic.AtomicBoolean
 import com.redelf.commons.callback.CallbackOperation
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.fitInsideSystemBoundaries
+import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.logging.Console
+import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscription {
 
