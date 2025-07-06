@@ -1177,7 +1177,7 @@ fun <X> sync(
                 }
             )
 
-            Console.debug("$tag CALLING :: END")
+            Console.log("$tag CALLING :: END")
 
         } catch (e: Throwable) {
 
@@ -1193,7 +1193,7 @@ fun <X> sync(
 
         if (latch.await(timeout, timeUnit)) {
 
-            Console.log("$tag END")
+            Console.debug("$tag END")
 
         } else {
 
