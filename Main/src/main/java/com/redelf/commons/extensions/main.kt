@@ -64,7 +64,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
-
+val DEBUG_SYNC = AtomicBoolean()
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
 var GLOBAL_RECORD_EXCEPTIONS = AtomicBoolean(true)
 var GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK = AtomicBoolean()
@@ -1178,7 +1178,7 @@ fun <X> sync(
 
     val tag = "SYNC :: $context ::"
 
-    Console.debug("$tag START")
+    if (DEBUG_SYNC.get()) Console.debug("$tag START")
 
     var result: X? = null
     val latch = CountDownLatch(1)
@@ -1201,11 +1201,11 @@ fun <X> sync(
 
     ) {
 
-        Console.log("$tag EXECUTING")
+        if (DEBUG_SYNC.get()) Console.log("$tag EXECUTING")
 
         try {
 
-            Console.log("$tag CALLING")
+            if (DEBUG_SYNC.get()) Console.log("$tag CALLING")
 
             what(
 
@@ -1214,7 +1214,7 @@ fun <X> sync(
                     override fun onCompleted(data: X?) {
 
                         result = data
-                        Console.log("$tag FINISHED")
+                        if (DEBUG_SYNC.get()) Console.log("$tag FINISHED")
                         latch.countDown()
                     }
 
@@ -1227,11 +1227,11 @@ fun <X> sync(
                 }
             )
 
-            Console.log("$tag WAITING")
+            if (DEBUG_SYNC.get()) Console.log("$tag WAITING")
 
         } catch (e: Throwable) {
 
-            Console.log("$tag FAILED :: Error='${e.message}'")
+            Console.error("$tag FAILED :: Error='${e.message}'")
             recordException(e)
             latch.countDown()
         }
@@ -1254,7 +1254,7 @@ fun <X> sync(
                 Console.error("$tag WAITED for $endTime ms")
             }
 
-            Console.debug("$tag END")
+            if (DEBUG_SYNC.get()) Console.debug("$tag END")
 
         } else {
 
@@ -1267,7 +1267,7 @@ fun <X> sync(
     } catch (e: Throwable) {
 
         val endTime = System.currentTimeMillis() - startTime
-        Console.log("$tag FAILED :: Error='${e.message}' after $endTime ms")
+        Console.error("$tag FAILED :: Error='${e.message}' after $endTime ms")
         recordException(e)
     }
 
