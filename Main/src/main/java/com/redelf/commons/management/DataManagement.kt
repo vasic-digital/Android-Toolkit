@@ -666,25 +666,28 @@ abstract class DataManagement<T> :
         val success = AtomicBoolean()
         val latch = CountDownLatch(1)
 
-        reset(
+        exec {
 
-            object : OnObtain<Boolean?> {
+            reset(
 
-                override fun onCompleted(data: Boolean?) {
+                object : OnObtain<Boolean?> {
 
-                    success.set(data == true)
+                    override fun onCompleted(data: Boolean?) {
 
-                    latch.countDown()
+                        success.set(data == true)
+
+                        latch.countDown()
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        recordException(error)
+
+                        latch.countDown()
+                    }
                 }
-
-                override fun onFailure(error: Throwable) {
-
-                    recordException(error)
-
-                    latch.countDown()
-                }
-            }
-        )
+            )
+        }
 
         try {
 

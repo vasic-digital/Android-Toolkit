@@ -4,6 +4,7 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.destruction.erasing.Erasing
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
@@ -120,12 +121,19 @@ constructor(
 
     override fun <T> pull(key: String, callback: OnObtain<T?>) {
 
-        if (DEBUG.get()) {
+        exec(
 
-            Console.log("$LOG_TAG :: Pull: key = '$key' ::")
+            onRejected = { e -> callback.onFailure(e) }
+
+        ) {
+
+            if (DEBUG.get()) {
+
+                Console.log("$LOG_TAG :: Pull: key = '$key' ::")
+            }
+
+            dataDelegate?.get(key, callback)
         }
-
-        dataDelegate?.get(key, callback)
     }
 
     override fun <T> push(key: String, what: T): Boolean {
@@ -142,12 +150,26 @@ constructor(
 
     override fun delete(what: String, callback: OnObtain<Boolean?>) {
 
-        dataDelegate?.delete(what, callback)
+        exec(
+
+            onRejected = { e -> callback.onFailure(e) }
+
+        ) {
+
+            dataDelegate?.delete(what, callback)
+        }
     }
 
     override fun contains(key: String, callback: OnObtain<Boolean>) {
 
-        dataDelegate?.contains(key, callback)
+        exec(
+
+            onRejected = { e -> callback.onFailure(e) }
+
+        ) {
+
+            dataDelegate?.contains(key, callback)
+        }
     }
 
     /*

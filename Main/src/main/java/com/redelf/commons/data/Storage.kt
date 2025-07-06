@@ -2,6 +2,7 @@
 
 package com.redelf.commons.data
 
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.obtain.OnObtain
@@ -21,38 +22,53 @@ object Storage {
         var result: T? = null
         val latch = CountDownLatch(1)
 
-        DataManagement.STORAGE.pull<Any?>(
+        exec(
 
-            key,
+            onRejected = { e ->
 
-            object : OnObtain<Any?> {
+                recordException(e)
 
-                override fun onCompleted(data: Any?) {
+                latch.countDown()
+            }
 
-                    try {
+        ) {
 
-                        result = data as T?
+            DataManagement.STORAGE.pull<Any?>(
 
-                    } catch (e: Throwable) {
+                key,
 
-                        recordException(e)
+                object : OnObtain<Any?> {
+
+                    override fun onCompleted(data: Any?) {
+
+                        data?.let {
+
+                            try {
+
+                                result = data as T?
+
+                            } catch (e: Throwable) {
+
+                                recordException(e)
+                            }
+                        }
+
+                        latch.countDown()
                     }
 
-                    latch.countDown()
+                    override fun onFailure(error: Throwable) {
+
+                        recordException(error)
+
+                        latch.countDown()
+                    }
                 }
-
-                override fun onFailure(error: Throwable) {
-
-                    recordException(error)
-
-                    latch.countDown()
-                }
-            }
-        )
+            )
+        }
 
         try {
 
-            if (!latch.await(2, TimeUnit.SECONDS)) {
+            if (!latch.await(10, TimeUnit.SECONDS)) {
 
                 val e = TimeoutException("Storage latch expired")
                 recordException(e)
