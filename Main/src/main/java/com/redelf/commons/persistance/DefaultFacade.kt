@@ -506,6 +506,14 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             try {
 
+                if (storage == null) {
+
+                    val e = IllegalStateException("Storage is not initialized")
+                    Console.error("$tag ERROR: $e")
+                    callback.onFailure(e)
+                    return@exec
+                }
+
                 if (DEBUG.get()) {
 
                     Console.log("$tag Calling storage")
