@@ -1187,24 +1187,39 @@ fun <X> sync(
         }
     }
 
+    val startTime = System.currentTimeMillis()
+
     try {
 
         Console.log("$tag WAITING")
 
         if (latch.await(timeout, timeUnit)) {
 
+            val endTime = System.currentTimeMillis() - startTime
+
+            if (endTime > 1500 && endTime < 3000) {
+
+                Console.warning("$tag WAITED for $endTime ms")
+
+            } else if (endTime >= 3000) {
+
+                Console.error("$tag WAITED for $endTime ms")
+            }
+
             Console.debug("$tag END")
 
         } else {
 
+            val endTime = System.currentTimeMillis() - startTime
             val e = TimeoutException("$context latch expired")
-            Console.error("$tag FAILED :: Timed out")
+            Console.error("$tag FAILED :: Timed out after $endTime ms")
             recordException(e)
         }
 
     } catch (e: Throwable) {
 
-        Console.log("$tag FAILED :: Error='${e.message}'")
+        val endTime = System.currentTimeMillis() - startTime
+        Console.log("$tag FAILED :: Error='${e.message}' after $endTime ms")
         recordException(e)
     }
 
