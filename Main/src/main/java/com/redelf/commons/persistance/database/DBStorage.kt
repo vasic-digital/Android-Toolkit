@@ -436,18 +436,11 @@ object DBStorage : Storage<String> {
 
                         try {
 
-                            val res = (db?.delete(table, selection, selectionArgs) ?: 0) > 0
+                            val rowsCount = db?.delete(table, selection, selectionArgs) ?: 0
 
-                            if (res) {
+                            if (DEBUG.get()) Console.log("$tag END :: Rows affected = $rowsCount")
 
-                                if (DEBUG.get()) Console.log("$tag END")
-
-                            } else {
-
-                                Console.error("$tag FAILED")
-                            }
-
-                            return res
+                            return true
 
                         } catch (e: Throwable) {
 
