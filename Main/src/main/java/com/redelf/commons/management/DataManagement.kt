@@ -27,6 +27,7 @@ import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.session.Session
+import com.redelf.commons.state.Busy
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
@@ -40,6 +41,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 abstract class DataManagement<T> :
 
+    Busy,
     Abort,
     Lockable,
     Enabling,
@@ -92,6 +94,7 @@ abstract class DataManagement<T> :
 
     private var data: T? = null
     private val locked = AtomicBoolean()
+    private val pushingData = AtomicBoolean()
     private var enabled = AtomicBoolean(true)
     private val lastDataVersion = AtomicLong(-1)
     private var session = Session(name = javaClass.simpleName)
@@ -121,6 +124,16 @@ abstract class DataManagement<T> :
     override fun isEnabled(): Boolean {
 
         return enabled.get()
+    }
+
+    override fun isBusy(): Boolean {
+
+        return pushingData.get()
+    }
+
+    override fun setBusy(busy: Boolean) {
+
+        pushingData.get()
     }
 
     override fun execute(what: DataTransaction<T>): Boolean {
@@ -477,7 +490,7 @@ abstract class DataManagement<T> :
 
         data?.let {
 
-            doPushData(it, callback)
+            doPushData(it, retry = 0, callback)
         }
 
         if (data == null) {
@@ -486,7 +499,7 @@ abstract class DataManagement<T> :
 
             dObject?.let {
 
-                doPushData(it, callback)
+                doPushData(it, retry = 0, callback)
             }
 
             if (dObject == null) {
@@ -500,7 +513,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    protected fun doPushData(data: T, callback: OnObtain<Boolean?>? = null) {
+    protected fun doPushData(data: T, retry: Int = 0, callback: OnObtain<Boolean?>? = null) {
 
         if (!isEnabled()) {
 
@@ -519,6 +532,35 @@ abstract class DataManagement<T> :
         }
 
         exec {
+
+            if (isBusy()) {
+
+                if (retry <= 5) {
+
+                    Console.warning(
+
+                        "${getLogTag()} BUSY :: Rescheduling data push :: Retry = $retry"
+                    )
+
+                    exec(
+
+                        delayInMilliseconds = 10 * 1000
+
+                    ) {
+
+                        doPushData(data, retry = retry + 1, callback)
+                    }
+
+                } else {
+
+                    val e = IllegalArgumentException("Data push failed, manager is busy")
+                    recordException(e)
+                }
+
+                return@exec
+            }
+
+            setBusy(true)
 
             overwriteData(data)
 
@@ -585,6 +627,8 @@ abstract class DataManagement<T> :
 
             } else {
 
+                setBusy(false)
+
                 onDataPushed(success = true)
                 callback?.onCompleted(data = true)
             }
@@ -592,6 +636,8 @@ abstract class DataManagement<T> :
     }
 
     protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
+
+        setBusy(false)
 
         if (success == true) {
 
@@ -706,9 +752,11 @@ abstract class DataManagement<T> :
 
                                 doPushData(
 
-                                    it,
+                                    data = it,
 
-                                    object : OnObtain<Boolean?> {
+                                    retry = 0,
+
+                                    callback = object : OnObtain<Boolean?> {
 
                                         override fun onCompleted(data: Boolean?) {
 
