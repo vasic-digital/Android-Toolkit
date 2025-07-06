@@ -2,7 +2,7 @@
 
 package com.redelf.commons.data
 
-import com.redelf.commons.extensions.exec
+import androidx.room.concurrent.AtomicBoolean
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.sync
 import com.redelf.commons.logging.Console
@@ -14,6 +14,8 @@ import java.util.concurrent.TimeoutException
 
 object Storage {
 
+    val DEBUG = AtomicBoolean()
+
     fun <T> put(key: String, value: T?): Boolean {
 
         return DataManagement.STORAGE.push(key, value)
@@ -21,72 +23,35 @@ object Storage {
 
     fun <T> get(key: String): T? {
 
-        var result: T? = null
-        val latch = CountDownLatch(1)
+        val tag = "Storage :: Get :: Key='$key' ::"
 
-        exec(
+        if (DEBUG.get()) {
 
-            onRejected = { e ->
+            Console.log("$tag START")
+        }
 
-                recordException(e)
+        val result: T? = sync("Storage.get.$key") { callback ->
 
-                latch.countDown()
-            }
-
-        ) {
-
-            DataManagement.STORAGE.pull<Any?>(
+            DataManagement.STORAGE.pull(
 
                 key,
-
-                object : OnObtain<Any?> {
-
-                    override fun onCompleted(data: Any?) {
-
-                        data?.let {
-
-                            try {
-
-                                result = data as T?
-
-                            } catch (e: Throwable) {
-
-                                recordException(e)
-                            }
-                        }
-
-                        latch.countDown()
-                    }
-
-                    override fun onFailure(error: Throwable) {
-
-                        recordException(error)
-
-                        latch.countDown()
-                    }
-                }
+                callback
             )
         }
 
-        try {
-
-            latch.await()
-
-//            if (!latch.await(10, TimeUnit.SECONDS)) {
-//
-//                val e = TimeoutException("Storage latch expired")
-//                recordException(e)
-//            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
+        Console.log("$tag END :: Has value = ${result != null}")
 
         return result
     }
 
     fun <T> get(key: String, defaultValue: T): T {
+
+        val tag = "Storage :: Get (w.def) :: Key='$key' ::"
+
+        if (DEBUG.get()) {
+
+            Console.log("$tag START")
+        }
 
         val result = sync("Storage.get.$key") { callback ->
 
@@ -94,7 +59,10 @@ object Storage {
 
         } ?: defaultValue
 
-        Console.log("Storage :: Get: key = '$key' :: Has value = '${result != null}'")
+        if (DEBUG.get()) {
+
+            Console.log("$tag END :: Has value = ${result != null}")
+        }
 
         return result
     }

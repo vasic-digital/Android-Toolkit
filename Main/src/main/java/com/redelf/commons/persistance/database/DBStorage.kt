@@ -870,11 +870,15 @@ object DBStorage : Storage<String> {
         return result.get()
     }
 
+    @Synchronized
     private fun doGet(key: String?, callback: OnObtain<String?>) {
 
         val tag = "$TAG Do get :: Key='$key' ::"
 
-        if (DEBUG.get()) Console.log("$tag START")
+        if (DEBUG.get()) {
+
+            Console.log("$tag START")
+        }
 
         exec(
 
