@@ -1,8 +1,6 @@
 package com.redelf.commons.state
 
-interface Busy {
-
-    fun isBusy(): Boolean
+interface Busy : BusyCheck {
 
     fun setBusy(busy: Boolean)
 }

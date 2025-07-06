@@ -28,30 +28,30 @@ import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.session.Session
 import com.redelf.commons.state.Busy
+import com.redelf.commons.state.BusyCheck
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
 import java.util.UUID
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 abstract class DataManagement<T> :
 
-    Busy,
     Abort,
     Lockable,
     Enabling,
+    BusyCheck,
     Management,
     Resettable,
     Environment,
     ObtainAsync<T?>,
     ResettableAsync,
     Contextual<BaseApplication>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
+    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
+
+{
 
     companion object {
 
@@ -94,7 +94,8 @@ abstract class DataManagement<T> :
 
     private var data: T? = null
     private val locked = AtomicBoolean()
-    private val pushingData = AtomicBoolean()
+    private val reading = AtomicBoolean()
+    private val writing = AtomicBoolean()
     private var enabled = AtomicBoolean(true)
     private val lastDataVersion = AtomicLong(-1)
     private var session = Session(name = javaClass.simpleName)
@@ -128,12 +129,7 @@ abstract class DataManagement<T> :
 
     override fun isBusy(): Boolean {
 
-        return pushingData.get()
-    }
-
-    override fun setBusy(busy: Boolean) {
-
-        pushingData.get()
+        return reading.get() || writing.get()
     }
 
     override fun execute(what: DataTransaction<T>): Boolean {
@@ -344,14 +340,14 @@ abstract class DataManagement<T> :
 
                 if (canLog()) Console.log("$dataObjTag Final: $data")
 
-                setBusy(false)
+                reading.set(false)
 
                 callback.onCompleted(data)
             }
 
             if (data == null && persist) {
 
-                setBusy(true)
+                reading.set(true)
 
                 STORAGE.pull(
 
@@ -499,7 +495,7 @@ abstract class DataManagement<T> :
                 return@exec
             }
 
-            setBusy(true)
+            writing.set(true)
 
             overwriteData(data)
 
@@ -566,7 +562,7 @@ abstract class DataManagement<T> :
 
             } else {
 
-                setBusy(false)
+                writing.set(false)
 
                 onDataPushed(success = true)
                 callback?.onCompleted(data = true)
@@ -576,7 +572,7 @@ abstract class DataManagement<T> :
 
     protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
 
-        setBusy(false)
+        writing.set(false)
 
         if (success == true) {
 
