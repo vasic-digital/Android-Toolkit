@@ -2,10 +2,8 @@ package com.redelf.commons.persistance
 
 import com.google.gson.JsonSyntaxException
 import com.redelf.commons.extensions.forClassName
-import com.redelf.commons.extensions.fromBase64
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.toBase64
 import com.redelf.commons.logging.Console.error
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
@@ -96,7 +94,7 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
         try {
 
-            return parser.obtain().toJson(dataInfo)?.toBase64()
+            return parser.obtain().toJson(dataInfo)
 
         } catch (e: OutOfMemoryError) {
 
@@ -111,13 +109,6 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
     }
 
     override fun deserialize(plainText: String?): DataInfo? {
-
-        if (isEmpty(plainText)) {
-
-            return null
-        }
-
-        val plainText = plainText?.fromBase64(null)
 
         if (isEmpty(plainText)) {
 
