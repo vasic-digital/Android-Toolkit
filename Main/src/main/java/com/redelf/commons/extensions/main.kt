@@ -1160,10 +1160,6 @@ fun yield(context: String, check: Obtain<Boolean>) {
 
             Console.log("$tag END ::")
         }
-
-    } else {
-
-        Console.log("$tag NONE")
     }
 
     // TODO: Coroutines support
