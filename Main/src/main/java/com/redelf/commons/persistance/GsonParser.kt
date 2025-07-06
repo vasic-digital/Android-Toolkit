@@ -139,11 +139,11 @@ class GsonParser private constructor(
 
                 val customizations = body.getCustomSerializations()
 
-                Console.log("$tag Customizations = $customizations")
+                if (DEBUG.get()) Console.log("$tag Customizations = $customizations")
 
                 typeAdapter = createTypeAdapter(body, customizations)
 
-                Console.log("$tag Type adapter registered")
+                if (DEBUG.get()) Console.log("$tag Type adapter registered")
             }
 
             typeAdapter?.let { adapter ->
@@ -184,7 +184,7 @@ class GsonParser private constructor(
 
         val tag = "$tag Deserialize :: Type = '${type.typeName}' ::"
 
-        Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         type.let { t ->
 
@@ -193,11 +193,11 @@ class GsonParser private constructor(
                 val rawClazzName = t.getRawCassName()
                 val clazz = Class.forName(rawClazzName)
 
-                Console.log("$tag Class = '$rawClazzName'")
+                if (DEBUG.get()) Console.log("$tag Class = '$rawClazzName'")
 
                 val instance: Any? = fromJson(content, clazz)
 
-                Console.log("$tag END :: Instance = '$instance'")
+                if (DEBUG.get()) Console.log("$tag END :: Instance = '$instance'")
 
                 return instance as T?
 
@@ -255,25 +255,25 @@ class GsonParser private constructor(
                     val tag = "$tag Deserialize :: " +
                             "Class = '${clazz.canonicalName?.forClassName()}' ::"
 
-                    Console.log("$tag START")
+                    if (DEBUG.get()) Console.log("$tag START")
 
                     try {
 
-                        Console.log("$tag Class = '${clazz.canonicalName?.forClassName()}'")
+                        if (DEBUG.get()) Console.log("$tag Class = '${clazz.canonicalName?.forClassName()}'")
 
                         val instance = instantiate(clazz)
 
-                        Console.log("$tag Instance hash = ${instance.hashCode()}")
+                        if (DEBUG.get()) Console.log("$tag Instance hash = ${instance.hashCode()}")
 
                         if (instance is CustomSerializable) {
 
                             val customizations = instance.getCustomSerializations()
 
-                            Console.log("$tag Customizations = $customizations")
+                            if (DEBUG.get()) Console.log("$tag Customizations = $customizations")
 
                             typeAdapter = createTypeAdapter(instance, customizations)
 
-                            Console.log("$tag Type adapter registered")
+                            if (DEBUG.get()) Console.log("$tag Type adapter registered")
                         }
 
                         typeAdapter?.let { adapter ->
@@ -334,7 +334,7 @@ class GsonParser private constructor(
         val clazz = instance::class.java
         val tag = "$tag Type adapter :: Class = '${clazz.canonicalName?.forClassName()}'"
 
-        Console.log("$tag CREATE :: Recipe = $recipe")
+        if (DEBUG.get()) Console.log("$tag CREATE :: Recipe = $recipe")
 
         return object : TypeAdapter<Any>() {
 
@@ -359,13 +359,13 @@ class GsonParser private constructor(
 
                             if (excluded) {
 
-                                Console.log("$tag EXCLUDED :: Field name = '$fieldName'")
+                                if (DEBUG.get()) Console.log("$tag EXCLUDED :: Field name = '$fieldName'")
 
                             } else {
 
                                 val wTag = "$tag WRITING :: Field name = '$fieldName' ::"
 
-                                Console.log("$wTag START")
+                                if (DEBUG.get()) Console.log("$wTag START")
 
                                 val fieldValue = field.get(instance)
 
@@ -379,7 +379,7 @@ class GsonParser private constructor(
 
                                         val rwTag = "$wTag REGULAR WRITE ::"
 
-                                        Console.log("$rwTag START")
+                                        if (DEBUG.get()) Console.log("$rwTag START")
 
                                         try {
 
@@ -419,22 +419,12 @@ class GsonParser private constructor(
                                             recordException(e)
                                         }
 
-                                        try {
-
-
-
-                                            Console.log("$rwTag END")
-
-                                        } catch (e: Throwable) {
-
-                                            Console.error("$rwTag ERROR: ${e.message}")
-                                            recordException(e)
-                                        }
+                                        if (DEBUG.get()) Console.log("$rwTag END")
                                     }
 
                                     fun customWrite() {
 
-                                        Console.log(
+                                        if (DEBUG.get()) Console.log(
 
                                             "$wTag Custom write :: START :: " +
                                                     "Class = '${clazz.canonicalName?.forClassName()}'"
@@ -444,7 +434,7 @@ class GsonParser private constructor(
 
                                             if (serializer is DefaultCustomSerializer) {
 
-                                                Console.log("$wTag Custom write :: Custom serializer")
+                                                if (DEBUG.get()) Console.log("$wTag Custom write :: Custom serializer")
 
                                                 when (clazz.canonicalName?.forClassName()) {
 
@@ -492,7 +482,7 @@ class GsonParser private constructor(
 
                                             } else {
 
-                                                Console.log(
+                                                if (DEBUG.get()) Console.log(
 
                                                     "$wTag Custom write :: Custom provided serializer"
                                                 )
@@ -515,7 +505,7 @@ class GsonParser private constructor(
 
                                         if (recipe[fieldName] == null) {
 
-                                            Console.log("$wTag END :: To write regular (1)")
+                                            if (DEBUG.get()) Console.log("$wTag END :: To write regular (1)")
 
                                             regularWrite()
                                         }
@@ -523,13 +513,13 @@ class GsonParser private constructor(
 
                                     if (recipe.containsKey(fieldName)) {
 
-                                        Console.log("$wTag END :: To write custom")
+                                        if (DEBUG.get()) Console.log("$wTag END :: To write custom")
 
                                         customWrite()
 
                                     } else {
 
-                                        Console.log("$wTag END :: To write regular (2)")
+                                        if (DEBUG.get()) Console.log("$wTag END :: To write regular (2)")
 
                                         regularWrite()
                                     }
@@ -537,7 +527,7 @@ class GsonParser private constructor(
 
                                 if (fieldValue == null) {
 
-                                    Console.log("$wTag END :: Field value is null")
+                                    if (DEBUG.get()) Console.log("$wTag END :: Field value is null")
                                 }
                             }
                         }
@@ -556,7 +546,7 @@ class GsonParser private constructor(
 
                 val tag = "$tag READ ::"
 
-                Console.log("$tag START")
+                if (DEBUG.get()) Console.log("$tag START")
 
                 try {
 
@@ -568,7 +558,7 @@ class GsonParser private constructor(
 
                         val tag = "$tag CUSTOM ::"
 
-                        Console.log("$tag START")
+                        if (DEBUG.get()) Console.log("$tag START")
 
                         try {
 
@@ -578,7 +568,7 @@ class GsonParser private constructor(
 
                                     val clazz = serializer.takeClass()
 
-                                    Console.log(
+                                    if (DEBUG.get()) Console.log(
 
                                         "$tag Custom write :: Custom serializer :: " +
                                                 "Class = '${clazz.canonicalName?.forClassName()}'"
@@ -632,7 +622,7 @@ class GsonParser private constructor(
 
                         val fieldName = `in`.nextName()
 
-                        Console.log("$tag Field name = '$fieldName'")
+                        if (DEBUG.get()) Console.log("$tag Field name = '$fieldName'")
 
                         val fieldClazz = clazz.getFieldByName(fieldName)?.type
                         val fieldCanonical = fieldClazz?.canonicalName?.forClassName()
@@ -654,11 +644,11 @@ class GsonParser private constructor(
 
                             val read = customRead(fieldName)
 
-                            Console.log("$tag Read = '$read'")
+                            if (DEBUG.get()) Console.log("$tag Read = '$read'")
 
                             assign(instance, fieldName, read)
 
-                            Console.log("$tag Assigned = '$read'")
+                            if (DEBUG.get()) Console.log("$tag Assigned = '$read'")
 
                         } else {
 
@@ -666,7 +656,7 @@ class GsonParser private constructor(
 
                                 val tag = "$tag REGULAR ::"
 
-                                Console.log("$tag START")
+                                if (DEBUG.get()) Console.log("$tag START")
 
                                 try {
 
@@ -695,7 +685,7 @@ class GsonParser private constructor(
 
                                             val json = `in`.nextString()
 
-                                            Console.log(
+                                            if (DEBUG.get()) Console.log(
 
                                                 "$tag JSON = '$json', " +
                                                         "Field canonical = '$fieldCanonical"
@@ -703,7 +693,7 @@ class GsonParser private constructor(
 
                                             val result = gson.fromJson(json, fieldClazz)
 
-                                            Console.log("$tag END: $result")
+                                            if (DEBUG.get()) Console.log("$tag END: $result")
 
                                             return result
                                         }
@@ -720,11 +710,11 @@ class GsonParser private constructor(
 
                             val read = regularRead()
 
-                            Console.log("$tag Read = '$read'")
+                            if (DEBUG.get()) Console.log("$tag Read = '$read'")
 
                             assign(instance, fieldName, read)
 
-                            Console.log("$tag Assigned = '$read'")
+                            if (DEBUG.get()) Console.log("$tag Assigned = '$read'")
                         }
                     }
 
@@ -738,17 +728,17 @@ class GsonParser private constructor(
 
                         if (!fieldsRead.contains(fieldName) && !field.isExcluded(instance)) {
 
-                            Console.log("$tag START")
+                            if (DEBUG.get()) Console.log("$tag START")
 
                             val read = customRead(fieldName)
 
-                            Console.log("$tag Read = '$read'")
+                            if (DEBUG.get()) Console.log("$tag Read = '$read'")
 
                             assign(instance, fieldName, read)
 
-                            Console.log("$tag Assigned = '$read'")
+                            if (DEBUG.get()) Console.log("$tag Assigned = '$read'")
 
-                            Console.log("$tag END")
+                            if (DEBUG.get()) Console.log("$tag END")
                         }
                     }
 
@@ -775,7 +765,7 @@ class GsonParser private constructor(
             return null
         }
 
-        Console.log("$tag INSTANTIATE :: Class = '${clazz.canonicalName?.forClassName()}' :: START")
+        if (DEBUG.get()) Console.log("$tag INSTANTIATE :: Class = '${clazz.canonicalName?.forClassName()}' :: START")
 
         try {
 
@@ -785,7 +775,7 @@ class GsonParser private constructor(
 
                 instance = clazz.newInstance()
 
-                Console.log("$tag INSTANTIATE :: END :: Instance = '$instance'")
+                if (DEBUG.get()) Console.log("$tag INSTANTIATE :: END :: Instance = '$instance'")
 
             } else {
 
