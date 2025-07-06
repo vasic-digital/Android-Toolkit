@@ -1,6 +1,5 @@
 package com.redelf.commons.security.obfuscation
 
-import com.redelf.commons.extensions.recordException
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.jcommons.JObfuscator
 

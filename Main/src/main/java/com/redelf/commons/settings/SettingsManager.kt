@@ -4,7 +4,6 @@ import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.loading.Loadable
-import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.atomic.AtomicBoolean
 

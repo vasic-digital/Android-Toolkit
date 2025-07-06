@@ -13,8 +13,6 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.security.obfuscation.ObfuscatorSalt
 import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
 class SecretsManager private constructor(storageKeyToSet: String) :

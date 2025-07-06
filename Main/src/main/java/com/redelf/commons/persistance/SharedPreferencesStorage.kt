@@ -3,7 +3,6 @@ package com.redelf.commons.persistance
 import android.content.Context
 import android.content.SharedPreferences
 import android.text.TextUtils
-import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.base.Storage

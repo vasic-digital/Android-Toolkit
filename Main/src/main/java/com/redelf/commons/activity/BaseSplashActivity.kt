@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.logging.Console
 
 @SuppressLint("CustomSplashScreen")
 abstract class BaseSplashActivity : BaseActivity() {

@@ -7,7 +7,6 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
