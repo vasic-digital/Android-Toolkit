@@ -482,17 +482,34 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     private fun getDataInfo(key: String, callback: OnObtain<DataInfo?>) {
 
+        val tag = "$TAG :: Get data info :: Key='$key' ::"
+
+        if (DEBUG.get()) {
+
+            Console.log("$tag START")
+        }
+
         exec(
 
-            onRejected = { e -> callback.onFailure(e) }
+            onRejected = { e ->
+
+                Console.error("$tag REJECTED")
+                callback.onFailure(e)
+            }
 
         ) {
 
-            val tag = " Get :: Data info ::"
+            if (DEBUG.get()) {
 
-            log("$tag Key = $key")
+                Console.log("$tag STARTED")
+            }
 
             try {
+
+                if (DEBUG.get()) {
+
+                    Console.log("$tag Calling storage")
+                }
 
                 storage?.get(
 
@@ -507,17 +524,46 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                             if (empty) {
 
-                                log("$tag Key = $key :: Nothing fetched from the storage for Key = $key")
+                                if (DEBUG.get()) {
+
+                                    Console.log("$tag Nothing fetched from the storage")
+                                }
 
                                 callback.onCompleted(null)
 
                             } else {
 
-                                log("$tag Key = $key :: Fetched from storage for Key = $key")
+                                if (DEBUG.get()) {
 
-                                val info = serializer?.deserialize(serializedText)
+                                    Console.log("$tag Data fetched from the storage")
+                                }
 
-                                callback.onCompleted(info)
+                                try {
+
+                                    if (DEBUG.get()) {
+
+                                        Console.log("$tag Deserializing data")
+                                    }
+
+                                    val info = serializer?.deserialize(serializedText)
+
+                                    if (DEBUG.get()) {
+
+                                        Console.log("$tag Deserialized data")
+                                    }
+
+                                    callback.onCompleted(info)
+
+                                } catch (e: Throwable) {
+
+                                    Console.error(
+
+                                        "$tag ERROR: Failed to deserialize data :: " +
+                                            "Error='${e.message}'"
+                                    )
+
+                                    callback.onFailure(e)
+                                }
                             }
                         }
 
@@ -530,6 +576,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             } catch (e: Throwable) {
 
+                Console.error("$tag ERROR: Failed to get data info :: Error='${e.message}'")
                 callback.onFailure(e)
             }
         }
