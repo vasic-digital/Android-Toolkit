@@ -61,7 +61,7 @@ class SharedPreferencesStorage internal constructor(
         return getEditor()?.remove(key)?.commit() == true
     }
 
-    override fun contains(key: String?, callback: OnObtain<Boolean>) {
+    override fun contains(key: String?, callback: OnObtain<Boolean?>) {
 
         exec {
 

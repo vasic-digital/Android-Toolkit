@@ -21,5 +21,5 @@ interface Storage<T> : ShutdownSynchronized, TerminationSynchronized, Initializa
 
     fun count(): Long
 
-    fun contains(key: String?, callback: OnObtain<Boolean>)
+    fun contains(key: String?, callback: OnObtain<Boolean?>)
 }

@@ -365,7 +365,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
         return storage?.delete(key) == true
     }
 
-    override fun contains(key: String?, callback: OnObtain<Boolean>) {
+    override fun contains(key: String?, callback: OnObtain<Boolean?>) {
 
         storage?.contains(key, callback)
     }

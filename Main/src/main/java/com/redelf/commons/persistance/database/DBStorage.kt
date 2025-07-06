@@ -565,7 +565,7 @@ object DBStorage : Storage<String> {
         return false
     }
 
-    override fun contains(key: String?, callback: OnObtain<Boolean>) {
+    override fun contains(key: String?, callback: OnObtain<Boolean?>) {
 
         get(
 

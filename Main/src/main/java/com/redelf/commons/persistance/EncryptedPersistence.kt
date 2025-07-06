@@ -156,7 +156,7 @@ constructor(
 
         ) {
 
-            dataDelegate?.delete(what, callback)
+            callback.onCompleted(dataDelegate?.delete(what))
         }
     }
 
@@ -168,7 +168,7 @@ constructor(
 
         ) {
 
-            dataDelegate?.contains(key, callback)
+            callback.onCompleted(dataDelegate?.contains(key) == true)
         }
     }
 

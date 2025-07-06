@@ -24,5 +24,5 @@ interface Facade : ShutdownSynchronized, TerminationSynchronized, Initialization
 
     fun delete(key: String?): Boolean
 
-    fun contains(key: String?, callback: OnObtain<Boolean>)
+    fun contains(key: String?, callback: OnObtain<Boolean?>)
 }
