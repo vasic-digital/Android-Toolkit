@@ -936,7 +936,7 @@ abstract class DataManagement<T> :
 
         override fun end(): Boolean {
 
-            return sync { callback ->
+            return sync("Transaction.end.$name") { callback ->
 
                 end(callback)
 

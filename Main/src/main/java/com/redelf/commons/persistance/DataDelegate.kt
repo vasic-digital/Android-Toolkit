@@ -894,7 +894,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             return get<T?>(key = key, defaultValue = null)
         }
 
-        return sync { callback ->
+        return sync("DataDelegate.get.$key") { callback ->
 
             facade.get(key, callback)
         }
@@ -966,11 +966,12 @@ class DataDelegate private constructor(private val facade: Facade) :
                                             val keyRow = keyRow(key, i, j)
                                             val keyRowType = keyRowType(key, i, j)
 
-                                            val rowType = sync { callback ->
+                                            val rowType =
+                                                sync("DataDelegate.get.$key.rowType") { callback ->
 
-                                                facade.get(keyRowType, "", callback)
+                                                    facade.get(keyRowType, "", callback)
 
-                                            }?.forClassName()
+                                                }?.forClassName()
 
                                             if (isEmpty(rowType)) {
 
@@ -1047,10 +1048,11 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                             rowClazz?.let { clz ->
 
-                                                val obtained = sync { callback ->
+                                                val obtained =
+                                                    sync("DataDelegate.get.$key.getByClass") { callback ->
 
-                                                    facade.getByClass(keyRow, clz, callback)
-                                                }
+                                                        facade.getByClass(keyRow, clz, callback)
+                                                    }
 
                                                 obtained?.let { obt ->
 
@@ -1191,10 +1193,11 @@ class DataDelegate private constructor(private val facade: Facade) :
 
                                 } else {
 
-                                    val partition = sync { callback ->
+                                    val partition =
+                                        sync("DataDelegate.get.$key.getByType") { callback ->
 
-                                        facade.getByType(keyPartition(key, i), t, callback)
-                                    }
+                                            facade.getByType(keyPartition(key, i), t, callback)
+                                        }
 
                                     partition?.let { part ->
 
@@ -1251,7 +1254,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             }
         }
 
-        return sync { callback ->
+        return sync("DataDelegate.get.$key.noPartitions") { callback ->
 
             facade.get(key, defaultValue, callback)
 
@@ -1377,7 +1380,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             return true
         }
 
-        return sync { callback ->
+        return sync("DataDelegate.contains.$key") { callback ->
 
             facade.contains(key, callback)
 
@@ -1392,7 +1395,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     private fun getPartitionsCount(key: String): Int {
 
-        return sync { callback ->
+        return sync("DataDelegate.getPartitionsCount.$key") { callback ->
 
             facade.get(keyPartitions(key), 0, callback)
 
@@ -1404,7 +1407,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         val rowsKey = keyRows(key, partition)
 
-        return sync { callback ->
+        return sync("DataDelegate.getRowsCount.$key.$partition") { callback ->
 
             facade.get(rowsKey, 0, callback)
 
@@ -1429,7 +1432,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     private fun getType(key: String): Class<*>? {
 
-        val value = sync { callback ->
+        val value = sync("DataDelegate.getType.$key") { callback ->
 
             facade.get(keyType(key), "", callback)
 

@@ -4,6 +4,8 @@ package com.redelf.commons.data
 
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.sync
+import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.CountDownLatch
@@ -86,72 +88,13 @@ object Storage {
 
     fun <T> get(key: String, defaultValue: T): T {
 
-        var result: T = defaultValue
-        val latch = CountDownLatch(1)
+        val result = sync("Storage.get.$key") { callback ->
 
-        exec(
+            DataManagement.STORAGE.pull(key, callback)
 
-            onRejected = { e ->
+        } ?: defaultValue
 
-                recordException(e)
-
-                latch.countDown()
-            }
-
-        ) {
-
-            DataManagement.STORAGE.pull<Any?>(
-
-                key,
-
-                object : OnObtain<Any?> {
-
-                    override fun onCompleted(data: Any?) {
-
-                        data?.let {
-
-                            try {
-
-                                result = data as T
-
-                            } catch (e: Throwable) {
-
-                                recordException(e)
-                            }
-                        }
-
-                        if (data == null) {
-
-                            result = defaultValue
-                        }
-
-                        latch.countDown()
-                    }
-
-                    override fun onFailure(error: Throwable) {
-
-                        recordException(error)
-
-                        latch.countDown()
-                    }
-                }
-            )
-        }
-
-        try {
-
-            latch.await()
-
-//            if (!latch.await(10, TimeUnit.SECONDS)) {
-//
-//                val e = TimeoutException("Storage latch expired")
-//                recordException(e)
-//            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
+        Console.log("Storage :: Get: key = '$key' :: Has value = '${result != null}'")
 
         return result
     }

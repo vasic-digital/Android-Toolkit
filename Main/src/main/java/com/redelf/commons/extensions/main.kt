@@ -1126,11 +1126,16 @@ fun CountDownLatch.safeWait(timeoutInSeconds: Int = 60, tag: String = "") {
 
 fun <X> sync(
 
+    title: String,
     timeout: Long = 60,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     what: (callback: OnObtain<X?>) -> Unit
 
 ): X?  {
+
+    val tag = "SYNC :: $title"
+
+    Console.log("$tag START")
 
     var result: X? = null
     val latch = CountDownLatch(1)
@@ -1146,7 +1151,11 @@ fun <X> sync(
 
     ) {
 
+        Console.log("$tag EXECUTING")
+
         try {
+
+            Console.log("$tag CALLING :: START")
 
             what(
 
@@ -1155,39 +1164,48 @@ fun <X> sync(
                     override fun onCompleted(data: X?) {
 
                         result = data
-
+                        Console.log("$tag FINISHED")
                         latch.countDown()
                     }
 
                     override fun onFailure(error: Throwable) {
 
                         recordException(error)
-
+                        Console.error("$tag FINISHED WITH ERROR :: Error='${error.message}'")
                         latch.countDown()
                     }
                 }
             )
 
+            Console.log("$tag CALLING :: END")
+
         } catch (e: Throwable) {
 
+            Console.log("$tag FAILED :: Error='${e.message}'")
             recordException(e)
-
             latch.countDown()
         }
     }
 
     try {
 
+        Console.log("$tag WAITING")
+
         if (!latch.await(timeout, timeUnit)) {
 
-            val e = TimeoutException("Data manager obtain latch expired")
+            val e = TimeoutException("$title latch expired")
+            Console.log("$tag FAILED :: Timed out")
             recordException(e)
         }
 
     } catch (e: Throwable) {
 
+        Console.log("$tag FAILED :: Error='${e.message}'")
+
         recordException(e)
     }
+
+    Console.log("$tag END")
 
     return result
 }
