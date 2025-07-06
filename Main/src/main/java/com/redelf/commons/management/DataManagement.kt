@@ -663,46 +663,11 @@ abstract class DataManagement<T> :
             recordException(e)
         }
 
-        val success = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        return sync("${getWho()}.reset") { callback ->
 
-        exec {
+            reset(callback)
 
-            reset(
-
-                object : OnObtain<Boolean?> {
-
-                    override fun onCompleted(data: Boolean?) {
-
-                        success.set(data == true)
-
-                        latch.countDown()
-                    }
-
-                    override fun onFailure(error: Throwable) {
-
-                        recordException(error)
-
-                        latch.countDown()
-                    }
-                }
-            )
-        }
-
-        try {
-
-            if (!latch.await(60, TimeUnit.SECONDS)) {
-
-                val e = TimeoutException("${getWho()} reset latch timed out")
-                recordException(e)
-            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
-
-        return false
+        } == true
     }
 
     override fun reset(callback: OnObtain<Boolean?>) {
