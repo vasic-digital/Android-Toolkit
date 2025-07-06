@@ -28,7 +28,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         private val debug = AtomicBoolean()
         private val tag = "Executor :: MAIN ::"
         private val cores = CPUs().numberOfCores
-        private val threadPooled = AtomicBoolean()
+        private val threadPooled = AtomicBoolean(true)
 
         private val capacity = if (cores * 3 <= 10) {
 
