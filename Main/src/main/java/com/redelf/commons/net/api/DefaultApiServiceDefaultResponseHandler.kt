@@ -22,54 +22,60 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
     ) {
 
-        val body = response?.body()
-        val code = response?.code() ?: 0
+        if (response == null) {
 
+            callback.onFailure(IOException("Null response received"))
+            return
+        }
+
+        val body = response.body()
+        val code = response.code()
         val combinedExpectedCodes = expectedCodes + additionalExpectedCodes
 
-        val ok = (response?.isSuccessful == true && body != null) ||
-                (useExpectedCodes && combinedExpectedCodes.contains(code))
+        when {
 
-        if (code == 401) {
-
-            val e = CredentialsInvalidException()
-            callback.onFailure(e)
-
-        } else if (ok) {
-
-            if (useExpectedCodes) {
-
-                callback.onCompleted(null)
-
-            } else {
-
-                body?.let {
-
-                    callback.onCompleted(it)
-                }
+            code == 401 -> {
+                callback.onFailure(CredentialsInvalidException())
             }
 
-        } else {
+            response.isSuccessful && body != null -> {
 
-            if (additionalExpectedCodes.contains(code)) {
+                callback.onCompleted(body)
+            }
+
+            useExpectedCodes && combinedExpectedCodes.contains(code) -> {
 
                 callback.onCompleted(null)
+            }
 
-            } else {
+            additionalExpectedCodes.contains(code) -> {
 
-                val e = if (DEBUG.get()) {
+                callback.onCompleted(null)
+            }
 
-                    val loc = response?.raw()?.request?.url ?: ""
-                    val codeStr = code.toString()
+            else -> {
 
-                    IOException("Response is not successful $codeStr $loc".trim())
+                val error = if (DEBUG.get()) {
+
+                    val url = response.raw().request.url
+
+                    val errorBody = try {
+
+                        response.errorBody()?.string()
+
+                    } catch (e: IOException) {
+
+                        "Unable to read error body: ${e.message}"
+                    }
+
+                    IOException("Request failed with code $code\nURL: $url\nError: $errorBody")
 
                 } else {
 
-                    IOException("Response is not successful")
+                    IOException("Request failed with code $code")
                 }
 
-                callback.onFailure(e)
+                callback.onFailure(error)
             }
         }
     }

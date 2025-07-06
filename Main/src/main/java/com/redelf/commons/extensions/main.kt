@@ -352,11 +352,18 @@ fun Context.readRawTextFile(resId: Int): String {
     return stringBuilder.toString().trim()
 }
 
-fun Activity.onUI(doWhat: () -> Unit) {
+fun Activity.onUI(fallback: (() -> Unit)? = null, doWhat: () -> Unit) {
 
-    if (!isFinishing) {
+    runOnUiThread {
 
-        runOnUiThread {
+        if (isFinishing) {
+
+            fallback?.let {
+
+                it()
+            }
+
+        } else {
 
             doWhat()
         }
@@ -639,16 +646,9 @@ fun Context.toast(msg: String, short: Boolean = false) {
         Toast.LENGTH_LONG
     }
 
-    if (this is Activity) {
+    Handler(Looper.getMainLooper()).post {
 
-        this.runOnUiThread {
-
-            Toast.makeText(this, msg, length).show()
-        }
-
-    } else {
-
-        Console.error("Context is not Activity for the toast to make")
+        Toast.makeText(applicationContext, msg, length).show()
     }
 }
 
