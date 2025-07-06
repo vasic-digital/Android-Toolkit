@@ -380,7 +380,7 @@ object DBStorage : Storage<String> {
 
                 if (DEBUG.get()) {
 
-                    Console.log("$tag Did got")
+                    Console.log("$tag Did get")
                 }
 
                 doGetCallback.onCompleted(got)

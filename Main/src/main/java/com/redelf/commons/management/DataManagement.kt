@@ -742,16 +742,7 @@ abstract class DataManagement<T> :
 
                                 override fun onCompleted(data: Boolean?) {
 
-                                    if (data == true) {
-
-                                        Console.log("$tag Storage key '$storageKey' deleted")
-
-                                    } else {
-
-                                        Console.error("$tag Storage key '$storageKey' deletion failed")
-                                    }
-
-                                    completeReset(data)
+                                    completeReset(true)
                                 }
 
                                 override fun onFailure(error: Throwable) {
