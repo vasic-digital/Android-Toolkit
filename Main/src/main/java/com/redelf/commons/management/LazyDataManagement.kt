@@ -252,6 +252,8 @@ abstract class LazyDataManagement<T> :
 
             saved.set(false)
 
+            callback?.onCompleted(true)
+
         } else {
 
             super.pushData(data, callback)
