@@ -1155,7 +1155,7 @@ fun <X> sync(
 
         try {
 
-            Console.log("$tag CALLING :: START")
+            Console.log("$tag CALLING")
 
             what(
 
@@ -1177,7 +1177,7 @@ fun <X> sync(
                 }
             )
 
-            Console.log("$tag CALLING :: END")
+            Console.log("$tag WAITING")
 
         } catch (e: Throwable) {
 
@@ -1190,8 +1190,6 @@ fun <X> sync(
     val startTime = System.currentTimeMillis()
 
     try {
-
-        Console.log("$tag WAITING")
 
         if (latch.await(timeout, timeUnit)) {
 
