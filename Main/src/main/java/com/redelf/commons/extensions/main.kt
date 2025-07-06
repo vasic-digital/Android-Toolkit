@@ -1140,6 +1140,13 @@ fun <X> sync(
     var result: X? = null
     val latch = CountDownLatch(1)
 
+    if (isOnMainThread()) {
+
+        val e = IllegalStateException("$context executed sync on main thread")
+        Console.error("$tag ${e.message}")
+        recordException(e)
+    }
+
     exec(
 
         onRejected = { e ->
