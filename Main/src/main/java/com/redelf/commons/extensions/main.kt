@@ -1135,33 +1135,45 @@ fun <X> sync(
     var result: X? = null
     val latch = CountDownLatch(1)
 
-    try {
+    exec(
 
-        what(
+        onRejected = { e ->
 
-            object : OnObtain<X?> {
+            recordException(e)
 
-                override fun onCompleted(data: X?) {
+            latch.countDown()
+        }
 
-                    result = data
+    ) {
 
-                    latch.countDown()
+        try {
+
+            what(
+
+                object : OnObtain<X?> {
+
+                    override fun onCompleted(data: X?) {
+
+                        result = data
+
+                        latch.countDown()
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        recordException(error)
+
+                        latch.countDown()
+                    }
                 }
+            )
 
-                override fun onFailure(error: Throwable) {
+        } catch (e: Throwable) {
 
-                    recordException(error)
+            recordException(e)
 
-                    latch.countDown()
-                }
-            }
-        )
-
-    } catch (e: Throwable) {
-
-        recordException(e)
-
-        latch.countDown()
+            latch.countDown()
+        }
     }
 
     try {

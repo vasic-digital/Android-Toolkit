@@ -68,11 +68,13 @@ object Storage {
 
         try {
 
-            if (!latch.await(10, TimeUnit.SECONDS)) {
+            latch.await()
 
-                val e = TimeoutException("Storage latch expired")
-                recordException(e)
-            }
+//            if (!latch.await(10, TimeUnit.SECONDS)) {
+//
+//                val e = TimeoutException("Storage latch expired")
+//                recordException(e)
+//            }
 
         } catch (e: Throwable) {
 
@@ -138,11 +140,13 @@ object Storage {
 
         try {
 
-            if (!latch.await(10, TimeUnit.SECONDS)) {
+            latch.await()
 
-                val e = TimeoutException("Storage latch expired")
-                recordException(e)
-            }
+//            if (!latch.await(10, TimeUnit.SECONDS)) {
+//
+//                val e = TimeoutException("Storage latch expired")
+//                recordException(e)
+//            }
 
         } catch (e: Throwable) {
 

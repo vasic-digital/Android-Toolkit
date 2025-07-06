@@ -3,6 +3,7 @@ package com.redelf.commons.persistance
 import android.content.Context
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
@@ -178,90 +179,114 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     override fun <T> get(key: String?, callback: OnObtain<T?>) {
 
-        if (key == null) {
+        exec(
 
-            val e = IllegalArgumentException("Key is null")
-            callback.onFailure(e)
-            return
-        }
+            onRejected = { e -> callback.onFailure(e) }
 
-        getDataInfo(
+        ) {
 
-            key,
+            if (key == null) {
 
-            object : OnObtain<DataInfo?> {
+                val e = IllegalArgumentException("Key is null")
+                callback.onFailure(e)
+                return@exec
+            }
 
-                override fun onCompleted(data: DataInfo?) {
+            getDataInfo(
 
-                    val dataInfo = data
+                key,
 
-                    getRaw(
+                object : OnObtain<DataInfo?> {
 
-                        key,
+                    override fun onCompleted(data: DataInfo?) {
 
-                        object : OnObtain<String?> {
+                        val dataInfo = data
 
-                            override fun onCompleted(data: String?) {
+                        getRaw(
 
-                                val plainText = data
+                            key,
 
-                                try {
+                            object : OnObtain<String?> {
 
-                                    val result: T? = converter?.fromString(plainText, dataInfo)
+                                override fun onCompleted(data: String?) {
 
-                                    log(" Get :: Key = $key :: Converted: $result")
+                                    data?.let {
 
-                                    callback.onCompleted(result)
+                                        val plainText = data
 
-                                } catch (e: Throwable) {
+                                        try {
 
-                                    callback.onFailure(e)
+                                            val result: T? = converter?.fromString(plainText, dataInfo)
+
+                                            log(" Get :: Key = $key :: Converted: $result")
+
+                                            callback.onCompleted(result)
+
+                                        } catch (e: Throwable) {
+
+                                            callback.onFailure(e)
+                                        }
+                                    }
+
+                                    if (data == null) {
+
+                                        log(" Get :: Key = $key :: No data found")
+
+                                        callback.onCompleted(null)
+                                    }
+                                }
+
+                                override fun onFailure(error: Throwable) {
+
+                                    callback.onFailure(error)
                                 }
                             }
+                        )
+                    }
 
-                            override fun onFailure(error: Throwable) {
+                    override fun onFailure(error: Throwable) {
 
-                                callback.onFailure(error)
-                            }
-                        }
-                    )
+                        callback.onFailure(error)
+                    }
                 }
-
-                override fun onFailure(error: Throwable) {
-
-                    callback.onFailure(error)
-                }
-            }
-        )
+            )
+        }
     }
 
     override fun <T> get(key: String?, defaultValue: T, callback: OnObtain<T?>) {
 
-        get<T>(
+        exec(
 
-            key,
+            onRejected = { e -> callback.onFailure(e) }
 
-            object : OnObtain<T?> {
+        ) {
 
-                override fun onCompleted(data: T?) {
+            get<T>(
 
-                    data?.let {
+                key,
 
-                        callback.onCompleted(it)
+                object : OnObtain<T?> {
+
+                    override fun onCompleted(data: T?) {
+
+                        data?.let {
+
+                            callback.onCompleted(it)
+                        }
+
+                        if (data == null) {
+
+                            callback.onCompleted(defaultValue)
+                        }
                     }
 
-                    if (data == null) {
+                    override fun onFailure(error: Throwable) {
 
-                        callback.onCompleted(defaultValue)
+                        callback.onFailure(error)
                     }
                 }
-
-                override fun onFailure(error: Throwable) {
-
-                    callback.onFailure(error)
-                }
-            }
-        )
+            )
+        }
     }
 
     override fun getByType(key: String?, type: Type, callback: OnObtain<Any?>) {
