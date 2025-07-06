@@ -132,7 +132,9 @@ constructor(
                 Console.log("$LOG_TAG :: Pull: key = '$key' ::")
             }
 
-            dataDelegate?.get(key, callback)
+            val result = dataDelegate?.get(key, null)
+
+            callback.onCompleted(result)
         }
     }
 
