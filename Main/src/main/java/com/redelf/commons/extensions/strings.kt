@@ -66,6 +66,11 @@ fun String.toBase64(): String {
 
 fun String.fromBase64(default: String? = this): String? {
 
+    if (this.isEmpty()) {
+
+        return default
+    }
+
     if (this.isBase64Encoded()) {
 
         try {
