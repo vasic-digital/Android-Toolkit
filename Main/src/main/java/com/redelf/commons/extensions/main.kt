@@ -1191,21 +1191,22 @@ fun <X> sync(
 
         Console.log("$tag WAITING")
 
-        if (!latch.await(timeout, timeUnit)) {
+        if (latch.await(timeout, timeUnit)) {
+
+            Console.log("$tag END")
+
+        } else {
 
             val e = TimeoutException("$context latch expired")
-            Console.log("$tag FAILED :: Timed out")
+            Console.error("$tag FAILED :: Timed out")
             recordException(e)
         }
 
     } catch (e: Throwable) {
 
         Console.log("$tag FAILED :: Error='${e.message}'")
-
         recordException(e)
     }
-
-    Console.log("$tag END")
 
     return result
 }
