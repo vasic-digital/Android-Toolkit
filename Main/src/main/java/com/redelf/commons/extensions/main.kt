@@ -1126,14 +1126,14 @@ fun CountDownLatch.safeWait(timeoutInSeconds: Int = 60, tag: String = "") {
 
 fun <X> sync(
 
-    title: String,
+    context: String,
     timeout: Long = 60,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     what: (callback: OnObtain<X?>) -> Unit
 
 ): X?  {
 
-    val tag = "SYNC :: $title"
+    val tag = "SYNC :: $context"
 
     Console.log("$tag START")
 
@@ -1193,7 +1193,7 @@ fun <X> sync(
 
         if (!latch.await(timeout, timeUnit)) {
 
-            val e = TimeoutException("$title latch expired")
+            val e = TimeoutException("$context latch expired")
             Console.log("$tag FAILED :: Timed out")
             recordException(e)
         }
