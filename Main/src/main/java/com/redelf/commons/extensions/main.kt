@@ -1135,7 +1135,7 @@ fun <X> sync(
 
     val tag = "SYNC :: $context"
 
-    Console.log("$tag START")
+    Console.debug("$tag START")
 
     var result: X? = null
     val latch = CountDownLatch(1)
@@ -1177,7 +1177,7 @@ fun <X> sync(
                 }
             )
 
-            Console.log("$tag CALLING :: END")
+            Console.debug("$tag CALLING :: END")
 
         } catch (e: Throwable) {
 
