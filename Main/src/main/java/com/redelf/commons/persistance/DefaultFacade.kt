@@ -258,11 +258,28 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     override fun <T> get(key: String?, defaultValue: T, callback: OnObtain<T?>) {
 
+        val tag = "$TAG :: Get :: Key='$key' ::"
+
+        if (DEBUG.get()) {
+
+            Console.log("$tag START")
+        }
+
         exec(
 
-            onRejected = { e -> callback.onFailure(e) }
+            onRejected = { e ->
+
+                Console.error("$tag REJECTED")
+
+                callback.onFailure(e)
+            }
 
         ) {
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag STARTED")
+            }
 
             get<T>(
 
@@ -272,18 +289,17 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                     override fun onCompleted(data: T?) {
 
-                        data?.let {
+                        if (DEBUG.get()) {
 
-                            callback.onCompleted(it)
+                            Console.log("$tag END :: On completed")
                         }
 
-                        if (data == null) {
-
-                            callback.onCompleted(defaultValue)
-                        }
+                        callback.onCompleted(data ?: defaultValue)
                     }
 
                     override fun onFailure(error: Throwable) {
+
+                        Console.error("$tag END :: onFailure :: Error='${error.message}'")
 
                         callback.onFailure(error)
                     }
