@@ -64,7 +64,7 @@ fun String.toBase64(): String {
     return ""
 }
 
-fun String.fromBase64(): String {
+fun String.fromBase64(default: String? = this): String? {
 
     if (this.isBase64Encoded()) {
 
@@ -81,7 +81,7 @@ fun String.fromBase64(): String {
         }
     }
 
-    return this
+    return default
 }
 
 fun String.compress(lz4: Boolean = true): ByteArray? {

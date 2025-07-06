@@ -9,6 +9,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.creation.instantiation.Instantiable
 import com.redelf.commons.extensions.assign
 import com.redelf.commons.extensions.forClassName
+import com.redelf.commons.extensions.fromBase64
 import com.redelf.commons.extensions.getAllFields
 import com.redelf.commons.extensions.getFieldByName
 import com.redelf.commons.extensions.getRawCassName
@@ -16,6 +17,7 @@ import com.redelf.commons.extensions.hasPublicDefaultConstructor
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isExcluded
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.toBase64
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Encryption
@@ -148,10 +150,10 @@ class GsonParser private constructor(
 
             typeAdapter?.let { adapter ->
 
-                return adapter.toJson(body)
+                return adapter.toJson(body)?.toBase64()
             }
 
-            return gson.toJson(body)
+            return gson.toJson(body)?.toBase64()
 
         } catch (e: Throwable) {
 
@@ -171,6 +173,8 @@ class GsonParser private constructor(
 
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
     override fun <T> fromJson(content: String?, type: Type?): T? {
+
+        val content = content?.fromBase64(null)
 
         if (isEmpty(content)) {
 
@@ -214,6 +218,8 @@ class GsonParser private constructor(
 
     @Suppress("DEPRECATION", "UNCHECKED_CAST")
     override fun <T> fromJson(content: String?, clazz: Class<*>?): T? {
+
+        val content = content?.fromBase64(null)
 
         if (isEmpty(content)) {
 
