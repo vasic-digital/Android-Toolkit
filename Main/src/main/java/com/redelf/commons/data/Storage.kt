@@ -79,13 +79,21 @@ object Storage {
 
                 override fun onCompleted(data: Any?) {
 
-                    try {
+                    data?.let {
 
-                        result = data as T
+                        try {
 
-                    } catch (e: Throwable) {
+                            result = data as T
 
-                        recordException(e)
+                        } catch (e: Throwable) {
+
+                            recordException(e)
+                        }
+                    }
+
+                    if (data == null) {
+
+                        result = defaultValue
                     }
 
                     latch.countDown()
