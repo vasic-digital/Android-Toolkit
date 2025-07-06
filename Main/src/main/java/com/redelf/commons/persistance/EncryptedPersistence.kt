@@ -177,7 +177,7 @@ constructor(
         }
     }
 
-    override fun contains(key: String, callback: OnObtain<Boolean>) {
+    override fun contains(key: String, callback: OnObtain<Boolean?>) {
 
         exec(
 

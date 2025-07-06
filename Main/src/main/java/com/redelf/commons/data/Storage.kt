@@ -117,44 +117,13 @@ object Storage {
 
     fun contains(key: String): Boolean {
 
-        var result = false
-        val latch = CountDownLatch(1)
+        return sync("Storage.contains.$key") { callback ->
 
-        DataManagement.STORAGE.contains(
+            DataManagement.STORAGE.contains(
 
-            key,
+                key, callback
+            )
 
-            object : OnObtain<Boolean> {
-
-                override fun onCompleted(data: Boolean) {
-
-                    result = data
-
-                    latch.countDown()
-                }
-
-                override fun onFailure(error: Throwable) {
-
-                    recordException(error)
-
-                    latch.countDown()
-                }
-            }
-        )
-
-        try {
-
-            if (!latch.await(2, TimeUnit.SECONDS)) {
-
-                val e = TimeoutException("Storage latch expired")
-                recordException(e)
-            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
-
-        return result
+        } == true
     }
 }
