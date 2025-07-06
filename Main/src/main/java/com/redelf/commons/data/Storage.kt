@@ -87,46 +87,58 @@ object Storage {
         var result: T = defaultValue
         val latch = CountDownLatch(1)
 
-        DataManagement.STORAGE.pull<Any?>(
+        exec(
 
-            key,
+            onRejected = { e ->
 
-            object : OnObtain<Any?> {
+                recordException(e)
 
-                override fun onCompleted(data: Any?) {
-
-                    data?.let {
-
-                        try {
-
-                            result = data as T
-
-                        } catch (e: Throwable) {
-
-                            recordException(e)
-                        }
-                    }
-
-                    if (data == null) {
-
-                        result = defaultValue
-                    }
-
-                    latch.countDown()
-                }
-
-                override fun onFailure(error: Throwable) {
-
-                    recordException(error)
-
-                    latch.countDown()
-                }
+                latch.countDown()
             }
-        )
+
+        ) {
+
+            DataManagement.STORAGE.pull<Any?>(
+
+                key,
+
+                object : OnObtain<Any?> {
+
+                    override fun onCompleted(data: Any?) {
+
+                        data?.let {
+
+                            try {
+
+                                result = data as T
+
+                            } catch (e: Throwable) {
+
+                                recordException(e)
+                            }
+                        }
+
+                        if (data == null) {
+
+                            result = defaultValue
+                        }
+
+                        latch.countDown()
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        recordException(error)
+
+                        latch.countDown()
+                    }
+                }
+            )
+        }
 
         try {
 
-            if (!latch.await(2, TimeUnit.SECONDS)) {
+            if (!latch.await(10, TimeUnit.SECONDS)) {
 
                 val e = TimeoutException("Storage latch expired")
                 recordException(e)
