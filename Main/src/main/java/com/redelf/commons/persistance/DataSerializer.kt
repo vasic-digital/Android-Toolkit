@@ -112,6 +112,11 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
     override fun deserialize(plainText: String?): DataInfo? {
 
+        if (isEmpty(plainText)) {
+
+            return null
+        }
+
         val plainText = plainText?.fromBase64(null)
 
         if (isEmpty(plainText)) {
