@@ -27,8 +27,9 @@ import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.session.Session
-import com.redelf.commons.state.Busy
 import com.redelf.commons.state.BusyCheck
+import com.redelf.commons.state.ReadingCheck
+import com.redelf.commons.state.WritingCheck
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
@@ -46,6 +47,8 @@ abstract class DataManagement<T> :
     Management,
     Resettable,
     Environment,
+    ReadingCheck,
+    WritingCheck,
     ObtainAsync<T?>,
     ResettableAsync,
     Contextual<BaseApplication>,
@@ -127,9 +130,19 @@ abstract class DataManagement<T> :
         return enabled.get()
     }
 
+    override fun isReading(): Boolean {
+
+        return reading.get()
+    }
+
+    override fun isWriting(): Boolean {
+
+        return writing.get()
+    }
+
     override fun isBusy(): Boolean {
 
-        return reading.get() || writing.get()
+        return isReading() || isWriting()
     }
 
     override fun execute(what: DataTransaction<T>): Boolean {
