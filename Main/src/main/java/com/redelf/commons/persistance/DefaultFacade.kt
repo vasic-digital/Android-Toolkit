@@ -179,11 +179,24 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     override fun <T> get(key: String?, callback: OnObtain<T?>) {
 
+        val tag = "$TAG :: Get (w.no.def) :: Key='$key' ::"
+
+        Console.log("$tag START")
+
         exec(
 
-            onRejected = { e -> callback.onFailure(e) }
+            onRejected = { e ->
+
+                Console.error("$tag REJECTED")
+                callback.onFailure(e)
+            }
 
         ) {
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag STARTED")
+            }
 
             if (key == null) {
 
@@ -193,6 +206,11 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
             }
 
             fun onDataInfo(dataInfo: DataInfo?) {
+
+                if (DEBUG.get()) {
+
+                    Console.log("$tag On data info, getting raw")
+                }
 
                 getRaw(
 
@@ -204,25 +222,48 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                             data?.let {
 
-                                val plainText = data
+                                val plainText = it
 
-                                try {
+                                if (plainText.isEmpty()) {
 
-                                    val result: T? = converter?.fromString(plainText, dataInfo)
+                                    if (DEBUG.get()) {
 
-                                    log(" Get :: Key = $key :: Converted: $result")
+                                        Console.log("$tag On raw :: Empty text")
+                                    }
 
-                                    callback.onCompleted(result)
+                                    callback.onCompleted(null)
 
-                                } catch (e: Throwable) {
+                                } else {
 
-                                    callback.onFailure(e)
+                                    try {
+
+                                        val result: T? = converter?.fromString(plainText, dataInfo)
+
+                                        if (DEBUG.get()) {
+
+                                            Console.log("$tag On raw :: Converted")
+                                        }
+
+                                        callback.onCompleted(result)
+
+                                    } catch (e: Throwable) {
+
+                                        Console.error(
+
+                                            "$tag Conversion failed :: Error='${e.message}'"
+                                        )
+
+                                        callback.onFailure(e)
+                                    }
                                 }
                             }
 
                             if (data == null) {
 
-                                log(" Get :: Key = $key :: No data found")
+                                if (DEBUG.get()) {
+
+                                    Console.log("$tag On raw :: Empty data")
+                                }
 
                                 callback.onCompleted(null)
                             }
@@ -230,10 +271,16 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                         override fun onFailure(error: Throwable) {
 
+                            Console.error("$tag Get raw failed :: Error='${error.message}'")
                             callback.onFailure(error)
                         }
                     }
                 )
+            }
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag Get data info")
             }
 
             getDataInfo(
@@ -244,11 +291,17 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                     override fun onCompleted(data: DataInfo?) {
 
+                        if (DEBUG.get()) {
+
+                            Console.log("$tag Got data info")
+                        }
+
                         onDataInfo(data)
                     }
 
                     override fun onFailure(error: Throwable) {
 
+                        Console.error("$tag Get data info failed :: Error='${error.message}'")
                         callback.onFailure(error)
                     }
                 }
@@ -258,7 +311,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     override fun <T> get(key: String?, defaultValue: T, callback: OnObtain<T?>) {
 
-        val tag = "$TAG :: Get :: Key='$key' ::"
+        val tag = "$TAG :: Get (w.def) :: Key='$key' ::"
 
         if (DEBUG.get()) {
 
