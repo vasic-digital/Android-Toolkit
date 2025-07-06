@@ -1435,13 +1435,16 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         } ?: ""
 
-        try {
+        if (value.isNotEmpty()) {
 
-            return Class.forName(value.forClassName())
+            try {
 
-        } catch (e: ClassNotFoundException) {
+                return Class.forName(value.forClassName())
 
-            Console.error(e)
+            } catch (e: ClassNotFoundException) {
+
+                Console.error(e)
+            }
         }
 
         return null
