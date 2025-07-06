@@ -56,7 +56,7 @@ object DBStorage : Storage<String> {
     private var columnKey = COLUMN_KEY_
     private var columnValue = COLUMN_VALUE_
 
-    private val executor = Executor.SINGLE
+    private val executor = Executor.MAIN
 
     private var enc: Encryption<String> = NoEncryption()
 
