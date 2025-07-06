@@ -256,7 +256,7 @@ object DBStorage : Storage<String> {
 
     override fun get(key: String?, callback: OnObtain<String?>) {
 
-        val tag = "$TAG Get Key='$key' ::"
+        val tag = "$TAG Get :: Key='$key' ::"
 
         if (DEBUG.get()) {
 
@@ -289,6 +289,11 @@ object DBStorage : Storage<String> {
             try {
 
                 var chunks = -1
+
+                if (DEBUG.get()) {
+
+                    Console.log("$tag Calling do get")
+                }
 
                 doGet(
 
@@ -862,7 +867,7 @@ object DBStorage : Storage<String> {
 
     private fun doGet(key: String?, callback: OnObtain<String?>) {
 
-        val tag = "$TAG Do get Key='$key' ::"
+        val tag = "$TAG Do get :: Key='$key' ::"
 
         if (DEBUG.get()) Console.log("$tag START")
 
