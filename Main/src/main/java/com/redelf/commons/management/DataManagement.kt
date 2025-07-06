@@ -522,7 +522,19 @@ abstract class DataManagement<T> :
                     if (version <= 0 || version > lastDataVersion.get()) {
 
                         val store = takeStorage()
-                        val pushed = store?.push(storageKey, data)
+
+                        val pushed = store?.push(
+
+                            key = storageKey, what = data,
+
+                            check = object : Obtain<Boolean> {
+
+                                override fun obtain(): Boolean {
+
+                                    return !isReading()
+                                }
+                            }
+                        )
 
                         if (store == null) {
 

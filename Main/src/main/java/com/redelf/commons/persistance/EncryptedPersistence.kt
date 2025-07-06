@@ -6,6 +6,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.destruction.erasing.Erasing
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.hashCodeString
+import com.redelf.commons.extensions.yield
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
@@ -151,7 +152,7 @@ constructor(
         }
     }
 
-    override fun <T> push(key: String, what: T): Boolean {
+    override fun <T> push(key: String, what: T, check: Obtain<Boolean>): Boolean {
 
         if (dataDelegate == null) {
 
@@ -159,6 +160,8 @@ constructor(
 
             return false
         }
+
+        yield("EncryptedPersistence.push.$key", check)
 
         return dataDelegate?.put(key, what) == true
     }

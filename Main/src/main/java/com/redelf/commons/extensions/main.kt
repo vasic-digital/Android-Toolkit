@@ -33,6 +33,7 @@ import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.PropertiesHash
 import java.io.BufferedInputStream
@@ -1124,6 +1125,50 @@ fun CountDownLatch.safeWait(timeoutInSeconds: Int = 60, tag: String = "") {
     }
 }
 
+fun yield(context: String, check: Obtain<Boolean>) {
+
+    val tag = "YIELD :: $context ::"
+
+    val startTime = System.currentTimeMillis()
+
+    fun condition() = !check.obtain() && !Thread.currentThread().isInterrupted
+
+    if (condition()) {
+
+        Console.log("$tag START")
+
+        while (condition()) {
+
+            Thread.yield()
+        }
+
+        val endTime = System.currentTimeMillis() - startTime
+
+        if (Thread.currentThread().isInterrupted) {
+
+            Console.warning("$tag YIELDED interrupted after $endTime ms")
+
+        } else if (endTime > 1500 && endTime < 3000) {
+
+            Console.warning("$tag YIELDED for $endTime ms")
+
+        } else if (endTime >= 3000) {
+
+            Console.error("$tag YIELDED for $endTime ms")
+
+        } else {
+
+            Console.log("$tag END ::")
+        }
+
+    } else {
+
+        Console.log("$tag NONE")
+    }
+
+    // TODO: Coroutines support
+}
+
 fun <X> sync(
 
     context: String,
@@ -1131,7 +1176,9 @@ fun <X> sync(
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     what: (callback: OnObtain<X?>) -> Unit
 
-): X?  {
+): X? {
+
+    // TODO: Coroutines support
 
     val tag = "SYNC :: $context ::"
 

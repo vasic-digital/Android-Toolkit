@@ -4,8 +4,16 @@ import com.redelf.commons.contain.ContainAsync
 import com.redelf.commons.destruction.delete.DeletionAsync
 import com.redelf.commons.direction.PullAsync
 import com.redelf.commons.direction.Push
+import com.redelf.commons.direction.PushWithConditionCheck
 
-interface PersistenceAsync<K> : PullAsync<K>, Push<K>, DeletionAsync<K>, ContainAsync<K> {
+interface PersistenceAsync<K> :
+
+    PullAsync<K>,
+    ContainAsync<K>,
+    DeletionAsync<K>,
+    PushWithConditionCheck<K>
+
+{
 
     companion object {
 
