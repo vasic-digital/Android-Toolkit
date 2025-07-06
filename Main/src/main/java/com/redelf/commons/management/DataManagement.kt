@@ -238,58 +238,26 @@ abstract class DataManagement<T> :
 
     fun obtain(): T? {
 
-        var result: T? = null
-        val latch = CountDownLatch(1)
-
-        try {
+        return sync("${getWho()}.obtain") { callback ->
 
             obtain(
 
-                object : OnObtain<T?> {
-
-                    override fun onCompleted(data: T?) {
-
-                        result = data
-
-                        latch.countDown()
-                    }
-
-                    override fun onFailure(error: Throwable) {
-
-                        recordException(error)
-
-                        latch.countDown()
-                    }
-                }
+                callback
             )
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-
-            latch.countDown()
         }
-
-        try {
-
-            if (!latch.await(60, TimeUnit.SECONDS)) {
-
-                val e = TimeoutException("Data manager obtain latch expired")
-                recordException(e)
-            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
-
-        return result
     }
 
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(callback: OnObtain<T?>) {
 
-        exec {
+        exec(
+
+            onRejected = { e ->
+
+                callback.onFailure(e)
+            }
+
+        ) {
 
             if (!isEnabled()) {
 
@@ -315,6 +283,7 @@ abstract class DataManagement<T> :
                 if (canLog()) Console.log("$tag END: OK")
 
                 callback.onCompleted(data)
+
                 return@exec
             }
 
@@ -375,10 +344,14 @@ abstract class DataManagement<T> :
 
                 if (canLog()) Console.log("$dataObjTag Final: $data")
 
+                setBusy(false)
+
                 callback.onCompleted(data)
             }
 
             if (data == null && persist) {
+
+                setBusy(true)
 
                 STORAGE.pull(
 
