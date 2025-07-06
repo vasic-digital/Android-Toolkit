@@ -13,6 +13,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.sync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.base.Encryption
@@ -202,7 +203,8 @@ object DBStorage : Storage<String> {
             return false
         }
 
-        val tag = "$TAG Put :: DO :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
+        val tag =
+            "$TAG Put :: DO :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
         val chunks = value.chunked(MAX_CHUNK_SIZE)
 
@@ -288,118 +290,100 @@ object DBStorage : Storage<String> {
 
             try {
 
-                var chunks = -1
+                if (DEBUG.get()) {
+
+                    Console.log("$tag Going to call do get")
+                }
+
+                val doGetCallback = object : OnObtain<String?> {
+
+                    override fun onCompleted(data: String?) {
+
+                        var chunks = 1
+                        val chunksRawValue = data
+                        val condition =
+                            chunksRawValue?.isNotEmpty() == true && chunksRawValue.isDigitsOnly()
+
+                        if (condition) {
+
+                            chunks = chunksRawValue.toInt()
+                        }
+
+                        if (chunks < 1) {
+
+                            callback.onCompleted("")
+
+                        } else if (chunks == 1) {
+
+                            if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
+
+                            val got = doGet("${key}_${KEY_CHUNK}_0")
+
+                            callback.onCompleted(got)
+
+                        } else {
+
+                            if (DEBUG.get()) {
+
+                                Console.log("$tag START :: Chunk :: Chunks count = $chunks")
+                            }
+
+                            val result = StringBuilder()
+                            val pieces = ConcurrentHashMap<Int, String?>()
+
+                            for (i in 0..chunks - 1) {
+
+                                pieces[i] = doGet("${key}_${KEY_CHUNK}_$i")
+
+                                if (pieces.size == chunks) {
+
+                                    pieces.keys.toMutableList().sorted()
+                                        .forEach { index ->
+
+                                            val part = pieces[index]
+
+                                            if (part?.isNotEmpty() == true) {
+
+                                                result.append(part)
+
+                                                if (DEBUG.get()) {
+
+                                                    Console.log(
+
+                                                        "$tag Chunk :: " +
+                                                                "Loaded chunk = " +
+                                                                "${i + 1} / $chunks"
+                                                    )
+                                                }
+                                            }
+                                        }
+                                }
+                            }
+
+                            callback.onCompleted(result.toString())
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        Console.error("$tag FAILED :: Error='$error'")
+                        callback.onFailure(error)
+                    }
+                }
 
                 if (DEBUG.get()) {
 
                     Console.log("$tag Calling do get")
                 }
 
-                doGet(
+                val got = doGet("${key}_$KEY_CHUNKS")
 
-                    "${key}_$KEY_CHUNKS",
+                if (DEBUG.get()) {
 
-                    object : OnObtain<String?> {
+                    Console.log("$tag Did got")
+                }
 
-                        override fun onCompleted(data: String?) {
-
-                            val chunksRawValue = data
-
-                            val tag =
-                                "Get :: key = $key :: column_key = $columnValue :: column_value = $columnValue ::"
-
-                            val condition = chunksRawValue?.isNotEmpty() == true
-                                    && chunksRawValue.isDigitsOnly()
-
-                            if (condition) {
-
-                                chunks = chunksRawValue.toInt()
-                            }
-
-                            if (chunks < 1) {
-
-                                callback.onCompleted("")
-
-                            } else if (chunks == 1) {
-
-                                if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
-
-                                doGet("${key}_${KEY_CHUNK}_0", callback)
-
-                            } else {
-
-                                if (DEBUG.get()) {
-
-                                    Console.log("$tag START :: Chunk :: Chunks count = $chunks")
-                                }
-
-                                val result = StringBuilder()
-                                var failure: Throwable? = null
-                                val pieces = ConcurrentHashMap<Int, String?>()
-
-                                for (i in 0..chunks - 1) {
-
-                                    doGet(
-
-                                        "${key}_${KEY_CHUNK}_$i",
-
-                                        object : OnObtain<String?> {
-
-                                            override fun onCompleted(data: String?) {
-
-                                                pieces[i] = data
-
-                                                if (pieces.size == chunks) {
-
-                                                    pieces.keys.toMutableList().sorted()
-                                                        .forEach { index ->
-
-                                                            val part = pieces[index]
-
-                                                            if (part?.isNotEmpty() == true) {
-
-                                                                result.append(part)
-
-                                                                if (DEBUG.get()) {
-
-                                                                    Console.log(
-
-                                                                        "$tag Chunk :: " +
-                                                                                "Loaded chunk = " +
-                                                                                "${i + 1} / $chunks"
-                                                                    )
-                                                                }
-                                                            }
-                                                        }
-
-                                                }
-                                            }
-
-                                            override fun onFailure(error: Throwable) {
-
-                                                failure?.let {
-
-                                                    recordException(error)
-                                                }
-
-                                                if (failure == null) {
-
-                                                    failure = error
-                                                }
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-
-                        override fun onFailure(error: Throwable) {
-
-                            Console.error("$tag FAILED :: Error='$error'")
-                            callback.onFailure(error)
-                        }
-                    }
-                )
+                doGetCallback.onCompleted(got)
 
                 if (DEBUG.get()) {
 
@@ -767,7 +751,8 @@ object DBStorage : Storage<String> {
             return false
         }
 
-        val tag = "$TAG Put :: DO :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
+        val tag =
+            "$TAG Put :: DO :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
         if (DEBUG.get()) Console.log("$tag START")
 
@@ -870,10 +855,23 @@ object DBStorage : Storage<String> {
         return result.get()
     }
 
-    @Synchronized
-    private fun doGet(key: String?, callback: OnObtain<String?>) {
+    private fun doGet(key: String?): String? {
 
-        val tag = "$TAG Do get :: Key='$key' ::"
+        if (isOnMainThread()) {
+
+            val e = IllegalArgumentException("Do get from the main thread")
+            recordException(e)
+        }
+
+        return sync("DBStorage.doGet.$key") { callback ->
+
+            doGetAsync(key, callback)
+        }
+    }
+
+    private fun doGetAsync(key: String?, callback: OnObtain<String?>) {
+
+        val tag = "$TAG Do get async :: Key='$key' ::"
 
         if (DEBUG.get()) {
 

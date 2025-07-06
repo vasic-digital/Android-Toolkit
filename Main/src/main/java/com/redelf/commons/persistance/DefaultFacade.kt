@@ -311,7 +311,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     override fun <T> get(key: String?, defaultValue: T, callback: OnObtain<T?>) {
 
-        val tag = "$TAG :: Get (w.def) :: Key='$key' ::"
+        val tag = "$TAG Get (w.def) :: Key='$key' ::"
 
         if (DEBUG.get()) {
 
