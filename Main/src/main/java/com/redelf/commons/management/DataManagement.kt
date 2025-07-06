@@ -495,11 +495,9 @@ abstract class DataManagement<T> :
                 return@exec
             }
 
-            writing.set(true)
+            if (overwriteData(data) && persist) {
 
-            overwriteData(data)
-
-            if (persist) {
+                writing.set(true)
 
                 try {
 
@@ -666,9 +664,9 @@ abstract class DataManagement<T> :
 
                     if (instantiateDataObject) {
 
-                        createDataObject()?.let {
+                        createDataObject()?.let { dObject ->
 
-                            overwriteData(it)
+                            overwriteData(dObject)
 
                             data?.let {
 
@@ -753,11 +751,11 @@ abstract class DataManagement<T> :
         Console.log("${getLogTag()} Data :: Erase :: END")
     }
 
-    protected fun overwriteData(data: T) {
+    protected fun overwriteData(data: T): Boolean {
 
         if (!isEnabled()) {
 
-            return
+            return false
         }
 
         // FIXME: Polish and add environment into the account
@@ -770,12 +768,23 @@ abstract class DataManagement<T> :
                         "To version = ${data.getVersion()}"
             )
 
-            this.data = data
+            if (this.data != data) {
+
+                this.data = data
+
+                return true
+
+            } else {
+
+                Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED (1)")
+            }
 
         } else {
 
-            Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED")
+            Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED (2)")
         }
+
+        return false
     }
 
     class DataTransaction<T>(
