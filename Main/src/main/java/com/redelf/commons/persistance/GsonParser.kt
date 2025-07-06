@@ -291,6 +291,15 @@ class GsonParser private constructor(
                                     "Class = '${clazz.simpleName}', Error = '${e.message}'"
                         )
 
+                        if (DEBUG.get()) {
+
+                            Console.error(
+
+                                "$tag INVALID JSON:\n$content\n" +
+                                        "Class = '${clazz.canonicalName?.forClassName()}'"
+                            )
+                        }
+
                         recordException(e)
                     }
                 }
