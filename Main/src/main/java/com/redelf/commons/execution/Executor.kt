@@ -50,9 +50,16 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
         override fun instantiateExecutor() = TaskExecutor.instantiate(capacity)
 
+        /*
+        * TODO:
+        *  - Instead of Runnable use Runnable and ApiRunnable
+        *  - Wrap all CountDown latched with existing sync {} extension
+        *  - Make sure that sync {} extension can work with countdown latch with multiple count downs
+        *  - Make sure that sync {} extension works with coroutines when threadPooled.get() is false
+        */
         @OptIn(DelicateCoroutinesApi::class)
         @Throws(RejectedExecutionException::class)
-        override fun execute(what: Runnable) { // TODO: Instead of Runnable use Runnable and ApiRunnable
+        override fun execute(what: Runnable) {
 
             if (isDebug()) Console.log("$tag START :: threadPooled = ${isThreadPooledExecution()}")
 
