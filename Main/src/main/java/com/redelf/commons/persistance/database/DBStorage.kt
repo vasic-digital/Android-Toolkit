@@ -352,7 +352,7 @@ object DBStorage : Storage<String> {
 
                                                         "$tag Chunk :: " +
                                                                 "Loaded chunk = " +
-                                                                "${i + 1} / $chunks"
+                                                                "${index + 1} / $chunks"
                                                     )
                                                 }
                                             }
