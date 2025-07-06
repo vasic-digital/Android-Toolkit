@@ -108,16 +108,16 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
         return null
     }
 
-    override fun deserialize(serializedText: String?): DataInfo? {
+    override fun deserialize(plainText: String?): DataInfo? {
 
-        if (isEmpty(serializedText)) {
+        if (isEmpty(plainText)) {
 
             return null
         }
 
         try {
 
-            val dataInfo = parser.obtain().fromJson<DataInfo?>(serializedText, DataInfo::class.java)
+            val dataInfo = parser.obtain().fromJson<DataInfo?>(plainText, DataInfo::class.java)
 
             if (dataInfo?.keyClazzName != null) {
 
@@ -133,7 +133,8 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
         } catch (e: JsonSyntaxException) {
 
-            error("Could not deserialize: $serializedText")
+            error("Could not deserialize: $plainText")
+
             error(e)
         }
 

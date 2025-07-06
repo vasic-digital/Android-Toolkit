@@ -447,6 +447,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
                                 log("$tag Key = $key :: Fetched from storage for Key = $key")
 
                                 val info = serializer?.deserialize(serializedText)
+
                                 callback.onCompleted(info)
                             }
                         }
