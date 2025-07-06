@@ -401,6 +401,11 @@ object DBStorage : Storage<String> {
                     }
                 )
 
+                if (DEBUG.get()) {
+
+                    Console.log("$tag Called do get, waiting for result")
+                }
+
             } catch (e: Throwable) {
 
                 Console.error("$tag FAILED :: Error='$e'")
