@@ -437,45 +437,11 @@ abstract class DataManagement<T> :
             recordException(e)
         }
 
-        val success = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        return sync("${getWho()}.pushData") { callback ->
 
-        pushData(
+            pushData(data, callback)
 
-            data,
-
-            object : OnObtain<Boolean?> {
-
-                override fun onCompleted(data: Boolean?) {
-
-                    success.set(data == true)
-
-                    latch.countDown()
-                }
-
-                override fun onFailure(error: Throwable) {
-
-                    recordException(error)
-
-                    latch.countDown()
-                }
-            }
-        )
-
-        try {
-
-            if (!latch.await(60, TimeUnit.SECONDS)) {
-
-                val e = TimeoutException("${getWho()} reset latch timed out")
-                recordException(e)
-            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
-
-        return false
+        } == true
     }
 
     open fun pushData(data: T?, callback: OnObtain<Boolean?>?) {
@@ -672,40 +638,57 @@ abstract class DataManagement<T> :
 
     override fun reset(callback: OnObtain<Boolean?>) {
 
+        val tag = "${getLogTag()} Reset ::"
+
         if (!isEnabled()) {
 
+            Console.warning("$tag DISABLED")
             callback.onCompleted(false)
             return
         }
 
-        val tag = "${getLogTag()} Reset ::"
-
         Console.log("$tag START")
 
-        exec {
+        exec(
+
+            onRejected = { e ->
+
+                Console.error("$tag FAILED :: Error='${e.message}'")
+                callback.onFailure(e)
+            }
+
+        ) {
+
+            if (DEBUG.get()) Console.log("$tag STARTED")
 
             try {
 
+                if (DEBUG.get()) Console.log("$tag To reset session")
+
                 session.reset()
+
+                if (DEBUG.get()) Console.log("$tag Session reset")
 
                 if (isNotEmpty(storageKey)) {
 
-                    Console.log("$tag Storage key: $storageKey")
+                    if (DEBUG.get()) Console.log("$tag Storage key = '$storageKey'")
 
                     fun completeReset(success: Boolean?) {
 
-                        eraseData()
-
                         if (success == true) {
+
+                            if (DEBUG.get()) Console.log("$tag Completing reset")
+
+                            eraseData()
 
                             Console.log("$tag END")
 
                         } else {
 
-                            Console.error("$tag END: FAILED")
-                        }
+                            Console.error("$tag Complete reset failed")
 
-                        callback.onCompleted(success)
+                            callback.onCompleted(success)
+                        }
                     }
 
                     val s = takeStorage()
@@ -778,12 +761,14 @@ abstract class DataManagement<T> :
 
                 } else {
 
-                    Console.warning("$tag Empty storage key")
+                    Console.warning("$tag END :: Empty storage key")
 
                     callback.onCompleted(false)
                 }
 
             } catch (e: Throwable) {
+
+                Console.error("$tag FAILED :: Error='${e.message}'")
 
                 callback.onFailure(e)
             }

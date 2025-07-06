@@ -171,7 +171,9 @@ constructor(
 
         ) {
 
-            callback.onCompleted(dataDelegate?.delete(what))
+            val result = dataDelegate?.delete(what)
+
+            callback.onCompleted(result)
         }
     }
 
