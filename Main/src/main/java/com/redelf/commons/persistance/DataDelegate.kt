@@ -112,11 +112,11 @@ class DataDelegate private constructor(private val facade: Facade) :
             return false
         }
 
+        val tag = "Partitioning :: Put :: Key = $key ::"
+
         val obtain = object : Obtain<Boolean> {
 
             override fun obtain(): Boolean {
-
-                val tag = "Partitioning :: Put :: Key = $key ::"
 
                 if (putActions.contains(key)) {
 
@@ -848,7 +848,18 @@ class DataDelegate private constructor(private val facade: Facade) :
             }
         }
 
+        val startTime = System.currentTimeMillis()
         val obtained = obtain.obtain()
+        val endTime = System.currentTimeMillis() - startTime
+
+        if (endTime > 1500 && endTime < 3000) {
+
+            Console.warning("$tag WAITED for $endTime ms")
+
+        } else if (endTime >= 3000) {
+
+            Console.error("$tag WAITED for $endTime ms")
+        }
 
         putActions.remove(key)
 
