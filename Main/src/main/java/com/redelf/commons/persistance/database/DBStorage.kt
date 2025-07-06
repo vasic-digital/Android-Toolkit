@@ -256,7 +256,7 @@ object DBStorage : Storage<String> {
 
     override fun get(key: String?, callback: OnObtain<String?>) {
 
-        val tag = "$TAG :: Get Key='$key' ::"
+        val tag = "$TAG Get Key='$key' ::"
 
         if (DEBUG.get()) {
 
@@ -390,7 +390,7 @@ object DBStorage : Storage<String> {
 
                         override fun onFailure(error: Throwable) {
 
-                            Console.error("$tag FAILED :: Error='$e'")
+                            Console.error("$tag FAILED :: Error='$error'")
                             callback.onFailure(error)
                         }
                     }
@@ -704,7 +704,7 @@ object DBStorage : Storage<String> {
         return success
     }
 
-    private fun withDb(doWhat: (db: SQLiteDatabase?) -> Unit) {
+    private fun withDb(tag: String = "", doWhat: (db: SQLiteDatabase?) -> Unit) {
 
         exec(
 
@@ -712,7 +712,7 @@ object DBStorage : Storage<String> {
 
         ) {
 
-            var tag = "With DB ::"
+            var tag = "$tag With DB ::".trim()
 
             try {
 
@@ -862,25 +862,33 @@ object DBStorage : Storage<String> {
 
     private fun doGet(key: String?, callback: OnObtain<String?>) {
 
+        val tag = "$TAG Do get Key='$key' ::"
+
+        if (DEBUG.get()) Console.log("$tag START")
+
         exec(
 
-            onRejected = { e -> callback.onFailure(e) }
+            onRejected = { e ->
+
+                Console.error("$tag REJECTED")
+                callback.onFailure(e)
+            }
 
         ) {
 
             if (isEmpty(key)) {
 
                 val e = IllegalArgumentException("Empty key")
+                Console.error("$tag FAILED :: Error='$e'")
                 callback.onFailure(e)
                 return@exec
             }
 
-            val tag = "$TAG Get :: DO :: key = $key :: " +
-                    "column_key = $columnValue :: column_value = $columnValue ::"
+            if (DEBUG.get()) Console.log("$tag STARTED")
 
-            if (DEBUG.get()) Console.log("$tag START")
+            withDb(tag) { db ->
 
-            withDb { db ->
+                if (DEBUG.get()) Console.log("$tag Got DB")
 
                 var result = ""
                 val selection = "$columnKey = ?"
@@ -890,6 +898,7 @@ object DBStorage : Storage<String> {
                 if (db?.isOpen == false) {
 
                     val e = IOException("DB is not open")
+                    Console.error("$tag FAILED :: Error='${e.message}'")
                     callback.onFailure(e)
                     return@withDb
                 }
