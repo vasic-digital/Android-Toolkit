@@ -132,9 +132,22 @@ constructor(
                 Console.log("$LOG_TAG :: Pull: key = '$key' ::")
             }
 
-            val result = dataDelegate?.get(key, null)
+            try {
 
-            callback.onCompleted(result)
+                val result = dataDelegate?.get<T?>(key, null)
+
+                callback.onCompleted(result)
+
+            } catch (e: Throwable) {
+
+                Console.error(
+
+                    "$LOG_TAG ERROR: Failed to pull data for key " +
+                            "'$key', Error='${e.message}'"
+                )
+
+                callback.onFailure(e)
+            }
         }
     }
 
