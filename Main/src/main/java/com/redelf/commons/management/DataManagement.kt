@@ -683,6 +683,8 @@ abstract class DataManagement<T> :
 
                             Console.log("$tag END")
 
+                            callback.onCompleted(true)
+
                         } else {
 
                             Console.error("$tag Complete reset failed")
