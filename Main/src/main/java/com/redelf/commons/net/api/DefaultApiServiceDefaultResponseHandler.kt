@@ -38,6 +38,11 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
                 callback.onFailure(CredentialsInvalidException())
             }
 
+            code in 500..599 -> {
+
+                callback.onFailure(IOException("Internal Server Error with code $code"))
+            }
+
             response.isSuccessful && body != null -> {
 
                 callback.onCompleted(body)
