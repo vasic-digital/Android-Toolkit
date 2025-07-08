@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.app.BackgroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -20,11 +21,7 @@ import android.provider.Settings
 import android.telecom.TelecomManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
@@ -42,6 +39,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
+import com.redelf.commons.atomic.AtomicIntWrapper
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.detectAllExpect
@@ -112,7 +110,18 @@ abstract class BaseApplication :
 
         override fun takeIntent(): Intent? = CONTEXT.takeIntent()
 
-        private var isAppInBackground = AtomicBoolean()
+        private val FOREGROUND_ACTIVITIES_COUNT = AtomicInteger()
+
+        private val activityCounter = AtomicIntWrapper(
+
+            "Foreground activity counter",
+            FOREGROUND_ACTIVITIES_COUNT
+        )
+
+        private fun foregroundActivityCounter(): AtomicIntWrapper {
+
+            return activityCounter
+        }
 
         fun restart(context: Context) {
 
@@ -192,6 +201,16 @@ abstract class BaseApplication :
 
             return ""
         }
+
+        fun getForegroundActivityCount(): Int {
+
+            return foregroundActivityCounter().get()
+        }
+
+        fun isAppInForeground(): Boolean {
+
+            return getForegroundActivityCount() > 0
+        }
     }
 
     open val useCronet = false
@@ -228,8 +247,9 @@ abstract class BaseApplication :
     protected val managersReady = AtomicBoolean()
     protected val audioFocusTag = "Audio focus ::"
 
-    private val updating = AtomicBoolean()
     private val updatingTag = "Updating ::"
+    private val updating = AtomicBoolean()
+    private val isAppInBackground = AtomicBoolean()
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private val lastCommunicationErrorTime = AtomicLong()
@@ -537,7 +557,7 @@ abstract class BaseApplication :
 
             return packageManager.getLaunchIntentForPackage(packageName)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -689,7 +709,12 @@ abstract class BaseApplication :
 
         if (firebaseEnabled) {
 
-            FirebaseApp.initializeApp(applicationContext)
+            val app = FirebaseApp.initializeApp(applicationContext)
+
+            if (app == null) {
+
+                Console.error("No Firebase app initialized")
+            }
 
             if (firebaseAnalyticsEnabled) {
 
@@ -708,7 +733,7 @@ abstract class BaseApplication :
                 val facebookLogger = AppEventsLogger.newLogger(this);
                 facebookLogger.logEvent(AppEventsConstants.EVENT_NAME_ACTIVATED_APP);
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -958,7 +983,9 @@ abstract class BaseApplication :
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
 
-        if (isAppInBackground.get()) {
+        if (foregroundActivityCounter().get() == 0) {
+
+            onApplicationWentToForeground()
 
             val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
             sendBroadcast(intent)
@@ -966,7 +993,7 @@ abstract class BaseApplication :
             Console.debug("$ACTIVITY_LIFECYCLE_TAG Foreground")
         }
 
-        isAppInBackground.set(false)
+        foregroundActivityCounter().incrementAndGet()
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -977,6 +1004,20 @@ abstract class BaseApplication :
     }
 
     override fun onActivityPrePaused(activity: Activity) {
+
+        val value = foregroundActivityCounter().decrementAndGet()
+
+        if (value < 0) {
+
+            foregroundActivityCounter().set(0)
+        }
+
+        if (foregroundActivityCounter().get() == 0) {
+
+            onAppBackgroundState()
+
+            onApplicationWentToBackground()
+        }
 
         try {
 
