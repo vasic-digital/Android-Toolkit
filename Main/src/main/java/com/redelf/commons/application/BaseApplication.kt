@@ -115,13 +115,15 @@ abstract class BaseApplication :
 
         private val FOREGROUND_ACTIVITIES_COUNT = AtomicInteger()
 
+        private val activityCounter = AtomicIntWrapper(
+
+            "Foreground activity counter",
+            FOREGROUND_ACTIVITIES_COUNT
+        )
+
         private fun foregroundActivityCounter(): AtomicIntWrapper {
 
-            return AtomicIntWrapper(
-
-                "Foreground activity counter",
-                FOREGROUND_ACTIVITIES_COUNT
-            )
+            return activityCounter
         }
 
         fun restart(context: Context) {
