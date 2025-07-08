@@ -801,10 +801,9 @@ abstract class BaseActivity :
         removeActivityFromHistory()
     }
 
-    fun finishFrom(from: String) {
+    open fun finishFrom(from: String) {
 
-        val tag = "ACTIVITY Activity = '${this.javaClass.simpleName}' :: " +
-                "TERMINATE :: FINISH FROM :: From: '$from'"
+        val tag = "Finish :: Activity='${this.javaClass.simpleName}' :: From='$from'"
 
         Console.log("$tag START")
 

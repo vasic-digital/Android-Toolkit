@@ -82,9 +82,7 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication>
-
-{
+    ContextAvailability<BaseApplication> {
 
     companion object :
 
@@ -119,6 +117,18 @@ abstract class BaseApplication :
                 "Foreground activity counter",
                 FOREGROUND_ACTIVITIES_COUNT
             )
+        }
+        private val FOREGROUND_ACTIVITIES_COUNT = AtomicInteger()
+
+        private val activityCounter = AtomicIntWrapper(
+
+            "Foreground activity counter",
+            FOREGROUND_ACTIVITIES_COUNT
+        )
+
+        private fun foregroundActivityCounter(): AtomicIntWrapper {
+
+            return activityCounter
         }
 
         fun restart(context: Context) {
@@ -245,9 +255,10 @@ abstract class BaseApplication :
     protected val managersReady = AtomicBoolean()
     protected val audioFocusTag = "Audio focus ::"
 
-    private val updating = AtomicBoolean()
     private val updatingTag = "Updating ::"
     private var secretKey: SecretKey? = null
+    private val updating = AtomicBoolean()
+    private val isAppInBackground = AtomicBoolean()
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private val lastCommunicationErrorTime = AtomicLong()
@@ -287,6 +298,21 @@ abstract class BaseApplication :
     protected open fun getDisabledManagers() = listOf<List<DataManagement<*>>>()
 
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
+
+    protected open fun onApplicationWentToForeground() {
+
+        Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Foreground")
+    }
+
+    protected open fun onApplicationWentToBackground() {
+
+        isAppInBackground.set(true)
+
+        val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
+        sendBroadcast(intent)
+
+        Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Background")
+    }
 
     protected lateinit var prefs: SharedPreferencesStorage
 
@@ -1026,13 +1052,18 @@ abstract class BaseApplication :
     override fun onActivityPostResumed(activity: Activity) {
 
         if (foregroundActivityCounter().get() == 0) {
+        if (foregroundActivityCounter().get() == 0) {
+
+            onApplicationWentToForeground()
 
             val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
             sendBroadcast(intent)
-
-            Console.debug("$ACTIVITY_LIFECYCLE_TAG Foreground")
         }
 
+        foregroundActivityCounter().incrementAndGet()
+    }
+
+    override fun onActivityPostResumed(activity: Activity) {
         foregroundActivityCounter().incrementAndGet()
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG POST-RESUMED :: ${activity.javaClass.simpleName}")
@@ -1073,6 +1104,31 @@ abstract class BaseApplication :
     override fun onActivityPostPaused(activity: Activity) {
 
         // Ignore
+        Console.log(
+
+            "$ACTIVITY_LIFECYCLE_TAG POST-PAUSED :: ${activity.javaClass.simpleName}, " +
+                    "Active: ${TOP_ACTIVITY.size}"
+        )
+
+        val value = foregroundActivityCounter().decrementAndGet()
+
+        if (value < 0) {
+
+            foregroundActivityCounter().set(0)
+        }
+
+        Executor.MAIN.execute(
+
+            action = {
+
+                if (foregroundActivityCounter().get() == 0) {
+
+                    onApplicationWentToBackground()
+                }
+            },
+
+            delayInMillis = 500
+        )
 
         super.onActivityPostPaused(activity)
     }
@@ -1118,6 +1174,20 @@ abstract class BaseApplication :
     override fun onActivityPreDestroyed(activity: Activity) {
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
+
+        if (TOP_ACTIVITIES.isEmpty()) {
+
+            Console.debug("$ACTIVITY_LIFECYCLE_TAG No top activity")
+
+        } else {
+
+            if (TOP_ACTIVITY.isNotEmpty()) {
+
+                val clazz = TOP_ACTIVITY.last()
+
+                Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
+            }
+        }
 
         super.onActivityPreDestroyed(activity)
     }

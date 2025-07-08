@@ -2,6 +2,7 @@ plugins {
 
     id 'com.android.library'
     id 'kotlin-android'
+    id 'kotlin-parcelize'
     id("com.google.devtools.ksp") version "2.2.0-2.0.2"
 }
 
@@ -136,6 +137,9 @@ android {
         }
     }
 
+    /*
+        TODO: Migration to Java > 8
+    */
     compileOptions {
 
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -180,6 +184,8 @@ android {
 
             excludes += ['META-INF/*']
         }
+
+        doNotStrip '**/libconcealjni.so'
     }
 
     lint {
@@ -201,6 +207,11 @@ dependencies {
 
     final String roomVersion = "2.7.1"
     final String okioVersion = "3.9.0"
+    final String gsonVersion = "2.13.1"
+    final String okHttpVersion = "5.1.0"
+    final String jacksonVersion = "2.19.1"
+    final String lifecycleVersion = "2.9.1"
+    final String retrofitHttpVersion = "3.0.0"
     final String okHttpVersion = "4.12.0"
     final String jacksonVersion = "2.19.1"
     final String lifecycleVersion = "2.9.1"
@@ -229,10 +240,16 @@ dependencies {
     api "com.squareup.retrofit2:converter-jackson:$retrofitHttpVersion"
 
     api "androidx.core:core-ktx:1.16.0"
+    api "com.squareup.retrofit2:adapter-rxjava2:$retrofitHttpVersion"
+    api "io.reactivex.rxjava2:rxandroid:2.1.1"
+    api "io.reactivex.rxjava2:rxjava:2.2.21"
+
     api "org.apache.commons:commons-compress:1.27.1"
 
     api "org.jetbrains.kotlin:kotlin-stdlib:2.1.21"
     api "com.facebook.conceal:conceal:2.0.2@aar"
+    //noinspection Aligned16KB
+    api "com.facebook.conceal:conceal:2.0.2"
 
     api "androidx.core:core-ktx:1.16.0"
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -240,6 +257,8 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
     api "com.google.firebase:firebase-core:21.1.1"
     api "com.google.firebase:firebase-auth:23.2.1"
     api "com.google.firebase:firebase-config:22.1.2"
@@ -250,6 +269,10 @@ dependencies {
     api "com.google.android.gms:play-services-auth:21.3.0"
     api "com.google.firebase:firebase-auth:23.2.1"
     api "com.google.firebase:firebase-config:22.1.2"
+    api "com.google.firebase:firebase-analytics:22.5.0"
+    api "com.google.firebase:firebase-analytics-ktx:22.5.0"
+    api "com.google.firebase:firebase-messaging:24.1.2"
+    api "com.google.firebase:firebase-crashlytics:19.4.4"
     api "com.google.firebase:firebase-analytics:22.5.0"
     api "com.google.firebase:firebase-analytics-ktx:22.5.0"
     api "com.google.firebase:firebase-messaging:24.1.2"
@@ -276,6 +299,7 @@ dependencies {
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.10.1"
     api "commons-codec:commons-codec:1.18.0"
+    api "commons-codec:commons-codec:1.18.0"
 
     api "com.github.bumptech.glide:glide:4.16.0"
     api "com.github.bumptech.glide:annotations:4.16.0"
@@ -295,6 +319,8 @@ dependencies {
     api "com.airbnb.android:lottie:6.6.7"
     api "androidx.work:work-runtime-ktx:2.10.2"
     api "androidx.work:work-runtime-ktx:2.10.2"
+    api "com.airbnb.android:lottie:6.6.7"
+    api "androidx.work:work-runtime-ktx:2.10.2"
     api "androidx.preference:preference-ktx:1.2.1"
     api "com.google.android.material:material:1.12.0"
     api "androidx.navigation:navigation-ui-ktx:2.9.0"
@@ -302,6 +328,13 @@ dependencies {
     api "com.google.android.material:material:1.11.0"
     api "androidx.navigation:navigation-ui-ktx:2.9.0"
     api "androidx.navigation:navigation-fragment-ktx:2.9.0"
+    api "androidx.navigation:navigation-ui-ktx:2.9.1"
+    api "androidx.navigation:navigation-fragment-ktx:2.9.1"
+    api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
+
+    //noinspection GradleDependency
+    api "com.google.android.material:material:1.11.0"
 
     api "com.google.net.cronet:cronet-okhttp:0.1.0"
     api "com.google.android.gms:play-services-cronet:18.1.0"
@@ -339,6 +372,9 @@ dependencies {
     testImplementation "com.jakewharton.timber:timber:5.0.1"
     androidTestImplementation "com.jakewharton.timber:timber:5.0.1"
 
+    api "com.google.code.gson:gson:$gsonVersion"
+    testApi "com.google.code.gson:gson:$gsonVersion"
+    androidTestApi "com.google.code.gson:gson:$gsonVersion"
     api "com.google.code.gson:gson:2.11.0"
     testApi "com.google.code.gson:gson:2.11.0"
     androidTestApi "com.google.code.gson:gson:2.11.0"

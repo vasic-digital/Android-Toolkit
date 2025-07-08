@@ -94,9 +94,6 @@
 # removes such information by default, so configure it to keep all of it.
 -keepattributes Signature
 
-# Gson specific classes
--keep class sun.misc.Unsafe { *; }
-
 # Facebook Conceal
 
 # Keep our interfaces so they can be used by other ProGuard rules.
@@ -204,3 +201,5 @@
 -keep class * implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;
 }
+
+-keep class * implements androidx.lifecycle.DefaultLifecycleObserver

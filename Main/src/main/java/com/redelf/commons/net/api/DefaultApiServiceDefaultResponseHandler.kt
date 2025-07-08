@@ -22,23 +22,23 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
     ) {
 
-        if (response == null) {
-
-            callback.onFailure(IOException("Null response received"))
-            return
-        }
-
-        val body = response.body()
-        val code = response.code()
+        val body = response?.body()
+        val code = response?.code() ?: 0
         val combinedExpectedCodes = expectedCodes + additionalExpectedCodes
 
         when {
 
             code == 401 -> {
+
                 callback.onFailure(CredentialsInvalidException())
             }
 
-            response.isSuccessful && body != null -> {
+            code in 500..599 -> {
+
+                callback.onFailure(IOException("Internal Server Error with code $code"))
+            }
+
+            response?.isSuccessful == true && body != null -> {
 
                 callback.onCompleted(body)
             }
@@ -57,11 +57,11 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
                 val error = if (DEBUG.get()) {
 
-                    val url = response.raw().request.url
+                    val url = response?.raw()?.request?.url
 
                     val errorBody = try {
 
-                        response.errorBody()?.string()
+                        response?.errorBody()?.string()
 
                     } catch (e: IOException) {
 

@@ -10,7 +10,11 @@ import okhttp3.Response
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
-class RetryInterceptor : Interceptor {
+class RetryInterceptor(
+
+    private val retryDelays: List<Long> = listOf(1000L, 1000L)
+
+) : Interceptor {
 
     companion object {
 
@@ -22,8 +26,8 @@ class RetryInterceptor : Interceptor {
             "RetryInterceptor.Broadcast.Action.Communication.Failure"
     }
 
-    private val maxRetries = 2
-    private val retryDelays = listOf(5000L, 10000L)
+    private val maxRetries = retryDelays.size
+
     private val msg1 = "Failed to execute request"
     private val msg2 = "Failed to execute request after $maxRetries retries"
 
