@@ -991,48 +991,11 @@ abstract class BaseApplication :
         return getForegroundActivityCount()
     }
 
-    override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
 
-        super.onActivityPreCreated(activity, savedInstanceState)
-    }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
 
-        // Ignore
-    }
 
-    override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
 
-        // Ignore
-
-        super.onActivityPostCreated(activity, savedInstanceState)
-    }
-
-    override fun onActivityPreStarted(activity: Activity) {
-
-        // Ignore
-
-        super.onActivityPreStarted(activity)
-    }
-
-    override fun onActivityStarted(activity: Activity) {
-
-        // Ignore
-    }
-
-    override fun onActivityPostStarted(activity: Activity) {
-
-        // Ignore
-
-        super.onActivityPostStarted(activity)
-    }
-
-    override fun onActivityPreResumed(activity: Activity) {
-
-        // Ignore
-
-        super.onActivityPreResumed(activity)
-    }
 
     override fun onActivityPaused(activity: Activity) {
 
@@ -1042,9 +1005,6 @@ abstract class BaseApplication :
     override fun onActivityResumed(activity: Activity) {
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
-    }
-
-    override fun onActivityPostResumed(activity: Activity) {
 
         if (foregroundActivityCounter().get() == 0) {
 
@@ -1057,19 +1017,14 @@ abstract class BaseApplication :
         foregroundActivityCounter().incrementAndGet()
     }
 
+    override fun onActivityPostResumed(activity: Activity) {
+
+        Console.log("$ACTIVITY_LIFECYCLE_TAG POST-RESUMED :: ${activity.javaClass.simpleName}")
+
+        super.onActivityPostResumed(activity)
+    }
+
     override fun onActivityPrePaused(activity: Activity) {
-
-        val value = foregroundActivityCounter().decrementAndGet()
-
-        if (value < 0) {
-
-            foregroundActivityCounter().set(0)
-        }
-
-        if (foregroundActivityCounter().get() == 0) {
-
-            onAppBackgroundState()
-        }
 
         try {
 
@@ -1130,8 +1085,6 @@ abstract class BaseApplication :
 
         super.onActivityPostStopped(activity)
     }
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
 
     override fun onActivityPreDestroyed(activity: Activity) {
 
