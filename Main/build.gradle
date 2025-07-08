@@ -132,11 +132,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-
-        jvmTarget = '1.8'
-    }
-
     buildTypes {
 
         release {
@@ -186,7 +181,7 @@ dependencies {
     final String okioVersion = "3.9.0"
     final String gsonVersion = "2.13.1"
     final String okHttpVersion = "5.1.0"
-    final String jacksonVersion = "2.12.5"
+    final String jacksonVersion = "2.19.1"
     final String lifecycleVersion = "2.9.1"
     final String retrofitHttpVersion = "3.0.0"
 
@@ -210,7 +205,8 @@ dependencies {
 
     api "org.apache.commons:commons-compress:1.27.1"
 
-    api "com.facebook.conceal:conceal:2.0.2@aar"
+    //noinspection Aligned16KB
+    api "com.facebook.conceal:conceal:2.0.2"
 
     api "androidx.core:core-ktx:1.16.0"
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -255,18 +251,21 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
 
-    api platform("com.google.firebase:firebase-bom:33.14.0")
+    api platform("com.google.firebase:firebase-bom:33.16.0")
 
-    api "io.github.nefilim.kjwt:kjwt-core:0.9.0"
-    api "io.github.nefilim.kjwt:kjwt-jwks:0.9.0"
+    api "io.github.nefilim.kjwt:kjwt-core:1.0.0"
+    api "io.github.nefilim.kjwt:kjwt-jwks:1.0.0"
 
-    api "com.airbnb.android:lottie:5.2.0"
-    api "androidx.work:work-runtime-ktx:2.10.1"
+    api "com.airbnb.android:lottie:6.6.7"
+    api "androidx.work:work-runtime-ktx:2.10.2"
     api "androidx.preference:preference-ktx:1.2.1"
-    api "com.google.android.material:material:1.11.0"
-    api "androidx.navigation:navigation-ui-ktx:2.9.0"
-    api "androidx.navigation:navigation-fragment-ktx:2.9.0"
+    api "androidx.navigation:navigation-ui-ktx:2.9.1"
+    api "androidx.navigation:navigation-fragment-ktx:2.9.1"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
+
+    //noinspection GradleDependency
+    api "com.google.android.material:material:1.11.0"
 
     api "com.google.net.cronet:cronet-okhttp:0.1.0"
     api "com.google.android.gms:play-services-cronet:18.1.0"
