@@ -91,9 +91,6 @@
 # removes such information by default, so configure it to keep all of it.
 -keepattributes Signature
 
-# Gson specific classes
--keep class sun.misc.Unsafe { *; }
-
 # Facebook Conceal
 
 # Keep our interfaces so they can be used by other ProGuard rules.
@@ -171,3 +168,5 @@
 -dontwarn okio.**
 -keep class okio.** { *; }
 -keep interface okio.** { *; }
+
+-keep class * implements androidx.lifecycle.DefaultLifecycleObserver

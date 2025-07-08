@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.app.BackgroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -38,6 +39,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
+import com.redelf.commons.atomic.AtomicIntWrapper
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.detectAllExpect
@@ -79,17 +81,13 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication>
-
-{
+    ContextAvailability<BaseApplication> {
 
     companion object :
 
         Intentional,
         ApplicationInfo,
-        ContextAvailability<BaseApplication>
-
-    {
+        ContextAvailability<BaseApplication> {
 
         val DEBUG = AtomicBoolean()
         val STRICT_MODE_DISABLED = AtomicBoolean()
@@ -112,7 +110,18 @@ abstract class BaseApplication :
 
         override fun takeIntent(): Intent? = CONTEXT.takeIntent()
 
-        private var isAppInBackground = AtomicBoolean()
+        private val FOREGROUND_ACTIVITIES_COUNT = AtomicInteger()
+
+        private val activityCounter = AtomicIntWrapper(
+
+            "Foreground activity counter",
+            FOREGROUND_ACTIVITIES_COUNT
+        )
+
+        private fun foregroundActivityCounter(): AtomicIntWrapper {
+
+            return activityCounter
+        }
 
         fun restart(context: Context) {
 
@@ -192,6 +201,16 @@ abstract class BaseApplication :
 
             return ""
         }
+
+        fun getForegroundActivityCount(): Int {
+
+            return foregroundActivityCounter().get()
+        }
+
+        fun isAppInForeground(): Boolean {
+
+            return getForegroundActivityCount() > 0
+        }
     }
 
     open val useCronet = false
@@ -228,8 +247,9 @@ abstract class BaseApplication :
     protected val managersReady = AtomicBoolean()
     protected val audioFocusTag = "Audio focus ::"
 
-    private val updating = AtomicBoolean()
     private val updatingTag = "Updating ::"
+    private val updating = AtomicBoolean()
+    private val isAppInBackground = AtomicBoolean()
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
     private val lastCommunicationErrorTime = AtomicLong()
@@ -249,6 +269,21 @@ abstract class BaseApplication :
     protected open fun populateManagers() = listOf<List<DataManagement<*>>>()
 
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
+
+    protected open fun onApplicationWentToForeground() {
+
+        Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Foreground")
+    }
+
+    protected open fun onApplicationWentToBackground() {
+
+        isAppInBackground.set(true)
+
+        val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
+        sendBroadcast(intent)
+
+        Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Background")
+    }
 
     protected lateinit var prefs: SharedPreferencesStorage
 
@@ -533,7 +568,7 @@ abstract class BaseApplication :
 
             return packageManager.getLaunchIntentForPackage(packageName)
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             recordException(e)
         }
@@ -685,7 +720,12 @@ abstract class BaseApplication :
 
         if (firebaseEnabled) {
 
-            FirebaseApp.initializeApp(applicationContext)
+            val app = FirebaseApp.initializeApp(applicationContext)
+
+            if (app == null) {
+
+                Console.error("No Firebase app initialized")
+            }
 
             if (firebaseAnalyticsEnabled) {
 
@@ -704,7 +744,7 @@ abstract class BaseApplication :
                 val facebookLogger = AppEventsLogger.newLogger(this);
                 facebookLogger.logEvent(AppEventsConstants.EVENT_NAME_ACTIVATED_APP);
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 recordException(e)
             }
@@ -954,15 +994,15 @@ abstract class BaseApplication :
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
 
-        if (isAppInBackground.get()) {
+        if (foregroundActivityCounter().get() == 0) {
+
+            onApplicationWentToForeground()
 
             val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
             sendBroadcast(intent)
-
-            Console.debug("$ACTIVITY_LIFECYCLE_TAG Foreground")
         }
 
-        isAppInBackground.set(false)
+        foregroundActivityCounter().incrementAndGet()
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -1003,10 +1043,25 @@ abstract class BaseApplication :
                     "Active: ${TOP_ACTIVITY.size}"
         )
 
-        if (TOP_ACTIVITIES.size <= 1) {
+        val value = foregroundActivityCounter().decrementAndGet()
 
-            onAppBackgroundState()
+        if (value < 0) {
+
+            foregroundActivityCounter().set(0)
         }
+
+        Executor.MAIN.execute(
+
+            action = {
+
+                if (foregroundActivityCounter().get() == 0) {
+
+                    onApplicationWentToBackground()
+                }
+            },
+
+            delayInMillis = 500
+        )
 
         super.onActivityPostPaused(activity)
     }
@@ -1068,8 +1123,6 @@ abstract class BaseApplication :
         if (TOP_ACTIVITIES.isEmpty()) {
 
             Console.debug("$ACTIVITY_LIFECYCLE_TAG No top activity")
-
-            onAppBackgroundState()
 
         } else {
 
@@ -1282,7 +1335,7 @@ abstract class BaseApplication :
 
     protected open fun getUpdatesCodes() = setOf<Long>()
 
-    override fun isUpdating() : Boolean {
+    override fun isUpdating(): Boolean {
 
         val updating = updating.get()
 
@@ -1419,16 +1472,6 @@ abstract class BaseApplication :
         }
 
         return updateAvailable
-    }
-
-    private fun onAppBackgroundState() {
-
-        isAppInBackground.set(true)
-
-        val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
-        sendBroadcast(intent)
-
-        Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
     }
 
     private fun onPreCreate() {
