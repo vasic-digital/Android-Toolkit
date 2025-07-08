@@ -90,7 +90,7 @@ def proxyRemoteProdPassword = obfuscator.obfuscate(pRemoteProdPassword)
 
 android {
 
-    compileSdk 35
+    compileSdk 36
     namespace 'com.redelf.commons'
 
     defaultConfig {
