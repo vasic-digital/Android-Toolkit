@@ -1,7 +1,6 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.execution.Executor
-import kotlinx.coroutines.Runnable
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.Callable

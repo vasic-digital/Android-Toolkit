@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.logging.Console
 
 @SuppressLint("CustomSplashScreen")
 abstract class BaseSplashActivity : BaseActivity() {
@@ -13,19 +12,18 @@ abstract class BaseSplashActivity : BaseActivity() {
 
         super.onCreate(savedInstanceState)
 
-        if (BaseApplication.TOP_ACTIVITY.isNotEmpty()) {
+        if (BaseApplication.getForegroundActivityCount() > 0) {
 
-            val alive = BaseApplication.TOP_ACTIVITY.last()
+            val alive = BaseApplication.takeContext().getTopActivity()
 
-            val tag = "${BaseApplication.ACTIVITY_LIFECYCLE_TAG} Alive ::"
+            alive?.let { clazz ->
 
-            Console.log("$tag Activity: ${alive.simpleName}")
+                finish()
 
-            finish()
-
-            val intent = Intent(this, alive)
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            startActivity(intent)
+                val intent = Intent(this, clazz)
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                startActivity(intent)
+            }
 
             return
         }

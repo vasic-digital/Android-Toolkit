@@ -3,6 +3,7 @@ package com.redelf.commons.persistance.base
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.obtain.OnObtain
 
 /*
     FIXME: We do not need both ShutdownSynchronized and TerminationSynchronized.
@@ -12,7 +13,7 @@ interface Storage<T> : ShutdownSynchronized, TerminationSynchronized, Initializa
 
     fun put(key: String?, value: T): Boolean
 
-    fun get(key: String?): T
+    fun get(key: String?, callback: OnObtain<T?>)
 
     fun delete(key: String?): Boolean
 
@@ -20,5 +21,5 @@ interface Storage<T> : ShutdownSynchronized, TerminationSynchronized, Initializa
 
     fun count(): Long
 
-    fun contains(key: String?): Boolean
+    fun contains(key: String?, callback: OnObtain<Boolean?>)
 }

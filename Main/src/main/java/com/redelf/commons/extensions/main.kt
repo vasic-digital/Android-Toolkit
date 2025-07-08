@@ -14,6 +14,7 @@ import android.database.Cursor
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.os.StrictMode
@@ -32,6 +33,8 @@ import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.PropertiesHash
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -61,7 +64,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
-
+val DEBUG_SYNC = AtomicBoolean()
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
 var GLOBAL_RECORD_EXCEPTIONS = AtomicBoolean(true)
 var GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK = AtomicBoolean()
@@ -240,32 +243,28 @@ fun Context.clearAllSharedPreferences(): Boolean {
     return result
 }
 
-fun Context.deobfuscateString(resId: Int): String {
+fun Context.deobfuscateString(resId: Int, callback: OnObtain<String>) {
 
     try {
 
-        return getString(resId).deobfuscate()
+        return getString(resId).deobfuscate(callback = callback)
 
     } catch (e: NotFoundException) {
 
-        recordException(e)
+        callback.onFailure(e)
     }
-
-    return ""
 }
 
-fun Context.obfuscateString(resId: Int): String {
+fun Context.obfuscateString(resId: Int, callback: OnObtain<String>) {
 
     try {
 
-        return getString(resId).obfuscate()
+        getString(resId).obfuscate(callback = callback)
 
     } catch (e: NotFoundException) {
 
-        recordException(e)
+        callback.onFailure(e)
     }
-
-    return ""
 }
 
 fun Activity.selectExternalStorageFolder(name: String, requestId: Int = DEFAULT_ACTIVITY_REQUEST) {
@@ -355,11 +354,18 @@ fun Context.readRawTextFile(resId: Int): String {
     return stringBuilder.toString().trim()
 }
 
-fun Activity.onUI(doWhat: () -> Unit) {
+fun Activity.onUI(fallback: (() -> Unit)? = null, doWhat: () -> Unit) {
 
-    if (!isFinishing) {
+    runOnUiThread {
 
-        runOnUiThread {
+        if (isFinishing) {
+
+            fallback?.let {
+
+                it()
+            }
+
+        } else {
 
             doWhat()
         }
@@ -642,16 +648,9 @@ fun Context.toast(msg: String, short: Boolean = false) {
         Toast.LENGTH_LONG
     }
 
-    if (this is Activity) {
+    Handler(Looper.getMainLooper()).post {
 
-        this.runOnUiThread {
-
-            Toast.makeText(this, msg, length).show()
-        }
-
-    } else {
-
-        Console.error("Context is not Activity for the toast to make")
+        Toast.makeText(applicationContext, msg, length).show()
     }
 }
 
@@ -1124,6 +1123,155 @@ fun CountDownLatch.safeWait(timeoutInSeconds: Int = 60, tag: String = "") {
 
         recordException(e)
     }
+}
+
+fun yield(context: String, check: Obtain<Boolean>) {
+
+    val tag = "YIELD :: $context ::"
+
+    val startTime = System.currentTimeMillis()
+
+    fun condition() = !check.obtain() && !Thread.currentThread().isInterrupted
+
+    if (condition()) {
+
+        Console.log("$tag START")
+
+        while (condition()) {
+
+            Thread.yield()
+        }
+
+        val endTime = System.currentTimeMillis() - startTime
+
+        if (Thread.currentThread().isInterrupted) {
+
+            Console.warning("$tag YIELDED interrupted after $endTime ms")
+
+        } else if (endTime > 1500 && endTime < 3000) {
+
+            Console.warning("$tag YIELDED for $endTime ms")
+
+        } else if (endTime >= 3000) {
+
+            Console.error("$tag YIELDED for $endTime ms")
+
+        } else {
+
+            Console.log("$tag END ::")
+        }
+    }
+
+    // TODO: Coroutines support
+}
+
+fun <X> sync(
+
+    context: String,
+    timeout: Long = 60,
+    timeUnit: TimeUnit = TimeUnit.SECONDS,
+    what: (callback: OnObtain<X?>) -> Unit
+
+): X? {
+
+    // TODO: Coroutines support
+
+    val tag = "SYNC :: $context ::"
+
+    if (DEBUG_SYNC.get()) Console.debug("$tag START")
+
+    var result: X? = null
+    val latch = CountDownLatch(1)
+
+    if (isOnMainThread()) {
+
+        val e = IllegalStateException("$context executed sync on main thread")
+        Console.error("$tag ${e.message}")
+        recordException(e)
+    }
+
+    exec(
+
+        onRejected = { e ->
+
+            recordException(e)
+
+            latch.countDown()
+        }
+
+    ) {
+
+        if (DEBUG_SYNC.get()) Console.log("$tag EXECUTING")
+
+        try {
+
+            if (DEBUG_SYNC.get()) Console.log("$tag CALLING")
+
+            what(
+
+                object : OnObtain<X?> {
+
+                    override fun onCompleted(data: X?) {
+
+                        result = data
+                        if (DEBUG_SYNC.get()) Console.log("$tag FINISHED")
+                        latch.countDown()
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        recordException(error)
+                        Console.error("$tag FINISHED WITH ERROR :: Error='${error.message}'")
+                        latch.countDown()
+                    }
+                }
+            )
+
+            if (DEBUG_SYNC.get()) Console.log("$tag WAITING")
+
+        } catch (e: Throwable) {
+
+            Console.error("$tag FAILED :: Error='${e.message}'")
+            recordException(e)
+            latch.countDown()
+        }
+    }
+
+    val startTime = System.currentTimeMillis()
+
+    try {
+
+        if (latch.await(timeout, timeUnit)) {
+
+            val endTime = System.currentTimeMillis() - startTime
+
+            if (endTime > 1500 && endTime < 3000) {
+
+                Console.warning("$tag WAITED for $endTime ms")
+
+            } else if (endTime >= 3000) {
+
+                Console.error("$tag WAITED for $endTime ms")
+            }
+
+            if (DEBUG_SYNC.get()) Console.debug("$tag END")
+
+        } else {
+
+            val endTime = System.currentTimeMillis() - startTime
+            val e = TimeoutException("$context latch expired")
+            Console.error("$tag FAILED :: Timed out after $endTime ms")
+            recordException(e)
+        }
+
+    } catch (e: Throwable) {
+
+        val endTime = System.currentTimeMillis() - startTime
+        Console.error("$tag FAILED :: Error='${e.message}' after $endTime ms")
+        recordException(e)
+    }
+
+    return result
 }
 
 @Throws(IllegalArgumentException::class)

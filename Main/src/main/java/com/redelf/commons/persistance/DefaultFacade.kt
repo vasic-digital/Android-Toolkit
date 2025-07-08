@@ -3,9 +3,11 @@ package com.redelf.commons.persistance
 import android.content.Context
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.base.Converter
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Facade
@@ -175,103 +177,274 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
         }
     }
 
-    override fun <T> get(key: String?): T? {
+    override fun <T> get(key: String?, callback: OnObtain<T?>) {
 
-        if (key == null) {
+        val tag = "$TAG :: Get (w.no.def) :: Key='$key' ::"
 
-            return null
+        Console.log("$tag START")
+
+        exec(
+
+            onRejected = { e ->
+
+                Console.error("$tag REJECTED")
+                callback.onFailure(e)
+            }
+
+        ) {
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag STARTED")
+            }
+
+            if (key == null) {
+
+                val e = IllegalArgumentException("Key is null")
+                callback.onFailure(e)
+                return@exec
+            }
+
+            fun onDataInfo(dataInfo: DataInfo?) {
+
+                if (DEBUG.get()) {
+
+                    Console.log("$tag On data info, getting raw")
+                }
+
+                getRaw(
+
+                    key,
+
+                    object : OnObtain<String?> {
+
+                        override fun onCompleted(data: String?) {
+
+                            data?.let {
+
+                                val plainText = it
+
+                                if (plainText.isEmpty()) {
+
+                                    if (DEBUG.get()) {
+
+                                        Console.log("$tag On raw :: Empty text")
+                                    }
+
+                                    callback.onCompleted(null)
+
+                                } else {
+
+                                    try {
+
+                                        val result: T? = converter?.fromString(plainText, dataInfo)
+
+                                        if (DEBUG.get()) {
+
+                                            Console.log("$tag On raw :: Converted")
+                                        }
+
+                                        callback.onCompleted(result)
+
+                                    } catch (e: Throwable) {
+
+                                        Console.error(
+
+                                            "$tag Conversion failed :: Error='${e.message}'"
+                                        )
+
+                                        callback.onFailure(e)
+                                    }
+                                }
+                            }
+
+                            if (data == null) {
+
+                                if (DEBUG.get()) {
+
+                                    Console.log("$tag On raw :: Empty data")
+                                }
+
+                                callback.onCompleted(null)
+                            }
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            Console.error("$tag Get raw failed :: Error='${error.message}'")
+                            callback.onFailure(error)
+                        }
+                    }
+                )
+            }
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag Get data info")
+            }
+
+            getDataInfo(
+
+                key,
+
+                object : OnObtain<DataInfo?> {
+
+                    override fun onCompleted(data: DataInfo?) {
+
+                        if (DEBUG.get()) {
+
+                            Console.log("$tag Got data info")
+                        }
+
+                        onDataInfo(data)
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        Console.error("$tag Get data info failed :: Error='${error.message}'")
+                        callback.onFailure(error)
+                    }
+                }
+            )
         }
-
-        val dataInfo = getDataInfo(key)
-        val plainText = getRaw(key)
-
-        // 4. Convert the text to original data along with original type
-        var result: T? = null
-
-        try {
-
-            result = converter?.fromString(plainText, dataInfo)
-
-            log(" Get :: Key = $key :: Converted: $result")
-
-        } catch (e: Throwable) {
-
-            err(" Get :: Key = $key :: Converter failed: ${e.message}")
-
-            Console.error(e)
-        }
-
-        return result
     }
 
-    override fun <T> get(key: String?, defaultValue: T): T {
+    override fun <T> get(key: String?, defaultValue: T, callback: OnObtain<T?>) {
 
-        if (key == null) {
+        val tag = "$TAG Get (w.def) :: Key='$key' ::"
 
-            return defaultValue
+        if (DEBUG.get()) {
+
+            Console.log("$tag START")
         }
 
-        return get<T>(key) ?: return defaultValue
+        exec(
+
+            onRejected = { e ->
+
+                Console.error("$tag REJECTED")
+
+                callback.onFailure(e)
+            }
+
+        ) {
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag STARTED")
+            }
+
+            get<T>(
+
+                key,
+
+                object : OnObtain<T?> {
+
+                    override fun onCompleted(data: T?) {
+
+                        if (DEBUG.get()) {
+
+                            Console.log("$tag END :: On completed")
+                        }
+
+                        callback.onCompleted(data ?: defaultValue)
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        Console.error("$tag END :: onFailure :: Error='${error.message}'")
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
+        }
     }
 
-    override fun getByType(key: String?, type: Type): Any? {
+    override fun getByType(key: String?, type: Type, callback: OnObtain<Any?>) {
 
         val tag = " Get :: by type '" + type.typeName + "' :: "
 
         if (key == null) {
 
-            return null
+            val e = IllegalArgumentException("Key is null")
+            callback.onFailure(e)
+            return
         }
 
-        val plainText = getRaw(key)
+        getRaw(
 
-        // 4. Convert the text to original data along with original type
-        var result: Any? = null
+            key,
 
-        try {
+            object : OnObtain<String?> {
 
-            result = converter?.fromString(plainText, type)
+                override fun onCompleted(data: String?) {
 
-            log("$tag Key = $key :: Converted")
+                    val plainText = data
 
-        } catch (e: Throwable) {
+                    try {
 
-            err("Key :: $key :: Converter failed: ${e.message}")
+                        val result: Any? = converter?.fromString(plainText, type)
 
-            Console.error(e)
-        }
+                        log("$tag Key = $key :: Converted")
 
-        return result
+                        callback.onCompleted(result)
+
+                    } catch (e: Throwable) {
+
+                        callback.onFailure(e)
+                    }
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 
-    override fun getByClass(key: String?, clazz: Class<*>): Any? {
+    override fun getByClass(key: String?, clazz: Class<*>, callback: OnObtain<Any?>) {
 
         val tag = " Get :: by class '" + clazz.simpleName + "' :: "
 
         if (key == null) {
 
-            return null
+            val e = IllegalArgumentException("Key is null")
+            callback.onFailure(e)
+            return
         }
 
-        val plainText = getRaw(key)
+        getRaw(
 
-        // 4. Convert the text to original data along with original type
-        var result: Any? = null
+            key,
 
-        try {
+            object : OnObtain<String?> {
 
-            result = converter?.fromString(plainText, clazz)
+                override fun onCompleted(data: String?) {
 
-            log("$tag Key = $key :: Converted")
+                    val plainText = data
 
-        } catch (e: Throwable) {
+                    try {
 
-            err("Key :: $key :: Converter failed: ${e.message}")
+                        val result: Any? = converter?.fromString(plainText, clazz)
 
-            Console.error(e)
-        }
+                        log("$tag Key = $key :: Converted")
 
-        return result
+                        callback.onCompleted(result)
+
+                    } catch (e: Throwable) {
+
+                        callback.onFailure(e)
+                    }
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 
     override fun count(): Long {
@@ -289,14 +462,9 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
         return storage?.delete(key) == true
     }
 
-    override fun contains(key: String?): Boolean {
+    override fun contains(key: String?, callback: OnObtain<Boolean?>) {
 
-        return storage?.contains(key) == true
-    }
-
-    override fun destroy() {
-
-        listeners.clear()
+        storage?.contains(key, callback)
     }
 
     private fun log(message: String) {
@@ -312,98 +480,187 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
         Console.error("$TAG ERROR: $message")
     }
 
-    private fun getDataInfo(key: String): DataInfo? {
+    private fun getDataInfo(key: String, callback: OnObtain<DataInfo?>) {
 
-        val tag = " Get :: Data info ::"
+        val tag = "$TAG :: Get data info :: Key='$key' ::"
 
-        log("$tag Key = $key")
+        if (DEBUG.get()) {
 
-        // 1. Get serialized text from the storage
-        val serializedText: String?
-
-        try {
-
-            serializedText = storage?.get(key)
-
-        } catch (e: Throwable) {
-
-            err("ERROR: ${e.message}")
-
-            Console.error(e)
-
-            return null
+            Console.log("$tag START")
         }
 
-        val empty = isEmpty(serializedText)
+        exec(
 
-        if (empty) {
+            onRejected = { e ->
 
-            log("$tag Key = $key :: Nothing fetched from the storage for Key = $key")
-
-            return null
-        }
-
-        log("$tag Key = $key :: Fetched from storage for Key = $key")
-
-        // 2. Deserialize
-        return serializer?.deserialize(serializedText)
-    }
-
-    private fun getRaw(key: String): String? {
-
-        val tag = " Get :: RAW ::"
-
-        // 2. Deserialize
-        val dataInfo = getDataInfo(key)
-
-        if (dataInfo == null) {
-
-            log("$tag Key = $key :: empty info data for Key = $key")
-
-            return null
-        }
-
-        log("$tag Key = $key :: Deserialized")
-
-        // 3. Decrypt
-        var plainText: String? = null
-
-        try {
-
-            val cText = dataInfo.cipherText ?: ""
-
-            if (isEmpty(cText)) {
-
-                plainText = ""
-
-                log("$tag Key = $key :: Decrypted :: Got empty")
-
-                notifyDecrypted(key, "", "")
-
-            } else {
-
-                plainText = encryption?.decrypt(key, cText)
-
-                log("$tag Key = $key :: Decrypted")
-
-                notifyDecrypted(key, cText, plainText ?: "")
+                Console.error("$tag REJECTED")
+                callback.onFailure(e)
             }
 
-        } catch (e: Throwable) {
+        ) {
 
-            err("$tag Key = $key :: Decrypt failed: ${e.message}")
+            if (DEBUG.get()) {
 
-            Console.error(e)
+                Console.log("$tag STARTED")
+            }
 
-            notifyDecryptedFailed(key, e)
+            try {
+
+                if (storage == null) {
+
+                    val e = IllegalStateException("Storage is not initialized")
+                    Console.error("$tag ERROR: $e")
+                    callback.onFailure(e)
+                    return@exec
+                }
+
+                if (DEBUG.get()) {
+
+                    Console.log("$tag Calling storage")
+                }
+
+                storage?.get(
+
+                    key,
+
+                    object : OnObtain<String?> {
+
+                        override fun onCompleted(data: String?) {
+
+                            val serializedText = data
+                            val empty = isEmpty(serializedText)
+
+                            if (empty) {
+
+                                if (DEBUG.get()) {
+
+                                    Console.log("$tag Nothing fetched from the storage")
+                                }
+
+                                callback.onCompleted(null)
+
+                            } else {
+
+                                if (DEBUG.get()) {
+
+                                    Console.log("$tag Data fetched from the storage")
+                                }
+
+                                try {
+
+                                    if (DEBUG.get()) {
+
+                                        Console.log("$tag Deserializing data")
+                                    }
+
+                                    val info = serializer?.deserialize(serializedText)
+
+                                    if (DEBUG.get()) {
+
+                                        Console.log("$tag Deserialized data")
+                                    }
+
+                                    callback.onCompleted(info)
+
+                                } catch (e: Throwable) {
+
+                                    Console.error(
+
+                                        "$tag ERROR: Failed to deserialize data :: " +
+                                            "Error='${e.message}'"
+                                    )
+
+                                    callback.onFailure(e)
+                                }
+                            }
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            callback.onFailure(error)
+                        }
+                    }
+                )
+
+            } catch (e: Throwable) {
+
+                Console.error("$tag ERROR: Failed to get data info :: Error='${e.message}'")
+                callback.onFailure(e)
+            }
         }
+    }
 
-        if (plainText == null) {
+    private fun getRaw(key: String, callback: OnObtain<String?>) {
 
-            err("$tag Key = $key :: Decrypt failed")
+        exec(
+
+            onRejected = { e -> callback.onFailure(e) }
+
+        ) {
+
+            val tag = " Get :: RAW ::"
+
+            getDataInfo(
+
+                key,
+
+                object : OnObtain<DataInfo?> {
+
+                    override fun onCompleted(data: DataInfo?) {
+
+                        val dataInfo = data
+
+                        if (dataInfo == null) {
+
+                            log("$tag Key = $key :: empty info data for Key = $key")
+
+                            callback.onCompleted(null)
+
+                            return
+                        }
+
+                        log("$tag Key = $key :: Deserialized")
+
+                        try {
+
+                            val cText = dataInfo.cipherText ?: ""
+
+                            if (isEmpty(cText)) {
+
+                                log("$tag Key = $key :: Decrypted :: Got empty")
+
+                                notifyDecrypted(key, "", "")
+
+                                callback.onCompleted("")
+
+                            } else {
+
+                                val plainText = encryption?.decrypt(key, cText)
+
+                                log("$tag Key = $key :: Decrypted")
+
+                                notifyDecrypted(key, cText, plainText ?: "")
+
+                                callback.onCompleted(plainText)
+                            }
+
+                        } catch (e: Throwable) {
+
+                            err("$tag Key = $key :: Decrypt failed: ${e.message}")
+
+                            callback.onFailure(e)
+
+                            notifyDecryptedFailed(key, e)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
         }
-
-        return plainText
     }
 
     private fun notifyEncrypted(key: String, raw: String, encrypted: String) {

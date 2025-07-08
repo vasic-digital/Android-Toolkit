@@ -4,7 +4,7 @@ import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.loading.Loadable
-import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.atomic.AtomicBoolean
 
 class SettingsManager private constructor() :
@@ -12,9 +12,7 @@ class SettingsManager private constructor() :
     Loadable,
     SingleInstantiated,
     SettingsManagement,
-    ContextualManager<Settings>()
-
-{
+    ContextualManager<Settings>() {
 
     companion object : SingleInstance<SettingsManager>() {
 
@@ -33,11 +31,11 @@ class SettingsManager private constructor() :
 
     override fun createDataObject() = Settings()
 
-    override fun reset(): Boolean {
+    override fun reset(callback: OnObtain<Boolean?>) {
 
         loaded.set(false)
 
-        return super.reset()
+        super.reset(callback)
     }
 
     override fun isLazyReady() = loaded.get()
@@ -46,165 +44,343 @@ class SettingsManager private constructor() :
 
     override fun isLoaded() = isLazyReady()
 
-    override fun <T> put(key: String, value: T): Boolean {
+    override fun <T> put(key: String, value: T, callback: OnObtain<Boolean>) {
 
         when (value) {
 
             is Boolean -> {
 
-                return putBoolean(key, value)
+                putBoolean(key, value, callback)
+                return
             }
 
             is String -> {
 
-                return putString(key, value)
+                putString(key, value, callback)
+                return
             }
         }
 
-        return false
+        callback.onCompleted(false)
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> get(key: String, defaultValue: T): T {
+    override fun <T> get(key: String, defaultValue: T, callback: OnObtain<T>) {
 
         when (defaultValue) {
 
             is Boolean -> {
 
-                return (getBoolean(key, defaultValue) as T) ?: defaultValue
+                getBoolean(
+
+                    key, defaultValue,
+
+                    object : OnObtain<Boolean> {
+
+                        override fun onCompleted(data: Boolean) {
+
+                            callback.onCompleted(data as T)
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            callback.onFailure(error)
+                        }
+                    }
+                )
+
+                return
             }
 
             is String -> {
 
-                return (getString(key, defaultValue) as T) ?: defaultValue
+                getString(
+
+                    key, defaultValue,
+
+                    object : OnObtain<String> {
+
+                        override fun onCompleted(data: String) {
+
+                            callback.onCompleted(data as T)
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            callback.onFailure(error)
+                        }
+                    }
+                )
+
+                return
             }
         }
 
-        return defaultValue
+        callback.onCompleted(defaultValue)
     }
 
-    override fun putBoolean(key: String, value: Boolean): Boolean {
+    override fun putBoolean(key: String, value: Boolean, callback: OnObtain<Boolean>) {
 
         try {
 
-            val settings = obtain()
+            obtain(
 
-            settings?.let {
+                object : OnObtain<Settings?> {
 
-                it.flags?.set(key, value)
-                pushData(it)
+                    override fun onCompleted(data: Settings?) {
 
-                return true
-            }
+                        data?.let {
 
-        } catch (e: IllegalStateException) {
+                            it.flags?.set(key, value)
 
-            Console.error(e)
+                            pushData(
+
+                                it,
+
+                                object : OnObtain<Boolean?> {
+
+                                    override fun onCompleted(data: Boolean?) {
+
+                                        callback.onCompleted(data == true)
+                                    }
+
+                                    override fun onFailure(error: Throwable) {
+
+                                        callback.onFailure(error)
+                                    }
+                                }
+                            )
+                        }
+
+                        if (data == null) {
+
+                            callback.onCompleted(false)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
+
+        } catch (e: Throwable) {
+
+            callback.onFailure(e)
         }
-
-        return false
     }
 
-    override fun putString(key: String, value: String): Boolean {
+    override fun putString(key: String, value: String, callback: OnObtain<Boolean>) {
 
         try {
 
-            val settings = obtain()
+            obtain(
 
-            settings?.let {
+                object : OnObtain<Settings?> {
 
-                it.values?.set(key, value)
-                pushData(it)
+                    override fun onCompleted(data: Settings?) {
 
-                return true
-            }
+                        data?.let {
 
-        } catch (e: IllegalStateException) {
+                            it.values?.set(key, value)
 
-            Console.error(e)
+                            pushData(
+
+                                it,
+
+                                object : OnObtain<Boolean?> {
+
+                                    override fun onCompleted(data: Boolean?) {
+
+                                        callback.onCompleted(data == true)
+                                    }
+
+                                    override fun onFailure(error: Throwable) {
+
+                                        callback.onFailure(error)
+                                    }
+                                }
+                            )
+                        }
+
+                        if (data == null) {
+
+                            callback.onCompleted(false)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
+
+        } catch (e: Throwable) {
+
+            callback.onFailure(e)
         }
-
-        return false
     }
 
-    override fun getBoolean(key: String, defaultValue: Boolean): Boolean {
+    override fun getBoolean(key: String, defaultValue: Boolean, callback: OnObtain<Boolean>) {
 
         try {
 
-            val settings = obtain()
+            obtain(
 
-            settings?.let {
+                object : OnObtain<Settings?> {
 
-                return it.flags?.get(key) ?: defaultValue
-            }
+                    override fun onCompleted(data: Settings?) {
 
-        } catch (e: IllegalStateException) {
+                        data?.let {
 
-            Console.error(e)
+                            val result = it.flags?.get(key) ?: defaultValue
+
+                            callback.onCompleted(result)
+                        }
+
+                        if (data == null) {
+
+                            callback.onCompleted(false)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
+
+        } catch (e: Throwable) {
+
+            callback.onFailure(e)
         }
-
-        return defaultValue
     }
 
 
-
-    override fun getString(key: String, defaultValue: String): String {
+    override fun getString(key: String, defaultValue: String, callback: OnObtain<String>) {
 
         try {
 
-            val settings = obtain()
+            obtain(
 
-            settings?.let {
+                object : OnObtain<Settings?> {
 
-                return it.values?.get(key) ?: defaultValue
-            }
+                    override fun onCompleted(data: Settings?) {
 
-        } catch (e: IllegalStateException) {
+                        data?.let {
 
-            Console.error(e)
+                            val result = it.values?.get(key) ?: defaultValue
+
+                            callback.onCompleted(result)
+                        }
+
+                        if (data == null) {
+
+                            callback.onCompleted("")
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
+
+        } catch (e: Throwable) {
+
+            callback.onFailure(e)
         }
-
-        return defaultValue
     }
 
-    override fun getLong(key: String, defaultValue: Long): Long {
+    override fun getLong(key: String, defaultValue: Long, callback: OnObtain<Long>) {
 
         try {
 
-            val settings = obtain()
+            obtain(
 
-            settings?.let {
+                object : OnObtain<Settings?> {
 
-                return it.numbers?.get(key) ?: defaultValue
-            }
+                    override fun onCompleted(data: Settings?) {
 
-        } catch (e: IllegalStateException) {
+                        data?.let {
 
-            Console.error(e)
+                            val result = it.numbers?.get(key) ?: defaultValue
+
+                            callback.onCompleted(result)
+                        }
+
+                        if (data == null) {
+
+                            callback.onCompleted(0)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
+
+        } catch (e: Throwable) {
+
+            callback.onFailure(e)
         }
-
-        return defaultValue
     }
 
-    override fun putLong(key: String, value: Long): Boolean {
+    override fun putLong(key: String, value: Long, callback: OnObtain<Boolean>) {
 
         try {
 
-            val settings = obtain()
+            obtain(
 
-            settings?.let {
+                object : OnObtain<Settings?> {
 
-                it.numbers?.set(key, value)
-                pushData(it)
+                    override fun onCompleted(data: Settings?) {
 
-                return true
-            }
+                        data?.let {
 
-        } catch (e: IllegalStateException) {
+                            it.numbers?.set(key, value)
 
-            Console.error(e)
+                            pushData(
+
+                                it,
+
+                                object : OnObtain<Boolean?> {
+
+                                    override fun onCompleted(data: Boolean?) {
+
+                                        callback.onCompleted(data == true)
+                                    }
+
+                                    override fun onFailure(error: Throwable) {
+
+                                        callback.onFailure(error)
+                                    }
+                                }
+                            )
+                        }
+
+                        if (data == null) {
+
+                            callback.onCompleted(false)
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback.onFailure(error)
+                    }
+                }
+            )
+
+        } catch (e: Throwable) {
+
+            callback.onFailure(e)
         }
-
-        return false
     }
 }

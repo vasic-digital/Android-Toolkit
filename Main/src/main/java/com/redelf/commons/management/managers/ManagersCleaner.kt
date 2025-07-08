@@ -1,11 +1,14 @@
 package com.redelf.commons.management.managers
 
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
+import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ManagersCleaner {
@@ -58,45 +61,53 @@ class ManagersCleaner {
 
         val tag = "Managers :: Cleanup ::"
 
-        try {
+        var managersListLog = ""
 
-            var managersListLog = ""
+        managers.forEachIndexed { index, it ->
 
-            managers.forEachIndexed { index, it ->
+            managersListLog += "${it.getWho()}"
 
-                managersListLog += "${it.getWho()}"
+            if (index < managers.size - 1) {
 
-                if (index < managers.size - 1) {
+                managersListLog += ", "
+            }
+        }
 
-                    managersListLog += ", "
-                }
+        Console.log("$tag START: $managersListLog$")
+
+        val success = AtomicBoolean(true)
+        val latch = CountDownLatch(managers.size)
+
+        exec(
+
+            onRejected = { e ->
+
+                recordException(e)
+                latch.countDown()
             }
 
-            Console.log("$tag START: $managersListLog$")
+        ) {
 
-            exec {
+            managers.forEach { manager ->
 
-                val success = AtomicBoolean(true)
-                val latch = CountDownLatch(managers.size)
+                Console.log("$tag Manager :: ${manager.getWho()}")
 
-                managers.forEach { manager ->
+                if (manager is DataManagement<*>) {
 
-                    try {
+                    manager.lock()
 
-                        exec {
+                    Console.log(
 
-                            Console.log("$tag Manager :: ${manager.getWho()}")
+                        "$tag Manager :: ${manager.getWho()} :: LOCKED"
+                    )
 
-                            if (manager is DataManagement<*>) {
+                    manager.reset(
 
-                                manager.lock()
+                        object : OnObtain<Boolean?> {
 
-                                Console.log(
+                            override fun onCompleted(data: Boolean?) {
 
-                                    "$tag Manager :: ${manager.getWho()} :: LOCKED"
-                                )
-
-                                if (manager.reset()) {
+                                if (data == true) {
 
                                     Console.log(
 
@@ -122,92 +133,39 @@ class ManagersCleaner {
                                     "$tag Manager :: ${manager.getWho()} :: UNLOCKED"
                                 )
 
-                            } else {
-
-                                Console.warning(
-
-                                    "$tag Manager :: ${manager.getWho()} :: " +
-                                            "SKIPPED: Not data manager"
-                                )
+                                latch.countDown()
                             }
 
-                            latch.countDown()
+                            override fun onFailure(error: Throwable) {
+
+                                recordException(error)
+                                latch.countDown()
+                            }
                         }
+                    )
 
-                    } catch (e: RejectedExecutionException) {
+                } else {
 
-                        success.set(false)
+                    success.set(false)
 
-                        latch.countDown()
-                    }
+                    Console.warning(
+
+                        "$tag Manager :: ${manager.getWho()} :: " +
+                                "SKIPPED: Not data manager"
+                    )
+
+                    latch.countDown()
                 }
-
-                latch.await()
-
-                callback.onCleanup(success.get())
             }
-
-        } catch (e: RejectedExecutionException) {
-
-            callback.onCleanup(false, e)
         }
-    }
 
-    fun cleanupDataManagers(
+        if (!latch.await(5, TimeUnit.SECONDS)) {
 
-        managers: List<DataManagement<*>>,
-        callback: CleanupCallback,
-
-        ) {
-
-        val tag = "Managers :: Cleanup ::"
-
-        try {
-
-            Console.log("$tag START")
-
-            exec {
-
-                val success = AtomicBoolean(true)
-                val latch = CountDownLatch(managers.size)
-
-                managers.forEach { manager ->
-
-                    Console.log("$tag Manager :: ${manager.getWho()}")
-
-                    exec {
-
-                        if (manager.reset()) {
-
-                            Console.log(
-
-                                "$tag Manager :: ${manager.getWho()} :: " +
-                                        "Cleaned"
-                            )
-
-                        } else {
-
-                            Console.warning(
-
-                                "$tag Manager :: ${manager.getWho()} :: " +
-                                        "Not cleaned"
-                            )
-
-                            success.set(false)
-                        }
-
-                        latch.countDown()
-                    }
-                }
-
-                latch.await()
-
-                callback.onCleanup(success.get())
-            }
-
-        } catch (e: RejectedExecutionException) {
-
-            callback.onCleanup(false, e)
+            val e = TimeoutException("Timed-out waiting for managers to clean up")
+            recordException(e)
+            success.set(false)
         }
+
+        callback.onCleanup(success.get())
     }
 }

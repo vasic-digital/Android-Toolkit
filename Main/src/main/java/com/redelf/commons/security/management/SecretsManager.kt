@@ -10,10 +10,9 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.security.obfuscation.ObfuscatorSalt
 import com.redelf.commons.security.obfuscation.RemoteObfuscatorSaltProvider
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
 class SecretsManager private constructor(storageKeyToSet: String) :
@@ -47,87 +46,107 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
     override fun createDataObject() = Secrets()
 
-    fun getObfuscationSalt(source: RemoteObfuscatorSaltProvider): ObfuscatorSalt? {
+    fun getObfuscationSalt(
 
-        var result: ObfuscatorSalt? = null
+        source: RemoteObfuscatorSaltProvider,
+        callback: OnObtain<ObfuscatorSalt?>
 
-        try {
+    ) {
 
-            val data = obtain()
-            val latch = CountDownLatch(1)
+        exec(
 
-            result = data?.obfuscationSalt?: ObfuscatorSalt()
+            onRejected = { e -> callback.onFailure(e) }
 
-            exec(
+        ) {
 
-                onRejected = { err ->
+            try {
 
-                    recordException(err)
-                    latch.countDown()
-                }
+                fun onSecrets(data: Secrets?) {
 
-            ) {
+                    var result = data?.obfuscationSalt?: ObfuscatorSalt()
+                    val transaction = transaction("setObfuscationSalt")
 
-                val transaction = transaction("setObfuscationSalt")
+                    try {
 
-                try {
+                        data?.let {
 
-                    data?.let {
+                            val newSalt = source.getRemoteData()
 
-                        val newSalt = source.getRemoteData()
+                            if (isNotEmpty(newSalt)) {
 
-                        if (isNotEmpty(newSalt)) {
+                                if (it.obfuscationSalt == null) {
 
-                            if (it.obfuscationSalt == null) {
+                                    it.obfuscationSalt = result
+                                }
 
-                                it.obfuscationSalt = result
+                                it.obfuscationSalt?.let { salt ->
+
+                                    result = salt
+                                }
+
+                                result.updateValue(newSalt)
+
+                                transaction.end(
+
+                                    object : OnObtain<Boolean?> {
+
+                                        override fun onCompleted(data: Boolean?) {
+
+                                            if (data != true) {
+
+                                                val msg = "Failed to end obfuscation salt transaction"
+                                                val e = Exception(msg)
+                                                recordException(e)
+                                            }
+                                        }
+
+                                        override fun onFailure(error: Throwable) {
+
+                                            recordException(error)
+                                        }
+                                    }
+                                )
                             }
-
-                            it.obfuscationSalt?.let { salt ->
-
-                                result = salt
-                            }
-
-                            result?.updateValue(newSalt)
-
-                            transaction.end()
                         }
+
+                    } catch (e: Throwable) {
+
+                        recordException(e)
+
+                        result.error = e
                     }
 
-                    latch.countDown()
+                    if (isEmpty(result.takeValue())) {
 
-                } catch (e: Throwable) {
+                        result.firstTimeObtained.set(true)
 
-                    recordException(e)
+                    } else {
 
-                    result?.error = e
+                        result.updateValue()
 
-                    latch.countDown()
+                        result.firstTimeObtained.set(false)
+                    }
+
+                    callback.onCompleted(result)
                 }
+
+                obtain(
+
+                    object : OnObtain<Secrets?> {
+
+                        override fun onCompleted(data: Secrets?) = onSecrets(data)
+
+                        override fun onFailure(error: Throwable) {
+
+                            callback.onFailure(error)
+                        }
+                    }
+                )
+
+            } catch (e: Throwable) {
+
+                callback.onFailure(e)
             }
-
-            if (isEmpty(result.takeValue())) {
-
-                latch.await(60, TimeUnit.SECONDS)
-
-                result.firstTimeObtained.set(true)
-
-            } else {
-
-                result.updateValue()
-
-                result.firstTimeObtained.set(false)
-            }
-
-            return result
-
-        } catch (e: Throwable) {
-
-            result?.error = e
-
-            recordException(e)
         }
-
-        return result
     }
 }

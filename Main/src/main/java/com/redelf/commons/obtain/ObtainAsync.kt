@@ -1,6 +1,6 @@
 package com.redelf.commons.obtain
 
-interface ObtainWithCallback<T> {
+interface ObtainAsync<T> {
 
     fun obtain(callback: OnObtain<T>)
 }

@@ -32,7 +32,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.redelf.commons.R
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.fitInsideSystemBoundaries
 import com.redelf.commons.extensions.initRegistrationWithGoogle

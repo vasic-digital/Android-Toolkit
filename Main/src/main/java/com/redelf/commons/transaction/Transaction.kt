@@ -1,5 +1,5 @@
 package com.redelf.commons.transaction
 
-import com.redelf.commons.session.SessionOperation
+import com.redelf.commons.session.SessionOperationAsync
 
-interface Transaction : SessionOperation
+interface Transaction : SessionOperationAsync

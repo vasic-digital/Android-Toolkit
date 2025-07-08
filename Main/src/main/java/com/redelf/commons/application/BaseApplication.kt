@@ -39,8 +39,8 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
+import com.redelf.commons.atomic.AtomicIntWrapper
 import com.redelf.commons.context.ContextAvailability
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
@@ -58,6 +58,7 @@ import com.redelf.commons.migration.MigrationNotReadyException
 import com.redelf.commons.net.cronet.Cronet
 import com.redelf.commons.net.retrofit.interceptor.RetryInterceptor
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.SharedPreferencesStorage
 import com.redelf.commons.security.management.SecretsManager
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
@@ -81,7 +82,9 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication> {
+    ContextAvailability<BaseApplication>
+
+{
 
     companion object :
 
@@ -95,9 +98,6 @@ abstract class BaseApplication :
         @SuppressLint("StaticFieldLeak")
         lateinit var CONTEXT: BaseApplication
 
-        var TOP_ACTIVITY = mutableListOf<Class<out Activity>>()
-        var TOP_ACTIVITIES = mutableListOf<Class<out Activity>>()
-
         const val ACTIVITY_LIFECYCLE_TAG = "Activity lifecycle ::"
         const val BROADCAST_ACTION_APPLICATION_SCREEN_OFF = "APPLICATION_STATE.SCREEN_OFF"
         const val BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND = "APPLICATION_STATE.BACKGROUND"
@@ -110,7 +110,16 @@ abstract class BaseApplication :
 
         override fun takeIntent(): Intent? = CONTEXT.takeIntent()
 
-        private var isAppInBackground = AtomicBoolean()
+        private val FOREGROUND_ACTIVITIES_COUNT = AtomicInteger()
+
+        private fun foregroundActivityCounter(): AtomicIntWrapper {
+
+            return AtomicIntWrapper(
+
+                "Foreground activity counter",
+                FOREGROUND_ACTIVITIES_COUNT
+            )
+        }
 
         fun restart(context: Context) {
 
@@ -190,6 +199,16 @@ abstract class BaseApplication :
 
             return ""
         }
+
+        fun getForegroundActivityCount(): Int {
+
+            return foregroundActivityCounter().get()
+        }
+
+        fun isAppInForeground(): Boolean {
+
+            return getForegroundActivityCount() > 0
+        }
     }
 
     open val useCronet = false
@@ -254,6 +273,8 @@ abstract class BaseApplication :
     open fun getSecret() = secretKey
 
     open fun canRecordApplicationLogs() = false
+
+    open fun getTopActivity(): Class<*>? = null
 
     abstract fun isProduction(): Boolean
 
@@ -590,33 +611,33 @@ abstract class BaseApplication :
 
         enableLogsRecording()
 
-        if (useCronet) {
-
-            exec {
-
-                Cronet.initialize(applicationContext)
-            }
-        }
-
-        DataManagement.initialize(applicationContext)
-
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerActivityLifecycleCallbacks(this)
 
-        managers.addAll(populateManagers())
+        exec {
 
-        val contextDependableManagers = mutableListOf<DataManagement<*>>()
+            if (useCronet) {
 
-        contextDependentManagers.forEach { contextDependentManager ->
+                Cronet.initialize(applicationContext)
+            }
 
-            contextDependableManagers.add(contextDependentManager.obtain())
+            DataManagement.initialize(applicationContext)
+
+            managers.addAll(populateManagers())
+
+            val contextDependableManagers = mutableListOf<DataManagement<*>>()
+
+            contextDependentManagers.forEach { contextDependentManager ->
+
+                contextDependableManagers.add(contextDependentManager.obtain())
+            }
+
+            managers.addAll(listOf(contextDependableManagers))
+
+            defaultManagerResources.putAll(populateDefaultManagerResources())
+
+            doCreate()
         }
-
-        managers.addAll(listOf(contextDependableManagers))
-
-        defaultManagerResources.putAll(populateDefaultManagerResources())
-
-        doCreate()
     }
 
     fun initTerminationListener() {
@@ -946,10 +967,11 @@ abstract class BaseApplication :
 
     override fun getActivityCount(): Int {
 
-        return TOP_ACTIVITY.size
+        return getForegroundActivityCount()
     }
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+
         super.onActivityPreCreated(activity, savedInstanceState)
     }
 
@@ -986,24 +1008,7 @@ abstract class BaseApplication :
 
     override fun onActivityPreResumed(activity: Activity) {
 
-        val clazz = activity::class.java
-
-        Executor.UI.execute {
-
-            try {
-
-                TOP_ACTIVITY.add(clazz)
-                TOP_ACTIVITIES.add(clazz)
-
-                Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-RESUMED :: ${clazz.simpleName}")
-
-                Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
-
-            } catch (e: Throwable) {
-
-                recordException(e)
-            }
-        }
+        // Ignore
 
         super.onActivityPreResumed(activity)
     }
@@ -1016,8 +1021,11 @@ abstract class BaseApplication :
     override fun onActivityResumed(activity: Activity) {
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG RESUMED :: ${activity.javaClass.simpleName}")
+    }
 
-        if (isAppInBackground.get()) {
+    override fun onActivityPostResumed(activity: Activity) {
+
+        if (foregroundActivityCounter().get() == 0) {
 
             val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
             sendBroadcast(intent)
@@ -1025,10 +1033,7 @@ abstract class BaseApplication :
             Console.debug("$ACTIVITY_LIFECYCLE_TAG Foreground")
         }
 
-        isAppInBackground.set(false)
-    }
-
-    override fun onActivityPostResumed(activity: Activity) {
+        foregroundActivityCounter().incrementAndGet()
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG POST-RESUMED :: ${activity.javaClass.simpleName}")
 
@@ -1037,14 +1042,21 @@ abstract class BaseApplication :
 
     override fun onActivityPrePaused(activity: Activity) {
 
+        val value = foregroundActivityCounter().decrementAndGet()
+
+        if (value < 0) {
+
+            foregroundActivityCounter().set(0)
+        }
+
+        if (foregroundActivityCounter().get() == 0) {
+
+            onAppBackgroundState()
+        }
+
         try {
 
             val clazz = activity::class.java
-
-            if (TOP_ACTIVITIES.contains(clazz)) {
-
-                TOP_ACTIVITIES.remove(clazz)
-            }
 
             Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-PAUSED :: ${activity.javaClass.simpleName}")
 
@@ -1060,16 +1072,7 @@ abstract class BaseApplication :
 
     override fun onActivityPostPaused(activity: Activity) {
 
-        Console.log(
-
-            "$ACTIVITY_LIFECYCLE_TAG POST-PAUSED :: ${activity.javaClass.simpleName}, " +
-                    "Active: ${TOP_ACTIVITY.size}"
-        )
-
-        if (TOP_ACTIVITIES.size <= 1) {
-
-            onAppBackgroundState()
-        }
+        // Ignore
 
         super.onActivityPostPaused(activity)
     }
@@ -1114,35 +1117,7 @@ abstract class BaseApplication :
 
     override fun onActivityPreDestroyed(activity: Activity) {
 
-        val iterator = TOP_ACTIVITY.iterator()
-
-        while (iterator.hasNext()) {
-
-            val item = iterator.next()
-
-            if (item == activity::class.java) {
-
-                iterator.remove()
-            }
-        }
-
         Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
-
-        if (TOP_ACTIVITIES.isEmpty()) {
-
-            Console.debug("$ACTIVITY_LIFECYCLE_TAG No top activity")
-
-            onAppBackgroundState()
-
-        } else {
-
-            if (TOP_ACTIVITY.isNotEmpty()) {
-
-                val clazz = TOP_ACTIVITY.last()
-
-                Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
-            }
-        }
 
         super.onActivityPreDestroyed(activity)
     }
@@ -1387,43 +1362,87 @@ abstract class BaseApplication :
             Console.error(e)
         }
 
-        getUpdatesCodes().forEach { code ->
+        val codes = getUpdatesCodes()
 
-            /*
-                TODO: Incorporate until which version code is the update applicable (if needed)
-            */
-            if (versionCode >= code && isUpdateAvailable(code)) {
+        if (codes.isEmpty()) {
 
-                if (!isUpdating()) {
+            setUpdating(false)
+        }
 
-                    setUpdating(true)
+        val iterator = codes.iterator()
+
+        fun getAndUpdate() {
+
+            if (iterator.hasNext()) {
+
+                val code = iterator.next()
+
+                if (versionCode >= code) { // TODO: <--- Incorporate until which version code is the update applicable (if needed)
+
+                    isUpdateAvailable(
+
+                        code,
+
+                        object : OnObtain<Boolean> {
+
+                            override fun onCompleted(data: Boolean) {
+
+                                if (!data) {
+
+                                    getAndUpdate()
+
+                                    return
+                                }
+
+                                if (!isUpdating()) {
+
+                                    setUpdating(true)
+                                }
+
+                                Console.log("$tag Code :: $versionCode :: START")
+
+                                try {
+
+                                    val success = update(code)
+
+                                    if (success) {
+
+                                        onUpdated(code)
+
+                                        Console.log("$tag Code :: $versionCode :: END")
+
+                                    } else {
+
+                                        onUpdatedFailed(code)
+                                    }
+
+                                    getAndUpdate()
+
+                                } catch (e: MigrationNotReadyException) {
+
+                                    Console.warning("${e.message}, Code = $versionCode")
+
+                                    getAndUpdate()
+                                }
+                            }
+
+                            override fun onFailure(error: Throwable) {
+
+                                recordException(error)
+
+                                setUpdating(false)
+                            }
+                        }
+                    )
                 }
 
-                Console.log("$tag Code :: $versionCode :: START")
+            } else {
 
-                try {
-
-                    val success = update(code)
-
-                    if (success) {
-
-                        onUpdated(code)
-
-                        Console.log("$tag Code :: $versionCode :: END")
-
-                    } else {
-
-                        onUpdatedFailed(code)
-                    }
-
-                } catch (e: MigrationNotReadyException) {
-
-                    Console.warning("${e.message}, Code = $versionCode")
-                }
+                setUpdating(false)
             }
         }
 
-        setUpdating(false)
+        getAndUpdate()
     }
 
     override fun update(identifier: Long) = false
@@ -1454,7 +1473,26 @@ abstract class BaseApplication :
         }
     }
 
-    override fun isUpdateApplied(identifier: Long) = !isUpdateAvailable(identifier)
+    override fun isUpdateApplied(identifier: Long, callback: OnObtain<Boolean>) {
+
+        isUpdateAvailable(
+
+            identifier,
+
+            object : OnObtain<Boolean> {
+
+                override fun onCompleted(data: Boolean) {
+
+                    callback.onCompleted(!data)
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
+    }
 
     protected open fun setupObfuscator(): Boolean {
 
@@ -1478,27 +1516,41 @@ abstract class BaseApplication :
 
     protected open fun getObfuscatorEndpointToken() = ""
 
-    protected fun isUpdateAvailable(identifier: Long): Boolean {
+    protected fun isUpdateAvailable(identifier: Long, callback: OnObtain<Boolean>) {
 
         val key = "$prefsKeyUpdate.$identifier"
-        val value = prefs.get(key)
-        val updateAvailable = isEmpty(value)
 
-        if (updateAvailable) {
+        prefs.get(
 
-            Console.log("Update :: Available :: identifier = '$identifier'")
+            key,
 
-        } else {
+            object : OnObtain<String?> {
 
-            Console.log("Update :: Already applied :: identifier = '$identifier'")
-        }
+                override fun onCompleted(data: String?) {
 
-        return updateAvailable
+                    val updateAvailable = isEmpty(data)
+
+                    if (updateAvailable) {
+
+                        Console.log("Update :: Available :: identifier = '$identifier'")
+
+                    } else {
+
+                        Console.log("Update :: Already applied :: identifier = '$identifier'")
+                    }
+
+                    callback.onCompleted(updateAvailable)
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 
     private fun onAppBackgroundState() {
-
-        isAppInBackground.set(true)
 
         val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
         sendBroadcast(intent)

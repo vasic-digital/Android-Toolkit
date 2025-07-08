@@ -4,14 +4,18 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.destruction.erasing.Erasing
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.hashCodeString
+import com.redelf.commons.extensions.yield
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.base.Parser
 import com.redelf.commons.persistance.base.Persistence
+import com.redelf.commons.persistance.base.PersistenceAsync
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.registration.Registration
 import com.redelf.commons.security.encryption.EncryptionListener
@@ -30,9 +34,9 @@ constructor(
 ) :
 
     Erasing,
-    Persistence<String>,
     ShutdownSynchronized,
     TerminationSynchronized,
+    PersistenceAsync<String>,
     InitializationWithContext,
     Registration<EncryptionListener<String, String>>
 
@@ -116,17 +120,39 @@ constructor(
         dataDelegate?.initialize(ctx)
     }
 
-    override fun <T> pull(key: String): T? {
+    override fun <T> pull(key: String, callback: OnObtain<T?>) {
 
-        if (DEBUG.get()) {
+        exec(
 
-            Console.log("$LOG_TAG :: Pull: key = '$key' ::")
+            onRejected = { e -> callback.onFailure(e) }
+
+        ) {
+
+            if (DEBUG.get()) {
+
+                Console.log("$LOG_TAG :: Pull: key = '$key' ::")
+            }
+
+            try {
+
+                val result = dataDelegate?.get<T?>(key, null)
+
+                callback.onCompleted(result)
+
+            } catch (e: Throwable) {
+
+                Console.error(
+
+                    "$LOG_TAG ERROR: Failed to pull data for key " +
+                            "'$key', Error='${e.message}'"
+                )
+
+                callback.onFailure(e)
+            }
         }
-
-        return dataDelegate?.get(key)
     }
 
-    override fun <T> push(key: String, what: T): Boolean {
+    override fun <T> push(key: String, what: T, check: Obtain<Boolean>): Boolean {
 
         if (dataDelegate == null) {
 
@@ -135,17 +161,35 @@ constructor(
             return false
         }
 
+        yield("EncryptedPersistence.push.$key", check)
+
         return dataDelegate?.put(key, what) == true
     }
 
-    override fun delete(what: String): Boolean {
+    override fun delete(what: String, callback: OnObtain<Boolean?>) {
 
-        return dataDelegate?.delete(what) == true
+        exec(
+
+            onRejected = { e -> callback.onFailure(e) }
+
+        ) {
+
+            val result = dataDelegate?.delete(what)
+
+            callback.onCompleted(result)
+        }
     }
 
-    override fun contains(key: String): Boolean {
+    override fun contains(key: String, callback: OnObtain<Boolean?>) {
 
-        return dataDelegate?.contains(key) == true
+        exec(
+
+            onRejected = { e -> callback.onFailure(e) }
+
+        ) {
+
+            callback.onCompleted(dataDelegate?.contains(key) == true)
+        }
     }
 
     /*

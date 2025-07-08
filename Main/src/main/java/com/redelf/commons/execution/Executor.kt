@@ -4,7 +4,6 @@ import android.os.Handler
 import android.os.Looper
 import com.redelf.commons.Debuggable
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +28,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         private val debug = AtomicBoolean()
         private val tag = "Executor :: MAIN ::"
         private val cores = CPUs().numberOfCores
-        private val threadPooled = AtomicBoolean()
+        private val threadPooled = AtomicBoolean(true)
 
         private val capacity = if (cores * 3 <= 10) {
 
@@ -51,9 +50,16 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
         override fun instantiateExecutor() = TaskExecutor.instantiate(capacity)
 
+        /*
+        * TODO:
+        *  - Instead of Runnable use Runnable and ApiRunnable
+        *  - Wrap all CountDown latched with existing sync {} extension
+        *  - Make sure that sync {} extension can work with countdown latch with multiple count downs
+        *  - Make sure that sync {} extension works with coroutines when threadPooled.get() is false
+        */
         @OptIn(DelicateCoroutinesApi::class)
         @Throws(RejectedExecutionException::class)
-        override fun execute(what: Runnable) { // TODO: Instead of Runnable use Runnable and ApiRunnable
+        override fun execute(what: Runnable) {
 
             if (isDebug()) Console.log("$tag START :: threadPooled = ${isThreadPooledExecution()}")
 
@@ -380,6 +386,17 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
             try {
 
                 executor.execute(action)
+
+                // TODO: Make sure we can use this idea
+                //                if (isOnMainThread()) {
+                //
+                //                    executor.execute(action)
+                //
+                //                } else {
+                //
+                //                    action.run()
+                //                }
+
 
             } catch (e: Throwable) {
 

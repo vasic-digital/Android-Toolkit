@@ -15,14 +15,14 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
         TODO: Create a flavor that uses Jackson lib for stream-like serialization / deserialization
     */
 
-    override fun <T> serialize(cipherText: String?, originalGivenValue: T): String? {
+    override fun <T> serialize(cipherText: String?, value: T): String? {
 
         if (cipherText == null || cipherText.isEmpty()) {
             
             return null
         }
 
-        if (originalGivenValue == null) {
+        if (value == null) {
             
             return null
         }
@@ -32,9 +32,9 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
         var dataType: String
 
-        if (MutableList::class.java.isAssignableFrom(originalGivenValue.javaClass)) {
+        if (MutableList::class.java.isAssignableFrom(value.javaClass)) {
             
-            val list = originalGivenValue as MutableList<*>
+            val list = value as MutableList<*>
             
             if (!list.isEmpty()) {
 
@@ -43,11 +43,11 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
             dataType = DataInfo.TYPE_LIST
 
-        } else if (MutableMap::class.java.isAssignableFrom(originalGivenValue.javaClass)) {
+        } else if (MutableMap::class.java.isAssignableFrom(value.javaClass)) {
 
             dataType = DataInfo.TYPE_MAP
 
-            val map = originalGivenValue as MutableMap<*, *>
+            val map = value as MutableMap<*, *>
 
             if (!map.isEmpty()) {
 
@@ -60,9 +60,9 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
             }
 
-        } else if (MutableSet::class.java.isAssignableFrom(originalGivenValue.javaClass)) {
+        } else if (MutableSet::class.java.isAssignableFrom(value.javaClass)) {
 
-            val set = originalGivenValue as MutableSet<*>
+            val set = value as MutableSet<*>
 
             if (!set.isEmpty()) {
 
@@ -79,7 +79,7 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
         } else {
 
             dataType = DataInfo.TYPE_OBJECT
-            keyClassName = originalGivenValue.javaClass
+            keyClassName = value.javaClass
         }
 
         val dataInfo = DataInfo(
@@ -108,16 +108,16 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
         return null
     }
 
-    override fun deserialize(serializedText: String?): DataInfo? {
+    override fun deserialize(plainText: String?): DataInfo? {
 
-        if (isEmpty(serializedText)) {
+        if (isEmpty(plainText)) {
 
             return null
         }
 
         try {
 
-            val dataInfo = parser.obtain().fromJson<DataInfo?>(serializedText, DataInfo::class.java)
+            val dataInfo = parser.obtain().fromJson<DataInfo?>(plainText, DataInfo::class.java)
 
             if (dataInfo?.keyClazzName != null) {
 
@@ -133,7 +133,8 @@ internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
         } catch (e: JsonSyntaxException) {
 
-            error("Could not deserialize: $serializedText")
+            error("Could not deserialize: $plainText")
+
             error(e)
         }
 

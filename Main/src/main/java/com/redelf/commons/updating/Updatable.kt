@@ -1,5 +1,7 @@
 package com.redelf.commons.updating
 
+import com.redelf.commons.obtain.OnObtain
+
 interface Updatable<T> {
 
     fun update()
@@ -12,5 +14,5 @@ interface Updatable<T> {
 
     fun onUpdatedFailed(identifier: T)
 
-    fun isUpdateApplied(identifier: T): Boolean
+    fun isUpdateApplied(identifier: T, callback: OnObtain<Boolean>)
 }

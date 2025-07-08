@@ -37,7 +37,9 @@ public class EntityIdProvider implements EntityIdProvide {
             if (lastIdVal == null) {
 
                 lastIdVal = new AtomicLong();
-                lastIdVal.set(Storage.get(idKey, 0L));
+
+                lastIdVal.set(Storage.INSTANCE.get(idKey, 0L));
+
                 lastId.put(idKey, lastIdVal);
             }
         });
@@ -61,7 +63,7 @@ public class EntityIdProvider implements EntityIdProvide {
             newId.set(id.decrementAndGet());
         }
 
-        Storage.put(idKey, newId.get());
+        Storage.INSTANCE.put(idKey, newId.get());
 
         return newId.get();
     }

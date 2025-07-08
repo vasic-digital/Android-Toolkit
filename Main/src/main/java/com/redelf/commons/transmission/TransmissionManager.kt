@@ -153,7 +153,26 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
             try {
 
                 val dManager = dataManager.obtain()
-                managedData = dManager.obtain()
+
+                dManager.obtain(
+
+                    object : OnObtain<T?> {
+
+                        override fun onCompleted(data: T?) {
+
+                            managedData = data
+
+                            onInit(true)
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            recordException(error)
+
+                            onInit(false)
+                        }
+                    }
+                )
 
                 connectionHandler.register(connectionCallback)
 
@@ -165,8 +184,6 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
                 return@Runnable
             }
-
-            onInit(true)
         }
 
         try {
@@ -518,32 +535,48 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
     private fun persist() {
 
-        var success = false
-
         try {
 
             managedData?.let { data ->
 
-                dataManager.obtain().pushData(data)
+                dataManager.obtain().pushData(
 
-                success = true
+                    data,
+
+                    object : OnObtain<Boolean?> {
+
+                        override fun onCompleted(data: Boolean?) {
+
+                            val success = data == true
+
+                            if (success) {
+
+                                Console.info("$logTag Data has been persisted")
+
+                            } else {
+
+                                Console.error("$logTag Data has not been persisted")
+                            }
+
+                            onPersisted(success)
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            recordException(error)
+
+                            onPersisted(false)
+                        }
+                    }
+                )
             }
 
         } catch (e: Throwable) {
 
             recordException(e)
+
+            onPersisted(false)
         }
-
-        if (success) {
-
-            Console.info("$logTag Data has been persisted")
-
-        } else {
-
-            Console.error("$logTag Data has not been persisted")
-        }
-
-        onPersisted(success)
     }
 
     private fun onInit(success: Boolean) {

@@ -6,22 +6,30 @@ import com.redelf.commons.context.Contextual
 import com.redelf.commons.data.Empty
 import com.redelf.commons.data.type.Typed
 import com.redelf.commons.destruction.reset.Resettable
+import com.redelf.commons.destruction.reset.ResettableAsync
 import com.redelf.commons.enable.Enabling
 import com.redelf.commons.enable.EnablingCallback
+import com.redelf.commons.environment.Environment
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.sync
 import com.redelf.commons.interruption.Abort
 import com.redelf.commons.lifecycle.exception.InitializingException
 import com.redelf.commons.lifecycle.exception.NotInitializedException
 import com.redelf.commons.locking.Lockable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.ObtainAsync
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.database.DBStorage
 import com.redelf.commons.session.Session
+import com.redelf.commons.state.BusyCheck
+import com.redelf.commons.state.ReadingCheck
+import com.redelf.commons.state.WritingCheck
 import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
@@ -32,12 +40,17 @@ import java.util.concurrent.atomic.AtomicLong
 
 abstract class DataManagement<T> :
 
-    Management,
-    Obtain<T?>,
-    Resettable,
-    Lockable,
     Abort,
+    Lockable,
     Enabling,
+    BusyCheck,
+    Management,
+    Resettable,
+    Environment,
+    ReadingCheck,
+    WritingCheck,
+    ObtainAsync<T?>,
+    ResettableAsync,
     Contextual<BaseApplication>,
     ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
 
@@ -84,6 +97,8 @@ abstract class DataManagement<T> :
 
     private var data: T? = null
     private val locked = AtomicBoolean()
+    private val reading = AtomicBoolean()
+    private val writing = AtomicBoolean()
     private var enabled = AtomicBoolean(true)
     private val lastDataVersion = AtomicLong(-1)
     private var session = Session(name = javaClass.simpleName)
@@ -95,6 +110,8 @@ abstract class DataManagement<T> :
     open fun canLog() = DEBUG.get()
 
     override fun abort() = Unit
+
+    override fun getEnvironment() = Environment.DEFAULT
 
     override fun enable(callback: EnablingCallback?) {
 
@@ -111,6 +128,21 @@ abstract class DataManagement<T> :
     override fun isEnabled(): Boolean {
 
         return enabled.get()
+    }
+
+    override fun isReading(): Boolean {
+
+        return reading.get()
+    }
+
+    override fun isWriting(): Boolean {
+
+        return writing.get()
+    }
+
+    override fun isBusy(): Boolean {
+
+        return isReading() || isWriting()
     }
 
     override fun execute(what: DataTransaction<T>): Boolean {
@@ -211,103 +243,148 @@ abstract class DataManagement<T> :
 
     final override fun isUnlocked() = !isLocked()
 
+    fun getData(): T? = obtain()
+
+    fun obtain(): T? {
+
+        return sync("${getWho()}.obtain") { callback ->
+
+            obtain(
+
+                callback
+            )
+        }
+    }
+
     @Throws(InitializingException::class, NotInitializedException::class)
-    override fun obtain(): T? {
+    override fun obtain(callback: OnObtain<T?>) {
 
-        if (!isEnabled()) {
+        exec(
 
-            return null
-        }
+            onRejected = { e ->
 
-        val clazz = typed?.getClazz()
-        val tag = "${getLogTag()} OBTAIN :: T = '${clazz?.simpleName}' ::"
-
-        if (canLog()) Console.log("$tag START")
-
-        if (isLocked()) {
-
-            Console.warning("$tag Locked")
-
-            return null
-        }
-
-        if (data != null) {
-
-            if (canLog()) Console.log("$tag END: OK")
-
-            return data
-        }
-
-        val dataObjTag = "$tag Data object ::"
-
-        if (canLog()) Console.log("$dataObjTag Has initial: ${data != null}")
-
-        if (data == null && persist) {
-
-            if (isOnMainThread()) {
-
-                val e = IllegalStateException(
-
-                    "DataManagement should not obtain storage data on the main thread"
-                )
-
-                recordException(e)
+                callback.onFailure(e)
             }
+
+        ) {
+
+            if (!isEnabled()) {
+
+                callback.onCompleted(null)
+                return@exec
+            }
+
+            val clazz = typed?.getClazz()
+            val tag = "${getLogTag()} OBTAIN :: T = '${clazz?.simpleName}' ::"
+
+            if (canLog()) Console.log("$tag START")
+
+            if (isLocked()) {
+
+                Console.warning("$tag Locked")
+
+                callback.onCompleted(null)
+                return@exec
+            }
+
+            if (data != null) {
+
+                if (canLog()) Console.log("$tag END: OK")
+
+                callback.onCompleted(data)
+
+                return@exec
+            }
+
+            val dataObjTag = "$tag Data object ::"
+
+            if (canLog()) Console.log("$dataObjTag Has initial: ${data != null}")
 
             var empty: Boolean? = null
             val key = storageKey
-            val pulled = STORAGE.pull<T?>(key)
 
-            if (pulled is Empty) {
+            fun onPulled(pulled: T?) {
 
-                empty = pulled.isEmpty()
-            }
+                if (pulled is Empty) {
 
-            empty?.let {
-
-                if (canLog()) Console.log("$dataObjTag Pulled :: Empty = $it")
-            }
-
-            if (empty == null) {
-
-                if (canLog()) Console.log("$dataObjTag Pulled :: Null = ${data == null}")
-            }
-
-            pulled?.let {
-
-                overwriteData(pulled)
-            }
-
-            if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
-        }
-
-        if (canLog()) Console.log("$dataObjTag Intermediate: ${data != null}")
-
-        if (instantiateDataObject) {
-
-            var current: T? = data
-
-            if (current == null) {
-
-                current = createDataObject()
-
-                current?.let {
-
-                    data = current
+                    empty = pulled.isEmpty()
                 }
 
-                if (current == null) {
+                empty?.let {
 
-                    throw IllegalStateException("Data object creation failed")
+                    if (canLog()) Console.log("$dataObjTag Pulled :: Empty = $it")
                 }
+
+                if (empty == null) {
+
+                    if (canLog()) Console.log("$dataObjTag Pulled :: Null = ${data == null}")
+                }
+
+                pulled?.let {
+
+                    overwriteData(pulled)
+                }
+
+                if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
+
+                if (canLog()) Console.log("$dataObjTag Intermediate: ${data != null}")
+
+                if (instantiateDataObject) {
+
+                    var current: T? = data
+
+                    if (current == null) {
+
+                        current = createDataObject()
+
+                        current?.let {
+
+                            data = current
+                        }
+
+                        if (current == null) {
+
+                            throw IllegalStateException("Data object creation failed")
+                        }
+                    }
+
+                    if (canLog()) Console.log("$dataObjTag Instantiated: ${data != null}")
+                }
+
+                if (canLog()) Console.log("$dataObjTag Final: $data")
+
+                reading.set(false)
+
+                callback.onCompleted(data)
             }
 
-            if (canLog()) Console.log("$dataObjTag Instantiated: ${data != null}")
+            if (data == null && persist) {
+
+                reading.set(true)
+
+                STORAGE.pull(
+
+                    key,
+
+                    object : OnObtain<T?> {
+
+                        override fun onCompleted(data: T?) {
+
+                            onPulled(data)
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            callback.onFailure(error)
+                        }
+                    }
+                )
+
+            } else {
+
+                onPulled(data)
+            }
         }
-
-        if (canLog()) Console.log("$dataObjTag Final: $data")
-
-        return data
     }
 
     @Throws(IllegalStateException::class)
@@ -326,49 +403,70 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
-    fun pushData(sync: Boolean = false): Boolean {
+    fun pushData(): Boolean {
 
-        try {
+        val data = obtain()
 
-            val data = obtain()
+        return pushData(data)
+    }
 
-            if (data == null) {
+    fun pushData(data: T?): Boolean {
 
-                Console.error("${getLogTag()} Push data :: Data is null")
+        if (isOnMainThread()) {
 
-                return false
-            }
-
-            pushData(data, sync = sync)
-
-            return true
-
-        } catch (e: Throwable) {
-
+            val msg = "Push data is not recommended to perform on the main thread"
+            val e = IllegalStateException(msg)
             recordException(e)
         }
 
-        return false
+        return sync("${getWho()}.pushData") { callback ->
+
+            pushData(data, callback)
+
+        } == true
     }
 
-    @Throws(IllegalStateException::class)
-    open fun pushData(data: T, sync: Boolean = false) {
+    open fun pushData(data: T?, callback: OnObtain<Boolean?>?) {
 
         if (!isEnabled()) {
 
+            callback?.onCompleted(false)
             return
         }
 
-        if (DEBUG.get()) Console.log("${getLogTag()} Push data :: START")
+        if (DEBUG.get()) Console.log("${getLogTag()} Push data")
 
-        doPushData(data, sync)
+        data?.let {
+
+            doPushData(it, retry = 0, callback)
+        }
+
+        if (data == null) {
+
+            val dObject = createDataObject()
+
+            dObject?.let {
+
+                doPushData(it, retry = 0, callback)
+            }
+
+            if (dObject == null) {
+
+                val msg = "Data object creation failed, can't push data"
+
+                Console.error("${getLogTag()} Push data :: $msg")
+
+                callback?.onFailure(IllegalStateException(msg))
+            }
+        }
     }
 
-    @Throws(IllegalStateException::class)
-    protected fun doPushData(data: T, sync: Boolean) {
+    protected fun doPushData(data: T, retry: Int = 0, callback: OnObtain<Boolean?>? = null) {
 
         if (!isEnabled()) {
 
+            onDataPushed(success = false)
+            callback?.onCompleted(data = false)
             return
         }
 
@@ -377,102 +475,127 @@ abstract class DataManagement<T> :
             Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
 
             onDataPushed(success = false)
-
+            callback?.onCompleted(data = false)
             return
         }
 
-        try {
+        exec {
 
-            val action = Runnable {
+            if (isBusy()) {
 
-                overwriteData(data)
+                if (retry <= 5) {
 
-                if (persist) {
+                    Console.warning(
 
-                    try {
+                        "${getLogTag()} BUSY :: Rescheduling data push :: Retry = $retry"
+                    )
 
-                        val version = data.getVersion()
+                    exec(
 
-                        /*
-                            FIXME: Polish this condition.
-                        */
-                        if (version <= 0 || version > lastDataVersion.get()) {
+                        delayInMilliseconds = 10 * 1000
 
-                            val store = takeStorage()
-                            val pushed = store?.push(storageKey, data)
+                    ) {
 
-                            if (store == null) {
-
-                                Console.error("${getLogTag()} Push data :: No store available")
-                            }
-
-                            val success = pushed == true
-
-                            onDataPushed(success = success)
-
-                            if (success) {
-
-                                lastDataVersion.set(version)
-
-                                /*
-                                    TODO/FIXME:
-                                     - This has to be left to end user, not manager
-                                     - Add shutdown hook (cleanup service) so saving is
-                                     performed and no data loss happens
-                                */
-                                data.increaseVersion()
-
-                                Console.log(
-
-                                    "${getLogTag()} Data pushed :: " +
-                                            "Version = ${lastDataVersion.get()}, " +
-                                            "New version = ${data.getVersion()}"
-                                )
-                            }
-
-                        } else {
-
-                            val msg = "Can't push data version $version, " +
-                                    "the last pushed data version is ${lastDataVersion.get()}"
-
-                            val e = java.lang.IllegalArgumentException(msg)
-                            onDataPushed(err = e)
-                        }
-
-                    } catch (e: RejectedExecutionException) {
-
-                        onDataPushed(err = e)
+                        doPushData(data, retry = retry + 1, callback)
                     }
 
                 } else {
 
-                    onDataPushed(success = true)
+                    val e = IllegalArgumentException("Data push failed, manager is busy")
+                    recordException(e)
                 }
+
+                return@exec
             }
 
-            if (sync) {
+            if (overwriteData(data) && persist) {
 
-                action.run()
+                writing.set(true)
+
+                try {
+
+                    val version = data.getVersion()
+
+                    /*
+                        FIXME: Polish this condition.
+                    */
+                    if (version <= 0 || version > lastDataVersion.get()) {
+
+                        val store = takeStorage()
+
+                        val pushed = store?.push(
+
+                            key = storageKey, what = data,
+
+                            check = object : Obtain<Boolean> {
+
+                                override fun obtain(): Boolean {
+
+                                    return !isReading()
+                                }
+                            }
+                        )
+
+                        if (store == null) {
+
+                            Console.error("${getLogTag()} Push data :: No store available")
+                        }
+
+                        val success = pushed == true
+
+                        if (success) {
+
+                            lastDataVersion.set(version)
+
+                            /*
+                                TODO/FIXME:
+                                 - This has to be left to end user, not manager
+                                 - Add shutdown hook (cleanup service) so saving is
+                                 performed and no data loss happens
+                            */
+                            data.increaseVersion()
+
+                            Console.log(
+
+                                "${getLogTag()} Data pushed :: " +
+                                        "Version = ${lastDataVersion.get()}, " +
+                                        "New version = ${data.getVersion()}"
+                            )
+                        }
+
+                        onDataPushed(success = success)
+                        callback?.onCompleted(data = success)
+
+                    } else {
+
+                        val msg = "Can't push data version $version, " +
+                                "the last pushed data version is ${lastDataVersion.get()}"
+
+                        val e = java.lang.IllegalArgumentException(msg)
+
+                        onDataPushed(err = e)
+                        callback?.onFailure(e)
+                    }
+
+                } catch (e: RejectedExecutionException) {
+
+                    onDataPushed(err = e)
+                    callback?.onFailure(e)
+                }
 
             } else {
 
-                exec(
+                writing.set(false)
 
-                    onRejected = { e -> onDataPushed(err = e) }
-
-                ) {
-
-                    action.run()
-                }
+                onDataPushed(success = true)
+                callback?.onCompleted(data = true)
             }
-
-        } catch (e: RejectedExecutionException) {
-
-            onDataPushed(err = e)
         }
     }
 
     protected open fun onDataPushed(success: Boolean? = false, err: Throwable? = null) {
+
+        writing.set(false)
 
         if (success == true) {
 
@@ -491,97 +614,153 @@ abstract class DataManagement<T> :
 
     override fun reset(): Boolean {
 
-        if (!isEnabled()) {
+        if (isOnMainThread()) {
 
-            return true
+            val msg = "Reset is not recommended to perform on the main thread"
+            val e = IllegalStateException(msg)
+            recordException(e)
         }
+
+        return sync("${getWho()}.reset") { callback ->
+
+            reset(callback)
+
+        } == true
+    }
+
+    override fun reset(callback: OnObtain<Boolean?>) {
 
         val tag = "${getLogTag()} Reset ::"
 
+        if (!isEnabled()) {
+
+            Console.warning("$tag DISABLED")
+            callback.onCompleted(false)
+            return
+        }
+
         Console.log("$tag START")
 
-        try {
+        exec(
 
-            session.reset()
+            onRejected = { e ->
 
-            if (isNotEmpty(storageKey)) {
+                Console.error("$tag FAILED :: Error='${e.message}'")
+                callback.onFailure(e)
+            }
 
-                Console.log("$tag Storage key: $storageKey")
+        ) {
 
-                val s = takeStorage()
+            if (DEBUG.get()) Console.log("$tag STARTED")
 
-                if (instantiateDataObject) {
+            try {
 
-                    createDataObject()?.let {
+                if (DEBUG.get()) Console.log("$tag To reset session")
 
-                        overwriteData(it)
+                session.reset()
+
+                if (DEBUG.get()) Console.log("$tag Session reset")
+
+                if (isNotEmpty(storageKey)) {
+
+                    if (DEBUG.get()) Console.log("$tag Storage key = '$storageKey'")
+
+                    fun completeReset(success: Boolean?) {
+
+                        if (success == true) {
+
+                            if (DEBUG.get()) Console.log("$tag Completing reset")
+
+                            eraseData()
+
+                            Console.log("$tag END")
+
+                            callback.onCompleted(true)
+
+                        } else {
+
+                            Console.error("$tag Complete reset failed")
+
+                            callback.onCompleted(success)
+                        }
                     }
 
-                    data?.let {
+                    val s = takeStorage()
 
-                        doPushData(it, sync = false)
+                    if (instantiateDataObject) {
+
+                        createDataObject()?.let { dObject ->
+
+                            overwriteData(dObject)
+
+                            data?.let {
+
+                                doPushData(
+
+                                    data = it,
+
+                                    retry = 0,
+
+                                    callback = object : OnObtain<Boolean?> {
+
+                                        override fun onCompleted(data: Boolean?) {
+
+                                            completeReset(data)
+                                        }
+
+                                        override fun onFailure(error: Throwable) {
+
+                                            callback.onFailure(error)
+                                        }
+                                    }
+                                )
+                            }
+
+                            if (data == null) {
+
+                                Console.error("$tag Data object creation failed")
+                                completeReset(false)
+                                return@exec
+                            }
+                        }
+
+                    } else {
+
+                        s?.delete(
+
+                            storageKey,
+
+                            object : OnObtain<Boolean?> {
+
+                                override fun onCompleted(data: Boolean?) {
+
+                                    completeReset(true)
+                                }
+
+                                override fun onFailure(error: Throwable) {
+
+                                    callback.onFailure(error)
+                                }
+                            })
                     }
 
                 } else {
 
-                    s?.delete(storageKey)
+                    Console.warning("$tag END :: Empty storage key")
+
+                    callback.onCompleted(false)
                 }
 
-            } else {
+            } catch (e: Throwable) {
 
-                Console.warning("$tag Empty storage key")
+                Console.error("$tag FAILED :: Error='${e.message}'")
+
+                callback.onFailure(e)
             }
-
-            eraseData()
-
-            Console.log("$tag END")
-
-            return true
-
-        } catch (e: RejectedExecutionException) {
-
-            Console.error(tag, e)
-
-        } catch (e: IllegalStateException) {
-
-            Console.error(tag, e)
         }
-
-        Console.error("$tag END: FAILED (2)")
-
-        return false
     }
 
     override fun getWho(): String? = this::class.simpleName
-
-    protected fun getData(): T? {
-
-        val tag = "${getLogTag()} Data :: Obtain ::"
-
-        try {
-
-            if (DEBUG.get()) Console.log("$tag START")
-
-            val data = obtain()
-
-            data?.let {
-
-                if (DEBUG.get()) Console.log("$tag END: OK")
-
-                return it
-            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-
-            if (DEBUG.get()) Console.error("$tag END: FAILED", e)
-        }
-
-        if (DEBUG.get()) Console.log("$tag END: NULL")
-
-        return null
-    }
 
     protected fun eraseData() {
 
@@ -597,13 +776,15 @@ abstract class DataManagement<T> :
         Console.log("${getLogTag()} Data :: Erase :: END")
     }
 
-    protected fun overwriteData(data: T) {
+    protected fun overwriteData(data: T): Boolean {
 
         if (!isEnabled()) {
 
-            return
+            return false
         }
 
+        // FIXME: Polish and add environment into the account
+        //  when it is changed (to reset version to 0)
         if (data.getVersion() >= (this.data?.getVersion() ?: 0)) {
 
             Console.log(
@@ -612,15 +793,24 @@ abstract class DataManagement<T> :
                         "To version = ${data.getVersion()}"
             )
 
-            this.data = data
+            if (this.data != data) {
+
+                this.data = data
+
+                return true
+
+            } else {
+
+                Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED (1)")
+            }
 
         } else {
 
-            Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED")
+            Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED (2)")
         }
-    }
 
-    private fun initCallbacksTag() = "${getLogTag()} Data management initialization"
+        return false
+    }
 
     class DataTransaction<T>(
 
@@ -692,41 +882,78 @@ abstract class DataManagement<T> :
 
         override fun end(): Boolean {
 
-            if (canLog) Console.log("$tag Session: $session :: ENDING :: $name")
+            return sync("Transaction.end.$name") { callback ->
 
-            if (session != parent.session.takeIdentifier()) {
+                end(callback)
 
-                if (canLog) Console.warning("$tag Session: $session :: SKIPPED :: $name")
+            } ?: false
+        }
 
-                return false
-            }
+        override fun end(callback: OnObtain<Boolean?>) {
 
-            var result = false
+            exec {
 
-            try {
+                if (canLog) Console.log("$tag Session: $session :: ENDING :: $name")
 
-                val data = parent.obtain()
+                if (session != parent.session.takeIdentifier()) {
 
-                data?.let {
+                    if (canLog) Console.warning("$tag Session: $session :: SKIPPED :: $name")
 
-                    parent.pushData(it)
-
-                    result = true
-
-                    if (canLog) Console.log("$tag Session: $session :: ENDED :: $name")
+                    callback.onCompleted(false)
+                    return@exec
                 }
 
-            } catch (e: IllegalStateException) {
+                try {
 
-                Console.error(e)
+                    parent.obtain(
+
+                        object : OnObtain<T?> {
+
+                            override fun onCompleted(data: T?) {
+
+                                data?.let {
+
+                                    parent.pushData(
+
+                                        it,
+
+                                        object : OnObtain<Boolean?> {
+
+                                            override fun onCompleted(data: Boolean?) {
+
+                                                val result = data == true
+
+                                                if (canLog) Console.log("$tag Session: $session :: ENDED :: $name")
+
+                                                callback.onCompleted(result)
+                                            }
+
+                                            override fun onFailure(error: Throwable) {
+
+                                                callback.onFailure(error)
+                                            }
+                                        }
+                                    )
+                                }
+
+                                if (data == null) {
+
+                                    callback.onCompleted(false)
+                                }
+                            }
+
+                            override fun onFailure(error: Throwable) {
+
+                                callback.onFailure(error)
+                            }
+                        }
+                    )
+
+                } catch (e: Throwable) {
+
+                    callback.onFailure(e)
+                }
             }
-
-            if (!result) {
-
-                if (canLog) Console.log("$tag Session: $session :: ENDING :: Failed: $name")
-            }
-
-            return result
         }
 
         fun getSession() = parent.session.takeName()

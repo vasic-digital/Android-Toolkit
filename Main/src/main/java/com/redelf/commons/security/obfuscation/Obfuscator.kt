@@ -1,49 +1,101 @@
 package com.redelf.commons.security.obfuscation
 
-import com.redelf.commons.extensions.recordException
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.jcommons.JObfuscator
 
 
 class Obfuscator(saltProvider: ObfuscatorSaltProvider) : SaltedObfuscator(saltProvider) {
 
-    override fun obfuscate(input: String): String {
+    override fun obfuscate(input: String, callback: OnObtain<String>) {
 
-        try {
+        saltProvider.obtain(
 
-            val salt = saltProvider.obtain()?.takeValue() ?: ""
-            val jObfuscator = JObfuscator(salt)
+            object : OnObtain<ObfuscatorSalt?> {
 
-            return jObfuscator.obfuscate(input)
+                override fun onCompleted(data: ObfuscatorSalt?) {
 
-        } catch (e: Throwable) {
+                    try {
 
-            recordException(e)
-        }
+                        val salt =  data?.takeValue() ?: ""
+                        val jObfuscator = JObfuscator(salt)
 
-        return ""
+                        val result = jObfuscator.obfuscate(input)
+
+                        callback.onCompleted(result)
+
+                    } catch (e: Throwable) {
+
+                        callback.onFailure(e)
+                    }
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 
-    override fun deobfuscate(input: String): String {
+    override fun deobfuscate(input: String, callback: OnObtain<String>) {
 
-        try {
+        saltProvider.obtain(
 
-            val salt = saltProvider.obtain()?.takeValue() ?: ""
-            val jObfuscator = JObfuscator(salt)
+            object : OnObtain<ObfuscatorSalt?> {
 
-            return jObfuscator.deobfuscate(input)
+                override fun onCompleted(data: ObfuscatorSalt?) {
 
-        } catch (e: Throwable) {
+                    try {
 
-            recordException(e)
-        }
+                        val salt =  data?.takeValue() ?: ""
+                        val jObfuscator = JObfuscator(salt)
 
-        return ""
+                        val result = jObfuscator.deobfuscate(input)
+
+                        callback.onCompleted(result)
+
+                    } catch (e: Throwable) {
+
+                        callback.onFailure(e)
+                    }
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 
-    override fun name(): String {
+    override fun name(callback: OnObtain<String>) {
 
-        val salt = saltProvider.obtain()?.takeValue() ?: ""
+        saltProvider.obtain(
 
-        return JObfuscator(salt).name()
+            object : OnObtain<ObfuscatorSalt?> {
+
+                override fun onCompleted(data: ObfuscatorSalt?) {
+
+                    try {
+
+                        val salt =  data?.takeValue() ?: ""
+                        val jObfuscator = JObfuscator(salt)
+
+                        val result = jObfuscator.name()
+
+                        callback.onCompleted(result)
+
+                    } catch (e: Throwable) {
+
+                        callback.onFailure(e)
+                    }
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    callback.onFailure(error)
+                }
+            }
+        )
     }
 }
