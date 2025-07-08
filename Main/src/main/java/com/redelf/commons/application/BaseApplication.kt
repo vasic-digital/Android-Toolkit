@@ -991,12 +991,6 @@ abstract class BaseApplication :
         return getForegroundActivityCount()
     }
 
-
-
-
-
-
-
     override fun onActivityPaused(activity: Activity) {
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG PAUSED :: ${activity.javaClass.simpleName}")
@@ -1097,6 +1091,12 @@ abstract class BaseApplication :
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG DESTROYED :: ${activity.javaClass.simpleName}")
     }
+
+    override fun onActivityStarted(p0: Activity) = Unit
+
+    override fun onActivityCreated(p0: Activity, p1: Bundle?) = Unit
+
+    override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) = Unit
 
     private fun beforeManagers() {
 
