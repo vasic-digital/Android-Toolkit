@@ -270,9 +270,17 @@ abstract class BaseApplication :
 
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
 
-    protected open fun onApplicationWentToBackground() = Unit
-
     protected open fun onApplicationWentToForeground() = Unit
+
+    protected open fun onApplicationWentToBackground() {
+
+        isAppInBackground.set(true)
+
+        val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
+        sendBroadcast(intent)
+
+        Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
+    }
 
     protected lateinit var prefs: SharedPreferencesStorage
 
@@ -1005,20 +1013,6 @@ abstract class BaseApplication :
 
     override fun onActivityPrePaused(activity: Activity) {
 
-        val value = foregroundActivityCounter().decrementAndGet()
-
-        if (value < 0) {
-
-            foregroundActivityCounter().set(0)
-        }
-
-        if (foregroundActivityCounter().get() == 0) {
-
-            onAppBackgroundState()
-
-            onApplicationWentToBackground()
-        }
-
         try {
 
             val clazz = activity::class.java
@@ -1048,10 +1042,25 @@ abstract class BaseApplication :
                     "Active: ${TOP_ACTIVITY.size}"
         )
 
-        if (TOP_ACTIVITIES.size <= 1) {
+        val value = foregroundActivityCounter().decrementAndGet()
 
-            onAppBackgroundState()
+        if (value < 0) {
+
+            foregroundActivityCounter().set(0)
         }
+
+        Executor.MAIN.execute(
+
+            action = {
+
+                if (foregroundActivityCounter().get() == 0) {
+
+                    onApplicationWentToBackground()
+                }
+            },
+
+            delayInMillis = 500
+        )
 
         super.onActivityPostPaused(activity)
     }
@@ -1113,8 +1122,6 @@ abstract class BaseApplication :
         if (TOP_ACTIVITIES.isEmpty()) {
 
             Console.debug("$ACTIVITY_LIFECYCLE_TAG No top activity")
-
-            onAppBackgroundState()
 
         } else {
 
@@ -1464,16 +1471,6 @@ abstract class BaseApplication :
         }
 
         return updateAvailable
-    }
-
-    private fun onAppBackgroundState() {
-
-        isAppInBackground.set(true)
-
-        val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
-        sendBroadcast(intent)
-
-        Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
     }
 
     private fun onPreCreate() {
