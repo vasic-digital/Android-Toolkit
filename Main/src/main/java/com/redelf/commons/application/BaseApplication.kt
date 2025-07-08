@@ -270,7 +270,10 @@ abstract class BaseApplication :
 
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
 
-    protected open fun onApplicationWentToForeground() = Unit
+    protected open fun onApplicationWentToForeground() {
+
+        Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Foreground")
+    }
 
     protected open fun onApplicationWentToBackground() {
 
@@ -279,7 +282,7 @@ abstract class BaseApplication :
         val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_BACKGROUND)
         sendBroadcast(intent)
 
-        Console.debug("$ACTIVITY_LIFECYCLE_TAG Background")
+        Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Background")
     }
 
     protected lateinit var prefs: SharedPreferencesStorage
@@ -997,8 +1000,6 @@ abstract class BaseApplication :
 
             val intent = Intent(BROADCAST_ACTION_APPLICATION_STATE_FOREGROUND)
             sendBroadcast(intent)
-
-            Console.debug("$ACTIVITY_LIFECYCLE_TAG Foreground")
         }
 
         foregroundActivityCounter().incrementAndGet()
