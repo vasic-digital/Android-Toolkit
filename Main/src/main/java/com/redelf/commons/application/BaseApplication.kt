@@ -20,7 +20,11 @@ import android.provider.Settings
 import android.telecom.TelecomManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
@@ -79,17 +83,13 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication>
-
-{
+    ContextAvailability<BaseApplication> {
 
     companion object :
 
         Intentional,
         ApplicationInfo,
-        ContextAvailability<BaseApplication>
-
-    {
+        ContextAvailability<BaseApplication> {
 
         val DEBUG = AtomicBoolean()
         val STRICT_MODE_DISABLED = AtomicBoolean()
@@ -249,6 +249,10 @@ abstract class BaseApplication :
     protected open fun populateManagers() = listOf<List<DataManagement<*>>>()
 
     protected open fun populateDefaultManagerResources() = mapOf<Class<*>, Int>()
+
+    protected open fun onApplicationWentToBackground() = Unit
+
+    protected open fun onApplicationWentToForeground() = Unit
 
     protected lateinit var prefs: SharedPreferencesStorage
 
@@ -1282,7 +1286,7 @@ abstract class BaseApplication :
 
     protected open fun getUpdatesCodes() = setOf<Long>()
 
-    override fun isUpdating() : Boolean {
+    override fun isUpdating(): Boolean {
 
         val updating = updating.get()
 
