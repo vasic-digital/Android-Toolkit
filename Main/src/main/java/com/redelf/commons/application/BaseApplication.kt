@@ -41,6 +41,7 @@ import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
 import com.redelf.commons.atomic.AtomicIntWrapper
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
@@ -82,13 +83,17 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication> {
+    ContextAvailability<BaseApplication>
+
+{
 
     companion object :
 
         Intentional,
         ApplicationInfo,
-        ContextAvailability<BaseApplication> {
+        ContextAvailability<BaseApplication>
+
+    {
 
         val DEBUG = AtomicBoolean()
         val STRICT_MODE_DISABLED = AtomicBoolean()
@@ -117,18 +122,6 @@ abstract class BaseApplication :
                 "Foreground activity counter",
                 FOREGROUND_ACTIVITIES_COUNT
             )
-        }
-        private val FOREGROUND_ACTIVITIES_COUNT = AtomicInteger()
-
-        private val activityCounter = AtomicIntWrapper(
-
-            "Foreground activity counter",
-            FOREGROUND_ACTIVITIES_COUNT
-        )
-
-        private fun foregroundActivityCounter(): AtomicIntWrapper {
-
-            return activityCounter
         }
 
         fun restart(context: Context) {
@@ -1052,7 +1045,6 @@ abstract class BaseApplication :
     override fun onActivityPostResumed(activity: Activity) {
 
         if (foregroundActivityCounter().get() == 0) {
-        if (foregroundActivityCounter().get() == 0) {
 
             onApplicationWentToForeground()
 
@@ -1061,14 +1053,6 @@ abstract class BaseApplication :
         }
 
         foregroundActivityCounter().incrementAndGet()
-    }
-
-    override fun onActivityPostResumed(activity: Activity) {
-        foregroundActivityCounter().incrementAndGet()
-
-        Console.log("$ACTIVITY_LIFECYCLE_TAG POST-RESUMED :: ${activity.javaClass.simpleName}")
-
-        super.onActivityPostResumed(activity)
     }
 
     override fun onActivityPrePaused(activity: Activity) {
@@ -1102,13 +1086,6 @@ abstract class BaseApplication :
     }
 
     override fun onActivityPostPaused(activity: Activity) {
-
-        // Ignore
-        Console.log(
-
-            "$ACTIVITY_LIFECYCLE_TAG POST-PAUSED :: ${activity.javaClass.simpleName}, " +
-                    "Active: ${TOP_ACTIVITY.size}"
-        )
 
         val value = foregroundActivityCounter().decrementAndGet()
 
@@ -1152,42 +1129,11 @@ abstract class BaseApplication :
         super.onActivityPostStopped(activity)
     }
 
-    override fun onActivityPreSaveInstanceState(activity: Activity, outState: Bundle) {
-
-        // Ignore
-
-        super.onActivityPreSaveInstanceState(activity, outState)
-    }
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-
-        // Ignore
-    }
-
-    override fun onActivityPostSaveInstanceState(activity: Activity, outState: Bundle) {
-
-        // Ignore
-
-        super.onActivityPostSaveInstanceState(activity, outState)
-    }
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
 
     override fun onActivityPreDestroyed(activity: Activity) {
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
-
-        if (TOP_ACTIVITIES.isEmpty()) {
-
-            Console.debug("$ACTIVITY_LIFECYCLE_TAG No top activity")
-
-        } else {
-
-            if (TOP_ACTIVITY.isNotEmpty()) {
-
-                val clazz = TOP_ACTIVITY.last()
-
-                Console.debug("$ACTIVITY_LIFECYCLE_TAG Top activity: ${clazz.simpleName}")
-            }
-        }
 
         super.onActivityPreDestroyed(activity)
     }
@@ -1195,13 +1141,6 @@ abstract class BaseApplication :
     override fun onActivityDestroyed(activity: Activity) {
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG DESTROYED :: ${activity.javaClass.simpleName}")
-    }
-
-    override fun onActivityPostDestroyed(activity: Activity) {
-
-        // Ignore
-
-        super.onActivityPostDestroyed(activity)
     }
 
     private fun beforeManagers() {
