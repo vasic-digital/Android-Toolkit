@@ -184,6 +184,7 @@ android {
 dependencies {
 
     final String okioVersion = "3.9.0"
+    final String gsonVersion = "2.13.1"
     final String okHttpVersion = "5.1.0"
     final String jacksonVersion = "2.12.5"
     final String lifecycleVersion = "2.9.1"
@@ -242,7 +243,7 @@ dependencies {
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.10.1"
 
-    api "commons-codec:commons-codec:1.17.1"
+    api "commons-codec:commons-codec:1.18.0"
 
     api "com.github.bumptech.glide:glide:4.16.0"
     api "com.github.bumptech.glide:annotations:4.16.0"
@@ -284,9 +285,9 @@ dependencies {
     implementation "com.jakewharton.timber:timber:5.0.1"
     testImplementation "com.jakewharton.timber:timber:5.0.1"
 
-    api "com.google.code.gson:gson:2.11.0"
-    testApi "com.google.code.gson:gson:2.11.0"
-    androidTestApi "com.google.code.gson:gson:2.11.0"
+    api "com.google.code.gson:gson:$gsonVersion"
+    testApi "com.google.code.gson:gson:$gsonVersion"
+    androidTestApi "com.google.code.gson:gson:$gsonVersion"
 }
 
 task downloadProxies(type: Exec) {
