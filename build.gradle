@@ -2,7 +2,7 @@ buildscript {
 
     def default_toolkit_context = ""
     def default_kotlin_version = "2.2.0"
-    def default_toolkit_version = "2.0.2"
+    def default_toolkit_version = "2.0.3"
     def default_toolkit_obfuscator_jar_home = 'JCommons/jar'
 
     ext.toolkit_context = project.hasProperty('toolkit_context') ? "$toolkit_context" : default_toolkit_context
