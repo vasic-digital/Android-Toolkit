@@ -33,7 +33,7 @@ class ListWrapper<T>(
 
     fun isNotEmpty() = list.isNotEmpty()
 
-    fun add(from: String, value: T, callback: (() -> Unit)?) {
+    fun add(from: String, value: T, callback: (() -> Unit)? = null) {
 
         if (DEBUG.get()) Console.log("$tag add(value=$value) from '$from'")
 
@@ -65,7 +65,7 @@ class ListWrapper<T>(
         return list[index]
     }
 
-    fun remove(from: String, index: Int, callback: (() -> Unit)?) {
+    fun remove(from: String, index: Int, callback: (() -> Unit)? = null) {
 
         Console.warning("$tag remove(index=$index) from '$from'")
 
@@ -92,7 +92,7 @@ class ListWrapper<T>(
         }
     }
 
-    fun remove(from: String, what: T, callback: (() -> Unit)?) {
+    fun remove(from: String, what: T, callback: (() -> Unit)? = null) {
 
         Console.warning("$tag remove(index=$what) from '$from'")
 
@@ -119,7 +119,7 @@ class ListWrapper<T>(
         }
     }
 
-    fun clear(from: String, callback: (() -> Unit)?) {
+    fun clear(from: String, callback: (() -> Unit)? = null) {
 
         Console.warning("$tag doClear() from '$from'")
 
@@ -146,7 +146,7 @@ class ListWrapper<T>(
         }
     }
 
-    fun addAll(what: Collection<T>, from: String, callback: (() -> Unit)?) {
+    fun addAll(what: Collection<T>, from: String, callback: (() -> Unit)? = null) {
 
         if (DEBUG.get()) Console.log("$tag doClear() from '$from'")
 
@@ -184,4 +184,6 @@ class ListWrapper<T>(
     }
 
     fun getList() = list.toList()
+
+    fun contains(what: T) = list.contains(what)
 }
