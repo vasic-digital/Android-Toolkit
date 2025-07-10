@@ -6,7 +6,7 @@ import com.redelf.commons.execution.Executor
 import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ListWrapper<T> (
+class ListWrapper<T>(
 
     from: Any,
     environment: String,
@@ -65,7 +65,7 @@ class ListWrapper<T> (
         return list[index]
     }
 
-    fun remove(from: String, index: Int) {
+    fun remove(from: String, index: Int, callback: (() -> Unit)?) {
 
         Console.warning("$tag remove(index=$index) from '$from'")
 
@@ -74,15 +74,52 @@ class ListWrapper<T> (
             Executor.UI.execute {
 
                 list.removeAt(index)
+
+                callback?.let {
+
+                    it()
+                }
             }
 
         } else {
 
             list.removeAt(index)
+
+            callback?.let {
+
+                it()
+            }
         }
     }
 
-    fun clear(from: String) {
+    fun remove(from: String, what: T, callback: (() -> Unit)?) {
+
+        Console.warning("$tag remove(index=$what) from '$from'")
+
+        if (onUi) {
+
+            Executor.UI.execute {
+
+                list.remove(what)
+
+                callback?.let {
+
+                    it()
+                }
+            }
+
+        } else {
+
+            list.remove(what)
+
+            callback?.let {
+
+                it()
+            }
+        }
+    }
+
+    fun clear(from: String, callback: (() -> Unit)?) {
 
         Console.warning("$tag doClear() from '$from'")
 
@@ -91,11 +128,48 @@ class ListWrapper<T> (
             Executor.UI.execute {
 
                 list.clear()
+
+                callback?.let {
+
+                    it()
+                }
             }
 
         } else {
 
             list.clear()
+
+            callback?.let {
+
+                it()
+            }
+        }
+    }
+
+    fun addAll(what: Collection<T>, from: String, callback: (() -> Unit)?) {
+
+        if (DEBUG.get()) Console.log("$tag doClear() from '$from'")
+
+        if (onUi) {
+
+            Executor.UI.execute {
+
+                list.addAll(what)
+
+                callback?.let {
+
+                    it()
+                }
+            }
+
+        } else {
+
+            list.addAll(what)
+
+            callback?.let {
+
+                it()
+            }
         }
     }
 
