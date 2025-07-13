@@ -224,10 +224,20 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+            wrapper.replaceAllAndFilter(challengeData, "test")
+
+            challengeData.forEachIndexed { index, challenge ->
+
+                Assert.assertEquals(challenge.takeData(), wrapper.get(index)?.takeData())
+            }
+
+            Assert.assertEquals(challengeData.size, wrapper.getSize())
         }
 
-
+        // TODO: With and without remove deleted
+        // TODO: With and without filter - filter to reverse the collection
     }
+
 
     @Test
     fun testAddAllAndFilter() {
