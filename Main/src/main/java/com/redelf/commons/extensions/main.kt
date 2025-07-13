@@ -32,6 +32,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.execution.Executor.UI
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
@@ -1272,6 +1273,30 @@ fun <X> sync(
     }
 
     return result
+}
+
+fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
+
+    fun doExecute(what: kotlinx.coroutines.Runnable, callback: OnObtain<Boolean?>) {
+
+        val submitted = UI.execute {
+
+            what.run()
+
+            callback.onCompleted(true)
+        }
+
+        if (!submitted) {
+
+            callback.onCompleted(false)
+        }
+    }
+
+    return sync(context) { callback ->
+
+        doExecute(what, callback)
+
+    } == true
 }
 
 @Throws(IllegalArgumentException::class)

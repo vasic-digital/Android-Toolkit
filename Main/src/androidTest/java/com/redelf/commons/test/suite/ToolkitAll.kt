@@ -6,6 +6,7 @@ import com.redelf.commons.test.EncryptedPersistenceTest
 import com.redelf.commons.test.ExecutorTest
 import com.redelf.commons.test.GsonParserTest
 import com.redelf.commons.test.HttpEndpointsTest
+import com.redelf.commons.test.ListWrapperTest
 import com.redelf.commons.test.ObfuscatorTest
 import com.redelf.commons.test.compression.LZ4StringCompressionTest
 import com.redelf.commons.test.serialization.ByteArraySerializerTest
@@ -23,7 +24,8 @@ import org.junit.runners.Suite.SuiteClasses
     ByteArraySerializerTest::class,
     GsonParserTest::class,
     DataManagementTest::class,
-    ExecutorTest::class
+    ExecutorTest::class,
+    ListWrapperTest::class
 
 )
 @RunWith(Suite::class)

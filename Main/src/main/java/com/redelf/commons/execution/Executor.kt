@@ -4,7 +4,9 @@ import android.os.Handler
 import android.os.Looper
 import com.redelf.commons.Debuggable
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.sync
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.OnObtain
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -59,7 +61,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         */
         @OptIn(DelicateCoroutinesApi::class)
         @Throws(RejectedExecutionException::class)
-        override fun execute(what: Runnable) {
+        override fun execute(what: Runnable): Boolean {
 
             if (isDebug()) Console.log("$tag START :: threadPooled = ${isThreadPooledExecution()}")
 
@@ -105,6 +107,8 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                 if (isDebug()) Console.log("$tag END")
             }
+
+            return true
         }
 
         @OptIn(DelicateCoroutinesApi::class)
@@ -231,7 +235,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         override fun instantiateExecutor() = TaskExecutor.instantiateSingle()
 
         @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-        override fun execute(what: Runnable) {
+        override fun execute(what: Runnable): Boolean {
 
             if (threadPooled.get()) {
 
@@ -244,6 +248,8 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
                     what.run()
                 }
             }
+
+            return true
         }
 
         @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
@@ -347,13 +353,9 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
             }
         }
 
-        override fun execute(what: Runnable) {
+        override fun execute(what: Runnable): Boolean {
 
-            if (!executor.post(what)) {
-
-                val e = IllegalStateException("Could not accept action")
-                recordException(e)
-            }
+            return executor.post(what)
         }
 
         override fun isThreadPooledExecution() = false

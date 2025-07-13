@@ -1,20 +1,17 @@
 package com.redelf.commons.data.wrappers
 
-import androidx.credentials.provider.Action
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
-import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.syncUI
 import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.logging.Console
-import com.redelf.commons.modification.OnChange
 import com.redelf.commons.modification.OnChangeCompleted
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.abs
 
 class ListWrapper<T>(
 
@@ -38,6 +35,8 @@ class ListWrapper<T>(
 
         val DEBUG = AtomicBoolean()
     }
+
+    private val wrapperContext = "list.wrapper.$from.environment"
 
     private val tag = "${from::class.simpleName} :: ${from.hashCode()} :: $environment :: " +
             "Data list hash = ${getHashCode()} ::"
@@ -72,7 +71,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 doAdd()
             }
@@ -114,7 +113,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 doRemove()
             }
@@ -151,7 +150,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 doRemove()
             }
@@ -187,7 +186,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 doUpdate()
             }
@@ -229,7 +228,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 doRemoveAll()
             }
@@ -248,7 +247,7 @@ class ListWrapper<T>(
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null,
 
-    ) {
+        ) {
 
         Console.warning("$tag doClear(), from='$from'")
 
@@ -271,7 +270,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 doClear()
             }
@@ -491,7 +490,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 doAdd()
             }
@@ -528,7 +527,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 addAll()
             }
@@ -601,7 +600,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            Executor.UI.execute {
+            syncUI(wrapperContext) {
 
                 doPurge()
             }
