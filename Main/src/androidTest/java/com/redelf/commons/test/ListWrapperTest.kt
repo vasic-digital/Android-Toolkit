@@ -122,12 +122,18 @@ class ListWrapperTest : BaseTest() {
             val challengeData = createChallengeCollection()
             val wrapper = createWrapper(collection)
 
-            Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
+            val position = 1
+            val original = collection[position]
+            val challenge = challengeData[position]
+
             Assert.assertTrue(collection.size == challengeData.size)
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+            wrapper.update("test", challenge, 1)
+
+            Assert.assertEquals( challenge.takeData(), wrapper.get(position)?.takeData())
+            Assert.assertFalse(wrapper.contains(original))
         }
     }
 

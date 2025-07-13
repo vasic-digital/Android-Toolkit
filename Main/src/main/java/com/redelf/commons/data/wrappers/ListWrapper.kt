@@ -161,7 +161,15 @@ class ListWrapper<T>(
         }
     }
 
-    fun update(from: String, what: T, where: Int, callback: (() -> Unit)? = null) {
+    fun update(
+
+        from: String,
+        what: T,
+        where: Int,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
 
         Console.log("$tag update(what='$what, where=$where), from='$from'")
 
@@ -169,9 +177,16 @@ class ListWrapper<T>(
 
             try {
 
-                list.add(where, what)
+                if (list.removeAt(where) != null) {
 
-                notifyChanged(onChange, "update.$where")
+                    list.add(where, what)
+
+                    if (list.elementAt(where) == what) {
+
+                        notifyChanged(onChange, "update.$where")
+                    }
+                }
+
 
             } catch (e: Throwable) {
 
