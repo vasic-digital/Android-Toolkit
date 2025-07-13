@@ -1171,6 +1171,7 @@ fun <X> sync(
     context: String,
     timeout: Long = 60,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
+    mainThreadForbidden: Boolean = true,
     what: (callback: OnObtain<X?>) -> Unit
 
 ): X? {
@@ -1184,7 +1185,7 @@ fun <X> sync(
     var result: X? = null
     val latch = CountDownLatch(1)
 
-    if (isOnMainThread()) {
+    if (mainThreadForbidden && isOnMainThread()) {
 
         val e = IllegalStateException("$context executed sync on main thread")
         Console.error("$tag ${e.message}")
@@ -1301,7 +1302,13 @@ fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
         }
     }
 
-    val result = sync(context) { callback ->
+    val result = sync(
+
+        context,
+
+        mainThreadForbidden = false
+
+    ) { callback ->
 
         doExecute(what, callback)
 

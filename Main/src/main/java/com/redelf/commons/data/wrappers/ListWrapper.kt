@@ -220,16 +220,19 @@ class ListWrapper<T>(
 
     ) {
 
-        addAllAndFilter(
+        val from = "replaceAllAndFilter(from='$from')"
 
-            what,
-            "replaceAllAndFilter(from='$from')",
-            true,
-            removeDeleted,
-            filters,
-            onChange,
-            callback
-        )
+        if (onUi) {
+
+            syncUI(wrapperContext) {
+
+                doAddAllAndFilter(what, from, true, removeDeleted, filters, onChange, callback)
+            }
+
+        } else {
+
+            doAddAllAndFilter(what, from, true, removeDeleted, filters, onChange, callback)
+        }
     }
 
     fun addAllAndFilter(
