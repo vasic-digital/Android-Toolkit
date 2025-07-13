@@ -12,7 +12,7 @@ data class FilterResult<T> (
 
 ) {
 
-    private val modified: AtomicBoolean = AtomicBoolean(wasModified)
+    val modified: AtomicBoolean = AtomicBoolean(wasModified)
 
     fun isModified() = modified.get() || changedCount.get() > 0
 }

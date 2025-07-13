@@ -534,7 +534,7 @@ class ListWrapper<T>(
 
                 } else {
 
-                    val filtered = FilterResult(filteredItems = list)
+                    val filtered = FilterResult(filteredItems = list, wasModified = false)
 
                     filters.forEach { filter ->
 
