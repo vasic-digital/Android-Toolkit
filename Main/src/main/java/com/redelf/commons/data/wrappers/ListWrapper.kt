@@ -140,7 +140,7 @@ class ListWrapper<T>(
 
             if (list.remove(what)) {
 
-                onChange?.onChange("remove")
+                notifyChanged(onChange, "remove")
             }
 
             callback?.let {
@@ -502,34 +502,50 @@ class ListWrapper<T>(
         }
     }
 
-    fun addAll(what: Collection<T>, from: String, callback: (() -> Unit)? = null) {
+    fun addAll(
 
-        if (DEBUG.get()) Console.log("$tag doClear() from '$from'")
+        what: Collection<T>,
+        from: String,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
 
-        if (onUi) {
+    ) {
 
-            Executor.UI.execute {
+        if (DEBUG.get()) Console.log("$tag addAll(), from='$from'")
 
-                list.addAll(what)
+        fun addAll() {
 
-                callback?.let {
+            if (list.addAll(what)) {
 
-                    it()
-                }
+                notifyChanged(onChange, "addAll.${what.size}")
             }
-
-        } else {
-
-            list.addAll(what)
 
             callback?.let {
 
                 it()
             }
         }
+
+        if (onUi) {
+
+            Executor.UI.execute {
+
+                addAll()
+            }
+
+        } else {
+
+            addAll()
+        }
     }
 
-    fun purge(from: String, callback: ((purgedCount: Int) -> Unit)? = null) {
+    fun purge(
+
+        from: String,
+        onChange: OnChangeCompleted? = null,
+        callback: ((purgedCount: Int) -> Unit)? = null
+
+    ) {
 
         val tag = "$tag purge(from='$from')"
 
@@ -555,7 +571,23 @@ class ListWrapper<T>(
 
                 Console.debug("$tag Removing ${toRemove.size} items")
 
-                removeAll("purge(from='$from')", toRemove) {
+                removeAll(
+
+                    "purge(from='$from')",
+                    toRemove,
+
+                    onChange = object : OnChangeCompleted {
+
+                        override fun onChange(action: String, changed: Boolean) {
+
+                            if (changed) {
+
+                                notifyChanged(onChange, "purge")
+                            }
+                        }
+                    }
+
+                ) {
 
                     if (DEBUG.get()) Console.log("$tag END")
                 }
@@ -596,7 +628,7 @@ class ListWrapper<T>(
 
     private fun notifyChanged(onChange: OnChangeCompleted?, action: String) {
 
-        onChange?.onChange(action)
-        this@ListWrapper.onChange?.onChange(action)
+        onChange?.onChange(action, true)
+        this@ListWrapper.onChange?.onChange(action, true)
     }
 }
