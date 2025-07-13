@@ -56,29 +56,16 @@ class ListWrapper<T>(
 
         if (DEBUG.get()) Console.log("$tag add(value=$value), from='$from'")
 
-        fun doAdd() {
-
-            if (list.add(value)) {
-
-                notifyChanged(onChange, "add")
-            }
-
-            callback?.let {
-
-                it()
-            }
-        }
-
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                doAdd()
+                doAdd(value, onChange, callback)
             }
 
         } else {
 
-            doAdd()
+            doAdd(value, onChange, callback)
         }
     }
 
@@ -183,42 +170,16 @@ class ListWrapper<T>(
 
         Console.log("$tag update(what='$what, where=$where), from='$from'")
 
-        fun doUpdate() {
-
-            try {
-
-                if (list.removeAt(where) != null) {
-
-                    list.add(where, what)
-
-                    if (list.elementAt(where) == what) {
-
-                        notifyChanged(onChange, "update.$where")
-                    }
-                }
-
-
-            } catch (e: Throwable) {
-
-                recordException(e)
-            }
-
-            callback?.let {
-
-                it()
-            }
-        }
-
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                doUpdate()
+                doUpdate(what, where, onChange, callback)
             }
 
         } else {
 
-            doUpdate()
+            doUpdate(what, where, onChange, callback)
         }
     }
 
@@ -238,31 +199,18 @@ class ListWrapper<T>(
 
         Console.warning("$tag removeAll(index=$what), from='$from'")
 
-        fun doRemoveAll() {
-
-            if (list.removeAll(what)) {
-
-                notifyChanged(onChange, "removeAll.${what.size}")
-            }
-
-            callback?.let {
-
-                it()
-            }
-        }
-
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                doRemoveAll()
+                doRemoveAll(what, onChange, callback)
             }
 
         } else {
 
             list.removeAll(what)
 
-            doRemoveAll()
+            doRemoveAll(what, onChange, callback)
         }
     }
 
@@ -270,34 +218,17 @@ class ListWrapper<T>(
 
         from: String,
         onChange: OnChangeCompleted? = null,
-        callback: (() -> Unit)? = null,
+        callback: (() -> Unit)? = null
 
-        ) {
+    ) {
 
         Console.warning("$tag doClear(), from='$from'")
-
-        fun doClear() {
-
-            list.clear()
-
-            if (list.isEmpty()) {
-
-                notifyChanged(onChange, "clear")
-            }
-
-            callback?.let {
-
-                it()
-            }
-
-
-        }
 
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                doClear()
+                doClear(onChange, callback)
             }
 
         } else {
@@ -341,188 +272,16 @@ class ListWrapper<T>(
 
     ) {
 
-        fun doAdd() {
-
-            val from = "addAllAndFilter(from='$from')"
-
-            fun next() {
-
-                var modified = false
-                var changedCount = 0
-                val linked = LinkedList(what)
-
-                val toRemove = mutableListOf<T>()
-                val toUpdate = mutableListOf<T>()
-
-                list.forEach { wItem ->
-
-                    var where = -1
-                    var found: T? = null
-
-                    linked.forEach { lItem ->
-
-                        if (found == null) {
-
-                            if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
-
-                                if (lItem.getId() == wItem.getId()) {
-
-                                    found = lItem
-
-                                    if (lItem != wItem) {
-
-                                        where = indexOf(wItem)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (found != null) {
-
-                        toUpdate.add(found)
-
-                        if (where > -1) {
-
-                            update(from, found, where)
-                        }
-
-                    } else {
-
-                        toRemove.add(wItem)
-                    }
-                }
-
-                if (toRemove.isNotEmpty()) {
-
-                    modified = true
-
-                    changedCount += toRemove.size
-
-                    removeAll(from, toRemove)
-                }
-
-                if (toUpdate.isNotEmpty()) {
-
-                    changedCount += toUpdate.size
-                }
-
-                linked.forEach { linked ->
-
-                    if (!toUpdate.contains(linked) && !toRemove.contains(linked)) {
-
-                        modified = true
-
-                        changedCount++
-
-                        add(from, linked)
-                    }
-                }
-
-                fun filter() {
-
-                    fun notify() {
-
-                        if (modified) {
-
-                            notifyChanged(onChange, "addAllAndFilter.${what.size}")
-                        }
-
-                        callback?.let {
-
-                            it(modified, changedCount)
-                        }
-                    }
-
-                    if (filters.isEmpty()) {
-
-                        notify()
-
-                    } else {
-
-                        val filtered = FilterResult(filteredItems = list)
-
-                        filters.forEach { filter ->
-
-                            val res = filter.filter(filtered.filteredItems)
-
-                            filtered.filteredItems.clear()
-                            filtered.filteredItems.addAll(res.filteredItems)
-
-                            filtered.changedCount.set(filtered.changedCount.get() + res.changedCount.get())
-
-                            if (!filtered.modified.get()) {
-
-                                filtered.modified.set(res.isModified())
-                            }
-                        }
-
-                        if (!modified) {
-
-                            modified = filtered.modified.get()
-                        }
-
-                        changedCount += filtered.changedCount.get()
-
-                        if (filtered != list) {
-
-                            clear(from) {
-
-                                addAll(filtered.filteredItems, from) {
-
-                                    notify()
-                                }
-                            }
-
-                        } else {
-
-                            notify()
-                        }
-                    }
-                }
-
-                if (removeDeleted) {
-
-                    purge(from) { purgedCount ->
-
-                        if (purgedCount > 0) {
-
-                            modified = true
-                            changedCount += purgedCount
-                        }
-
-                        filter()
-                    }
-
-                } else {
-
-                    filter()
-                }
-            }
-
-            if (replace && what.isEmpty()) {
-
-                clear(from) {
-
-                    next()
-                }
-
-            } else {
-
-                next()
-            }
-        }
-
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                doAdd()
+                doAddAllAndFilter(what, from, replace, removeDeleted, filters, onChange, callback)
             }
 
         } else {
 
-            doAdd()
+            doAddAllAndFilter(what, from, replace, removeDeleted, filters, onChange, callback)
         }
     }
 
@@ -537,29 +296,16 @@ class ListWrapper<T>(
 
         if (DEBUG.get()) Console.log("$tag addAll(), from='$from'")
 
-        fun addAll() {
-
-            if (list.addAll(what)) {
-
-                notifyChanged(onChange, "addAll.${what.size}")
-            }
-
-            callback?.let {
-
-                it()
-            }
-        }
-
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                addAll()
+                doAddAll(what, onChange, callback)
             }
 
         } else {
 
-            addAll()
+            doAddAll(what, onChange, callback)
         }
     }
 
@@ -575,64 +321,16 @@ class ListWrapper<T>(
 
         Console.log("$tag START")
 
-        fun doPurge() {
-
-            val toRemove = mutableListOf<T>()
-
-            list.forEach { message ->
-
-                if (message is DeletionCheck && message.isDeleted()) {
-
-                    toRemove.add(message)
-                }
-            }
-
-            if (toRemove.isEmpty()) {
-
-                if (DEBUG.get()) Console.log("$tag END :: Nothing to remove")
-
-            } else {
-
-                Console.debug("$tag Removing ${toRemove.size} items")
-
-                removeAll(
-
-                    "purge(from='$from')",
-                    toRemove,
-
-                    onChange = object : OnChangeCompleted {
-
-                        override fun onChange(action: String, changed: Boolean) {
-
-                            if (changed) {
-
-                                notifyChanged(onChange, "purge")
-                            }
-                        }
-                    }
-
-                ) {
-
-                    if (DEBUG.get()) Console.log("$tag END")
-                }
-            }
-
-            callback?.let {
-
-                it(toRemove.size)
-            }
-        }
-
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                doPurge()
+                doPurge(onChange, callback)
             }
 
         } else {
 
-            doPurge()
+            doPurge(onChange, callback)
         }
     }
 
@@ -654,5 +352,349 @@ class ListWrapper<T>(
 
         onChange?.onChange(action, true)
         this@ListWrapper.onChange?.onChange(action, true)
+    }
+
+    private fun doAdd(
+
+        value: T,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (list.add(value)) {
+
+            notifyChanged(onChange, "add")
+        }
+
+        callback?.let {
+
+            it()
+        }
+    }
+
+    private fun doAddAll(
+
+        what: Collection<T>,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (list.addAll(what)) {
+
+            notifyChanged(onChange, "addAll.${what.size}")
+        }
+
+        callback?.let {
+
+            it()
+        }
+    }
+
+    private fun doUpdate(
+
+        what: T,
+        where: Int,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        try {
+
+            if (list.removeAt(where) != null) {
+
+                list.add(where, what)
+
+                if (list.elementAt(where) == what) {
+
+                    notifyChanged(onChange, "update.$where")
+                }
+            }
+
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        callback?.let {
+
+            it()
+        }
+    }
+
+    private fun doClear(
+
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        list.clear()
+
+        if (list.isEmpty()) {
+
+            notifyChanged(onChange, "clear")
+        }
+
+        callback?.let {
+
+            it()
+        }
+    }
+
+    private fun doAddAllAndFilter(
+
+        what: Collection<T>,
+        from: String,
+        replace: Boolean = false,
+        removeDeleted: Boolean = true,
+        filters: List<Filter<T>> = emptyList(),
+        onChange: OnChangeCompleted? = null,
+        callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
+
+    ) {
+
+        val from = "addAllAndFilter(from='$from')"
+
+        fun next() {
+
+            var modified = false
+            var changedCount = 0
+            val linked = LinkedList(what)
+
+            val toRemove = mutableListOf<T>()
+            val toUpdate = mutableListOf<T>()
+
+            list.forEach { wItem ->
+
+                var where = -1
+                var found: T? = null
+
+                linked.forEach { lItem ->
+
+                    if (found == null) {
+
+                        if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
+
+                            if (lItem.getId() == wItem.getId()) {
+
+                                found = lItem
+
+                                if (lItem != wItem) {
+
+                                    where = indexOf(wItem)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (found != null) {
+
+                    toUpdate.add(found)
+
+                    if (where > -1) {
+
+                        doUpdate( found, where)
+                    }
+
+                } else {
+
+                    toRemove.add(wItem)
+                }
+            }
+
+            if (toRemove.isNotEmpty()) {
+
+                modified = true
+
+                changedCount += toRemove.size
+
+                removeAll(from, toRemove)
+            }
+
+            if (toUpdate.isNotEmpty()) {
+
+                changedCount += toUpdate.size
+            }
+
+            linked.forEach { linked ->
+
+                if (!toUpdate.contains(linked) && !toRemove.contains(linked)) {
+
+                    modified = true
+
+                    changedCount++
+
+                    add(from, linked)
+                }
+            }
+
+            fun filter() {
+
+                fun notify() {
+
+                    if (modified) {
+
+                        notifyChanged(onChange, "addAllAndFilter.${what.size}")
+                    }
+
+                    callback?.let {
+
+                        it(modified, changedCount)
+                    }
+                }
+
+                if (filters.isEmpty()) {
+
+                    notify()
+
+                } else {
+
+                    val filtered = FilterResult(filteredItems = list)
+
+                    filters.forEach { filter ->
+
+                        val res = filter.filter(filtered.filteredItems)
+
+                        filtered.filteredItems.clear()
+                        filtered.filteredItems.addAll(res.filteredItems)
+
+                        filtered.changedCount.set(filtered.changedCount.get() + res.changedCount.get())
+
+                        if (!filtered.modified.get()) {
+
+                            filtered.modified.set(res.isModified())
+                        }
+                    }
+
+                    if (!modified) {
+
+                        modified = filtered.modified.get()
+                    }
+
+                    changedCount += filtered.changedCount.get()
+
+                    if (filtered != list) {
+
+                        clear(from) {
+
+                            addAll(filtered.filteredItems, from) {
+
+                                notify()
+                            }
+                        }
+
+                    } else {
+
+                        notify()
+                    }
+                }
+            }
+
+            if (removeDeleted) {
+
+                purge(from) { purgedCount ->
+
+                    if (purgedCount > 0) {
+
+                        modified = true
+                        changedCount += purgedCount
+                    }
+
+                    filter()
+                }
+
+            } else {
+
+                filter()
+            }
+        }
+
+        if (replace) {
+
+            doClear {
+
+                next()
+            }
+
+        } else {
+
+            next()
+        }
+    }
+
+    private fun doPurge(
+
+        onChange: OnChangeCompleted? = null,
+        callback: ((purgedCount: Int) -> Unit)? = null
+
+    ) {
+
+        val toRemove = mutableListOf<T>()
+
+        list.forEach { message ->
+
+            if (message is DeletionCheck && message.isDeleted()) {
+
+                toRemove.add(message)
+            }
+        }
+
+        if (toRemove.isEmpty()) {
+
+            if (DEBUG.get()) Console.log("$tag END :: Nothing to remove")
+
+        } else {
+
+            Console.debug("$tag Removing ${toRemove.size} items")
+
+            doRemoveAll(
+
+                toRemove,
+
+                onChange = object : OnChangeCompleted {
+
+                    override fun onChange(action: String, changed: Boolean) {
+
+                        if (changed) {
+
+                            notifyChanged(onChange, "purge")
+                        }
+                    }
+                }
+
+            ) {
+
+                if (DEBUG.get()) Console.log("$tag END")
+            }
+        }
+
+        callback?.let {
+
+            it(toRemove.size)
+        }
+    }
+
+    private fun doRemoveAll(
+
+        what: Collection<T>,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (list.removeAll(what)) {
+
+            notifyChanged(onChange, "removeAll.${what.size}")
+        }
+
+        callback?.let {
+
+            it()
+        }
     }
 }

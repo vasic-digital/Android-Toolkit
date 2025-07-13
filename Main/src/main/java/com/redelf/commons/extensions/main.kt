@@ -1279,24 +1279,35 @@ fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
 
     fun doExecute(what: kotlinx.coroutines.Runnable, callback: OnObtain<Boolean?>) {
 
-        val submitted = UI.execute {
+        if (isOnMainThread()) {
 
             what.run()
 
             callback.onCompleted(true)
-        }
 
-        if (!submitted) {
+        } else {
 
-            callback.onCompleted(false)
+            val submitted = UI.execute {
+
+                what.run()
+
+                callback.onCompleted(true)
+            }
+
+            if (!submitted) {
+
+                callback.onCompleted(false)
+            }
         }
     }
 
-    return sync(context) { callback ->
+    val result = sync(context) { callback ->
 
         doExecute(what, callback)
 
     } == true
+
+    return result
 }
 
 @Throws(IllegalArgumentException::class)
