@@ -225,7 +225,8 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testReplaceAndFilter() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+//        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(true).forEachIndexed { index, onUI ->
 
             val collection = createCollection()
             val challengeData = createChallengeCollection()

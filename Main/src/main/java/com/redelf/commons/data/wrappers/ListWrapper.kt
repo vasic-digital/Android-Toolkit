@@ -473,7 +473,7 @@ class ListWrapper<T>(
 
                     if (where > -1) {
 
-                        doUpdate( found, where)
+                        doUpdate(found, where)
                     }
 
                 } else {
@@ -488,7 +488,7 @@ class ListWrapper<T>(
 
                 changedCount += toRemove.size
 
-                removeAll(from, toRemove)
+                doRemoveAll( toRemove)
             }
 
             if (toUpdate.isNotEmpty()) {
@@ -504,7 +504,7 @@ class ListWrapper<T>(
 
                     changedCount++
 
-                    add(from, linked)
+                    doAdd(linked)
                 }
             }
 
@@ -555,9 +555,9 @@ class ListWrapper<T>(
 
                     if (filtered != list) {
 
-                        clear(from) {
+                        doClear {
 
-                            addAll(filtered.filteredItems, from) {
+                            doAddAll(filtered.filteredItems) {
 
                                 notify()
                             }
@@ -572,7 +572,7 @@ class ListWrapper<T>(
 
             if (removeDeleted) {
 
-                purge(from) { purgedCount ->
+                doPurge { purgedCount ->
 
                     if (purgedCount > 0) {
 
