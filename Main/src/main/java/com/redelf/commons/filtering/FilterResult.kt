@@ -7,10 +7,12 @@ import java.util.concurrent.atomic.AtomicInteger
 data class FilterResult<T> (
 
     val filteredItems: MutableList<T>,
-    val modified: AtomicBoolean = AtomicBoolean(),
+    val wasModified: Boolean,
     val changedCount: AtomicInteger = AtomicInteger()
 
 ) {
+
+    private val modified: AtomicBoolean = AtomicBoolean(wasModified)
 
     fun isModified() = modified.get() || changedCount.get() > 0
 }
