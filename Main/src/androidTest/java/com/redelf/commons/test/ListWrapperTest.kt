@@ -4,6 +4,7 @@ import com.redelf.commons.data.wrappers.Wrapper
 import com.redelf.commons.data.wrappers.ListWrapper
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Console
+import com.redelf.commons.test.test_data.Purgable
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -185,7 +186,7 @@ class ListWrapperTest : BaseTest() {
 
             val collection = createCollection()
 
-            val duplicates = mutableListOf<Wrapper<Int>>()
+            val duplicates = mutableListOf<Purgable<Int>>()
             duplicates.addAll(collection)
 
             val wrapper = createWrapper(collection)
@@ -257,29 +258,33 @@ class ListWrapperTest : BaseTest() {
         listOf(true, false).forEachIndexed { index, onUI ->
 
             val collection = createCollection()
-            val originalValues = createCollection()
             val challengeData = createChallengeCollection()
+
+            val first = collection.first()
+            val last = collection.last()
+
+            challengeData.add(first)
+            challengeData.add(last)
+
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
             Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(collection.size == challengeData.size)
+            Assert.assertTrue(challengeData.size == collection.size + 2)
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.addAllAndFilter(challengeData, "test")
 
-            Assert.assertEquals(challengeData.size * 2, wrapper.getSize())
+            Assert.assertEquals(challengeData.size, wrapper.getSize())
 
             challengeData.forEach { challenge ->
 
                 Assert.assertTrue(wrapper.contains(challenge))
             }
 
-            originalValues.forEach { original ->
-
-                Assert.assertTrue(wrapper.contains(original))
-            }
+            Assert.assertTrue(wrapper.contains(first))
+            Assert.assertTrue(wrapper.contains(last))
         }
 
         // TODO: With and without remove deleted
@@ -332,6 +337,7 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+
         }
     }
 
@@ -356,11 +362,11 @@ class ListWrapperTest : BaseTest() {
     }
 
     private fun createCollection() =
-        mutableListOf(Wrapper(1), Wrapper(3), Wrapper(5), Wrapper(7), Wrapper(9))
+        mutableListOf(Purgable(1), Purgable(3), Purgable(5), Purgable(7), Purgable(9))
 
     private fun createChallengeCollection() =
-        mutableListOf(Wrapper(2), Wrapper(4), Wrapper(6), Wrapper(8), Wrapper(10))
+        mutableListOf(Purgable(2), Purgable(4), Purgable(6), Purgable(8), Purgable(10))
 
-    private fun createWrapper(collection: MutableList<Wrapper<Int>>, onUI: Boolean = true) =
+    private fun createWrapper(collection: MutableList<Purgable<Int>>, onUI: Boolean = true) =
         ListWrapper("test", "test.ui=$onUI", onUI, collection)
 }

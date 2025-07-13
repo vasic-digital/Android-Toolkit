@@ -432,7 +432,7 @@ class ListWrapper<T>(
 
     ) {
 
-        val from = "addAllAndFilter(from='$from')"
+        if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
 
         fun next() {
 
@@ -463,6 +463,11 @@ class ListWrapper<T>(
                                     where = indexOf(wItem)
                                 }
                             }
+
+                        } else {
+
+                            val e = IllegalArgumentException("Non-identifiable items found")
+                            Console.warning(e)
                         }
                     }
                 }
