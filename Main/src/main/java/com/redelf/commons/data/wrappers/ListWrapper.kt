@@ -1,12 +1,17 @@
 package com.redelf.commons.data.wrappers
 
+import androidx.credentials.provider.Action
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.filtering.Filter
+import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.logging.Console
+import com.redelf.commons.modification.OnChange
+import com.redelf.commons.modification.OnChangeCompleted
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
@@ -22,7 +27,10 @@ class ListWrapper<T>(
 
     @JsonProperty("list")
     @SerializedName("list")
-    private var list: MutableList<T>
+    private var list: MutableList<T>,
+
+    @Transient
+    private var onChange: OnChangeCompleted? = null
 
 ) {
 
@@ -38,30 +46,40 @@ class ListWrapper<T>(
 
     fun isNotEmpty() = list.isNotEmpty()
 
-    fun add(from: String, value: T, callback: (() -> Unit)? = null) {
+    fun add(
 
-        if (DEBUG.get()) Console.log("$tag add(value=$value) from '$from'")
+        from: String,
+        value: T,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
 
-        if (onUi) {
+    ) {
 
-            Executor.UI.execute {
+        if (DEBUG.get()) Console.log("$tag add(value=$value), from='$from'")
 
-                list.add(value)
+        fun doAdd() {
 
-                callback?.let {
+            if (list.add(value)) {
 
-                    it()
-                }
+                notifyChanged(onChange, "add")
             }
-
-        } else {
-
-            list.add(value)
 
             callback?.let {
 
                 it()
             }
+        }
+
+        if (onUi) {
+
+            Executor.UI.execute {
+
+                doAdd()
+            }
+
+        } else {
+
+            doAdd()
         }
     }
 
@@ -70,84 +88,113 @@ class ListWrapper<T>(
         return list[index]
     }
 
-    fun remove(from: String, index: Int, callback: (() -> Unit)? = null) {
+    fun remove(
 
-        Console.warning("$tag remove(index=$index) from '$from'")
+        from: String,
+        index: Int,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
 
-        if (onUi) {
+    ) {
 
-            Executor.UI.execute {
+        Console.warning("$tag remove(index=$index), from='$from'")
 
-                list.removeAt(index)
+        fun doRemove() {
 
-                callback?.let {
+            list.removeAt(index)?.let {
 
-                    it()
-                }
+                notifyChanged(onChange, "remove.$index")
             }
-
-        } else {
-
-            list.removeAt(index)
 
             callback?.let {
 
                 it()
             }
         }
-    }
-
-    fun remove(from: String, what: T, callback: (() -> Unit)? = null) {
-
-        Console.warning("$tag remove(what='$what') from '$from'")
 
         if (onUi) {
 
             Executor.UI.execute {
 
-                list.remove(what)
-
-                callback?.let {
-
-                    it()
-                }
+                doRemove()
             }
 
         } else {
 
-            list.remove(what)
+            doRemove()
+        }
+    }
+
+    fun remove(
+
+        from: String,
+        what: T,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        Console.warning("$tag remove(what='$what'), from='$from'")
+
+        fun doRemove() {
+
+            if (list.remove(what)) {
+
+                onChange?.onChange("remove")
+            }
 
             callback?.let {
 
                 it()
             }
+        }
+
+        if (onUi) {
+
+            Executor.UI.execute {
+
+                doRemove()
+            }
+
+        } else {
+
+            doRemove()
         }
     }
 
     fun update(from: String, what: T, where: Int, callback: (() -> Unit)? = null) {
 
-        Console.log("$tag update(what='$what,where=$where) from '$from'")
+        Console.log("$tag update(what='$what, where=$where), from='$from'")
 
-        if (onUi) {
+        fun doUpdate() {
 
-            Executor.UI.execute {
+            try {
 
-                list.remove(what)
+                list.add(where, what)
 
-                callback?.let {
+                notifyChanged(onChange, "update.$where")
 
-                    it()
-                }
+            } catch (e: Throwable) {
+
+                recordException(e)
             }
-
-        } else {
-
-            list.remove(what)
 
             callback?.let {
 
                 it()
             }
+        }
+
+        if (onUi) {
+
+            Executor.UI.execute {
+
+                doUpdate()
+            }
+
+        } else {
+
+            doUpdate()
         }
     }
 
@@ -156,57 +203,82 @@ class ListWrapper<T>(
         return list.indexOf(what)
     }
 
-    fun removeAll(from: String, what: Collection<T>, callback: (() -> Unit)? = null) {
+    fun removeAll(
 
-        Console.warning("$tag removeAll(index=$what) from '$from'")
+        from: String,
+        what: Collection<T>,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
 
-        if (onUi) {
+    ) {
 
-            Executor.UI.execute {
+        Console.warning("$tag removeAll(index=$what), from='$from'")
 
-                list.removeAll(what)
+        fun doRemoveAll() {
 
-                callback?.let {
+            if (list.removeAll(what)) {
 
-                    it()
-                }
+                notifyChanged(onChange, "removeAll.${what.size}")
             }
-
-        } else {
-
-            list.removeAll(what)
 
             callback?.let {
 
                 it()
             }
         }
-    }
-
-    fun clear(from: String, callback: (() -> Unit)? = null) {
-
-        Console.warning("$tag doClear() from '$from'")
 
         if (onUi) {
 
             Executor.UI.execute {
 
-                list.clear()
-
-                callback?.let {
-
-                    it()
-                }
+                doRemoveAll()
             }
 
         } else {
 
+            list.removeAll(what)
+
+            doRemoveAll()
+        }
+    }
+
+    fun clear(
+
+        from: String,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null,
+
+    ) {
+
+        Console.warning("$tag doClear(), from='$from'")
+
+        fun doClear() {
+
             list.clear()
+
+            if (list.isEmpty()) {
+
+                notifyChanged(onChange, "clear")
+            }
 
             callback?.let {
 
                 it()
             }
+
+
+        }
+
+        if (onUi) {
+
+            Executor.UI.execute {
+
+                doClear()
+            }
+
+        } else {
+
+            doClear()
         }
     }
 
@@ -216,7 +288,9 @@ class ListWrapper<T>(
         from: String,
         removeDeleted: Boolean = true,
         filters: List<Filter<T>> = emptyList(),
+        onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
+
     ) {
 
         addAllAndFilter(
@@ -226,6 +300,7 @@ class ListWrapper<T>(
             true,
             removeDeleted,
             filters,
+            onChange,
             callback
         )
     }
@@ -237,131 +312,180 @@ class ListWrapper<T>(
         replace: Boolean = false,
         removeDeleted: Boolean = true,
         filters: List<Filter<T>> = emptyList(),
+        onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
+
     ) {
 
         fun doAdd() {
 
             val from = "addAllAndFilter(from='$from')"
 
-            if (replace && what.isEmpty()) {
+            fun next() {
 
-                clear(from)
-            }
+                var modified = false
+                var changedCount = 0
+                val linked = LinkedList(what)
 
-            var modified = false
-            var changedCount = 0
-            val linked = LinkedList(what)
+                val toRemove = mutableListOf<T>()
+                val toUpdate = mutableListOf<T>()
 
-            val toRemove = mutableListOf<T>()
-            val toUpdate = mutableListOf<T>()
+                list.forEach { wItem ->
 
-            list.forEach { wItem ->
+                    var where = -1
+                    var found: T? = null
 
-                var where = -1
-                var found: T? = null
+                    linked.forEach { lItem ->
 
-                linked.forEach { lItem ->
+                        if (found == null) {
 
-                    if (found == null) {
+                            if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
 
-                        if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
+                                if (lItem.getId() == wItem.getId()) {
 
-                            if (lItem.getId() == wItem.getId()) {
+                                    found = lItem
 
-                                found = lItem
+                                    if (lItem != wItem) {
 
-                                if (lItem != wItem) {
-
-                                    where = indexOf(wItem)
+                                        where = indexOf(wItem)
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                if (found != null) {
+                    if (found != null) {
 
-                    toUpdate.add(found)
+                        toUpdate.add(found)
 
-                    if (where > -1) {
+                        if (where > -1) {
 
-                        update(from, found, where)
-                    }
-
-                } else {
-
-                    toRemove.add(wItem)
-                }
-            }
-
-            if (toRemove.isNotEmpty()) {
-
-                modified = true
-
-                removeAll(from, toRemove)
-            }
-
-            linked.forEach { linked ->
-
-                if (!toUpdate.contains(linked) && !toRemove.contains(linked)) {
-
-                    modified = true
-
-                    add(from, linked)
-                }
-            }
-
-            fun filter() {
-
-                fun notify() {
-
-                    callback?.let {
-
-                        it(modified, changedCount)
-                    }
-                }
-
-                if (filters.isEmpty()) {
-
-                    notify()
-
-                } else {
-
-                    var filtered = list
-
-                    filters.forEach { filter ->
-
-                        filtered = filter.filter(filtered)
-                    }
-
-                    if (filtered != list) {
-
-                        clear(from) {
-
-                            addAll(filtered, from) {
-
-                                notify()
-                            }
+                            update(from, found, where)
                         }
 
                     } else {
 
-                        notify()
+                        toRemove.add(wItem)
                     }
+                }
+
+                if (toRemove.isNotEmpty()) {
+
+                    modified = true
+
+                    changedCount += toRemove.size
+
+                    removeAll(from, toRemove)
+                }
+
+                if (toUpdate.isNotEmpty()) {
+
+                    changedCount += toUpdate.size
+                }
+
+                linked.forEach { linked ->
+
+                    if (!toUpdate.contains(linked) && !toRemove.contains(linked)) {
+
+                        modified = true
+
+                        changedCount++
+
+                        add(from, linked)
+                    }
+                }
+
+                fun filter() {
+
+                    fun notify() {
+
+                        if (modified) {
+
+                            notifyChanged(onChange, "addAllAndFilter.${what.size}")
+                        }
+
+                        callback?.let {
+
+                            it(modified, changedCount)
+                        }
+                    }
+
+                    if (filters.isEmpty()) {
+
+                        notify()
+
+                    } else {
+
+                        val filtered = FilterResult(filteredItems = list)
+
+                        filters.forEach { filter ->
+
+                            val res = filter.filter(filtered.filteredItems)
+
+                            filtered.filteredItems.clear()
+                            filtered.filteredItems.addAll(res.filteredItems)
+
+                            filtered.changedCount.set(filtered.changedCount.get() + res.changedCount.get())
+
+                            if (!filtered.modified.get()) {
+
+                                filtered.modified.set(res.isModified())
+                            }
+                        }
+
+                        if (!modified) {
+
+                            modified = filtered.modified.get()
+                        }
+
+                        changedCount += filtered.changedCount.get()
+
+                        if (filtered != list) {
+
+                            clear(from) {
+
+                                addAll(filtered.filteredItems, from) {
+
+                                    notify()
+                                }
+                            }
+
+                        } else {
+
+                            notify()
+                        }
+                    }
+                }
+
+                if (removeDeleted) {
+
+                    purge(from) { purgedCount ->
+
+                        if (purgedCount > 0) {
+
+                            modified = true
+                            changedCount += purgedCount
+                        }
+
+                        filter()
+                    }
+
+                } else {
+
+                    filter()
                 }
             }
 
-            if (removeDeleted) {
+            if (replace && what.isEmpty()) {
 
-                purge(from) {
+                clear(from) {
 
-                    filter()
+                    next()
                 }
 
             } else {
 
-                filter()
+                next()
             }
         }
 
@@ -405,7 +529,7 @@ class ListWrapper<T>(
         }
     }
 
-    fun purge(from: String, callback: (() -> Unit)? = null) {
+    fun purge(from: String, callback: ((purgedCount: Int) -> Unit)? = null) {
 
         val tag = "$tag purge(from='$from')"
 
@@ -439,7 +563,7 @@ class ListWrapper<T>(
 
             callback?.let {
 
-                it()
+                it(toRemove.size)
             }
         }
 
@@ -469,4 +593,10 @@ class ListWrapper<T>(
     fun getList() = list.toList()
 
     fun contains(what: T) = list.contains(what)
+
+    private fun notifyChanged(onChange: OnChangeCompleted?, action: String) {
+
+        onChange?.onChange(action)
+        this@ListWrapper.onChange?.onChange(action)
+    }
 }
