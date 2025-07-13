@@ -225,8 +225,7 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testReplaceAndFilter() {
 
-//        listOf(true, false).forEachIndexed { index, onUI ->
-        listOf(true).forEachIndexed { index, onUI ->
+        listOf(true, false).forEachIndexed { index, onUI ->
 
             val collection = createCollection()
             val challengeData = createChallengeCollection()
@@ -252,13 +251,13 @@ class ListWrapperTest : BaseTest() {
         // TODO: With and without filter - filter to reverse the collection
     }
 
-
     @Test
     fun testAddAllAndFilter() {
 
         listOf(true, false).forEachIndexed { index, onUI ->
 
             val collection = createCollection()
+            val originalValues = createCollection()
             val challengeData = createChallengeCollection()
             val wrapper = createWrapper(collection)
 
@@ -268,9 +267,23 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+            wrapper.addAllAndFilter(challengeData, "test")
+
+            Assert.assertEquals(challengeData.size * 2, wrapper.getSize())
+
+            challengeData.forEach { challenge ->
+
+                Assert.assertTrue(wrapper.contains(challenge))
+            }
+
+            originalValues.forEach { original ->
+
+                Assert.assertTrue(wrapper.contains(original))
+            }
         }
 
-
+        // TODO: With and without remove deleted
+        // TODO: With and without filter - filter to reverse the collection
     }
 
     @Test
@@ -320,8 +333,6 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
         }
-
-
     }
 
     @Test
