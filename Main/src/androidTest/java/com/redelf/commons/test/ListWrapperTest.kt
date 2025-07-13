@@ -62,15 +62,15 @@ class ListWrapperTest : BaseTest() {
         listOf(true, false).forEachIndexed { index, onUI ->
 
             val collection = createCollection()
-            val challengeData = createChallengeCollection()
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(collection.size == challengeData.size)
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+            Assert.assertEquals(1, wrapper.get(0))
+            Assert.assertEquals(3, wrapper.get(1))
+            Assert.assertEquals(5, wrapper.get(2))
         }
     }
 
@@ -249,9 +249,20 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+            wrapper.addAll( challengeData, "testAdd.all")
+
+            val size = wrapper.getSize()
+            val defaultSize = createCollection().size
+
+            Assert.assertTrue(size > defaultSize)
+            Assert.assertTrue(size == defaultSize + challengeData.size)
+
+            challengeData.forEach { challenge ->
+
+                Assert.assertTrue(wrapper.contains(challenge))
+                Assert.assertTrue(wrapper.getList().contains(challenge))
+            }
         }
-
-
     }
 
     @Test
