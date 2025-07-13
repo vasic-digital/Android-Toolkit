@@ -9,15 +9,19 @@ import com.redelf.access.implementation.pin.PinAccess
 import com.redelf.access.implementation.pin.PinAccessActivity
 import com.redelf.access.installation.InstallationCheckCallback
 import com.redelf.commons.capability.CapabilityCheckCallback
+import com.redelf.commons.extensions.exec
 
 class GenericAccess(priority: Int, ctx: PinAccessActivity) : BiometricAccessMethod(priority, ctx) {
 
     private val pinAccess = PinAccess(priority, ctx)
 
-    override fun install() = executor.execute {
+    override fun install() {
 
-        val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
-        ctx.startActivity(intent)
+        exec {
+
+            val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
+            ctx.startActivity(intent)
+        }
     }
 
     override fun execute() {

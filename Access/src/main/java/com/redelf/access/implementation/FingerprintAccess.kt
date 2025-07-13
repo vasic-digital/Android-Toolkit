@@ -8,22 +8,18 @@ import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import com.redelf.access.BiometricAccessMethod
+import com.redelf.commons.extensions.exec
 
 class FingerprintAccess(priority: Int, ctx: AppCompatActivity) : BiometricAccessMethod(priority, ctx) {
 
     override val authenticators = listOf(BiometricManager.Authenticators.BIOMETRIC_WEAK)
 
     @Suppress("DEPRECATION")
-    override fun install() = executor.execute {
+    override fun install() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        exec {
 
             val intent = Intent(Settings.ACTION_FINGERPRINT_ENROLL)
-            ctx.startActivity(intent)
-
-        } else {
-
-            val intent = Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD)
             ctx.startActivity(intent)
         }
     }

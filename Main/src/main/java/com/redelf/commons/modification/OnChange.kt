@@ -1,3 +1,6 @@
 package com.redelf.commons.modification
 
-interface OnChange : OnChangeStarted, OnChangeCompleted
+interface OnChange : OnChangeStarted {
+
+    fun onChange(action: String): Boolean
+}
