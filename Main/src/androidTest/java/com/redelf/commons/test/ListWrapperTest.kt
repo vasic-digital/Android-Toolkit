@@ -1,13 +1,14 @@
 package com.redelf.commons.test
 
-import com.redelf.commons.data.wrappers.Wrapper
 import com.redelf.commons.data.wrappers.ListWrapper
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Console
+import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.test.test_data.Purgable
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ListWrapperTest : BaseTest() {
 
@@ -45,31 +46,77 @@ class ListWrapperTest : BaseTest() {
 
         listOf(true, false).forEachIndexed { index, onUI ->
 
-            val collection = createCollection()
-            val wrapper = createWrapper(collection)
+            listOf(false, true).forEachIndexed { index, withCallback ->
 
-            val challengeData = createChallengeCollection()
+                listOf(false, true).forEachIndexed { index, withOnChange ->
 
-            Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(collection.size == challengeData.size)
-            Assert.assertTrue(wrapper.getList() == collection)
-            Assert.assertTrue(wrapper.getSize() == collection.size)
+                    val collection = createCollection()
+                    val wrapper = createWrapper(collection)
+                    val challengeData = createChallengeCollection()
 
-            challengeData.forEachIndexed { challengeIndex, challenge ->
+                    Assert.assertTrue(collection.isNotEmpty())
+                    Assert.assertTrue(challengeData.isNotEmpty())
+                    Assert.assertTrue(collection.size == challengeData.size)
+                    Assert.assertTrue(wrapper.getList() == collection)
+                    Assert.assertTrue(wrapper.getSize() == collection.size)
 
-                wrapper.add("testAdd.$challengeIndex", challenge)
+                    challengeData.forEachIndexed { challengeIndex, challenge ->
 
-                val size = wrapper.getSize()
-                val defaultSize = createCollection().size
+                        val changeDetected = AtomicBoolean()
+                        val callbackExecuted = AtomicBoolean()
 
-                Assert.assertTrue(size > defaultSize)
-                Assert.assertTrue(size == defaultSize + (challengeIndex + 1))
-                Assert.assertTrue(wrapper.contains(challenge))
-                Assert.assertTrue(wrapper.getList().contains(challenge))
+                        val callback = if (withCallback) {
+
+                            {
+
+                                callbackExecuted.set(true)
+                            }
+
+                        } else {
+
+                            null
+                        }
+
+                        val onChange = if (withOnChange) {
+
+                            object : OnChangeCompleted {
+
+                                override fun onChange(action: String, changed: Boolean) {
+
+                                    changeDetected.set(changed)
+                                }
+                            }
+
+                        } else {
+
+                            null
+                        }
+
+                        wrapper.add(
+
+                            from = "testAdd.$challengeIndex",
+                            value = challenge,
+                            onChange = onChange,
+                            callback = callback
+                        )
+
+                        val size = wrapper.getSize()
+                        val defaultSize = createCollection().size
+
+                        Assert.assertTrue(size > defaultSize)
+                        Assert.assertTrue(size == defaultSize + (challengeIndex + 1))
+                        Assert.assertTrue(wrapper.contains(challenge))
+                        Assert.assertTrue(wrapper.getList().contains(challenge))
+
+                        Assert.assertEquals(withOnChange, changeDetected.get())
+                        Assert.assertEquals(withCallback, callbackExecuted.get())
+                    }
+                }
             }
         }
     }
+
+    // TODO: Add to all other tests verification for callback and on change use
 
     @Test
     fun testGet() {
