@@ -1,5 +1,7 @@
 package com.redelf.commons.test
 
+import org.junit.Test
+
 class ListWrapperTest : BaseTest() {
 
     /*
@@ -21,18 +23,42 @@ class ListWrapperTest : BaseTest() {
         - getSize
     */
 
+    @Test
     fun testAdd() {}
-    fun testGet() {}
-    fun testRemoveIndex() {}
-    fun testRemoveItem() {}
-    fun testUpdate() {}
-    fun testIndexOf() {}
-    fun testRemoveAll() {}
-    fun testClear() {}
-    fun testReplaceAndFilter() {}
-    fun testAddAllAndFilter() {}
-    fun testAddAll() {}
-    fun testPurge() {}
-    fun testGetSize() {}
 
+    @Test
+    fun testGet() {}
+
+    @Test
+    fun testRemoveIndex() {}
+
+    @Test
+    fun testRemoveItem() {}
+
+    @Test
+    fun testUpdate() {}
+
+    @Test
+    fun testIndexOf() {}
+
+    @Test
+    fun testRemoveAll() {}
+
+    @Test
+    fun testClear() {}
+
+    @Test
+    fun testReplaceAndFilter() {}
+
+    @Test
+    fun testAddAllAndFilter() {}
+
+    @Test
+    fun testAddAll() {}
+
+    @Test
+    fun testPurge() {}
+
+    @Test
+    fun testGetSize() {}
 }
