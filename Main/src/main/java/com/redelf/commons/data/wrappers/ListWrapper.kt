@@ -95,29 +95,16 @@ class ListWrapper<T>(
 
         Console.warning("$tag remove(index=$index), from='$from'")
 
-        fun doRemove() {
-
-            list.removeAt(index)?.let {
-
-                notifyChanged(onChange, "remove.$index")
-            }
-
-            callback?.let {
-
-                it()
-            }
-        }
-
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                doRemove()
+                doRemove(index, onChange, callback)
             }
 
         } else {
 
-            doRemove()
+            doRemove(index, onChange, callback)
         }
     }
 
@@ -132,29 +119,16 @@ class ListWrapper<T>(
 
         Console.warning("$tag remove(what='$what'), from='$from'")
 
-        fun doRemove() {
-
-            if (list.remove(what)) {
-
-                notifyChanged(onChange, "remove")
-            }
-
-            callback?.let {
-
-                it()
-            }
-        }
-
         if (onUi) {
 
             syncUI(wrapperContext) {
 
-                doRemove()
+                doRemove(what, onChange, callback)
             }
 
         } else {
 
-            doRemove()
+            doRemove(what, onChange, callback)
         }
     }
 
@@ -207,8 +181,6 @@ class ListWrapper<T>(
             }
 
         } else {
-
-            list.removeAll(what)
 
             doRemoveAll(what, onChange, callback)
         }
@@ -690,6 +662,44 @@ class ListWrapper<T>(
         if (list.removeAll(what)) {
 
             notifyChanged(onChange, "removeAll.${what.size}")
+        }
+
+        callback?.let {
+
+            it()
+        }
+    }
+
+    private fun doRemove(
+
+        what: T,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (list.remove(what)) {
+
+            notifyChanged(onChange, "remove")
+        }
+
+        callback?.let {
+
+            it()
+        }
+    }
+
+    private fun doRemove(
+
+        index: Int,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        list.removeAt(index)?.let {
+
+            notifyChanged(onChange, "remove.$index")
         }
 
         callback?.let {
