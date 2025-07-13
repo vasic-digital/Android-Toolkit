@@ -1175,6 +1175,7 @@ fun <X> sync(
     timeout: Long = 60,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     mainThreadForbidden: Boolean = true,
+    waitingFlag: AtomicBoolean? = null,
     what: (callback: OnObtain<X?>) -> Unit
 
 ): X? {
@@ -1246,30 +1247,45 @@ fun <X> sync(
 
     try {
 
-        if (latch.await(timeout, timeUnit)) {
+        if (waitingFlag?.get() == true) {
 
-            val endTime = System.currentTimeMillis() - startTime
-
-            if (endTime > 1500 && endTime < 3000) {
-
-                Console.warning("$tag WAITED for $endTime ms")
-
-            } else if (endTime >= 3000) {
-
-                Console.error("$tag WAITED for $endTime ms")
-            }
-
-            if (DEBUG_SYNC.get()) Console.debug("$tag END")
+            Console.warning("$tag Already waiting")
 
         } else {
 
-            val endTime = System.currentTimeMillis() - startTime
-            val e = TimeoutException("$context latch expired")
-            Console.error("$tag FAILED :: Timed out after $endTime ms")
-            recordException(e)
+            waitingFlag?.set(true)
+
+            if (latch.await(timeout, timeUnit)) {
+
+                val endTime = System.currentTimeMillis() - startTime
+
+                waitingFlag?.set(false)
+
+                if (endTime > 1500 && endTime < 3000) {
+
+                    Console.warning("$tag WAITED for $endTime ms")
+
+                } else if (endTime >= 3000) {
+
+                    Console.error("$tag WAITED for $endTime ms")
+                }
+
+                if (DEBUG_SYNC.get()) Console.debug("$tag END")
+
+            } else {
+
+                waitingFlag?.set(false)
+
+                val endTime = System.currentTimeMillis() - startTime
+                val e = TimeoutException("$context latch expired")
+                Console.error("$tag FAILED :: Timed out after $endTime ms")
+                recordException(e)
+            }
         }
 
     } catch (e: Throwable) {
+
+        waitingFlag?.set(false)
 
         val endTime = System.currentTimeMillis() - startTime
         Console.error("$tag FAILED :: Error='${e.message}' after $endTime ms")
@@ -1278,6 +1294,8 @@ fun <X> sync(
 
     return result
 }
+
+private val UI_IN_SYNC = AtomicBoolean()
 
 fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
 
@@ -1309,7 +1327,8 @@ fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
 
         context,
 
-        mainThreadForbidden = false
+        mainThreadForbidden = false,
+        waitingFlag = UI_IN_SYNC
 
     ) { callback ->
 
