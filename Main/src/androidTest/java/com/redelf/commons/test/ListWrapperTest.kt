@@ -327,17 +327,18 @@ class ListWrapperTest : BaseTest() {
 
         listOf(true, false).forEachIndexed { index, onUI ->
 
-            val collection = createCollection()
-            val challengeData = createChallengeCollection()
+            val collection = createCollection(hasDeletedItems = true)
             val wrapper = createWrapper(collection)
 
+            val initSize = collection.size
+
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(collection.size == challengeData.size)
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+            wrapper.purge("test")
 
+            Assert.assertEquals(initSize - 2, wrapper.getSize())
         }
     }
 
@@ -355,14 +356,11 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(collection.size == challengeData.size)
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
-
         }
-
-
     }
 
-    private fun createCollection() =
-        mutableListOf(Purgable(1), Purgable(3), Purgable(5), Purgable(7), Purgable(9))
+    private fun createCollection(hasDeletedItems: Boolean = false) =
+        mutableListOf(Purgable(1), Purgable(3, hasDeletedItems), Purgable(5, hasDeletedItems), Purgable(7), Purgable(9))
 
     private fun createChallengeCollection() =
         mutableListOf(Purgable(2), Purgable(4), Purgable(6), Purgable(8), Purgable(10))
