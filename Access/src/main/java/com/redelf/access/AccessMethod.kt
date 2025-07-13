@@ -17,11 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class AccessMethod(private val priority: Int, protected val ctx: AppCompatActivity) :
 
-        Comparable<AccessMethod>,
-    CapabilityCheck,
     Installation,
     Cancellation,
-    CommonExecution {
+    CommonExecution,
+    CapabilityCheck,
+    Comparable<AccessMethod>
+
+{
 
     private val executing = AtomicBoolean()
 

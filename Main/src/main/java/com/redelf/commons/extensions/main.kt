@@ -957,7 +957,10 @@ fun exec(what: Runnable) {
 
     try {
 
-        Executor.MAIN.execute(what)
+        if (!Executor.MAIN.execute(what)) {
+
+            throw IllegalStateException("Not executed")
+        }
 
     } catch (e: Throwable) {
 
