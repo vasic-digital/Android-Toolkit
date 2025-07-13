@@ -1,4 +1,4 @@
-package com.redelf.commons.data.model
+package com.redelf.commons.data.wrappers
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty

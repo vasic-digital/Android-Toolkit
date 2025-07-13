@@ -1,6 +1,6 @@
 package com.redelf.commons.test
 
-import com.redelf.commons.data.model.Wrapper
+import com.redelf.commons.data.wrappers.Wrapper
 import com.redelf.commons.data.wrappers.ListWrapper
 import org.junit.Assert
 import org.junit.Test
@@ -138,23 +138,31 @@ class ListWrapperTest : BaseTest() {
     }
 
     @Test
-    fun testIndexOf() {
+    fun testIndex() {
 
         listOf(true, false).forEachIndexed { index, onUI ->
 
             val collection = createCollection()
-            val challengeData = createChallengeCollection()
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(collection.size == challengeData.size)
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+            val first = 1
+            val last = 9
+
+            Assert.assertEquals(first, wrapper.getFirst()?.takeData())
+            Assert.assertEquals(last, wrapper.getLast()?.takeData())
+
+            Assert.assertEquals(first, wrapper.get(0)?.takeData())
+            Assert.assertEquals(last, wrapper.get(wrapper.getSize() - 1)?.takeData())
+
+            val position = 2
+            val item = collection[position]
+
+            Assert.assertEquals(wrapper.indexOf(item), position)
         }
-
-
     }
 
     @Test
@@ -163,18 +171,22 @@ class ListWrapperTest : BaseTest() {
         listOf(true, false).forEachIndexed { index, onUI ->
 
             val collection = createCollection()
-            val challengeData = createChallengeCollection()
+
+            val duplicates = mutableListOf<Wrapper<Int>>()
+            duplicates.addAll(collection)
+
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(collection.size == challengeData.size)
             Assert.assertTrue(wrapper.getList() == collection)
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
+            wrapper.removeAll("test", listOf(collection.first(), collection.last()))
+
+            Assert.assertFalse(wrapper.contains(duplicates.first()))
+            Assert.assertFalse(wrapper.contains(duplicates.last()))
+            Assert.assertEquals(duplicates.size - 2, wrapper.getSize())
         }
-
-
     }
 
     @Test

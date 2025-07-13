@@ -87,6 +87,16 @@ class ListWrapper<T>(
         return list[index]
     }
 
+    fun getLast(): T? {
+
+        return list.last()
+    }
+
+    fun getFirst(): T? {
+
+        return list.first()
+    }
+
     fun remove(
 
         from: String,
