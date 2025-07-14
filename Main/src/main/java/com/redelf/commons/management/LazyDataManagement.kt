@@ -21,6 +21,7 @@ abstract class LazyDataManagement<T> :
 
     DataManagement<T>(),
     Registration<Context> where T : Versionable
+
 {
 
     protected open val lazySaving = false

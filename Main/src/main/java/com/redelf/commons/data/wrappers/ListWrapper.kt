@@ -11,6 +11,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
@@ -23,7 +24,7 @@ class ListWrapper<T>(
     from: Any,
     environment: String = "default",
 
-    private val dataManager: Obtain<DataManagement<*>>? = null,
+    private val dataManager: Obtain<DataManagement<*>>? = null, // ObtainParametrized<Collection<T>, DataManagement<*>>
 
     @Transient
     private val onUi: Boolean,
@@ -78,7 +79,7 @@ class ListWrapper<T>(
 
             try {
 
-                dataManager?.obtain()?.register(it)
+                dataManager?.obtain()?.registerDataPushListener(it)
 
             } catch (e: Throwable) {
 
@@ -93,7 +94,7 @@ class ListWrapper<T>(
 
             try {
 
-                dataManager?.obtain()?.unregister(dataPushListener)
+                dataManager?.obtain()?.unregisterDataPushListener(dataPushListener)
 
                 return true
 

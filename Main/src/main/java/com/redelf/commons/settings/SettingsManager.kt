@@ -12,7 +12,9 @@ class SettingsManager private constructor() :
     Loadable,
     SingleInstantiated,
     SettingsManagement,
-    ContextualManager<Settings>() {
+    ContextualManager<Settings>()
+
+{
 
     companion object : SingleInstance<SettingsManager>() {
 

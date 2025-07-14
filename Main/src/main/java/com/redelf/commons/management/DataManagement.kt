@@ -12,7 +12,6 @@ import com.redelf.commons.destruction.reset.ResettableAsync
 import com.redelf.commons.enable.Enabling
 import com.redelf.commons.enable.EnablingCallback
 import com.redelf.commons.environment.Environment
-import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
@@ -29,7 +28,6 @@ import com.redelf.commons.obtain.ObtainAsync
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.database.DBStorage
-import com.redelf.commons.registration.Registration
 import com.redelf.commons.session.Session
 import com.redelf.commons.state.BusyCheck
 import com.redelf.commons.state.ReadingCheck
@@ -55,8 +53,8 @@ abstract class DataManagement<T> :
     WritingCheck,
     ObtainAsync<T?>,
     ResettableAsync,
+    DataPushListening,
     Contextual<BaseApplication>,
-    Registration<OnObtain<Boolean?>>,
     ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
 
     companion object {
@@ -149,9 +147,9 @@ abstract class DataManagement<T> :
         return isReading() || isWriting()
     }
 
-    override fun register(subscriber: OnObtain<Boolean?>) {
+    override fun registerDataPushListener(subscriber: OnObtain<Boolean?>) {
 
-        if (pushCallbacks.isRegistered(subscriber)) {
+        if (isRegisteredDataPushListener(subscriber)) {
 
             return
         }
@@ -159,12 +157,17 @@ abstract class DataManagement<T> :
         pushCallbacks.register(subscriber)
     }
 
-    override fun unregister(subscriber: OnObtain<Boolean?>) {
+    override fun unregisterDataPushListener(subscriber: OnObtain<Boolean?>) {
 
-        if (pushCallbacks.isRegistered(subscriber)) {
+        if (isRegisteredDataPushListener(subscriber)) {
 
             pushCallbacks.unregister(subscriber)
         }
+    }
+
+    override fun isRegisteredDataPushListener(subscriber: OnObtain<Boolean?>): Boolean {
+
+        return pushCallbacks.isRegistered(subscriber)
     }
 
     override fun execute(what: DataTransaction<T>): Boolean {
