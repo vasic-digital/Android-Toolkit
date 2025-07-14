@@ -18,6 +18,9 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
+/*
+* TODO: Find mor proper name for this class
+*/
 class ListWrapper<T, M : DataManagement<*>>(
 
     from: Any,
