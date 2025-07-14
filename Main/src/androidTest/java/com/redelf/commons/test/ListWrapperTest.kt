@@ -106,6 +106,22 @@ class ListWrapperTest : BaseTest() {
                             wrapper.isBusy()
                         }
 
+                        if (withOnChange) {
+
+                            yieldWhile(timeoutInMilliseconds = 1000) {
+
+                                !changeDetected.get()
+                            }
+                        }
+
+                        if (withCallback) {
+
+                            yieldWhile(timeoutInMilliseconds = 1000) {
+
+                                !callbackExecuted.get()
+                            }
+                        }
+
                         val size = wrapper.getSize()
                         val defaultSize = createCollection().size
 
@@ -115,7 +131,7 @@ class ListWrapperTest : BaseTest() {
                         Assert.assertTrue(wrapper.getList().contains(challenge))
 
                         Assert.assertEquals(withOnChange, changeDetected.get())
-//                        Assert.assertEquals(withCallback, callbackExecuted.get())
+                        Assert.assertEquals(withCallback, callbackExecuted.get())
                     }
                 }
             }
