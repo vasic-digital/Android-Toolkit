@@ -67,6 +67,11 @@ class MapWrapper<T> (
         return dataMap.values.toCollection(CopyOnWriteArrayList())
     }
 
+    fun toKeysList(): CopyOnWriteArrayList<Long> {
+
+        return dataMap.keys.toCollection(CopyOnWriteArrayList())
+    }
+
     fun getDataCopy(from: String):  ConcurrentHashMap<Long, T> {
 
         Console.debug("$tag getDataCopy() from '$from'")

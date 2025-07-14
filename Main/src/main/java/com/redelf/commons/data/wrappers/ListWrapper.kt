@@ -8,10 +8,9 @@ import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
+import com.redelf.commons.management.DataAccess
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.modification.OnChangeCompleted
-import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
@@ -19,18 +18,15 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ListWrapper<T>(
+class ListWrapper<T, M : DataManagement<*>>(
 
     from: Any,
     environment: String = "default",
 
-    private val dataManager: Obtain<DataManagement<*>>? = null, // ObtainParametrized<Collection<T>, DataManagement<*>>
+    private val dataAccess: DataAccess<T, M>? = null,
 
     @Transient
     private val onUi: Boolean,
-
-    @Transient
-    private var list: MutableList<T> = mutableListOf(),
 
     @Transient
     private var onChange: OnChangeCompleted? = null
@@ -43,11 +39,13 @@ class ListWrapper<T>(
     }
 
     private val busy = AtomicBoolean()
+
+    private var list: MutableList<T> = mutableListOf()
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
     private val dataPushListener: OnObtain<Boolean?>? = if (
 
-        dataManager != null &&
+        dataAccess != null &&
         onChange != null
 
     ) {
@@ -79,7 +77,7 @@ class ListWrapper<T>(
 
             try {
 
-                dataManager?.obtain()?.registerDataPushListener(it)
+                dataAccess?.managerAccess?.obtain()?.registerDataPushListener(it)
 
             } catch (e: Throwable) {
 
@@ -94,7 +92,7 @@ class ListWrapper<T>(
 
             try {
 
-                dataManager?.obtain()?.unregisterDataPushListener(dataPushListener)
+                dataAccess?.managerAccess?.obtain()?.unregisterDataPushListener(dataPushListener)
 
                 return true
 
