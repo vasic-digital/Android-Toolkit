@@ -1,5 +1,8 @@
 package com.redelf.commons.activity
 
+import java.lang.annotation.Inherited
+
+@Inherited
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
 annotation class TransitionEffects(
