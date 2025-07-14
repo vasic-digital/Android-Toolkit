@@ -516,6 +516,7 @@ class ListWrapperTest : BaseTest() {
     private fun createChallengeCollection() =
         mutableListOf(Purgable(2), Purgable(4), Purgable(6), Purgable(8), Purgable(10))
 
+    // FIXME: Fix the test
     private fun createWrapper(collection: MutableList<Purgable<Int>>, onUI: Boolean = true) =
         ListWrapper("test", "test.ui=$onUI", onUI, collection)
 }

@@ -23,6 +23,9 @@ class ListWrapper<T, M : DataManagement<*>>(
     from: Any,
     environment: String = "default",
 
+    /*
+    * TODO: Connect the manager with the list instance
+    */
     private val dataAccess: DataAccess<T, M>? = null,
 
     @Transient
