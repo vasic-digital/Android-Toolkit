@@ -28,6 +28,7 @@ class ListWrapper<T, M : DataManagement<*>>(
 
     /*
     * TODO: [IN_PROGRESS] Connect the manager with the list instance
+    * TODO: [IN_PROGRESS] Make sure that there is available the default list data manager so we do not have to implement every time
     */
     private val dataAccess: DataAccess<T, M>? = null,
 
