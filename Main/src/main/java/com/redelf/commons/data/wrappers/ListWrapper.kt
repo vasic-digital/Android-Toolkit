@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ListWrapper<T>(
 
     from: Any,
-    environment: String,
+    environment: String = "default",
 
     @JsonProperty("onUi")
     @SerializedName("onUi")
@@ -36,7 +36,7 @@ class ListWrapper<T>(
         val DEBUG = AtomicBoolean()
     }
 
-    private val wrapperContext = "list.wrapper.$from.environment"
+    private val wrapperContext = "list.wrapper.$from.$environment"
 
     private val tag = "${from::class.simpleName} :: ${from.hashCode()} :: $environment :: " +
             "Data list hash = ${getHashCode()} ::"
