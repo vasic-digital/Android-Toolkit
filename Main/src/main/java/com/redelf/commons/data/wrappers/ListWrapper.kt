@@ -1,17 +1,17 @@
 package com.redelf.commons.data.wrappers
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.google.gson.annotations.SerializedName
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterResult
+import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
 import java.util.concurrent.ExecutorService
@@ -23,7 +23,7 @@ class ListWrapper<T>(
     from: Any,
     environment: String = "default",
 
-    private val dataManagerAccess: Obtain<DataManagement<*>>? = null,
+    private val dataManager: Obtain<DataManagement<*>>? = null,
 
     @Transient
     private val onUi: Boolean,
@@ -34,7 +34,7 @@ class ListWrapper<T>(
     @Transient
     private var onChange: OnChangeCompleted? = null
 
-) : BusyCheck {
+) : BusyCheck, TerminationSynchronized {
 
     companion object {
 
@@ -43,6 +43,70 @@ class ListWrapper<T>(
 
     private val busy = AtomicBoolean()
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
+
+    private val dataPushListener: OnObtain<Boolean?>? = if (
+
+        dataManager != null &&
+        onChange != null
+
+    ) {
+
+        object : OnObtain<Boolean?> {
+
+            override fun onCompleted(data: Boolean?) {
+
+                if (data == true) {
+
+                    onChange?.onChange("dataPushed", true)
+                }
+            }
+
+            override fun onFailure(error: Throwable) {
+
+                Console.error(error)
+            }
+        }
+
+    } else {
+
+        null
+    }
+
+    init {
+
+        dataPushListener?.let {
+
+            try {
+
+                dataManager?.obtain()?.register(it)
+
+            } catch (e: Throwable) {
+
+                recordException(e)
+            }
+        }
+    }
+
+    override fun terminate(vararg args: Any): Boolean {
+
+        dataPushListener?.let {
+
+            try {
+
+                dataManager?.obtain()?.unregister(dataPushListener)
+
+                return true
+
+            } catch (e: Throwable) {
+
+                recordException(e)
+            }
+
+            return false
+        }
+
+        return true
+    }
 
     private val tag = "${from::class.simpleName} :: ${from.hashCode()} :: $environment :: " +
             "Data list hash = ${getHashCode()} ::"
