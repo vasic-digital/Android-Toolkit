@@ -66,6 +66,7 @@ import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 val DEBUG_SYNC = AtomicBoolean()
+val DEBUG_UI_SYNC = AtomicBoolean()
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
 var GLOBAL_RECORD_EXCEPTIONS = AtomicBoolean(true)
 var GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK = AtomicBoolean()
@@ -1176,6 +1177,7 @@ fun <X> sync(
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     mainThreadForbidden: Boolean = true,
     waitingFlag: AtomicBoolean? = null,
+    debug: Boolean = false,
     what: (callback: OnObtain<X?>) -> Unit
 
 ): X? {
@@ -1184,7 +1186,7 @@ fun <X> sync(
 
     val tag = "SYNC :: $context ::"
 
-    if (DEBUG_SYNC.get()) Console.debug("$tag START")
+    if (DEBUG_SYNC.get() || debug) Console.debug("$tag START")
 
     var result: X? = null
     val latch = CountDownLatch(1)
@@ -1207,11 +1209,11 @@ fun <X> sync(
 
     ) {
 
-        if (DEBUG_SYNC.get()) Console.log("$tag EXECUTING")
+        if (DEBUG_SYNC.get() || debug) Console.log("$tag EXECUTING")
 
         try {
 
-            if (DEBUG_SYNC.get()) Console.log("$tag CALLING")
+            if (DEBUG_SYNC.get() || debug) Console.log("$tag CALLING")
 
             what(
 
@@ -1220,7 +1222,7 @@ fun <X> sync(
                     override fun onCompleted(data: X?) {
 
                         result = data
-                        if (DEBUG_SYNC.get()) Console.log("$tag FINISHED")
+                        if (DEBUG_SYNC.get() || debug) Console.log("$tag FINISHED")
                         latch.countDown()
                     }
 
@@ -1233,7 +1235,7 @@ fun <X> sync(
                 }
             )
 
-            if (DEBUG_SYNC.get()) Console.log("$tag WAITING")
+            if (DEBUG_SYNC.get() || debug) Console.log("$tag WAITING")
 
         } catch (e: Throwable) {
 
@@ -1270,7 +1272,7 @@ fun <X> sync(
                     Console.error("$tag WAITED for $endTime ms")
                 }
 
-                if (DEBUG_SYNC.get()) Console.debug("$tag END")
+                if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")
 
             } else {
 
@@ -1328,7 +1330,8 @@ fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
         context,
 
         mainThreadForbidden = false,
-        waitingFlag = UI_IN_SYNC
+        waitingFlag = UI_IN_SYNC,
+        debug = DEBUG_UI_SYNC.get()
 
     ) { callback ->
 
