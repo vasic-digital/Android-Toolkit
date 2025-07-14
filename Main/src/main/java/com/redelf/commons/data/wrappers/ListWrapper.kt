@@ -29,7 +29,7 @@ class ListWrapper<T>(
     private val onUi: Boolean,
 
     @Transient
-    private var list: MutableList<T>,
+    private var list: MutableList<T> = mutableListOf(),
 
     @Transient
     private var onChange: OnChangeCompleted? = null
