@@ -36,8 +36,6 @@ class ListWrapper<T>(
         val DEBUG = AtomicBoolean()
     }
 
-    private val wrapperContext = "list.wrapper.$from.$environment"
-
     private val tag = "${from::class.simpleName} :: ${from.hashCode()} :: $environment :: " +
             "Data list hash = ${getHashCode()} ::"
 
@@ -58,7 +56,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.add(from='$from')") {
 
                 doAdd(value, onChange, callback)
             }
@@ -97,7 +95,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.remove.$index.(from='$from')") {
 
                 doRemove(index, onChange, callback)
             }
@@ -121,7 +119,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.remove.item.(from='$from')") {
 
                 doRemove(what, onChange, callback)
             }
@@ -146,7 +144,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.update.$where.(from='$from')") {
 
                 doUpdate(what, where, onChange, callback)
             }
@@ -175,7 +173,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.removeAll(from='$from')") {
 
                 doRemoveAll(what, onChange, callback)
             }
@@ -194,11 +192,11 @@ class ListWrapper<T>(
 
     ) {
 
-        Console.warning("$tag doClear(), from='$from'")
+        Console.warning("$tag clear(), from='$from'")
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.clear(from='$from')") {
 
                 doClear(onChange, callback)
             }
@@ -224,7 +222,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("listWrapper.replaceAndFilter(from='$from')") {
 
                 doAddAllAndFilter(what, from, true, removeDeleted, filters, onChange, callback)
             }
@@ -249,7 +247,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.addAllAndFilter(from='$from')") {
 
                 doAddAllAndFilter(what, from, replace, removeDeleted, filters, onChange, callback)
             }
@@ -273,7 +271,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.addAll(from='$from')") {
 
                 doAddAll(what, onChange, callback)
             }
@@ -298,7 +296,7 @@ class ListWrapper<T>(
 
         if (onUi) {
 
-            syncUI(wrapperContext) {
+            syncUI("lisWrapper.purge(from='$from')") {
 
                 doPurge(onChange, callback)
             }
