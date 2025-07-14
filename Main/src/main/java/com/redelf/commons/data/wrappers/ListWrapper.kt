@@ -19,7 +19,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 /*
-* TODO: Find mor proper name for this class
+* TODO: [IN_PROGRESS] Find more proper name for this class
 */
 class ListWrapper<T, M : DataManagement<*>>(
 
@@ -27,7 +27,7 @@ class ListWrapper<T, M : DataManagement<*>>(
     environment: String = "default",
 
     /*
-    * TODO: Connect the manager with the list instance
+    * TODO: [IN_PROGRESS] Connect the manager with the list instance
     */
     private val dataAccess: DataAccess<T, M>? = null,
 
