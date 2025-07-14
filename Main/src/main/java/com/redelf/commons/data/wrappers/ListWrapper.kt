@@ -4,13 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
+import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.syncUI
 import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.logging.Console
 import com.redelf.commons.modification.OnChangeCompleted
+import com.redelf.commons.state.Busy
+import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ListWrapper<T>(
@@ -29,43 +33,24 @@ class ListWrapper<T>(
     @Transient
     private var onChange: OnChangeCompleted? = null
 
-) {
+) : BusyCheck {
 
     companion object {
 
         val DEBUG = AtomicBoolean()
     }
 
+    private val busy = AtomicBoolean()
+    private val executor: ExecutorService = Executors.newFixedThreadPool(1)
+
     private val tag = "${from::class.simpleName} :: ${from.hashCode()} :: $environment :: " +
             "Data list hash = ${getHashCode()} ::"
+
+    override fun isBusy() = busy.get()
 
     fun isEmpty() = list.isEmpty()
 
     fun isNotEmpty() = list.isNotEmpty()
-
-    fun add(
-
-        from: String,
-        value: T,
-        onChange: OnChangeCompleted? = null,
-        callback: (() -> Unit)? = null
-
-    ) {
-
-        if (DEBUG.get()) Console.log("$tag add(value=$value), from='$from'")
-
-        if (onUi) {
-
-            syncUI("lisWrapper.add(from='$from')") {
-
-                doAdd(value, onChange, callback)
-            }
-
-        } else {
-
-            doAdd(value, onChange, callback)
-        }
-    }
 
     fun get(index: Int): T? {
 
@@ -82,6 +67,42 @@ class ListWrapper<T>(
         return list.first()
     }
 
+    fun indexOf(what: T): Int {
+
+        return list.indexOf(what)
+    }
+
+    fun getHashCode(): Int {
+
+        return list.hashCode()
+    }
+
+    fun getSize(): Int {
+
+        return list.size
+    }
+
+    fun getList() = list.toList()
+
+    fun contains(what: T) = list.contains(what)
+
+    fun add(
+
+        from: String,
+        value: T,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (DEBUG.get()) Console.log("$tag add(value=$value), from='$from'")
+
+        exec {
+
+            doAdd(value, onChange, callback)
+        }
+    }
+
     fun remove(
 
         from: String,
@@ -93,14 +114,7 @@ class ListWrapper<T>(
 
         Console.warning("$tag remove(index=$index), from='$from'")
 
-        if (onUi) {
-
-            syncUI("lisWrapper.remove.$index.(from='$from')") {
-
-                doRemove(index, onChange, callback)
-            }
-
-        } else {
+        exec {
 
             doRemove(index, onChange, callback)
         }
@@ -117,14 +131,7 @@ class ListWrapper<T>(
 
         Console.warning("$tag remove(what='$what'), from='$from'")
 
-        if (onUi) {
-
-            syncUI("lisWrapper.remove.item.(from='$from')") {
-
-                doRemove(what, onChange, callback)
-            }
-
-        } else {
+        exec {
 
             doRemove(what, onChange, callback)
         }
@@ -142,22 +149,10 @@ class ListWrapper<T>(
 
         Console.log("$tag update(what='$what, where=$where), from='$from'")
 
-        if (onUi) {
-
-            syncUI("lisWrapper.update.$where.(from='$from')") {
-
-                doUpdate(what, where, onChange, callback)
-            }
-
-        } else {
+        exec {
 
             doUpdate(what, where, onChange, callback)
         }
-    }
-
-    fun indexOf(what: T): Int {
-
-        return list.indexOf(what)
     }
 
     fun removeAll(
@@ -171,14 +166,7 @@ class ListWrapper<T>(
 
         Console.warning("$tag removeAll(index=$what), from='$from'")
 
-        if (onUi) {
-
-            syncUI("lisWrapper.removeAll(from='$from')") {
-
-                doRemoveAll(what, onChange, callback)
-            }
-
-        } else {
+        exec {
 
             doRemoveAll(what, onChange, callback)
         }
@@ -194,16 +182,9 @@ class ListWrapper<T>(
 
         Console.warning("$tag clear(), from='$from'")
 
-        if (onUi) {
+        exec {
 
-            syncUI("lisWrapper.clear(from='$from')") {
-
-                doClear(onChange, callback)
-            }
-
-        } else {
-
-            doClear()
+            doClear(onChange, callback)
         }
     }
 
@@ -220,14 +201,7 @@ class ListWrapper<T>(
 
         val from = "replaceAllAndFilter(from='$from')"
 
-        if (onUi) {
-
-            syncUI("listWrapper.replaceAndFilter(from='$from')") {
-
-                doAddAllAndFilter(what, from, true, removeDeleted, filters, onChange, callback)
-            }
-
-        } else {
+        exec {
 
             doAddAllAndFilter(what, from, true, removeDeleted, filters, onChange, callback)
         }
@@ -245,14 +219,7 @@ class ListWrapper<T>(
 
     ) {
 
-        if (onUi) {
-
-            syncUI("lisWrapper.addAllAndFilter(from='$from')") {
-
-                doAddAllAndFilter(what, from, replace, removeDeleted, filters, onChange, callback)
-            }
-
-        } else {
+        exec {
 
             doAddAllAndFilter(what, from, replace, removeDeleted, filters, onChange, callback)
         }
@@ -269,14 +236,7 @@ class ListWrapper<T>(
 
         if (DEBUG.get()) Console.log("$tag addAll(), from='$from'")
 
-        if (onUi) {
-
-            syncUI("lisWrapper.addAll(from='$from')") {
-
-                doAddAll(what, onChange, callback)
-            }
-
-        } else {
+        exec {
 
             doAddAll(what, onChange, callback)
         }
@@ -294,37 +254,45 @@ class ListWrapper<T>(
 
         Console.log("$tag START")
 
-        if (onUi) {
-
-            syncUI("lisWrapper.purge(from='$from')") {
-
-                doPurge(onChange, callback)
-            }
-
-        } else {
+        exec {
 
             doPurge(onChange, callback)
         }
     }
 
-    fun getHashCode(): Int {
-
-        return list.hashCode()
-    }
-
-    fun getSize(): Int {
-
-        return list.size
-    }
-
-    fun getList() = list.toList()
-
-    fun contains(what: T) = list.contains(what)
-
     private fun notifyChanged(onChange: OnChangeCompleted?, action: String) {
 
-        onChange?.onChange(action, true)
-        this@ListWrapper.onChange?.onChange(action, true)
+        if (onUi) {
+
+            onUiThread {
+
+                onChange?.onChange(action, true)
+                this@ListWrapper.onChange?.onChange(action, true)
+            }
+
+        } else {
+
+            onChange?.onChange(action, true)
+            this@ListWrapper.onChange?.onChange(action, true)
+        }
+    }
+
+    private fun notifyCallback(callback: (() -> Unit)?) {
+
+        callback?.let {
+
+            if (onUi) {
+
+                onUiThread {
+
+                    it()
+                }
+
+            } else {
+
+                it()
+            }
+        }
     }
 
     private fun doAdd(
@@ -340,10 +308,7 @@ class ListWrapper<T>(
             notifyChanged(onChange, "add")
         }
 
-        callback?.let {
-
-            it()
-        }
+        notifyCallback(callback)
     }
 
     private fun doAddAll(
@@ -359,10 +324,7 @@ class ListWrapper<T>(
             notifyChanged(onChange, "addAll.${what.size}")
         }
 
-        callback?.let {
-
-            it()
-        }
+        notifyCallback(callback)
     }
 
     private fun doUpdate(
@@ -392,10 +354,7 @@ class ListWrapper<T>(
             recordException(e)
         }
 
-        callback?.let {
-
-            it()
-        }
+        notifyCallback(callback)
     }
 
     private fun doClear(
@@ -412,10 +371,7 @@ class ListWrapper<T>(
             notifyChanged(onChange, "clear")
         }
 
-        callback?.let {
-
-            it()
-        }
+        notifyCallback(callback)
     }
 
     private fun doAddAllAndFilter(
@@ -522,7 +478,17 @@ class ListWrapper<T>(
 
                     callback?.let {
 
-                        it(modified, changedCount)
+                        if (onUi) {
+
+                            onUiThread {
+
+                                it(modified, changedCount)
+                            }
+
+                        } else {
+
+                            it(modified, changedCount)
+                        }
                     }
                 }
 
@@ -670,10 +636,7 @@ class ListWrapper<T>(
             notifyChanged(onChange, "removeAll.${what.size}")
         }
 
-        callback?.let {
-
-            it()
-        }
+        notifyCallback(callback)
     }
 
     private fun doRemove(
@@ -689,10 +652,7 @@ class ListWrapper<T>(
             notifyChanged(onChange, "remove")
         }
 
-        callback?.let {
-
-            it()
-        }
+        notifyCallback(callback)
     }
 
     private fun doRemove(
@@ -708,9 +668,39 @@ class ListWrapper<T>(
             notifyChanged(onChange, "remove.$index")
         }
 
-        callback?.let {
+        notifyCallback(callback)
+    }
 
-            it()
+    @Synchronized
+    private fun exec(what: () -> Unit) {
+
+        busy.set(true)
+
+        try {
+
+            executor.execute {
+
+                try {
+
+                    what()
+
+                } catch (e: Throwable) {
+
+                    Console.error("$tag Execute :: ERROR: ${e.message}")
+
+                    recordException(e)
+                }
+
+                busy.set(false)
+            }
+
+        } catch (e: Throwable) {
+
+            busy.set(false)
+
+            Console.error("$tag Pre-Execute :: ERROR: ${e.message}")
+
+            recordException(e)
         }
     }
 }
