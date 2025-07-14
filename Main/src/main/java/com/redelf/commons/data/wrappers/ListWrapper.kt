@@ -8,7 +8,7 @@ import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
-import com.redelf.commons.management.DataAccess
+import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.OnObtain
