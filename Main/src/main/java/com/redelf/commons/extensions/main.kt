@@ -115,6 +115,7 @@ fun randomString(length: Int, sqliteFriendly: Boolean = true): String {
 
 fun yieldWhile(condition: () -> Boolean) {
 
+    // TODO: Support for the coroutines
     while (condition() && !Thread.currentThread().isInterrupted) {
 
         Thread.yield()
@@ -1253,36 +1254,39 @@ fun <X> sync(
 
             Console.warning("$tag Already waiting")
 
+            yieldWhile {
+
+                waitingFlag.get()
+            }
+        }
+
+        waitingFlag?.set(true)
+
+        if (latch.await(timeout, timeUnit)) {
+
+            val endTime = System.currentTimeMillis() - startTime
+
+            waitingFlag?.set(false)
+
+            if (endTime > 1500 && endTime < 3000) {
+
+                Console.warning("$tag WAITED for $endTime ms")
+
+            } else if (endTime >= 3000) {
+
+                Console.error("$tag WAITED for $endTime ms")
+            }
+
+            if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")
+
         } else {
 
-            waitingFlag?.set(true)
+            waitingFlag?.set(false)
 
-            if (latch.await(timeout, timeUnit)) {
-
-                val endTime = System.currentTimeMillis() - startTime
-
-                waitingFlag?.set(false)
-
-                if (endTime > 1500 && endTime < 3000) {
-
-                    Console.warning("$tag WAITED for $endTime ms")
-
-                } else if (endTime >= 3000) {
-
-                    Console.error("$tag WAITED for $endTime ms")
-                }
-
-                if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")
-
-            } else {
-
-                waitingFlag?.set(false)
-
-                val endTime = System.currentTimeMillis() - startTime
-                val e = TimeoutException("$context latch expired")
-                Console.error("$tag FAILED :: Timed out after $endTime ms")
-                recordException(e)
-            }
+            val endTime = System.currentTimeMillis() - startTime
+            val e = TimeoutException("$context latch expired")
+            Console.error("$tag FAILED :: Timed out after $endTime ms")
+            recordException(e)
         }
 
     } catch (e: Throwable) {
