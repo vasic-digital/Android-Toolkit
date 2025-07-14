@@ -65,6 +65,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
         override fun onExecution(success: Boolean, calledFrom: String) {
 
             executing.set(false)
+
             executionCallbacks.doOnAll(object : CallbackOperation<CommonExecutionCallback> {
 
                 override fun perform(callback: CommonExecutionCallback) {
@@ -72,6 +73,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
                     callback.onExecution(success, "executionCallback :: $calledFrom")
                     executionCallbacks.unregister(callback)
                 }
+
             }, operationName = "Execution operation")
         }
     }

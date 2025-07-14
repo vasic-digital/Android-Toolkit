@@ -2,6 +2,8 @@ package com.redelf.commons.management
 
 import android.content.Context
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.callback.CallbackOperation
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
 import com.redelf.commons.data.Empty
 import com.redelf.commons.data.type.Typed
@@ -10,6 +12,7 @@ import com.redelf.commons.destruction.reset.ResettableAsync
 import com.redelf.commons.enable.Enabling
 import com.redelf.commons.enable.EnablingCallback
 import com.redelf.commons.environment.Environment
+import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.execution.ExecuteWithResult
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
@@ -26,6 +29,7 @@ import com.redelf.commons.obtain.ObtainAsync
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.persistance.EncryptedPersistence
 import com.redelf.commons.persistance.database.DBStorage
+import com.redelf.commons.registration.Registration
 import com.redelf.commons.session.Session
 import com.redelf.commons.state.BusyCheck
 import com.redelf.commons.state.ReadingCheck
@@ -52,9 +56,8 @@ abstract class DataManagement<T> :
     ObtainAsync<T?>,
     ResettableAsync,
     Contextual<BaseApplication>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
-
-{
+    Registration<OnObtain<Boolean?>>,
+    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
 
     companion object {
 
@@ -102,6 +105,7 @@ abstract class DataManagement<T> :
     private var enabled = AtomicBoolean(true)
     private val lastDataVersion = AtomicLong(-1)
     private var session = Session(name = javaClass.simpleName)
+    private val pushCallbacks = Callbacks<OnObtain<Boolean?>>("on_push")
 
     protected abstract fun getLogTag(): String
 
@@ -143,6 +147,24 @@ abstract class DataManagement<T> :
     override fun isBusy(): Boolean {
 
         return isReading() || isWriting()
+    }
+
+    override fun register(subscriber: OnObtain<Boolean?>) {
+
+        if (pushCallbacks.isRegistered(subscriber)) {
+
+            return
+        }
+
+        pushCallbacks.register(subscriber)
+    }
+
+    override fun unregister(subscriber: OnObtain<Boolean?>) {
+
+        if (pushCallbacks.isRegistered(subscriber)) {
+
+            pushCallbacks.unregister(subscriber)
+        }
     }
 
     override fun execute(what: DataTransaction<T>): Boolean {
@@ -467,7 +489,7 @@ abstract class DataManagement<T> :
 
             override fun onCompleted(data: Boolean?) {
 
-                // TODO: Notify
+                notifyOnPushCompleted(data == true)
 
                 callback?.onCompleted(data)
             }
@@ -825,6 +847,18 @@ abstract class DataManagement<T> :
         }
 
         return false
+    }
+
+    private fun notifyOnPushCompleted(success: Boolean) {
+
+        pushCallbacks.doOnAll(object : CallbackOperation<OnObtain<Boolean?>> {
+
+            override fun perform(callback: OnObtain<Boolean?>) {
+
+                callback.onCompleted(success)
+            }
+
+        }, operationName = "push.completed")
     }
 
     class DataTransaction<T>(
