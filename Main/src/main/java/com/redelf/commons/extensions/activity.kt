@@ -1,5 +1,6 @@
 package com.redelf.commons.extensions
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -58,11 +59,10 @@ fun Activity.startActivityWithTransition(intent: Intent) {
 
         if (transition != null) {
 
-            overridePendingTransition(
+            val enter = getAnimationResource(transition.enter)
+            val exit = getAnimationResource(transition.exit)
 
-                transition.enterAnim,
-                transition.exitAnim
-            )
+            overridePendingTransition(enter, exit)
         }
 
     } catch (e: Exception) {
@@ -82,8 +82,19 @@ fun Activity.finishWithTransition() {
 
     if (transition != null) {
 
-        overridePendingTransition(transition.enterAnim, transition.exitAnim)
+        val enter = getAnimationResource(transition.enter)
+        val exit = getAnimationResource(transition.exit)
+
+        overridePendingTransition(enter, exit)
     }
+}
+
+@SuppressLint("DiscouragedApi")
+fun Activity.getAnimationResource(animName: String): Int {
+
+    val type = "anim"
+
+    return resources.getIdentifier(animName, type, packageName)
 }
 
 fun DialogFragment.fitInsideSystemBoundaries() {

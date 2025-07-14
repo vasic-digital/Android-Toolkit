@@ -7,6 +7,6 @@ import java.lang.annotation.Inherited
 @Target(AnnotationTarget.CLASS)
 annotation class TransitionEffects(
 
-    val enterAnim: Int,
-    val exitAnim: Int
+    val enter: String,
+    val exit: String
 )
