@@ -10,6 +10,7 @@ class DoubleMapWrapper<T>(
     environment: String,
 
     // TODO: Make sure that Long is generic type as T as well
+    // TODO: Add all power features that ListWrapper has
     private val map: ConcurrentHashMap<Long, ConcurrentHashMap<Long, T?>?>
 
 ) {
@@ -50,6 +51,7 @@ class DoubleMapWrapper<T>(
 
         val tag = "$tag putMap(id=$id, mapHash=${map.hashCode()}') ::"
         val map = data ?: ConcurrentHashMap()
+
         this@DoubleMapWrapper.map[id] = map
 
         if (DEBUG.get()) Console.log("$tag New map size = ${map.size}")

@@ -463,10 +463,25 @@ abstract class DataManagement<T> :
 
     protected fun doPushData(data: T, retry: Int = 0, callback: OnObtain<Boolean?>? = null) {
 
+        val callbackWrapper = object : OnObtain<Boolean?> {
+
+            override fun onCompleted(data: Boolean?) {
+
+                // TODO: Notify
+
+                callback?.onCompleted(data)
+            }
+
+            override fun onFailure(error: Throwable) {
+
+                callback?.onFailure(error)
+            }
+        }
+
         if (!isEnabled()) {
 
             onDataPushed(success = false)
-            callback?.onCompleted(data = false)
+            callbackWrapper.onCompleted(data = false)
             return
         }
 
@@ -475,7 +490,7 @@ abstract class DataManagement<T> :
             Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
 
             onDataPushed(success = false)
-            callback?.onCompleted(data = false)
+            callbackWrapper.onCompleted(data = false)
             return
         }
 
@@ -564,7 +579,7 @@ abstract class DataManagement<T> :
                         }
 
                         onDataPushed(success = success)
-                        callback?.onCompleted(data = success)
+                        callbackWrapper.onCompleted(data = success)
 
                     } else {
 
@@ -574,13 +589,13 @@ abstract class DataManagement<T> :
                         val e = java.lang.IllegalArgumentException(msg)
 
                         onDataPushed(err = e)
-                        callback?.onFailure(e)
+                        callbackWrapper.onFailure(e)
                     }
 
                 } catch (e: RejectedExecutionException) {
 
                     onDataPushed(err = e)
-                    callback?.onFailure(e)
+                    callbackWrapper.onFailure(e)
                 }
 
             } else {
@@ -588,7 +603,7 @@ abstract class DataManagement<T> :
                 writing.set(false)
 
                 onDataPushed(success = true)
-                callback?.onCompleted(data = true)
+                callbackWrapper.onCompleted(data = true)
             }
         }
     }

@@ -9,7 +9,9 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.logging.Console
+import com.redelf.commons.management.DataManagement
 import com.redelf.commons.modification.OnChangeCompleted
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
 import java.util.concurrent.ExecutorService
@@ -21,12 +23,12 @@ class ListWrapper<T>(
     from: Any,
     environment: String = "default",
 
-    @JsonProperty("onUi")
-    @SerializedName("onUi")
+    private val dataManagerAccess: Obtain<DataManagement<*>>? = null,
+
+    @Transient
     private val onUi: Boolean,
 
-    @JsonProperty("list")
-    @SerializedName("list")
+    @Transient
     private var list: MutableList<T>,
 
     @Transient
