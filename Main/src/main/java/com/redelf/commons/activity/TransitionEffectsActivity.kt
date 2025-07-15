@@ -4,9 +4,12 @@ import android.content.Intent
 import com.redelf.commons.extensions.finishWithTransition
 import com.redelf.commons.extensions.getAnimationResource
 import com.redelf.commons.extensions.startActivityWithTransition
+import com.redelf.commons.logging.Console
 import java.lang.annotation.Inherited
 
 abstract class TransitionEffectsActivity : StatefulActivity() {
+
+    private val tag = "Transition effects ::"
 
     companion object {
 
@@ -16,52 +19,102 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
     override fun startActivity(intent: Intent) {
         super.startActivity(intent)
 
-        applyExitTransition()
+        applyExitTransition("startActivity")
     }
 
     override fun finish() {
         super.finish()
 
-        applyExitTransition()
+        applyExitTransition("finish")
     }
 
     override fun onResume() {
         super.onResume()
 
-        applyEnterTransition()
+        applyEnterTransition("onResume")
     }
 
     @Suppress("DEPRECATION")
-    private fun applyEnterTransition() {
+    private fun applyEnterTransition(from: String) {
 
-        val transition = getTransitionAnnotation()
+        val tag = "$tag Apply transition :: Enter :: From='$from' ::"
+
+        Console.log("$tag :: START")
+
+        val transition = getTransitionAnnotation("applyEnterTransition(from='$from')")
 
         transition?.let {
 
             val enter = getAnimationResource(it.enter)
 
-            overridePendingTransition(enter, 0)
+            if (enter > 0) {
+
+                overridePendingTransition(enter, 0)
+
+                Console.debug("$tag :: Pending transition override")
+
+            } else {
+
+                Console.warning("$tag :: Pending transition override skipped")
+            }
         }
+
+        Console.log("$tag :: END")
     }
 
     @Suppress("DEPRECATION")
-    private fun applyExitTransition() {
+    private fun applyExitTransition(from: String) {
 
-        val transition = getTransitionAnnotation()
+        val tag = "$tag Apply transition :: Exit :: From='$from' ::"
+
+        Console.log("$tag :: START")
+
+        val transition = getTransitionAnnotation("applyExitTransition(from='$from')")
 
         transition?.let {
 
             val exit = getAnimationResource(it.exit)
 
-            overridePendingTransition(0, exit)
+            if (exit > 0) {
+
+                overridePendingTransition(0, exit)
+
+                Console.debug("$tag :: Pending transition override")
+
+            } else {
+
+                Console.warning("$tag :: Pending transition override skipped")
+            }
         }
+
+        Console.log("$tag :: END")
     }
 
-    private fun getTransitionAnnotation(): TransitionEffects? {
+    fun hasTransitionAssigned(from: String): Boolean? {
+
+        val tag = "$tag Has annotation :: From='$from' ::"
+
+        getTransitionAnnotation("hasTransitionAssigned(from='$from')")?.let {
+
+            Console.log("$tag END :: Does have")
+
+            return true
+        }
+
+        Console.log("$tag END :: Does not have")
+
+        return false
+    }
+
+    private fun getTransitionAnnotation(from: String): TransitionEffects? {
+
+        val tag = "$tag Get annotation :: From='$from' ::"
+
+        Console.log("$tag :: START")
 
         val clazz = this::class.java
 
-        return transitionCache.getOrPut(clazz) {
+        val result =  transitionCache.getOrPut(clazz) {
 
             clazz.getAnnotation(TransitionEffects::class.java)
                 ?: if (TransitionEffects::class.java.isAnnotationPresent(Inherited::class.java)) {
@@ -70,5 +123,16 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
                 } else null
         }
+
+        result?.let {
+
+            Console.log("$tag Get annotation :: END :: Hash=${result.hashCode()}")
+
+            return it
+        }
+
+        Console.log("$tag Get annotation :: END")
+
+        return null
     }
 }
