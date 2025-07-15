@@ -167,7 +167,7 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
             return it
         }
 
-        Console.log("$tag Get annotation :: END")
+        Console.log("$tag Get annotation :: END :: No transition")
 
         return null
     }
