@@ -4,8 +4,14 @@ import android.content.Intent
 import com.redelf.commons.extensions.finishWithTransition
 import com.redelf.commons.extensions.getAnimationResource
 import com.redelf.commons.extensions.startActivityWithTransition
+import java.lang.annotation.Inherited
 
 abstract class TransitionEffectsActivity : StatefulActivity() {
+
+    companion object {
+
+        private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
+    }
 
     override fun startActivity(intent: Intent) {
         super.startActivity(intent)
@@ -30,9 +36,9 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
         val transition = getTransitionAnnotation()
 
-        if (transition != null) {
+        transition?.let {
 
-            val enter = getAnimationResource(transition.enter)
+            val enter = getAnimationResource(it.enter)
 
             overridePendingTransition(enter, 0)
         }
@@ -53,16 +59,16 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
     private fun getTransitionAnnotation(): TransitionEffects? {
 
-        val clazz: Class<*> = this::class.java
+        val clazz = this::class.java
 
-        while (clazz != Any::class.java) {
+        return transitionCache.getOrPut(clazz) {
 
-            clazz.getAnnotation(TransitionEffects::class.java)?.let {
+            clazz.getAnnotation(TransitionEffects::class.java)
+                ?: if (TransitionEffects::class.java.isAnnotationPresent(Inherited::class.java)) {
 
-                return it
-            }
+                    clazz.superclass?.getAnnotation(TransitionEffects::class.java)
+
+                } else null
         }
-
-        return null
     }
 }
