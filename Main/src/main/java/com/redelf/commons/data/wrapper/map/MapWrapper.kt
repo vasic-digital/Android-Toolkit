@@ -1,4 +1,4 @@
-package com.redelf.commons.data.wrappers
+package com.redelf.commons.data.wrapper.map
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
@@ -6,6 +6,7 @@ import com.redelf.commons.logging.Console
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.collections.get
 
 class MapWrapper<T> (
 

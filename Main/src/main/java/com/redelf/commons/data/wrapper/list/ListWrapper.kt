@@ -1,5 +1,6 @@
-package com.redelf.commons.data.wrappers
+package com.redelf.commons.data.wrapper.list
 
+import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
 import com.redelf.commons.extensions.onUiThread
@@ -8,7 +9,6 @@ import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
-import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.OnObtain
@@ -19,7 +19,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 /*
-* TODO: [IN_PROGRESS] Find more proper name for this class
+* TODO: Find more proper name for this class
 */
 class ListWrapper<T, M : DataManagement<*>>(
 
