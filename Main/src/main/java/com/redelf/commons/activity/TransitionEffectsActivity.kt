@@ -2,12 +2,9 @@ package com.redelf.commons.activity
 
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.redelf.commons.extensions.finishWithTransition
 import com.redelf.commons.extensions.getAnimationResource
-import com.redelf.commons.extensions.startActivityWithTransition
 import com.redelf.commons.logging.Console
 import java.lang.annotation.Inherited
 import androidx.core.graphics.drawable.toDrawable
@@ -193,7 +190,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         val clazz = this::class.java
 
-        val result =  transitionCache.getOrPut(clazz) {
+        val result = transitionCache.getOrPut(clazz) {
 
             clazz.getAnnotation(TransitionEffects::class.java)
                 ?: if (TransitionEffects::class.java.isAnnotationPresent(Inherited::class.java)) {
