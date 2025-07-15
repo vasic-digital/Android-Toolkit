@@ -91,14 +91,28 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 Console.warning("$tag APPLIED")
 
-                super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
+                try {
+
+                    super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
+
+                } catch (_: Throwable) {
+
+                    super.overridePendingTransition(enterAnim, exitAnim)
+                }
             }
 
         } else {
 
             Console.log("$tag  Do override pending transition (with background)")
 
-            super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
+            try {
+
+                super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
+
+            } catch (_: Throwable) {
+
+                super.overridePendingTransition(enterAnim, exitAnim)
+            }
         }
     }
 
