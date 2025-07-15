@@ -19,7 +19,6 @@ open class ListWrapperManager<T> private constructor(
 
     private val identifier: String,
     private val creator: Obtain<VersionableWrapper<CopyOnWriteArrayList<T>>>,
-    private val clazz: Obtain<Class<VersionableWrapper<CopyOnWriteArrayList<T>>>>,
 
     lazySavingData: Boolean = true,
     persistData: Boolean = true
@@ -42,12 +41,11 @@ open class ListWrapperManager<T> private constructor(
 
             identifier: String,
             creator: Obtain<VersionableWrapper<CopyOnWriteArrayList<T>>>,
-            clazz: Obtain<Class<VersionableWrapper<CopyOnWriteArrayList<T>>>>,
 
             lazySavingData: Boolean = true,
             persistData: Boolean = true
 
-        ): ListWrapperManager<T> where T : Versionable {
+        ): ListWrapperManager<T> {
 
             if (identifier.isEmpty()) {
 
@@ -78,7 +76,7 @@ open class ListWrapperManager<T> private constructor(
             val ctx = BaseApplication.takeContext()
             val manager = ListWrapperManager(
 
-                identifier, creator, clazz,
+                identifier, creator,
                 lazySavingData = lazySavingData,
                 persistData = persistData
             )
@@ -109,11 +107,6 @@ open class ListWrapperManager<T> private constructor(
     override val lazySaving = lazySavingData
     override val persist = persistData
     override val instantiateDataObject = true
-
-    override val typed = object : Typed<VersionableWrapper<CopyOnWriteArrayList<T>>> {
-
-        override fun getClazz(): Class<VersionableWrapper<CopyOnWriteArrayList<T>>> = clazz.obtain()
-    }
 
     override val storageKey = "${getEnvironment()}." +
             "${BaseApplication.getVersion()}.${javaClass.simpleName}.$identifier"

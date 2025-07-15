@@ -5,7 +5,6 @@ import com.redelf.commons.data.wrapper.VersionableWrapper
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.versioning.Versionable
 import java.util.concurrent.CopyOnWriteArrayList
 
 class DefaultListWrapper<T>(
@@ -13,7 +12,6 @@ class DefaultListWrapper<T>(
     onUi: Boolean,
     identifier: String,
     creator: Obtain<VersionableWrapper<CopyOnWriteArrayList<T>>>,
-    clazz: Obtain<Class<VersionableWrapper<CopyOnWriteArrayList<T>>>>,
 
     lazySaving: Boolean = true,
     persistData: Boolean = true,
@@ -37,7 +35,6 @@ class DefaultListWrapper<T>(
 
                     identifier = identifier,
                     creator = creator,
-                    clazz = clazz,
                     lazySavingData = lazySaving,
                     persistData = persistData
                 )
@@ -60,5 +57,4 @@ class DefaultListWrapper<T>(
             return null
         }
     }
-
-) where T : Versionable
+)

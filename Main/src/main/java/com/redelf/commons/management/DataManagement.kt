@@ -91,8 +91,6 @@ abstract class DataManagement<T> :
     }
 
     protected abstract val storageKey: String
-
-    protected open val typed: Typed<T>? = null
     protected open val persist: Boolean = true
     protected open val instantiateDataObject: Boolean = false
 
@@ -299,8 +297,7 @@ abstract class DataManagement<T> :
                 return@exec
             }
 
-            val clazz = typed?.getClazz()
-            val tag = "${getLogTag()} OBTAIN :: T = '${clazz?.simpleName}' ::"
+            val tag = "${getLogTag()} OBTAIN ::"
 
             if (canLog()) Console.log("$tag START")
 
