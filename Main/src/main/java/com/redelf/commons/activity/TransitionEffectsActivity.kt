@@ -84,9 +84,9 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
             } else {
 
-                super.overridePendingTransition(enterAnim, exitAnim)
-
                 Console.log("$tag APPLIED")
+
+                super.overridePendingTransition(enterAnim, exitAnim)
             }
 
         } else {
