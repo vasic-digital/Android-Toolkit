@@ -15,6 +15,8 @@ class DefaultListWrapper<T>(
     creator: Obtain<VersionableWrapper<CopyOnWriteArrayList<T>>>,
     clazz: Obtain<Class<VersionableWrapper<CopyOnWriteArrayList<T>>>>,
 
+    lazySaving: Boolean = true,
+    persistData: Boolean = true,
     environment: String = "default",
     onChange: OnChangeCompleted? = null
 
@@ -35,7 +37,9 @@ class DefaultListWrapper<T>(
 
                     identifier = identifier,
                     creator = creator,
-                    clazz = clazz
+                    clazz = clazz,
+                    lazySavingData = lazySaving,
+                    persistData = persistData
                 )
             }
         }
