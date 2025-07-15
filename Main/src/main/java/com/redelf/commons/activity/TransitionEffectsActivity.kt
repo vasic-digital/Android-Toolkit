@@ -49,9 +49,9 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
         val transition = getTransitionAnnotation()
 
-        if (transition != null) {
+        transition?.let {
 
-            val exit = getAnimationResource(transition.exit)
+            val exit = getAnimationResource(it.exit)
 
             overridePendingTransition(0, exit)
         }

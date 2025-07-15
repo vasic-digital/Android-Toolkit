@@ -94,7 +94,16 @@ fun Activity.getAnimationResource(animName: String): Int {
 
     val type = "anim"
 
-    return resources.getIdentifier(animName, type, packageName)
+    try {
+
+        return resources.getIdentifier(animName, type, packageName)
+
+    } catch (e: Throwable) {
+
+        recordException(e)
+
+        return 0
+    }
 }
 
 fun DialogFragment.fitInsideSystemBoundaries() {
