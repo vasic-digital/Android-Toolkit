@@ -18,17 +18,12 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
-/*
-* TODO: Find more proper name for this class
-*/
 open class ListWrapper<T, M : DataManagement<*>>(
 
     val identifier: Any,
     val environment: String = "default",
 
-    /*
-    * TODO: [IN_PROGRESS] Connect the manager with the list instance
-    */
+    @Transient
     private val dataAccess: DataAccess<T, M>? = null,
 
     @Transient
@@ -46,6 +41,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     private val busy = AtomicBoolean()
 
+    // TODO: [IN_PROGRESS] Connect the list with manager and fix the test
     private var list: MutableList<T> = mutableListOf()
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 

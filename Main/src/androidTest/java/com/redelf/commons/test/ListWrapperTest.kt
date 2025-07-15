@@ -520,7 +520,6 @@ class ListWrapperTest : BaseTest() {
     private fun createChallengeCollection() =
         mutableListOf(Purgable(2), Purgable(4), Purgable(6), Purgable(8), Purgable(10))
 
-    // FIXME: [IN_PROGRESS] Fix the test
     private fun createWrapper(collection: MutableList<Purgable<Int>>, onUI: Boolean = true) =
 
         DefaultListWrapper(
@@ -537,18 +536,6 @@ class ListWrapperTest : BaseTest() {
                     val collection = CopyOnWriteArrayList(collection)
 
                     return VersionableWrapper(collection)
-                }
-            },
-
-            clazz = object : Obtain<Class<VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>>> {
-
-                override fun obtain(): Class<VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>> {
-
-                    val collection = CopyOnWriteArrayList(collection)
-
-                    val instance =  VersionableWrapper(collection)
-
-                    return instance::class.java
                 }
             }
         )
