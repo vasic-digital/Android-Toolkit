@@ -8,6 +8,8 @@ import com.redelf.commons.extensions.getAnimationResource
 import com.redelf.commons.logging.Console
 import java.lang.annotation.Inherited
 import androidx.core.graphics.drawable.toDrawable
+import com.redelf.commons.R
+import com.redelf.commons.extensions.exec
 
 abstract class TransitionEffectsActivity : AppCompatActivity() {
 
@@ -21,9 +23,26 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     }
 
     override fun startActivity(intent: Intent) {
-        super.startActivity(intent)
 
         applyExitTransition("startActivity")
+
+        if (hasTransitionAssigned("startActivity")) {
+
+            val duration = (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+
+            exec(
+
+                delayInMilliseconds = duration
+
+            ) {
+
+                super.startActivity(intent)
+            }
+
+        } else {
+
+            super.startActivity(intent)
+        }
     }
 
     override fun finish() {
