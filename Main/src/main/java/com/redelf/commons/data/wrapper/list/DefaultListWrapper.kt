@@ -57,7 +57,4 @@ class DefaultListWrapper<T>(
         }
     }
 
-) where T : Versionable {
-
-
-}
+) where T : Versionable
