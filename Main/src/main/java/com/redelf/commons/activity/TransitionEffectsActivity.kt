@@ -9,6 +9,8 @@ import java.lang.annotation.Inherited
 
 abstract class TransitionEffectsActivity : StatefulActivity() {
 
+    protected open val background = android.R.color.white
+
     private val tag = "Transition effects :: Who='${this::class.simpleName}' ::"
 
     companion object {
@@ -81,7 +83,7 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
             if (enter > 0) {
 
-                overridePendingTransition(enter, 0)
+                overridePendingTransition(enter, 0, background)
 
                 Console.debug("$tag  Pending transition override")
 
@@ -109,7 +111,7 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
             if (exit > 0) {
 
-                overridePendingTransition(0, exit)
+                overridePendingTransition(0, exit, background)
 
                 Console.debug("$tag Pending transition override")
 
