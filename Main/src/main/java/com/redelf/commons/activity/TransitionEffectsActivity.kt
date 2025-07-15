@@ -23,6 +23,18 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
     }
 
+    override fun startActivity(intent: Intent) {
+        super.startActivity(intent)
+
+        applyExitTransition("startActivity")
+    }
+
+    override fun finish() {
+        super.finish()
+
+        applyExitTransition("finish")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         Console.log("$tag onCreate")
@@ -32,10 +44,13 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun finish() {
-        super.finish()
+    override fun onPause() {
+        super.onPause()
 
-        applyExitTransition("finish")
+        if (!isFinishing) {
+
+            applyEnterTransition("onPause")
+        }
     }
 
     override fun onResume() {
@@ -50,7 +65,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         if (enterAnim == 0 && exitAnim == 0) {
 
-            val tag = "$tag  Do override pending transition (with background) with no transition ::"
+            val tag = "$tag Do override pending transition (with background) with no transition ::"
 
             if (hasTransitionAssigned("overridePendingTransition")) {
 
@@ -58,7 +73,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             } else {
 
-                Console.log("$tag APPLIED")
+                Console.warning("$tag APPLIED")
 
                 super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
             }
@@ -85,7 +100,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             } else {
 
-                Console.log("$tag APPLIED")
+                Console.warning("$tag APPLIED")
 
                 super.overridePendingTransition(enterAnim, exitAnim)
             }
