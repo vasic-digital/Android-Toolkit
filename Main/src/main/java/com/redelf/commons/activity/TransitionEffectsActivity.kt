@@ -35,6 +35,22 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
     }
 
     @Suppress("DEPRECATION")
+    @Deprecated("Deprecated in Java")
+    override fun overridePendingTransition(enterAnim: Int, exitAnim: Int, backgroundColor: Int) {
+        super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
+
+        Console.log("$tag :: Do override pending transition (with background)")
+    }
+
+    @Suppress("DEPRECATION")
+    @Deprecated("Deprecated in Java")
+    override fun overridePendingTransition(enterAnim: Int, exitAnim: Int) {
+        super.overridePendingTransition(enterAnim, exitAnim)
+
+        Console.log("$tag :: Do override pending transition")
+    }
+
+    @Suppress("DEPRECATION")
     private fun applyEnterTransition(from: String) {
 
         val tag = "$tag Apply transition :: Enter :: From='$from' ::"
