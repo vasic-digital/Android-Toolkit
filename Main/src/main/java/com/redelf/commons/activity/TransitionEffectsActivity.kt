@@ -1,21 +1,34 @@
 package com.redelf.commons.activity
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
 import com.redelf.commons.extensions.finishWithTransition
 import com.redelf.commons.extensions.getAnimationResource
 import com.redelf.commons.extensions.startActivityWithTransition
 import com.redelf.commons.logging.Console
 import java.lang.annotation.Inherited
+import androidx.core.graphics.drawable.toDrawable
 
 abstract class TransitionEffectsActivity : StatefulActivity() {
 
-    protected open val background = android.R.color.white
+    protected open val background = Color.WHITE
 
     private val tag = "Transition effects :: Who='${this::class.simpleName}' ::"
 
     companion object {
 
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+
+        Console.log("$tag onCreate")
+
+        window.setBackgroundDrawable(background.toDrawable())
+
+        super.onCreate(savedInstanceState)
     }
 
     override fun startActivity(intent: Intent) {
