@@ -9,7 +9,7 @@ import java.lang.annotation.Inherited
 
 abstract class TransitionEffectsActivity : StatefulActivity() {
 
-    private val tag = "Transition effects ::"
+    private val tag = "Transition effects :: Who='${this::class.simpleName}' ::"
 
     companion object {
 
@@ -44,10 +44,10 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
         } else {
 
-            super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
-
             Console.log("$tag  Do override pending transition (with background)")
         }
+
+        super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
     }
 
     @Suppress("DEPRECATION")
@@ -60,10 +60,10 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
         } else {
 
-            super.overridePendingTransition(enterAnim, exitAnim)
-
             Console.log("$tag  Do override pending transition")
         }
+
+        super.overridePendingTransition(enterAnim, exitAnim)
     }
 
     @Suppress("DEPRECATION")
