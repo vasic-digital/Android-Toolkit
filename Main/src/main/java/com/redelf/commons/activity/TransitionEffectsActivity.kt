@@ -37,13 +37,14 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
     @Suppress("DEPRECATION")
     @Deprecated("Deprecated in Java")
     override fun overridePendingTransition(enterAnim: Int, exitAnim: Int, backgroundColor: Int) {
-        super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
 
         if (enterAnim == 0 && exitAnim == 0) {
 
             Console.warning("$tag  Do override pending transition (with background)")
 
         } else {
+
+            super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
 
             Console.log("$tag  Do override pending transition (with background)")
         }
@@ -52,13 +53,14 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
     @Suppress("DEPRECATION")
     @Deprecated("Deprecated in Java")
     override fun overridePendingTransition(enterAnim: Int, exitAnim: Int) {
-        super.overridePendingTransition(enterAnim, exitAnim)
 
         if (enterAnim == 0 && exitAnim == 0) {
 
             Console.warning("$tag  Do override pending transition")
 
         } else {
+
+            super.overridePendingTransition(enterAnim, exitAnim)
 
             Console.log("$tag  Do override pending transition")
         }
@@ -156,7 +158,11 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
         result?.let {
 
-            Console.log("$tag Get annotation :: END :: Hash=${result.hashCode()}")
+            Console.info(
+
+                "$tag Get annotation :: END :: " +
+                        "Transition(enter='${it.enter},exit=${it.exit}')"
+            )
 
             return it
         }
