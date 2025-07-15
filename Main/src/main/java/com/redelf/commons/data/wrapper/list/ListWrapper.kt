@@ -21,14 +21,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 /*
 * TODO: Find more proper name for this class
 */
-class ListWrapper<T, M : DataManagement<*>>(
+open class ListWrapper<T, M : DataManagement<*>>(
 
-    from: Any,
-    environment: String = "default",
+    val identifier: Any,
+    val environment: String = "default",
 
     /*
     * TODO: [IN_PROGRESS] Connect the manager with the list instance
-    * TODO: [IN_PROGRESS] Make sure that there is available the default list data manager so we do not have to implement every time
     */
     private val dataAccess: DataAccess<T, M>? = null,
 
@@ -114,7 +113,7 @@ class ListWrapper<T, M : DataManagement<*>>(
         return true
     }
 
-    private val tag = "${from::class.simpleName} :: ${from.hashCode()} :: $environment :: " +
+    private val tag = "${identifier::class.simpleName} :: ${identifier.hashCode()} :: $environment :: " +
             "Data list hash = ${getHashCode()} ::"
 
     override fun isBusy() = busy.get()
