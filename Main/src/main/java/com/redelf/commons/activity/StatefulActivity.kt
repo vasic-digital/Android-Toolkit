@@ -9,7 +9,7 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscription {
+abstract class StatefulActivity : TransitionEffectsActivity(), ActivityActiveStateSubscription {
 
     protected open val removeFromHistoryOnFinish = false
 

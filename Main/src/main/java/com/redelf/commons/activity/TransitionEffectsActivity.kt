@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.redelf.commons.extensions.finishWithTransition
 import com.redelf.commons.extensions.getAnimationResource
 import com.redelf.commons.extensions.startActivityWithTransition
@@ -11,7 +12,7 @@ import com.redelf.commons.logging.Console
 import java.lang.annotation.Inherited
 import androidx.core.graphics.drawable.toDrawable
 
-abstract class TransitionEffectsActivity : StatefulActivity() {
+abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     protected open val background = Color.WHITE
 
