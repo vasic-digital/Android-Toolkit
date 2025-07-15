@@ -31,12 +31,6 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun startActivity(intent: Intent) {
-        super.startActivity(intent)
-
-        applyExitTransition("startActivity")
-    }
-
     override fun finish() {
         super.finish()
 
@@ -55,14 +49,25 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
         if (enterAnim == 0 && exitAnim == 0) {
 
-            Console.warning("$tag  Do override pending transition (with background)")
+            val tag = "$tag  Do override pending transition (with background) with no transition ::"
+
+            if (hasTransitionAssigned("overridePendingTransition")) {
+
+                Console.log("$tag SKIPPED")
+
+            } else {
+
+                Console.log("$tag APPLIED")
+
+                super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
+            }
 
         } else {
 
             Console.log("$tag  Do override pending transition (with background)")
-        }
 
-        super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
+            super.overridePendingTransition(enterAnim, exitAnim, backgroundColor)
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -71,14 +76,25 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
         if (enterAnim == 0 && exitAnim == 0) {
 
-            Console.warning("$tag  Do override pending transition")
+            val tag = "$tag  Do override pending transition with no transition ::"
+
+            if (hasTransitionAssigned("overridePendingTransition")) {
+
+                Console.log("$tag SKIPPED")
+
+            } else {
+
+                super.overridePendingTransition(enterAnim, exitAnim)
+
+                Console.log("$tag APPLIED")
+            }
 
         } else {
 
             Console.log("$tag  Do override pending transition")
-        }
 
-        super.overridePendingTransition(enterAnim, exitAnim)
+            super.overridePendingTransition(enterAnim, exitAnim)
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -102,7 +118,7 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
             } else {
 
-                Console.warning("$tag  Pending transition override skipped")
+                Console.log("$tag  Pending transition override skipped")
             }
         }
 
@@ -130,14 +146,14 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
             } else {
 
-                Console.warning("$tag Pending transition override skipped")
+                Console.log("$tag Pending transition override skipped")
             }
         }
 
         Console.log("$tag END")
     }
 
-    fun hasTransitionAssigned(from: String): Boolean? {
+    fun hasTransitionAssigned(from: String): Boolean {
 
         val tag = "$tag Has annotation :: From='$from' ::"
 
@@ -173,7 +189,7 @@ abstract class TransitionEffectsActivity : StatefulActivity() {
 
         result?.let {
 
-            Console.info(
+            Console.debug(
 
                 "$tag Get annotation :: END :: " +
                         "Transition(enter='${it.enter},exit=${it.exit}')"
