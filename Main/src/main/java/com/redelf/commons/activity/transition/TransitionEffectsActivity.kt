@@ -3,6 +3,7 @@ package com.redelf.commons.activity.transition
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toDrawable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -22,6 +23,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     protected open val backgroundActivity = BackgroundActivity::class.java
 
     private var finishExpected = false
+    private lateinit var backPressedCallback: OnBackPressedCallback
     private val tag = "Transition effects :: ${this::class.simpleName} :: ${this.hashCode()} ::"
 
     companion object {
@@ -125,6 +127,24 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             doStartActivity(intent)
         }
+    }
+
+    open fun onBack() {
+
+        val tag = "On back ::"
+
+        Console.log("$tag START")
+
+        if (isFinishing) {
+
+            Console.warning("$tag SKIPPED")
+
+            return
+        }
+
+        Console.log("$tag END")
+
+        finishFrom("onBack")
     }
 
     open fun finishFrom(from: String) {
@@ -242,6 +262,16 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         window.setBackgroundDrawable(background.toDrawable())
 
         super.onCreate(savedInstanceState)
+
+        backPressedCallback = object : OnBackPressedCallback(true) {
+
+            override fun handleOnBackPressed() {
+
+                onBack()
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this, backPressedCallback)
     }
 
     override fun onPause() {

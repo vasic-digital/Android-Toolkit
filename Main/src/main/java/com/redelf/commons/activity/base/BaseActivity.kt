@@ -137,7 +137,6 @@ abstract class BaseActivity :
     private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
     private var attachmentsDialog: AttachFileDialog? = null
-    private lateinit var backPressedCallback: OnBackPressedCallback
 
     private val finishByClassReceiver = object : BroadcastReceiver() {
 
@@ -203,16 +202,6 @@ abstract class BaseActivity :
 
             initializeTransmissionManager(transmissionManagerInitCallback)
         }
-
-        backPressedCallback = object : OnBackPressedCallback(true) {
-
-            override fun handleOnBackPressed() {
-
-                onBack()
-            }
-        }
-
-        onBackPressedDispatcher.addCallback(this, backPressedCallback)
 
         fitInsideSystemBoundaries()
 
@@ -579,18 +568,6 @@ abstract class BaseActivity :
     protected open fun onTransmissionManagementFailed(error: Throwable) {
 
         Console.error(error)
-    }
-
-    open fun onBack() {
-
-        Console.log("onBack()")
-
-        if (isFinishing) {
-
-            return
-        }
-
-        finish()
     }
 
     open fun showError(
