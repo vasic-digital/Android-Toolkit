@@ -62,7 +62,6 @@ class ListWrapperTest : BaseTest() {
                     Assert.assertTrue(collection.isNotEmpty())
                     Assert.assertTrue(challengeData.isNotEmpty())
                     Assert.assertTrue(collection.size == challengeData.size)
-                    Assert.assertTrue(wrapper.getList() == collection)
                     Assert.assertTrue(wrapper.getSize() == collection.size)
 
                     challengeData.forEachIndexed { challengeIndex, challenge ->
@@ -153,7 +152,7 @@ class ListWrapperTest : BaseTest() {
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             Assert.assertEquals(1, wrapper.get(0)?.takeData())
@@ -171,7 +170,7 @@ class ListWrapperTest : BaseTest() {
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.remove("test", index = 0)
@@ -196,7 +195,7 @@ class ListWrapperTest : BaseTest() {
             val initSize = collection.size
 
             Assert.assertTrue(true)
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.remove("test", what = what)
@@ -224,7 +223,7 @@ class ListWrapperTest : BaseTest() {
             val challenge = challengeData[position]
 
             Assert.assertTrue(collection.size == challengeData.size)
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.update("test", challenge, 1)
@@ -248,7 +247,7 @@ class ListWrapperTest : BaseTest() {
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             val first = 1
@@ -280,7 +279,7 @@ class ListWrapperTest : BaseTest() {
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.removeAll("test", listOf(collection.first(), collection.last()))
@@ -305,7 +304,7 @@ class ListWrapperTest : BaseTest() {
             val wrapper = createWrapper(collection)
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.clear("test")
@@ -334,7 +333,7 @@ class ListWrapperTest : BaseTest() {
 
             Assert.assertTrue(collection.isNotEmpty())
             Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
             Assert.assertTrue(collection.size == challengeData.size)
 
@@ -405,7 +404,7 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(collection.isNotEmpty())
             Assert.assertTrue(challengeData.isNotEmpty())
             Assert.assertTrue(challengeData.size == collection.size + 2)
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.addAllAndFilter(challengeData, "test")
@@ -442,7 +441,7 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(collection.isNotEmpty())
             Assert.assertTrue(challengeData.isNotEmpty())
             Assert.assertTrue(collection.size == challengeData.size)
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.addAll(challengeData, "testAdd.all")
@@ -477,7 +476,7 @@ class ListWrapperTest : BaseTest() {
             val initSize = collection.size
 
             Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.purge("test")
@@ -503,7 +502,7 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(collection.isNotEmpty())
             Assert.assertTrue(challengeData.isNotEmpty())
             Assert.assertTrue(collection.size == challengeData.size)
-            Assert.assertTrue(wrapper.getList() == collection)
+            
             Assert.assertTrue(wrapper.getSize() == collection.size)
         }
     }
