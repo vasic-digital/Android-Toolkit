@@ -33,45 +33,48 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     override fun startActivity(intent: Intent) {
 
+        var group = ""
         val transition = getTransitionAnnotation("startActivity")
 
         transition?.let {
 
-            val group = it.group
+            group = transition.group
+        }
 
-            if (group.isEmpty()) {
+        // TODO: Obtain annotation from the class that we are about to start (contained inside the intent)
 
-                doStartActivity(intent)
+        if (group.isEmpty()) {
 
-            } else {
+            doStartActivity(intent)
 
-                val activities = GROUPS.getOrPut(group) {
+        } else {
 
-                    HashSet()
-                }
+            val activities = GROUPS.getOrPut(group) {
 
-                clazz().simpleName.let { name ->
+                HashSet()
+            }
 
-                    activities.add(name)
-                    GROUPS[group] = activities
-                }
+            clazz().simpleName.let { name ->
 
-                if (activities.isEmpty()) {
+                activities.add(name)
+                GROUPS[group] = activities
+            }
 
-                    val parentIntent = Intent(this, clazz())
+            if (activities.isEmpty()) {
 
-                    parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                val parentIntent = Intent(this, clazz())
 
-                    doStartActivity(parentIntent) {
+                parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
 
-                        doStartActivity(intent)
-                    }
-
-                } else {
+                doStartActivity(parentIntent) {
 
                     doStartActivity(intent)
                 }
+
+            } else {
+
+                doStartActivity(intent)
             }
         }
 
@@ -254,13 +257,11 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         return false
     }
 
-    private fun getTransitionAnnotation(from: String): TransitionEffects? {
+    private fun getTransitionAnnotation(from: String, clazz: Class<*> = this::class.java): TransitionEffects? {
 
         val tag = "$tag Get annotation :: From='$from' ::"
 
         Console.log("$tag  START")
-
-        val clazz = this::class.java
 
         val result = transitionCache.getOrPut(clazz) {
 
