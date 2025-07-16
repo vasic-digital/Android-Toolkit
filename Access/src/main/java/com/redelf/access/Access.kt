@@ -16,7 +16,7 @@ import com.redelf.commons.execution.Cancellation
 import com.redelf.commons.execution.CommonExecution
 import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.execution.Executor
-import com.redelf.commons.lifecycle.InitializationAsync
+import com.redelf.commons.lifecycle.initialization.InitializationAsync
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean

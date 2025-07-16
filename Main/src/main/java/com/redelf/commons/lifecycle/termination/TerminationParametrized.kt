@@ -1,4 +1,6 @@
-package com.redelf.commons.lifecycle
+package com.redelf.commons.lifecycle.termination
+
+import com.redelf.commons.lifecycle.LifecycleCallback
 
 interface TerminationParametrized<P, T> {
 

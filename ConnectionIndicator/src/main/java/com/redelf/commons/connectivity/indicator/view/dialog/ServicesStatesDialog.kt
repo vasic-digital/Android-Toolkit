@@ -11,8 +11,8 @@ import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulServi
 import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.lifecycle.TerminationAsync
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.termination.TerminationAsync
+import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.ui.dialog.BaseDialog
 

@@ -3,8 +3,8 @@ package com.redelf.commons.connectivity.indicator.stateful
 import com.redelf.commons.connectivity.indicator.AvailableService
 import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.lifecycle.TerminationAsync
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.termination.TerminationAsync
+import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges

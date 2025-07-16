@@ -8,9 +8,9 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.sync
-import com.redelf.commons.lifecycle.InitializationWithContext
-import com.redelf.commons.lifecycle.ShutdownSynchronized
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.initialization.InitializationWithContext
+import com.redelf.commons.lifecycle.shutdown.ShutdownSynchronized
+import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain

@@ -3,7 +3,7 @@ package com.redelf.commons.connectivity.indicator.connection
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
-import com.redelf.commons.lifecycle.TerminationAsync
+import com.redelf.commons.lifecycle.termination.TerminationAsync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.ConnectionState
 import com.redelf.commons.stateful.State

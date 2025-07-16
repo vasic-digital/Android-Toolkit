@@ -1,4 +1,4 @@
-package com.redelf.commons.lifecycle
+package com.redelf.commons.lifecycle.initialization
 
 import android.content.Context
 

@@ -1,8 +1,8 @@
 package com.redelf.commons.persistance.base
 
-import com.redelf.commons.lifecycle.InitializationWithContext
-import com.redelf.commons.lifecycle.ShutdownSynchronized
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.initialization.InitializationWithContext
+import com.redelf.commons.lifecycle.shutdown.ShutdownSynchronized
+import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.obtain.OnObtain
 
 import java.lang.reflect.Type

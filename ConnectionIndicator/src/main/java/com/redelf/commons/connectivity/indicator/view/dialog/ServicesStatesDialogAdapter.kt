@@ -13,8 +13,8 @@ import com.redelf.commons.connectivity.indicator.view.ConnectivityIndicator
 import com.redelf.commons.creation.instantiation.SingleInstantiated
 import com.redelf.commons.dismissal.Dismissable
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.lifecycle.TerminationAsync
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.termination.TerminationAsync
+import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.Reconnect
 import java.util.concurrent.CopyOnWriteArraySet
