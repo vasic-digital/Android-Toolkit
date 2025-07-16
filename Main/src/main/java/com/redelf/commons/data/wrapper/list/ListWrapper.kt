@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 open class ListWrapper<T, M : DataManagement<*>>(
 
-    val identifier: Any,
+    val identifier: String,
     val environment: String = "default",
 
     @Transient
@@ -41,16 +41,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     private val busy = AtomicBoolean()
 
-    // TODO: [IN_PROGRESS] Connect the list with manager and fix the test
     private var list: MutableList<T> = mutableListOf()
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
-    private val dataPushListener: OnObtain<Boolean?>? = if (
-
-        dataAccess != null &&
-        onChange != null
-
-    ) {
+    private val dataPushListener: OnObtain<Boolean?>? = if (dataAccess != null) {
 
         object : OnObtain<Boolean?> {
 
@@ -58,7 +52,9 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 if (data == true) {
 
-                    onChange?.onChange("dataPushed", true)
+                    val items = getCollection()
+
+                    replaceAllAndFilter(items, "dataPushListener")
                 }
             }
 
@@ -77,15 +73,12 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         dataPushListener?.let {
 
-            try {
-
-                dataAccess?.managerAccess?.obtain()?.registerDataPushListener(it)
-
-            } catch (e: Throwable) {
-
-                recordException(e)
-            }
+            getManager()?.registerDataPushListener(it)
         }
+
+        val items = getCollection()
+
+        replaceAllAndFilter(items, "init")
     }
 
     override fun terminate(vararg args: Any): Boolean {
@@ -109,8 +102,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
         return true
     }
 
-    private val tag = "${identifier::class.simpleName} :: ${identifier.hashCode()} :: $environment :: " +
-            "Data list hash = ${getHashCode()} ::"
+    private val tag = "$identifier :: $environment :: ${getHashCode()} ::"
 
     override fun isBusy() = busy.get()
 
@@ -256,7 +248,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     fun replaceAllAndFilter(
 
-        what: Collection<T>,
+        what: Collection<T?>?,
         from: String,
         removeDeleted: Boolean = true,
         filters: List<Filter<T>> = emptyList(),
@@ -275,7 +267,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     fun addAllAndFilter(
 
-        what: Collection<T>,
+        what: Collection<T?>?,
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
@@ -442,7 +434,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     private fun doAddAllAndFilter(
 
-        what: Collection<T>,
+        what: Collection<T?>?,
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
@@ -458,7 +450,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             var modified = false
             var changedCount = 0
-            val linked = LinkedList(what)
+            val linked = LinkedList(what ?: emptyList())
 
             val toRemove = mutableListOf<T>()
             val toUpdate = mutableListOf<T>()
@@ -523,13 +515,16 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             linked.forEach { linked ->
 
-                if (!toUpdate.contains(linked) && !toRemove.contains(linked)) {
+                linked?.let { lkd ->
 
-                    modified = true
+                    if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
 
-                    changedCount++
+                        modified = true
 
-                    doAdd(linked)
+                        changedCount++
+
+                        doAdd(lkd)
+                    }
                 }
             }
 
@@ -539,7 +534,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     if (modified) {
 
-                        notifyChanged(onChange, "addAllAndFilter.${what.size}")
+                        notifyChanged(onChange, "addAllAndFilter.${what?.size ?: 0}")
                     }
 
                     callback?.let {
@@ -768,5 +763,33 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             recordException(e)
         }
+    }
+
+    private fun getManager(): M? {
+
+        try {
+
+            return dataAccess?.managerAccess?.obtain()
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return null
+    }
+
+    private fun getCollection(): Collection<T?>? {
+
+        try {
+
+            return dataAccess?.obtain()
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return null
     }
 }
