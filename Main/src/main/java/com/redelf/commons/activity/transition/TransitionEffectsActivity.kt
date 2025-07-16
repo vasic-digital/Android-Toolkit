@@ -8,6 +8,7 @@ import androidx.core.graphics.drawable.toDrawable
 import com.redelf.commons.R
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.getAnimationResource
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import java.lang.annotation.Inherited
 
@@ -25,30 +26,12 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
     }
 
+    protected fun startActivity(intent: Intent, callback: () -> Unit) {
+
+        doStartActivity(intent, callback)
+    }
+
     override fun startActivity(intent: Intent) {
-
-        fun next() {
-
-            applyExitTransition("startActivity")
-
-            if (hasTransitionAssigned("startActivity")) {
-
-                val duration = (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
-
-                exec(
-
-                    delayInMilliseconds = duration
-
-                ) {
-
-                    super.startActivity(intent)
-                }
-
-            } else {
-
-                super.startActivity(intent)
-            }
-        }
 
         val transition = getTransitionAnnotation("startActivity")
 
@@ -58,7 +41,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (group.isEmpty()) {
 
-                next()
+                doStartActivity(intent)
 
             } else {
 
@@ -67,7 +50,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                     HashSet()
                 }
 
-                clazz().simpleName?.let { name ->
+                clazz().simpleName.let { name ->
 
                     activities.add(name)
                     GROUPS[group] = activities
@@ -75,22 +58,26 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 if (activities.isEmpty()) {
 
-                    // TODO: Spawn and continue
+                    val parentIntent = Intent(this, clazz())
 
-                    /*
-                    * Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    */
+                    parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
+                    doStartActivity(parentIntent) {
+
+                        doStartActivity(intent)
+                    }
 
                 } else {
 
-                    next()
+                    doStartActivity(intent)
                 }
             }
         }
 
         if (transition == null) {
 
-            next()
+            doStartActivity(intent)
         }
     }
 
@@ -301,5 +288,45 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         return null
     }
 
-    private fun clazz() = this@TransitionEffectsActivity::class
+    private fun clazz() = this@TransitionEffectsActivity::class.java
+
+    private fun doStartActivity(intent: Intent, callback: (() -> Unit)? = null) {
+
+        applyExitTransition("startActivity")
+
+        fun next() {
+
+            try {
+
+                super.startActivity(intent)
+
+                callback?.let {
+
+                    it()
+                }
+
+            } catch (e: Throwable) {
+
+                recordException(e)
+            }
+        }
+
+        if (hasTransitionAssigned("startActivity")) {
+
+            val duration = (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+
+            exec(
+
+                delayInMilliseconds = duration
+
+            ) {
+
+                next()
+            }
+
+        } else {
+
+            next()
+        }
+    }
 }
