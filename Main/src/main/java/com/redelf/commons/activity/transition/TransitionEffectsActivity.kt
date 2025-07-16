@@ -12,6 +12,7 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import java.lang.annotation.Inherited
 
+
 abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     protected open val background = Color.WHITE
@@ -34,14 +35,26 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     override fun startActivity(intent: Intent) {
 
         var group = ""
-        val transition = getTransitionAnnotation("startActivity")
+        var transition = getTransitionAnnotation("startActivity")
 
         transition?.let {
 
             group = transition.group
         }
 
-        // TODO: Obtain annotation from the class that we are about to start (contained inside the intent)
+        val component = intent.component
+
+        if (component != null) {
+
+            val targetClass: Class<*> = component.javaClass
+
+            transition = getTransitionAnnotation("startActivity", targetClass)
+
+            transition?.let {
+
+                group = transition.group
+            }
+        }
 
         if (group.isEmpty()) {
 
