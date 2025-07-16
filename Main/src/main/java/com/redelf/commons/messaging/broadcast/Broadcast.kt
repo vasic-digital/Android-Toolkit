@@ -10,4 +10,7 @@ object Broadcast {
     const val EXTRA_SETTINGS_VALUE = "EXTRA_SETTINGS_VALUE"
     const val EXTRA_FINISH_CLAZZ = "EXTRA_FINISH_CLASS"
     const val EXTRA_FINISH_INSTANCE = "EXTRA_FINISH_INSTANCE"
+
+    const val EXTRA_ACTIVITY_CLASS = "extra.activityClass"
+    const val ACTION_FINISH_BY_ACTIVITY_CLASS = "action.finishBy.activityClass"
 }

@@ -139,6 +139,17 @@ abstract class BaseActivity :
     private var attachmentsDialog: AttachFileDialog? = null
     private lateinit var backPressedCallback: OnBackPressedCallback
 
+    private val finishByClassReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            if (intent?.getStringExtra(Broadcast.EXTRA_ACTIVITY_CLASS) == this::class.java.name) {
+
+                finish()
+            }
+        }
+    }
+
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -178,6 +189,11 @@ abstract class BaseActivity :
 
         LocalBroadcastManager.getInstance(applicationContext)
             .registerReceiver(finishReceiver, filter)
+
+        val finishByClassFilter = IntentFilter(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS)
+
+        LocalBroadcastManager.getInstance(applicationContext)
+            .registerReceiver(finishByClassReceiver, finishByClassFilter)
 
         Console.log("Transmission management supported: ${isTransmissionServiceSupported()}")
 
@@ -774,7 +790,9 @@ abstract class BaseActivity :
         Console.log("$tag START")
 
         dismissDialogs()
+
         LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(finishReceiver)
+        LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(finishByClassReceiver)
 
         unregistrar?.unregister()
 

@@ -5,11 +5,13 @@ import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toDrawable
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.R
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.getAnimationResource
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
+import com.redelf.commons.messaging.broadcast.Broadcast
 import java.lang.annotation.Inherited
 
 
@@ -107,7 +109,27 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (activities.isEmpty()) {
 
-               // TODO: Kill the background activity
+                val duration =
+                    (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+
+                exec(
+
+                    delayInMilliseconds = duration
+
+                ) {
+
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(
+
+                        Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
+
+                            putExtra(
+
+                                Broadcast.EXTRA_ACTIVITY_CLASS,
+                                backgroundActivity.name
+                            )
+                        }
+                    )
+                }
             }
         }
 
