@@ -5,11 +5,11 @@ import com.redelf.commons.R
 import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.logging.Console
 
-@TransitionEffects(
-
-    enter = "fade_in",
-    exit = "fade_out"
-)
+//@TransitionEffects(
+//
+//    enter = "fade_in",
+//    exit = "fade_out"
+//)
 class BackgroundActivity : BaseActivity() {
 
     private val tag = "Background activity ::"
