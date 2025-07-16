@@ -21,10 +21,11 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     protected open val background = Color.WHITE
     protected open val backgroundActivity = BackgroundActivity::class.java
 
-    private val tag = "Transition effects :: Who='${this::class.simpleName}' ::"
+    private val tag = "Transition effects :: ${this::class.simpleName} :: ${this.hashCode()} ::"
 
     companion object {
 
+        private var GROUPS_PARENT: Class<*>? = null
         private val GROUPS = HashMap<String, HashSet<String>>()
 
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
@@ -39,6 +40,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     *   TODO: Implement groups support for the nested groups and multiple instances of the activity
     */
     override fun startActivity(intent: Intent) {
+
+        val tag = "$tag Start activity ::"
+
+        Console.log("$tag START")
 
         val group = getGroup(intent)
         val transition = getTransitionAnnotation("startActivity")
@@ -81,9 +86,12 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 addToGroups()
 
+                GROUPS_PARENT = clazz()
+
+                Console.log("$tag Groups parent :: Set :: Parent='${GROUPS_PARENT?.simpleName}'")
+
                 val parentIntent = Intent(this, backgroundActivity)
 
-                // FIXME: On finish start root activity or bring it back to front
                 parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
 
@@ -108,11 +116,19 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     override fun finish() {
 
+        val tag = "$tag Finish ::"
+
+        Console.log("$tag START")
+
         fun next() {
+
+            Console.log("$tag ENDING")
 
             super.finish()
 
             applyExitTransition("finish")
+
+            Console.log("$tag ENDED")
         }
 
         val group = getGroup()
@@ -131,6 +147,29 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
             }
 
             if (activities.isEmpty()) {
+
+                GROUPS_PARENT?.let {
+
+                    val parent = it
+
+                    GROUPS_PARENT = null
+
+                    val intent = Intent(
+
+                        applicationContext,
+                        parent
+                    )
+
+                    intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
+                    Console.log(
+
+                        "$tag Groups parent :: Starting :: Parent='${parent.simpleName}'"
+                    )
+
+                    doStartActivity(intent)
+                }
 
                 val duration =
                     (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
@@ -219,7 +258,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         } else {
 
-            Console.log("$tag  Do override pending transition (with background)")
+            Console.log("$tag Do override pending transition (with background)")
 
             try {
 
