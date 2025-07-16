@@ -109,6 +109,18 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (activities.isEmpty()) {
 
+                LocalBroadcastManager.getInstance(this).sendBroadcast(
+
+                    Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
+
+                        putExtra(
+
+                            Broadcast.EXTRA_ACTIVITY_CLASS,
+                            backgroundActivity.name
+                        )
+                    }
+                )
+
                 val duration =
                     (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
 
@@ -118,22 +130,14 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 ) {
 
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(
-
-                        Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
-
-                            putExtra(
-
-                                Broadcast.EXTRA_ACTIVITY_CLASS,
-                                backgroundActivity.name
-                            )
-                        }
-                    )
+                    super.onDestroy()
                 }
+
+            } else {
+
+                super.onDestroy()
             }
         }
-
-        super.onDestroy()
     }
 
     override fun finish() {
