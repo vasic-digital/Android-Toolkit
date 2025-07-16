@@ -118,7 +118,6 @@
 
         <activity
 
-            android:launchMode="singleInstance"
             android:screenOrientation="portrait"
             android:name=".activity.transition.BackgroundActivity" />
 

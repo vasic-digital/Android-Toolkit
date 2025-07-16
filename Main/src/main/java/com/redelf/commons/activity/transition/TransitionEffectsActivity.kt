@@ -32,7 +32,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         doStartActivity(intent, callback)
     }
 
-    // TODO: Implement groups support for the nested groups and multiple instances of the activity
+    /*
+    *   TODO: Implement groups support for the nested groups and multiple instances of the activity
+    */
     override fun startActivity(intent: Intent) {
 
         var group = ""
