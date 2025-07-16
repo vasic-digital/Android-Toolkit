@@ -78,7 +78,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                 HashSet()
             }
 
-            fun add() {
+            fun addToGroups() {
 
                 clazz().simpleName.let { name ->
 
@@ -89,7 +89,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (activities.isEmpty()) {
 
-                add()
+                addToGroups()
 
                 val parentIntent = Intent(this, clazz())
 
@@ -103,7 +103,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             } else {
 
-                add()
+                addToGroups()
 
                 doStartActivity(intent)
             }
