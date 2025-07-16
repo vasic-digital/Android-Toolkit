@@ -39,20 +39,20 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         transition?.let {
 
-            group = transition.group
+            group = it.group
         }
 
         val component = intent.component
 
-        if (component != null) {
+        component?.let { c ->
 
-            val targetClass: Class<*> = component.javaClass
+            val targetClass: Class<*> = c.javaClass
 
             transition = getTransitionAnnotation("startActivity", targetClass)
 
             transition?.let {
 
-                group = transition.group
+                group = it.group
             }
         }
 
