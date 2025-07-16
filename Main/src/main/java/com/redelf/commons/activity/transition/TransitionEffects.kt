@@ -8,5 +8,6 @@ import java.lang.annotation.Inherited
 annotation class TransitionEffects(
 
     val enter: String,
-    val exit: String
+    val exit: String,
+    val group: String = ""
 )
