@@ -48,91 +48,94 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testAdd() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            listOf(false, true).forEachIndexed { index, withCallback ->
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-                listOf(false, true).forEachIndexed { index, withOnChange ->
+                listOf(false, true).forEachIndexed { index, withCallback ->
 
-                    val collection = createCollection()
-                    val wrapper = createWrapper(collection)
-                    val challengeData = createChallengeCollection()
+                    listOf(false, true).forEachIndexed { index, withOnChange ->
 
-                    Assert.assertTrue(collection.isNotEmpty())
-                    Assert.assertTrue(challengeData.isNotEmpty())
-                    Assert.assertTrue(collection.size == challengeData.size)
+                        val collection = createCollection()
+                        val wrapper = createWrapper(collection)
+                        val challengeData = createChallengeCollection()
 
-                    challengeData.forEachIndexed { challengeIndex, challenge ->
+                        Assert.assertTrue(collection.isNotEmpty())
+                        Assert.assertTrue(challengeData.isNotEmpty())
+                        Assert.assertTrue(collection.size == challengeData.size)
 
-                        val changeDetected = AtomicBoolean()
-                        val callbackExecuted = AtomicBoolean()
+                        challengeData.forEachIndexed { challengeIndex, challenge ->
 
-                        val callback = if (withCallback) {
+                            val changeDetected = AtomicBoolean()
+                            val callbackExecuted = AtomicBoolean()
 
-                            {
+                            val callback = if (withCallback) {
 
-                                callbackExecuted.set(true)
+                                {
+
+                                    callbackExecuted.set(true)
+                                }
+
+                            } else {
+
+                                null
                             }
 
-                        } else {
+                            val onChange = if (withOnChange) {
 
-                            null
-                        }
+                                object : OnChangeCompleted {
 
-                        val onChange = if (withOnChange) {
+                                    override fun onChange(action: String, changed: Boolean) {
 
-                            object : OnChangeCompleted {
+                                        changeDetected.set(changed)
+                                    }
+                                }
 
-                                override fun onChange(action: String, changed: Boolean) {
+                            } else {
 
-                                    changeDetected.set(changed)
+                                null
+                            }
+
+                            wrapper.add(
+
+                                from = "testAdd.$challengeIndex",
+                                value = challenge,
+                                onChange = onChange,
+                                callback = callback
+                            )
+
+                            yieldWhile(timeoutInMilliseconds = 3000) {
+
+                                wrapper.isBusy()
+                            }
+
+                            if (withOnChange) {
+
+                                yieldWhile(timeoutInMilliseconds = 1000) {
+
+                                    !changeDetected.get()
                                 }
                             }
 
-                        } else {
+                            if (withCallback) {
 
-                            null
-                        }
+                                yieldWhile(timeoutInMilliseconds = 1000) {
 
-                        wrapper.add(
-
-                            from = "testAdd.$challengeIndex",
-                            value = challenge,
-                            onChange = onChange,
-                            callback = callback
-                        )
-
-                        yieldWhile(timeoutInMilliseconds = 3000) {
-
-                            wrapper.isBusy()
-                        }
-
-                        if (withOnChange) {
-
-                            yieldWhile(timeoutInMilliseconds = 1000) {
-
-                                !changeDetected.get()
+                                    !callbackExecuted.get()
+                                }
                             }
+
+                            val size = wrapper.getSize()
+                            val defaultSize = createCollection().size
+
+                            Assert.assertTrue(size > defaultSize)
+                            Assert.assertTrue(size == defaultSize + (challengeIndex + 1))
+                            Assert.assertTrue(wrapper.contains(challenge))
+                            Assert.assertTrue(wrapper.getList().contains(challenge))
+
+                            Assert.assertEquals(withOnChange, changeDetected.get())
+                            Assert.assertEquals(withCallback, callbackExecuted.get())
                         }
-
-                        if (withCallback) {
-
-                            yieldWhile(timeoutInMilliseconds = 1000) {
-
-                                !callbackExecuted.get()
-                            }
-                        }
-
-                        val size = wrapper.getSize()
-                        val defaultSize = createCollection().size
-
-                        Assert.assertTrue(size > defaultSize)
-                        Assert.assertTrue(size == defaultSize + (challengeIndex + 1))
-                        Assert.assertTrue(wrapper.contains(challenge))
-                        Assert.assertTrue(wrapper.getList().contains(challenge))
-
-                        Assert.assertEquals(withOnChange, changeDetected.get())
-                        Assert.assertEquals(withCallback, callbackExecuted.get())
                     }
                 }
             }
@@ -144,116 +147,134 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testGet() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val wrapper = createWrapper(collection)
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(collection.isNotEmpty())
+                val collection = createCollection()
+                val wrapper = createWrapper(collection)
 
-            Assert.assertEquals(1, wrapper.get(0)?.takeData())
-            Assert.assertEquals(3, wrapper.get(1)?.takeData())
-            Assert.assertEquals(5, wrapper.get(2)?.takeData())
+                Assert.assertTrue(collection.isNotEmpty())
+
+                Assert.assertEquals(1, wrapper.get(0)?.takeData())
+                Assert.assertEquals(3, wrapper.get(1)?.takeData())
+                Assert.assertEquals(5, wrapper.get(2)?.takeData())
+            }
         }
     }
 
     @Test
     fun testRemoveIndex() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val wrapper = createWrapper(collection)
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(collection.isNotEmpty())
+                val collection = createCollection()
+                val wrapper = createWrapper(collection)
 
-            wrapper.remove("test", index = 0)
+                Assert.assertTrue(collection.isNotEmpty())
 
-            yieldWhile(timeoutInMilliseconds = 3000) {
+                wrapper.remove("test", index = 0)
 
-                wrapper.isBusy()
+                yieldWhile(timeoutInMilliseconds = 3000) {
+
+                    wrapper.isBusy()
+                }
+
+                Assert.assertEquals(3, wrapper.get(0)?.takeData())
             }
-
-            Assert.assertEquals(3, wrapper.get(0)?.takeData())
         }
     }
 
     @Test
     fun testRemoveItem() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val wrapper = createWrapper(collection)
-            val what = collection[1]
-            val initSize = collection.size
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(true)
+                val collection = createCollection()
+                val wrapper = createWrapper(collection)
+                val what = collection[1]
+                val initSize = collection.size
 
-            Assert.assertTrue(wrapper.getSize() == collection.size)
+                Assert.assertTrue(true)
 
-            wrapper.remove("test", what = what)
+                Assert.assertTrue(wrapper.getSize() == collection.size)
 
-            yieldWhile(timeoutInMilliseconds = 3000) {
+                wrapper.remove("test", what = what)
 
-                wrapper.isBusy()
+                yieldWhile(timeoutInMilliseconds = 3000) {
+
+                    wrapper.isBusy()
+                }
+
+                Assert.assertEquals(initSize - 1, wrapper.getSize())
             }
-
-            Assert.assertEquals(initSize - 1, wrapper.getSize())
         }
     }
 
     @Test
     fun testUpdate() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val challengeData = createChallengeCollection()
-            val wrapper = createWrapper(collection)
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            val position = 1
-            val original = collection[position]
-            val challenge = challengeData[position]
+                val collection = createCollection()
+                val challengeData = createChallengeCollection()
+                val wrapper = createWrapper(collection)
 
-            Assert.assertTrue(collection.size == challengeData.size)
+                val position = 1
+                val original = collection[position]
+                val challenge = challengeData[position]
 
-            Assert.assertTrue(wrapper.getSize() == collection.size)
+                Assert.assertTrue(collection.size == challengeData.size)
 
-            wrapper.update("test", challenge, 1)
+                Assert.assertTrue(wrapper.getSize() == collection.size)
 
-            yieldWhile(timeoutInMilliseconds = 3000) {
+                wrapper.update("test", challenge, 1)
 
-                wrapper.isBusy()
+                yieldWhile(timeoutInMilliseconds = 3000) {
+
+                    wrapper.isBusy()
+                }
+
+                Assert.assertEquals(challenge.takeData(), wrapper.get(position)?.takeData())
+                Assert.assertFalse(wrapper.contains(original))
             }
-
-            Assert.assertEquals(challenge.takeData(), wrapper.get(position)?.takeData())
-            Assert.assertFalse(wrapper.contains(original))
         }
     }
 
     @Test
     fun testIndex() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val wrapper = createWrapper(collection)
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(collection.isNotEmpty())
+                val collection = createCollection()
+                val wrapper = createWrapper(collection)
 
-            Assert.assertNotNull(wrapper.getFirst()?.takeData())
-            Assert.assertNotNull(wrapper.getLast()?.takeData())
-            Assert.assertNotEquals(wrapper.getFirst()?.takeData(), wrapper.getLast()?.takeData())
+                Assert.assertTrue(collection.isNotEmpty())
 
-            val index = 2
-            val item = wrapper.get(index)
+                Assert.assertNotNull(wrapper.getFirst()?.takeData())
+                Assert.assertNotNull(wrapper.getLast()?.takeData())
+                Assert.assertNotEquals(
+                    wrapper.getFirst()?.takeData(),
+                    wrapper.getLast()?.takeData()
+                )
 
-            Assert.assertNotNull(item)
+                val index = 2
+                val item = wrapper.get(index)
 
-            item?.let {
+                Assert.assertNotNull(item)
 
-                Assert.assertEquals(index, wrapper.indexOf(it))
+                item?.let {
+
+                    Assert.assertEquals(index, wrapper.indexOf(it))
+                }
             }
         }
     }
@@ -261,115 +282,124 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testRemoveAll() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            val duplicates = mutableListOf<Purgable<Int>>()
-            duplicates.addAll(collection)
+                val collection = createCollection()
 
-            val wrapper = createWrapper(collection)
+                val duplicates = mutableListOf<Purgable<Int>>()
+                duplicates.addAll(collection)
 
-            Assert.assertTrue(collection.isNotEmpty())
+                val wrapper = createWrapper(collection)
 
-            Assert.assertTrue(wrapper.getSize() == collection.size)
+                Assert.assertTrue(collection.isNotEmpty())
 
-            wrapper.removeAll("test", listOf(collection.first(), collection.last()))
+                Assert.assertTrue(wrapper.getSize() == collection.size)
 
-            yieldWhile(timeoutInMilliseconds = 3000) {
+                wrapper.removeAll("test", listOf(collection.first(), collection.last()))
 
-                wrapper.isBusy()
+                yieldWhile(timeoutInMilliseconds = 3000) {
+
+                    wrapper.isBusy()
+                }
+
+                Assert.assertFalse(wrapper.contains(duplicates.first()))
+                Assert.assertFalse(wrapper.contains(duplicates.last()))
+                Assert.assertEquals(duplicates.size - 2, wrapper.getSize())
             }
-
-            Assert.assertFalse(wrapper.contains(duplicates.first()))
-            Assert.assertFalse(wrapper.contains(duplicates.last()))
-            Assert.assertEquals(duplicates.size - 2, wrapper.getSize())
         }
     }
 
     @Test
     fun testClear() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val wrapper = createWrapper(collection)
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(collection.isNotEmpty())
+                val collection = createCollection()
+                val wrapper = createWrapper(collection)
 
-            Assert.assertTrue(wrapper.getSize() == collection.size)
+                Assert.assertTrue(collection.isNotEmpty())
 
-            wrapper.clear("test")
+                Assert.assertTrue(wrapper.getSize() == collection.size)
 
-            yieldWhile(timeoutInMilliseconds = 3000) {
+                wrapper.clear("test")
 
-                wrapper.isBusy()
+                yieldWhile(timeoutInMilliseconds = 3000) {
+
+                    wrapper.isBusy()
+                }
+
+                Assert.assertTrue(wrapper.isEmpty())
+                Assert.assertTrue(wrapper.getList().isEmpty())
             }
-
-            Assert.assertTrue(wrapper.isEmpty())
-            Assert.assertTrue(wrapper.getList().isEmpty())
         }
     }
 
     @Test
     fun testReplaceAndFilter() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val changeDetected = AtomicBoolean()
-            val callbackExecuted = AtomicBoolean()
-            val wrapper = createWrapper(collection)
-            val challengeData = createChallengeCollection()
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
+                val collection = createCollection()
+                val changeDetected = AtomicBoolean()
+                val callbackExecuted = AtomicBoolean()
+                val wrapper = createWrapper(collection)
+                val challengeData = createChallengeCollection()
 
-            Assert.assertTrue(wrapper.getSize() == collection.size)
-            Assert.assertTrue(collection.size == challengeData.size)
+                Assert.assertTrue(collection.isNotEmpty())
+                Assert.assertTrue(challengeData.isNotEmpty())
 
-            val callback = { modified: Boolean, count: Int ->
+                Assert.assertTrue(wrapper.getSize() == collection.size)
+                Assert.assertTrue(collection.size == challengeData.size)
 
-                callbackExecuted.set(true)
-            }
+                val callback = { modified: Boolean, count: Int ->
 
-            val onChange = object : OnChangeCompleted {
-
-                override fun onChange(action: String, changed: Boolean) {
-
-                    changeDetected.set(changed)
+                    callbackExecuted.set(true)
                 }
+
+                val onChange = object : OnChangeCompleted {
+
+                    override fun onChange(action: String, changed: Boolean) {
+
+                        changeDetected.set(changed)
+                    }
+                }
+
+                wrapper.replaceAllAndFilter(
+
+                    what = challengeData,
+                    from = "test",
+                    onChange = onChange,
+                    callback = callback
+                )
+
+                yieldWhile(timeoutInMilliseconds = 3000) {
+
+                    wrapper.isBusy()
+                }
+
+                yieldWhile(timeoutInMilliseconds = 1000) {
+
+                    !changeDetected.get()
+                }
+
+                yieldWhile(timeoutInMilliseconds = 1000) {
+
+                    !callbackExecuted.get()
+                }
+
+                challengeData.forEachIndexed { index, challenge ->
+
+                    Assert.assertEquals(challenge.takeData(), wrapper.get(index)?.takeData())
+                }
+
+                Assert.assertEquals(challengeData.size, wrapper.getSize())
             }
-
-            wrapper.replaceAllAndFilter(
-
-                what = challengeData,
-                from = "test",
-                onChange = onChange,
-                callback = callback
-            )
-
-            yieldWhile(timeoutInMilliseconds = 3000) {
-
-                wrapper.isBusy()
-            }
-
-            yieldWhile(timeoutInMilliseconds = 1000) {
-
-                !changeDetected.get()
-            }
-
-            yieldWhile(timeoutInMilliseconds = 1000) {
-
-                !callbackExecuted.get()
-            }
-
-            challengeData.forEachIndexed { index, challenge ->
-
-                Assert.assertEquals(challenge.takeData(), wrapper.get(index)?.takeData())
-            }
-
-            Assert.assertEquals(challengeData.size, wrapper.getSize())
         }
 
         // TODO: With and without remove deleted
@@ -379,39 +409,42 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testAddAllAndFilter() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val challengeData = createChallengeCollection()
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            val first = collection.first()
-            val last = collection.last()
+                val collection = createCollection()
+                val challengeData = createChallengeCollection()
 
-            challengeData.add(first)
-            challengeData.add(last)
+                val first = collection.first()
+                val last = collection.last()
 
-            val wrapper = createWrapper(collection)
+                challengeData.add(first)
+                challengeData.add(last)
 
-            Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(challengeData.size == collection.size + 2)
+                val wrapper = createWrapper(collection)
 
-            wrapper.addAllAndFilter(challengeData, "test")
+                Assert.assertTrue(collection.isNotEmpty())
+                Assert.assertTrue(challengeData.isNotEmpty())
+                Assert.assertTrue(challengeData.size == collection.size + 2)
 
-            yieldWhile(timeoutInMilliseconds = 3000) {
+                wrapper.addAllAndFilter(challengeData, "test")
 
-                wrapper.isBusy()
+                yieldWhile(timeoutInMilliseconds = 3000) {
+
+                    wrapper.isBusy()
+                }
+
+                Assert.assertEquals(challengeData.size, wrapper.getSize())
+
+                challengeData.forEach { challenge ->
+
+                    Assert.assertTrue(wrapper.contains(challenge))
+                }
+
+                Assert.assertTrue(wrapper.contains(first))
+                Assert.assertTrue(wrapper.contains(last))
             }
-
-            Assert.assertEquals(challengeData.size, wrapper.getSize())
-
-            challengeData.forEach { challenge ->
-
-                Assert.assertTrue(wrapper.contains(challenge))
-            }
-
-            Assert.assertTrue(wrapper.contains(first))
-            Assert.assertTrue(wrapper.contains(last))
         }
 
         // TODO: With and without remove deleted
@@ -421,35 +454,38 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testAddAll() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val challengeData = createChallengeCollection()
-            val wrapper = createWrapper(collection)
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(collection.size == challengeData.size)
+                val collection = createCollection()
+                val challengeData = createChallengeCollection()
+                val wrapper = createWrapper(collection)
 
-            Assert.assertTrue(wrapper.getSize() == collection.size)
+                Assert.assertTrue(collection.isNotEmpty())
+                Assert.assertTrue(challengeData.isNotEmpty())
+                Assert.assertTrue(collection.size == challengeData.size)
 
-            wrapper.addAll(challengeData, "testAdd.all")
+                Assert.assertTrue(wrapper.getSize() == collection.size)
 
-            yieldWhile(timeoutInMilliseconds = 3000) {
+                wrapper.addAll(challengeData, "testAdd.all")
 
-                wrapper.isBusy()
-            }
+                yieldWhile(timeoutInMilliseconds = 3000) {
 
-            val size = wrapper.getSize()
-            val defaultSize = createCollection().size
+                    wrapper.isBusy()
+                }
 
-            Assert.assertTrue(size > defaultSize)
-            Assert.assertTrue(size == defaultSize + challengeData.size)
+                val size = wrapper.getSize()
+                val defaultSize = createCollection().size
 
-            challengeData.forEach { challenge ->
+                Assert.assertTrue(size > defaultSize)
+                Assert.assertTrue(size == defaultSize + challengeData.size)
 
-                Assert.assertTrue(wrapper.contains(challenge))
-                Assert.assertTrue(wrapper.getList().contains(challenge))
+                challengeData.forEach { challenge ->
+
+                    Assert.assertTrue(wrapper.contains(challenge))
+                    Assert.assertTrue(wrapper.getList().contains(challenge))
+                }
             }
         }
     }
@@ -457,39 +493,45 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testPurge() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection(hasDeletedItems = true)
-            val expected = collection.size - 2
-            val wrapper = createWrapper(collection, expectedSize = expected)
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(collection.isNotEmpty())
+                val collection = createCollection(hasDeletedItems = true)
+                val expected = collection.size - 2
+                val wrapper = createWrapper(collection, expectedSize = expected)
 
-            wrapper.purge("test")
+                Assert.assertTrue(collection.isNotEmpty())
 
-            yieldWhile(timeoutInMilliseconds = 3000) {
+                wrapper.purge("test")
 
-                wrapper.isBusy()
+                yieldWhile(timeoutInMilliseconds = 3000) {
+
+                    wrapper.isBusy()
+                }
+
+                Assert.assertEquals(expected, wrapper.getSize())
             }
-
-            Assert.assertEquals(expected, wrapper.getSize())
         }
     }
 
     @Test
     fun testGetSize() {
 
-        listOf(true, false).forEachIndexed { index, onUI ->
+        listOf(false, true).forEach { dataAccessManager ->
 
-            val collection = createCollection()
-            val challengeData = createChallengeCollection()
-            val wrapper = createWrapper(collection)
+            listOf(true, false).forEachIndexed { index, onUI ->
 
-            Assert.assertTrue(collection.isNotEmpty())
-            Assert.assertTrue(challengeData.isNotEmpty())
-            Assert.assertTrue(collection.size == challengeData.size)
+                val collection = createCollection()
+                val challengeData = createChallengeCollection()
+                val wrapper = createWrapper(collection)
 
-            Assert.assertTrue(wrapper.getSize() == collection.size)
+                Assert.assertTrue(collection.isNotEmpty())
+                Assert.assertTrue(challengeData.isNotEmpty())
+                Assert.assertTrue(collection.size == challengeData.size)
+
+                Assert.assertTrue(wrapper.getSize() == collection.size)
+            }
         }
     }
 
