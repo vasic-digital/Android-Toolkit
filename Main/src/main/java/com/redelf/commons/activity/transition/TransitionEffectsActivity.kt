@@ -21,6 +21,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     protected open val background = Color.WHITE
     protected open val backgroundActivity = BackgroundActivity::class.java
 
+    private var finishExpected = false
     private val tag = "Transition effects :: ${this::class.simpleName} :: ${this.hashCode()} ::"
 
     companion object {
@@ -34,6 +35,15 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     protected fun startActivity(intent: Intent, callback: () -> Unit) {
 
         doStartActivity(intent, callback)
+    }
+
+    protected fun startActivityAndFinish(intent: Intent, from: String) {
+
+        finishExpected = true
+
+        finishFrom("startActivityAndFinish(from='$from')")
+
+        startActivity(intent)
     }
 
     /*
@@ -117,6 +127,17 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         }
     }
 
+    open fun finishFrom(from: String) {
+
+        val tag = "Finish :: Activity='${this.javaClass.simpleName}' :: From='$from'"
+
+        Console.log("$tag START")
+
+        finish()
+
+        Console.log("$tag END")
+    }
+
     override fun finish() {
 
         val tag = "$tag Finish ::"
@@ -151,29 +172,32 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (activities.isEmpty()) {
 
-                GROUPS_PARENT?.let {
+                if (!finishExpected) {
 
-                    val parent = it
+                    GROUPS_PARENT?.let {
 
-                    GROUPS_PARENT = null
+                        val parent = it
 
-                    Console.debug("$tag Groups parent :: Cleared :: Parent='null'")
+                        GROUPS_PARENT = null
 
-                    val intent = Intent(
+                        Console.debug("$tag Groups parent :: Cleared :: Parent='null'")
 
-                        applicationContext,
-                        parent
-                    )
+                        val intent = Intent(
 
-                    intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            applicationContext,
+                            parent
+                        )
 
-                    Console.log(
+                        intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
 
-                        "$tag Groups parent :: Starting :: Parent='${parent.simpleName}'"
-                    )
+                        Console.log(
 
-                    doStartActivity(intent)
+                            "$tag Groups parent :: Starting :: Parent='${parent.simpleName}'"
+                        )
+
+                        doStartActivity(intent)
+                    }
                 }
 
                 val duration =

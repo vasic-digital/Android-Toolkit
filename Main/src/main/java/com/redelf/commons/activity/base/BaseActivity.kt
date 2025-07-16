@@ -820,17 +820,6 @@ abstract class BaseActivity :
         removeActivityFromHistory()
     }
 
-    open fun finishFrom(from: String) {
-
-        val tag = "Finish :: Activity='${this.javaClass.simpleName}' :: From='$from'"
-
-        Console.log("$tag START")
-
-        finish()
-
-        Console.log("$tag END")
-    }
-
     @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
