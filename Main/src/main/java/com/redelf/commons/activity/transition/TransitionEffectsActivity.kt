@@ -93,7 +93,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 addToGroups()
 
-                val parentIntent = Intent(this, clazz())
+                val parentIntent = Intent(this, backgroundActivity)
 
                 parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -290,7 +290,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         return false
     }
 
-    private fun getTransitionAnnotation(from: String, clazz: Class<*> = this::class.java): TransitionEffects? {
+    private fun getTransitionAnnotation(
+        from: String,
+        clazz: Class<*> = this::class.java
+    ): TransitionEffects? {
 
         val tag = "$tag Get annotation :: From='$from' ::"
 
@@ -347,7 +350,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         if (hasTransitionAssigned("startActivity")) {
 
-            val duration = (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+            val duration =
+                (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
 
             exec(
 
