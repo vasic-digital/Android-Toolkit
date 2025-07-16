@@ -20,7 +20,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     companion object {
 
-        private val GROUPS = HashMap<String, Set<String>>()
+        private val GROUPS = HashMap<String, HashSet<String>>()
 
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
     }
@@ -56,22 +56,35 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             val group = it.group
 
-            val activities = GROUPS.getOrPut(group) {
+            if (group.isEmpty()) {
 
-                mutableSetOf()
-            }
-
-            if (activities.isEmpty()) {
-
-                // TODO: Spawn and continue
-
-                /*
-                * Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                */
+                next()
 
             } else {
 
-                next()
+                val activities = GROUPS.getOrPut(group) {
+
+                    HashSet()
+                }
+
+                clazz().simpleName?.let { name ->
+
+                    activities.add(name)
+                    GROUPS[group] = activities
+                }
+
+                if (activities.isEmpty()) {
+
+                    // TODO: Spawn and continue
+
+                    /*
+                    * Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    */
+
+                } else {
+
+                    next()
+                }
             }
         }
 
@@ -287,4 +300,6 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         return null
     }
+
+    private fun clazz() = this@TransitionEffectsActivity::class
 }
