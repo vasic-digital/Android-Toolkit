@@ -32,6 +32,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         doStartActivity(intent, callback)
     }
 
+    // TODO: Implement groups support for the nested groups and multiple instances of the activity
     override fun startActivity(intent: Intent) {
 
         var group = ""
@@ -46,16 +47,23 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         component?.let { c ->
 
-            val targetClass: Class<*> = c.javaClass
+            try {
 
-            transition = getTransitionAnnotation("startActivity", targetClass)
+                val targetClass: Class<*> = Class.forName(c.className)
 
-            transition?.let {
+                transition = getTransitionAnnotation("startActivity", targetClass)
 
-                if (it.group.isNotEmpty()) {
+                transition?.let {
 
-                    group = it.group
+                    if (it.group.isNotEmpty()) {
+
+                        group = it.group
+                    }
                 }
+
+            } catch (e: Throwable) {
+
+                recordException(e)
             }
         }
 
@@ -70,13 +78,18 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                 HashSet()
             }
 
-            clazz().simpleName.let { name ->
+            fun add() {
 
-                activities.add(name)
-                GROUPS[group] = activities
+                clazz().simpleName.let { name ->
+
+                    activities.add(name)
+                    GROUPS[group] = activities
+                }
             }
 
             if (activities.isEmpty()) {
+
+                add()
 
                 val parentIntent = Intent(this, clazz())
 
@@ -89,6 +102,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                 }
 
             } else {
+
+                add()
 
                 doStartActivity(intent)
             }
