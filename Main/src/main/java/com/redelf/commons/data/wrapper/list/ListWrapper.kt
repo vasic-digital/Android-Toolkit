@@ -15,6 +15,7 @@ import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -41,7 +42,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     }
 
     private val busy = AtomicBoolean()
-    private var list: MutableList<T> = mutableListOf()
+    private var list: CopyOnWriteArrayList<T> = CopyOnWriteArrayList()
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
@@ -755,7 +756,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 } catch (e: Throwable) {
 
-                    Console.error("$tag Execute :: ERROR: ${e.message}")
+                    Console.error(
+
+                        "$tag Execute :: ERROR: ${e.message ?: e::class.simpleName}"
+                    )
 
                     recordException(e)
                 }

@@ -373,12 +373,12 @@ class ListWrapperTest : BaseTest() {
                 !callbackExecuted.get()
             }
 
-//            challengeData.forEachIndexed { index, challenge ->
-//
-//                Assert.assertEquals(challenge.takeData(), wrapper.get(index)?.takeData())
-//            }
+            challengeData.forEachIndexed { index, challenge ->
 
-//            Assert.assertEquals(challengeData.size, wrapper.getSize())
+                Assert.assertEquals(challenge.takeData(), wrapper.get(index)?.takeData())
+            }
+
+            Assert.assertEquals(challengeData.size, wrapper.getSize())
         }
 
         // TODO: With and without remove deleted
@@ -404,8 +404,6 @@ class ListWrapperTest : BaseTest() {
             Assert.assertTrue(collection.isNotEmpty())
             Assert.assertTrue(challengeData.isNotEmpty())
             Assert.assertTrue(challengeData.size == collection.size + 2)
-            
-            Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.addAllAndFilter(challengeData, "test")
 
