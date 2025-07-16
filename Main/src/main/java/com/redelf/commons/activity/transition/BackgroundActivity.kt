@@ -7,7 +7,7 @@ import com.redelf.commons.logging.Console
 
 class BackgroundActivity : BaseActivity() {
 
-    private val tag = "Backgroud activity ::"
+    private val tag = "Background activity ::"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
