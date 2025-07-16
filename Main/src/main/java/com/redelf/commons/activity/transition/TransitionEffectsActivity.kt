@@ -20,7 +20,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     companion object {
 
-        private val GROUPS = HashMap<String, List<String>>()
+        private val GROUPS = HashMap<String, Set<String>>()
 
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
     }
@@ -58,7 +58,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             val activities = GROUPS.getOrPut(group) {
 
-                mutableListOf()
+                mutableSetOf()
             }
 
             if (activities.isEmpty()) {
