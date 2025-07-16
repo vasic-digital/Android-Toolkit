@@ -143,9 +143,11 @@ abstract class BaseActivity :
 
         override fun onReceive(context: Context?, intent: Intent?) {
 
-            if (intent?.getStringExtra(Broadcast.EXTRA_ACTIVITY_CLASS) == this::class.java.name) {
+            val clazz = intent?.getStringExtra(Broadcast.EXTRA_ACTIVITY_CLASS)
 
-                finish()
+            if (clazz == this::class.java.name) {
+
+                finishFrom("finishByClassReceiver")
             }
         }
     }

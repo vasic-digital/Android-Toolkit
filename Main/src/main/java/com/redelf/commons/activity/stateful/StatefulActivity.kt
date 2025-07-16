@@ -199,7 +199,10 @@ abstract class StatefulActivity : TransitionEffectsActivity(), ActivityActiveSta
             super.finish()
         }
 
-        overridePendingTransition(0, 0)
+        if (!hasTransitionAssigned("finish")) {
+
+            overridePendingTransition(0, 0)
+        }
 
         Console.log("$tag END")
     }

@@ -55,10 +55,24 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             fun addToGroups() {
 
-                clazz().simpleName.let { name ->
+                val component = intent.component
 
-                    activities.add(name)
-                    GROUPS[group] = activities
+                component?.let { c ->
+
+                    try {
+
+                        val targetClass: Class<*> = Class.forName(c.className)
+
+                        targetClass.simpleName.let { name ->
+
+                            activities.add(name)
+                            GROUPS[group] = activities
+                        }
+
+                    } catch (e: Throwable) {
+
+                        recordException(e)
+                    }
                 }
             }
 
@@ -90,7 +104,14 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
+    override fun finish() {
+
+        fun next() {
+
+            super.finish()
+
+            applyExitTransition("finish")
+        }
 
         val group = getGroup()
 
@@ -109,20 +130,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (activities.isEmpty()) {
 
-                LocalBroadcastManager.getInstance(this).sendBroadcast(
-
-                    Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
-
-                        putExtra(
-
-                            Broadcast.EXTRA_ACTIVITY_CLASS,
-                            backgroundActivity.name
-                        )
-                    }
-                )
-
                 val duration =
                     (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+
+                next()
 
                 exec(
 
@@ -130,25 +141,28 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 ) {
 
-                    super.onDestroy()
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(
+
+                        Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
+
+                            putExtra(
+
+                                Broadcast.EXTRA_ACTIVITY_CLASS,
+                                backgroundActivity.name
+                            )
+                        }
+                    )
                 }
 
             } else {
 
-                super.onDestroy()
+                next()
             }
 
         } else {
 
-            super.onDestroy()
+            next()
         }
-    }
-
-    override fun finish() {
-
-        super.finish()
-
-        applyExitTransition("finish")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
