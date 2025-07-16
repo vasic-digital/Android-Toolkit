@@ -37,37 +37,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     */
     override fun startActivity(intent: Intent) {
 
-        var group = ""
-        var transition = getTransitionAnnotation("startActivity")
-
-        transition?.let {
-
-            group = it.group
-        }
-
-        val component = intent.component
-
-        component?.let { c ->
-
-            try {
-
-                val targetClass: Class<*> = Class.forName(c.className)
-
-                transition = getTransitionAnnotation("startActivity", targetClass)
-
-                transition?.let {
-
-                    if (it.group.isNotEmpty()) {
-
-                        group = it.group
-                    }
-                }
-
-            } catch (e: Throwable) {
-
-                recordException(e)
-            }
-        }
+        val group = getGroup(intent)
+        val transition = getTransitionAnnotation("startActivity")
 
         if (group.isEmpty()) {
 
@@ -119,7 +90,26 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     override fun onDestroy() {
 
-        // TODO:
+        val group = getGroup()
+
+        if (group.isNotEmpty()) {
+
+            val activities = GROUPS.getOrPut(group) {
+
+                HashSet()
+            }
+
+            clazz().simpleName.let { name ->
+
+                activities.remove(name)
+                GROUPS[group] = activities
+            }
+
+            if (activities.isEmpty()) {
+
+               // TODO: Kill the background activity
+            }
+        }
 
         super.onDestroy()
     }
@@ -371,5 +361,42 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             next()
         }
+    }
+
+    private fun getGroup(intent: Intent? = null): String {
+
+        var group = ""
+        var transition = getTransitionAnnotation("getGroup")
+
+        transition?.let {
+
+            group = it.group
+        }
+
+        val component = intent?.component
+
+        component?.let { c ->
+
+            try {
+
+                val targetClass: Class<*> = Class.forName(c.className)
+
+                transition = getTransitionAnnotation("startActivity", targetClass)
+
+                transition?.let {
+
+                    if (it.group.isNotEmpty()) {
+
+                        group = it.group
+                    }
+                }
+
+            } catch (e: Throwable) {
+
+                recordException(e)
+            }
+        }
+
+        return group
     }
 }
