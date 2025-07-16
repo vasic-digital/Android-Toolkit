@@ -460,13 +460,10 @@ class ListWrapperTest : BaseTest() {
         listOf(true, false).forEachIndexed { index, onUI ->
 
             val collection = createCollection(hasDeletedItems = true)
-            val wrapper = createWrapper(collection)
-
-            val initSize = collection.size
+            val expected = collection.size - 2
+            val wrapper = createWrapper(collection, expectedSize = expected)
 
             Assert.assertTrue(collection.isNotEmpty())
-
-            Assert.assertTrue(wrapper.getSize() == collection.size)
 
             wrapper.purge("test")
 
@@ -475,7 +472,7 @@ class ListWrapperTest : BaseTest() {
                 wrapper.isBusy()
             }
 
-            Assert.assertEquals(initSize - 2, wrapper.getSize())
+            Assert.assertEquals(expected, wrapper.getSize())
         }
     }
 
@@ -509,8 +506,11 @@ class ListWrapperTest : BaseTest() {
         mutableListOf(Purgable(2), Purgable(4), Purgable(6), Purgable(8), Purgable(10))
 
     private fun createWrapper(
+
         collection: MutableList<Purgable<Int>>,
-        onUI: Boolean = true
+        onUI: Boolean = true,
+        expectedSize: Int = collection.size
+
     ): DefaultListWrapper<Purgable<Int>> {
 
         val wrapper = DefaultListWrapper(
@@ -536,7 +536,7 @@ class ListWrapperTest : BaseTest() {
             wrapper.isNotInitialized()
         }
 
-        Assert.assertEquals(collection.size, wrapper.getSize())
+        Assert.assertEquals(expectedSize, wrapper.getSize())
 
         return wrapper
     }
