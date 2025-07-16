@@ -86,6 +86,20 @@ open class ListWrapper<T, M : DataManagement<*>>(
         }
     }
 
+    fun getManager(): M? {
+
+        try {
+
+            return dataAccess?.managerAccess?.obtain()
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return null
+    }
+
     override fun terminate(vararg args: Any): Boolean {
 
         dataPushListener?.let {
@@ -775,20 +789,6 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             recordException(e)
         }
-    }
-
-    private fun getManager(): M? {
-
-        try {
-
-            return dataAccess?.managerAccess?.obtain()
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
-
-        return null
     }
 
     private fun getCollection(): Collection<T?>? {

@@ -3,12 +3,10 @@ package com.redelf.commons.data.wrapper.list
 import android.annotation.SuppressLint
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextualManager
-import com.redelf.commons.data.type.Typed
 import com.redelf.commons.data.wrapper.VersionableWrapper
 import com.redelf.commons.destruction.reset.Resettable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.versioning.Versionable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
