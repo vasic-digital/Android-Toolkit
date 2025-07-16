@@ -24,6 +24,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     override fun startActivity(intent: Intent) {
 
+        // TODO: Check if background activity is present - if not spawn it then start
+
         applyExitTransition("startActivity")
 
         if (hasTransitionAssigned("startActivity")) {
@@ -46,6 +48,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     }
 
     override fun finish() {
+
+        // TODO: Check if current activity is the last in the stack - if yes terminate background activity
+
         super.finish()
 
         applyExitTransition("finish")
