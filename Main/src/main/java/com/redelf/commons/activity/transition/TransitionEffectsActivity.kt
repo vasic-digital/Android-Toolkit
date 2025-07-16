@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toDrawable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.R
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.getAnimationResource
 import com.redelf.commons.extensions.recordException
@@ -120,14 +121,26 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                     Console.debug("$tag Groups parent :: Set :: Parent='${GROUPS_PARENT?.simpleName}'")
                 }
 
-                val parentIntent = Intent(this, backgroundActivity)
+                val active = BaseApplication.takeContext().activityTracker.isActivityInStack(
 
-                parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    activityClass = backgroundActivity
+                )
 
-                doStartActivity(parentIntent) {
+                if (active) {
 
                     doStartActivity(intent)
+
+                } else {
+
+                    val parentIntent = Intent(this, backgroundActivity)
+
+                    parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
+                    doStartActivity(parentIntent) {
+
+                        doStartActivity(intent)
+                    }
                 }
 
             } else {

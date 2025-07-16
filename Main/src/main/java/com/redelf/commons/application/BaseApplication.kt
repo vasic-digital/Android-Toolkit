@@ -38,6 +38,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
+import com.redelf.commons.activity.tracking.ActivityTracker
 import com.redelf.commons.atomic.AtomicIntWrapper
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
@@ -219,6 +220,8 @@ abstract class BaseApplication :
     open val secretsKey = "com.redelf.commons.security.secrets"
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
+    val activityTracker = ActivityTracker()
+
     protected open val firebaseEnabled = true
     protected open val facebookEnabled = false
     protected open val firebaseAnalyticsEnabled = false
@@ -246,8 +249,8 @@ abstract class BaseApplication :
     protected val managersReady = AtomicBoolean()
     protected val audioFocusTag = "Audio focus ::"
 
-    private val updatingTag = "Updating ::"
     private val updating = AtomicBoolean()
+    private val updatingTag = "Updating ::"
     private val isAppInBackground = AtomicBoolean()
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
@@ -598,6 +601,8 @@ abstract class BaseApplication :
         initTerminationListener()
         initFirebaseWithAnalytics()
         initFacebook()
+
+        registerActivityLifecycleCallbacks(activityTracker)
 
         prefs = SharedPreferencesStorage(applicationContext)
 

@@ -7,7 +7,7 @@ import com.redelf.commons.logging.Console
 
 class BackgroundActivity : BaseActivity() {
 
-    private val tag = "Background activity ::"
+    private val tag = "Background activity :: ${hashCode()} ::"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
