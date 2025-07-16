@@ -137,6 +137,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 super.onDestroy()
             }
+
+        } else {
+
+            super.onDestroy()
         }
     }
 
