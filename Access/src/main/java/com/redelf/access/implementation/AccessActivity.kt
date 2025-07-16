@@ -3,7 +3,7 @@ package com.redelf.access.implementation
 import android.os.Bundle
 import com.redelf.access.Access
 import com.redelf.access.installation.InstallationCheckCallback
-import com.redelf.commons.activity.BaseActivity
+import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.logging.Console

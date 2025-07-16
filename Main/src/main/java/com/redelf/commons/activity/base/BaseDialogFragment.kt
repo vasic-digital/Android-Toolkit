@@ -1,4 +1,4 @@
-package com.redelf.commons.activity
+package com.redelf.commons.activity.base
 
 import androidx.fragment.app.DialogFragment
 import com.redelf.commons.extensions.fitInsideSystemBoundaries
