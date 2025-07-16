@@ -165,6 +165,13 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         Console.log("$tag START")
 
+        if (isFinishing) {
+
+            Console.warning("$tag SKIPPED")
+
+            return
+        }
+
         fun next() {
 
             Console.log("$tag ENDING")
