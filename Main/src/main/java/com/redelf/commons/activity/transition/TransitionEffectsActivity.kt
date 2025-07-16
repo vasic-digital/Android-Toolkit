@@ -34,18 +34,33 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
     }
 
-    protected fun startActivity(intent: Intent, callback: () -> Unit) {
+    open fun onBack() {
 
-        doStartActivity(intent, callback)
+        val tag = "On back ::"
+
+        Console.log("$tag START")
+
+        if (isFinishing) {
+
+            Console.warning("$tag SKIPPED")
+
+            return
+        }
+
+        Console.log("$tag END")
+
+        finishFrom("onBack")
     }
 
-    protected fun startActivityAndFinish(intent: Intent, from: String) {
+    open fun finishFrom(from: String) {
 
-        finishExpected = true
+        val tag = "Finish :: Activity='${this.javaClass.simpleName}' :: From='$from'"
 
-        finishFrom("startActivityAndFinish(from='$from')")
+        Console.log("$tag START")
 
-        startActivity(intent)
+        finish()
+
+        Console.log("$tag END")
     }
 
     /*
@@ -127,35 +142,6 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             doStartActivity(intent)
         }
-    }
-
-    open fun onBack() {
-
-        val tag = "On back ::"
-
-        Console.log("$tag START")
-
-        if (isFinishing) {
-
-            Console.warning("$tag SKIPPED")
-
-            return
-        }
-
-        Console.log("$tag END")
-
-        finishFrom("onBack")
-    }
-
-    open fun finishFrom(from: String) {
-
-        val tag = "Finish :: Activity='${this.javaClass.simpleName}' :: From='$from'"
-
-        Console.log("$tag START")
-
-        finish()
-
-        Console.log("$tag END")
     }
 
     override fun finish() {
@@ -355,6 +341,20 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             super.overridePendingTransition(enterAnim, exitAnim)
         }
+    }
+
+    protected fun startActivity(intent: Intent, callback: () -> Unit) {
+
+        doStartActivity(intent, callback)
+    }
+
+    protected fun startActivityAndFinish(intent: Intent, from: String) {
+
+        finishExpected = true
+
+        finishFrom("startActivityAndFinish(from='$from')")
+
+        startActivity(intent)
     }
 
     @Suppress("DEPRECATION")
