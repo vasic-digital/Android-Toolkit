@@ -86,9 +86,12 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 addToGroups()
 
-                GROUPS_PARENT = clazz()
+                if (!hasTransitionAssigned("startActivity")) {
 
-                Console.log("$tag Groups parent :: Set :: Parent='${GROUPS_PARENT?.simpleName}'")
+                    GROUPS_PARENT = clazz()
+
+                    Console.debug("$tag Groups parent :: Set :: Parent='${GROUPS_PARENT?.simpleName}'")
+                }
 
                 val parentIntent = Intent(this, backgroundActivity)
 
@@ -153,6 +156,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                     val parent = it
 
                     GROUPS_PARENT = null
+
+                    Console.debug("$tag Groups parent :: Cleared :: Parent='null'")
 
                     val intent = Intent(
 
@@ -371,8 +376,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     }
 
     private fun getTransitionAnnotation(
+
         from: String,
         clazz: Class<*> = this::class.java
+
     ): TransitionEffects? {
 
         val tag = "$tag Get annotation :: From='$from' ::"
