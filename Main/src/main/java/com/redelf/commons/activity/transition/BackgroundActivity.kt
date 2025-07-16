@@ -1,11 +1,16 @@
 package com.redelf.commons.activity.transition
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import com.redelf.commons.R
+import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.logging.Console
 
-class BackgroundActivity : AppCompatActivity() {
+@TransitionEffects(
+
+    enter = "fade_in",
+    exit = "fade_out"
+)
+class BackgroundActivity : BaseActivity() {
 
     private val tag = "Background activity ::"
 

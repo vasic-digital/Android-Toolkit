@@ -117,9 +117,14 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         }
     }
 
-    override fun finish() {
+    override fun onDestroy() {
 
-        // TODO: Check if current activity is the last in the stack - if yes terminate background activity
+        // TODO:
+
+        super.onDestroy()
+    }
+
+    override fun finish() {
 
         super.finish()
 
