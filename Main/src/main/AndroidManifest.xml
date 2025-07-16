@@ -87,6 +87,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
+
         </provider>
 
         <provider
@@ -114,6 +115,12 @@
                 android:value="androidx.startup" />
 
         </provider>
+
+        <activity
+
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait"
+            android:name=".activity.transition.BackgroundActivity" />
 
     </application>
 

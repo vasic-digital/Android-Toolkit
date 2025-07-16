@@ -14,6 +14,7 @@ import java.lang.annotation.Inherited
 abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     protected open val background = Color.WHITE
+    protected open val backgroundActivity = BackgroundActivity::class.java
 
     private val tag = "Transition effects :: Who='${this::class.simpleName}' ::"
 
@@ -25,8 +26,6 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     }
 
     override fun startActivity(intent: Intent) {
-
-        // TODO: Check if background activity is present - if not spawn it then start
 
         fun next() {
 
@@ -65,6 +64,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
             if (activities.isEmpty()) {
 
                 // TODO: Spawn and continue
+
+                /*
+                * Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                */
 
             } else {
 
