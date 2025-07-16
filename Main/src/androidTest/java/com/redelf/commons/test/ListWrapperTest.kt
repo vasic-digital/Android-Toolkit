@@ -516,9 +516,9 @@ class ListWrapperTest : BaseTest() {
         val wrapper = DefaultListWrapper(
 
             onUi = onUI,
-            identifier = "test",
             lazySaving = false,
             persistData = false,
+            identifier = "test.${System.currentTimeMillis()}",
 
             creator = object : Obtain<VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>> {
 
