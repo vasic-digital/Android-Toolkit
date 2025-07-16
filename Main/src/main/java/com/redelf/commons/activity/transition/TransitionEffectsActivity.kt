@@ -83,6 +83,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 val parentIntent = Intent(this, backgroundActivity)
 
+                // FIXME: On finish start root activity or bring it back to front
                 parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
 
