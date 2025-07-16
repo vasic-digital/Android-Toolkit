@@ -52,7 +52,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             transition?.let {
 
-                group = it.group
+                if (it.group.isNotEmpty()) {
+
+                    group = it.group
+                }
             }
         }
 
