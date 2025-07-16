@@ -7,6 +7,7 @@ import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterResult
+import com.redelf.commons.lifecycle.InitializedCheck
 import com.redelf.commons.lifecycle.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
@@ -32,7 +33,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     @Transient
     private var onChange: OnChangeCompleted? = null
 
-) : BusyCheck, TerminationSynchronized {
+) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
     companion object {
 
@@ -40,8 +41,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
     }
 
     private val busy = AtomicBoolean()
-
     private var list: MutableList<T> = mutableListOf()
+    private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
     private val dataPushListener: OnObtain<Boolean?>? = if (dataAccess != null) {
@@ -78,7 +79,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         val items = getCollection()
 
-        replaceAllAndFilter(items, "init")
+        replaceAllAndFilter(items, "init") { _, _ ->
+
+            initialized.set(true)
+        }
     }
 
     override fun terminate(vararg args: Any): Boolean {
@@ -105,6 +109,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private val tag = "$identifier :: $environment :: ${getHashCode()} ::"
 
     override fun isBusy() = busy.get()
+
+    override fun isInitialized() = initialized.get()
+
+    override fun isNotInitialized() = !isInitialized()
 
     fun isEmpty() = list.isEmpty()
 

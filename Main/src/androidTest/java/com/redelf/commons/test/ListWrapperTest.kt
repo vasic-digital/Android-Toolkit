@@ -520,9 +520,9 @@ class ListWrapperTest : BaseTest() {
     private fun createChallengeCollection() =
         mutableListOf(Purgable(2), Purgable(4), Purgable(6), Purgable(8), Purgable(10))
 
-    private fun createWrapper(collection: MutableList<Purgable<Int>>, onUI: Boolean = true) =
+    private fun createWrapper(collection: MutableList<Purgable<Int>>, onUI: Boolean = true): DefaultListWrapper<Purgable<Int>> {
 
-        DefaultListWrapper(
+        val wrapper = DefaultListWrapper(
 
             onUi = onUI,
             identifier = "test",
@@ -539,4 +539,14 @@ class ListWrapperTest : BaseTest() {
                 }
             }
         )
+
+        yieldWhile {
+
+            wrapper.isNotInitialized()
+        }
+
+        Assert.assertEquals(collection.size, wrapper.getSize())
+
+        return wrapper
+    }
 }
