@@ -23,7 +23,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     protected open val background = Color.WHITE
     protected open val backgroundActivity = BackgroundActivity::class.java
 
-    private var finishExpected = false
+    private var expectedFinish = false
     private lateinit var backPressedCallback: OnBackPressedCallback
     private val tag = "Transition effects :: ${this::class.simpleName} :: ${this.hashCode()} ::"
 
@@ -191,7 +191,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (activities.isEmpty()) {
 
-                if (!finishExpected) {
+                if (!expectedFinish) {
 
                     GROUPS_PARENT?.let {
 
@@ -224,23 +224,26 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 next()
 
-                exec(
+                if (!expectedFinish) {
 
-                    delayInMilliseconds = duration
+                    exec(
 
-                ) {
+                        delayInMilliseconds = duration
 
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(
+                    ) {
 
-                        Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(
 
-                            putExtra(
+                            Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
 
-                                Broadcast.EXTRA_ACTIVITY_CLASS,
-                                backgroundActivity.name
-                            )
-                        }
-                    )
+                                putExtra(
+
+                                    Broadcast.EXTRA_ACTIVITY_CLASS,
+                                    backgroundActivity.name
+                                )
+                            }
+                        )
+                    }
                 }
 
             } else {
@@ -363,7 +366,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     protected fun startActivityAndFinish(intent: Intent, from: String) {
 
-        finishExpected = true
+        expectedFinish = true
 
         finishFrom("startActivityAndFinish(from='$from')")
 
