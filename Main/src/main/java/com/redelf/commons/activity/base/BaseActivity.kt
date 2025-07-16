@@ -145,7 +145,7 @@ abstract class BaseActivity :
 
             val clazz = intent?.getStringExtra(Broadcast.EXTRA_ACTIVITY_CLASS)
 
-            if (clazz == this::class.java.name) {
+            if (clazz == this@BaseActivity::class.java.name) {
 
                 finishFrom("finishByClassReceiver")
             }
