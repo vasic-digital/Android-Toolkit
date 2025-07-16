@@ -17,6 +17,7 @@ import java.lang.annotation.Inherited
 
 abstract class TransitionEffectsActivity : AppCompatActivity() {
 
+    // TODO: Pass the background parameter to the Background class activity that we will start
     protected open val background = Color.WHITE
     protected open val backgroundActivity = BackgroundActivity::class.java
 
