@@ -1,7 +1,7 @@
-package com.redelf.commons.activity
+package com.redelf.commons.activity.stateful
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.fitInsideSystemBoundaries

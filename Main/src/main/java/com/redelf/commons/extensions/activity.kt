@@ -12,7 +12,7 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
-import com.redelf.commons.activity.TransitionEffects
+import com.redelf.commons.activity.transition.TransitionEffects
 import com.redelf.commons.logging.Console
 
 fun Activity.fitInsideSystemBoundaries() {

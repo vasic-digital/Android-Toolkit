@@ -2,6 +2,7 @@ package com.redelf.commons.activity
 
 import android.net.Uri
 import android.os.Bundle
+import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 

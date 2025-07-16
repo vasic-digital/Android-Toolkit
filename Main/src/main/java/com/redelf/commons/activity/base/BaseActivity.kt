@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.redelf.commons.activity
+package com.redelf.commons.activity.base
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -31,6 +31,8 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.redelf.commons.R
+import com.redelf.commons.activity.progress.ProgressActivity
+import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.fitInsideSystemBoundaries
@@ -533,7 +535,7 @@ abstract class BaseActivity :
                 }
 
                 val intent = Intent(this@BaseActivity, clazz)
-                bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+                bindService(intent, serviceConnection, BIND_AUTO_CREATE)
 
             } catch (e: IllegalStateException) {
 

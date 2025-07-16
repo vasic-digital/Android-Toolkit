@@ -1,4 +1,4 @@
-package com.redelf.commons.activity
+package com.redelf.commons.activity.transition
 
 import java.lang.annotation.Inherited
 
