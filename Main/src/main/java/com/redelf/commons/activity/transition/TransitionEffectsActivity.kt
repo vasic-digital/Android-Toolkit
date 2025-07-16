@@ -19,6 +19,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     companion object {
 
+        private val GROUPS = HashMap<String, List<String>>()
+
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
     }
 
@@ -26,24 +28,53 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         // TODO: Check if background activity is present - if not spawn it then start
 
-        applyExitTransition("startActivity")
+        fun next() {
 
-        if (hasTransitionAssigned("startActivity")) {
+            applyExitTransition("startActivity")
 
-            val duration = (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+            if (hasTransitionAssigned("startActivity")) {
 
-            exec(
+                val duration = (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
 
-                delayInMilliseconds = duration
+                exec(
 
-            ) {
+                    delayInMilliseconds = duration
+
+                ) {
+
+                    super.startActivity(intent)
+                }
+
+            } else {
 
                 super.startActivity(intent)
             }
+        }
 
-        } else {
+        val transition = getTransitionAnnotation("startActivity")
 
-            super.startActivity(intent)
+        transition?.let {
+
+            val group = it.group
+
+            val activities = GROUPS.getOrPut(group) {
+
+                mutableListOf()
+            }
+
+            if (activities.isEmpty()) {
+
+                // TODO: Spawn and continue
+
+            } else {
+
+                next()
+            }
+        }
+
+        if (transition == null) {
+
+            next()
         }
     }
 
