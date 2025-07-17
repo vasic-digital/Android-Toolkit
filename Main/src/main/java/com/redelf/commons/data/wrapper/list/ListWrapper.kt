@@ -25,14 +25,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
     val identifier: String,
     val environment: String = "default",
 
-    @Transient
     private val dataAccess: DataAccess<T, M>? = null,
-
-    @Transient
     private val onUi: Boolean,
-
-    @Transient
-    private var onChange: OnChangeCompleted? = null
+    private var onChange: OnChangeCompleted? = null,
+    private val onDataPushed: OnObtain<Boolean?>? = null
 
 ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
@@ -51,6 +47,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
         object : OnObtain<Boolean?> {
 
             override fun onCompleted(data: Boolean?) {
+
+                onDataPushed?.onCompleted(data)
 
                 if (data == true) {
 

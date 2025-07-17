@@ -5,6 +5,7 @@ import com.redelf.commons.data.wrapper.VersionableWrapper
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.CopyOnWriteArrayList
 
 class DefaultListWrapper<T>(
@@ -16,7 +17,8 @@ class DefaultListWrapper<T>(
     lazySaving: Boolean = true,
     persistData: Boolean = true,
     environment: String = "default",
-    onChange: OnChangeCompleted? = null
+    onChange: OnChangeCompleted? = null,
+    onDataPushed: OnObtain<Boolean?>? = null
 
 ) : ListWrapper<T, ListWrapperManager<T>>(
 
@@ -24,6 +26,7 @@ class DefaultListWrapper<T>(
     environment = environment,
     onUi = onUi,
     onChange = onChange,
+    onDataPushed = onDataPushed,
 
     dataAccess = object : DataAccess<T, ListWrapperManager<T>>(
 

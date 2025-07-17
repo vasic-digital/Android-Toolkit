@@ -8,12 +8,14 @@ import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.logging.Console
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.test.test_data.Purgable
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class ListWrapperTest : BaseTest() {
 
@@ -60,10 +62,33 @@ class ListWrapperTest : BaseTest() {
 
                     listOf(false, true).forEachIndexed { index, withOnChange ->
 
+                        val pushed = AtomicInteger()
+
+                        val onDataPushed = object : OnObtain<Boolean?> {
+
+                            override fun onCompleted(data: Boolean?) {
+
+                                if (data == true) {
+
+                                    pushed.incrementAndGet()
+
+                                } else {
+
+                                    Assert.fail("Push has failed")
+                                }
+                            }
+
+
+                            override fun onFailure(error: Throwable) {
+
+                                Assert.fail(error.message ?: error::class.simpleName)
+                            }
+                        }
+
                         val collection = createCollection()
                         val defaultSize = collection.size
-                        val wrapper = createWrapper(collection)
                         val challengeData = createChallengeCollection()
+                        val wrapper = createWrapper(collection, onDataPushed = onDataPushed)
 
                         Assert.assertTrue(collection.isNotEmpty())
                         Assert.assertTrue(challengeData.isNotEmpty())
@@ -173,6 +198,8 @@ class ListWrapperTest : BaseTest() {
                             Assert.assertNotNull(d)
 
                             Assert.assertEquals(defaultSize * 2, d?.size ?: 0)
+
+                            Assert.assertEquals(defaultSize, pushed.get())
                         }
 
                         val size = wrapper.getSize()
@@ -598,7 +625,8 @@ class ListWrapperTest : BaseTest() {
 
         collection: MutableList<Purgable<Int>>,
         onUI: Boolean = true,
-        expectedSize: Int = collection.size
+        expectedSize: Int = collection.size,
+        onDataPushed: OnObtain<Boolean?>? = null
 
     ): DefaultListWrapper<Purgable<Int>> {
 
@@ -607,6 +635,7 @@ class ListWrapperTest : BaseTest() {
             onUi = onUI,
             lazySaving = false,
             persistData = false,
+            onDataPushed = onDataPushed,
             identifier = "test.${System.currentTimeMillis()}",
 
             creator = object : Obtain<VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>> {
