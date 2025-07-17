@@ -2,8 +2,10 @@
 
 package com.redelf.commons.activity.transition
 
+import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -367,9 +369,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         Console.log("$tag onCreate")
 
-        window.setBackgroundDrawable(background.toDrawable())
-
         super.onCreate(savedInstanceState)
+
+        window.setTransitionBackgroundFadeDuration(0)
+        window.setBackgroundDrawable(background.toDrawable())
 
         backPressedCallback = object : OnBackPressedCallback(true) {
 
@@ -493,7 +496,16 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (enter > 0) {
 
-                overridePendingTransition(enter, 0, background)
+                val hold = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+
+                    R.anim.hold
+
+                } else {
+
+                    0
+                }
+
+                overridePendingTransition(enter, hold, background)
 
                 Console.debug("$tag  Pending transition override")
 
