@@ -58,7 +58,13 @@ class ListWrapperTest : BaseTest() {
 
             listOf(true, false).forEachIndexed { index, onUI ->
 
-                listOf(false, true).forEachIndexed { index, withCallback ->
+                /*
+                * We need this callback so the data we assert is in sync until that time ...
+                *
+                * TODO: Make sure that each test that is using data manager uses callback sync. as well
+                *  otherwise, assert may fail because data may be still in aligning!
+                */
+                listOf(true).forEachIndexed { index, withCallback ->
 
                     listOf(false, true).forEachIndexed { index, withOnChange ->
 
