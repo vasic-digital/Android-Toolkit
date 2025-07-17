@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toDrawable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.R
+import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.getAnimationResource
@@ -76,7 +77,43 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     */
     override fun startActivity(intent: Intent) {
 
+        var checked = false
+        val component = intent.component
         val tag = "$tag Start activity ::"
+
+        component?.let { c ->
+
+            try {
+
+                val targetClass: Class<*> = Class.forName(c.className)
+                val isToolkitActivity = StatefulActivity::class.java.isAssignableFrom(targetClass)
+
+                checked = isToolkitActivity
+
+                if (!isToolkitActivity) {
+
+                    Console.warning(
+
+                        "$tag Not a toolkit activity :: Clazz='${targetClass.simpleName}'"
+                    )
+                }
+
+            } catch (e: Throwable) {
+
+                recordException(e)
+            }
+        }
+
+
+
+        if (!checked) {
+
+            doStartActivity(intent)
+
+            Console.log("$tag SKIPPED")
+
+            return
+        }
 
         Console.log("$tag START")
 
