@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.redelf.commons.activity.transition
 
 import android.content.Intent
@@ -15,6 +17,8 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.broadcast.Broadcast
 import java.lang.annotation.Inherited
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 
 
 abstract class TransitionEffectsActivity : AppCompatActivity() {
@@ -32,7 +36,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     companion object {
 
         private var GROUPS_PARENT: Class<*>? = null
-        private val GROUPS = HashMap<String, HashSet<String>>()
+        private val GROUPS = ConcurrentHashMap<String, CopyOnWriteArraySet<String>>()
+        private val GROUPS_BACKGROUND_ACTIVITIES = ConcurrentHashMap<String, Class<*>>()
 
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
     }
@@ -86,7 +91,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             val activities = GROUPS.getOrPut(group) {
 
-                HashSet()
+                CopyOnWriteArraySet()
             }
 
             fun addToGroups() {
@@ -134,12 +139,41 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 } else {
 
-                    val parentIntent = Intent(this, backgroundActivity)
+                    if (GROUPS_BACKGROUND_ACTIVITIES[group] == null) {
 
-                    parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        Console.log("$tag Background activity :: Starting")
 
-                    doStartActivity(parentIntent) {
+                        GROUPS_BACKGROUND_ACTIVITIES[group] = backgroundActivity
+
+                        val parentIntent = Intent(
+
+                            applicationContext,
+                            GROUPS_BACKGROUND_ACTIVITIES[group]
+                        )
+
+                        parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
+                        overridePendingTransition(0, 0)
+
+                        doStartActivity(parentIntent) {
+
+                            val duration =
+                                (resources.getInteger(R.integer.transition_effect_duration)).toLong()
+
+                            exec(
+
+                                delayInMilliseconds = duration
+
+                            ) {
+
+                                doStartActivity(intent)
+                            }
+                        }
+
+                    } else {
+
+                        Console.log("$tag Background activity :: Skipping")
 
                         doStartActivity(intent)
                     }
@@ -189,7 +223,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             val activities = GROUPS.getOrPut(group) {
 
-                HashSet()
+                CopyOnWriteArraySet()
             }
 
             clazz().simpleName.let { name ->
@@ -241,7 +275,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                     ) {
 
-                        LocalBroadcastManager.getInstance(this).sendBroadcast(
+                        Console.log("$tag Background activity :: Going to finish")
+
+                        val sent = LocalBroadcastManager.getInstance(this).sendBroadcast(
 
                             Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
 
@@ -252,6 +288,30 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                                 )
                             }
                         )
+
+                        if (sent) {
+
+                            Console.log("$tag Background activity :: Finish scheduled")
+
+                            val cleared = GROUPS_BACKGROUND_ACTIVITIES.remove(group)
+
+                            cleared?.let {
+
+                                Console.log("$tag Background activity :: Cleared")
+                            }
+
+                            if (cleared == null) {
+
+                                Console.error("$tag Background activity :: Not cleared")
+                            }
+
+                        } else {
+
+                            Console.error(
+
+                                "$tag Background activity :: Failed to schedule finish"
+                            )
+                        }
                     }
                 }
 
@@ -300,7 +360,6 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         applyEnterTransition("onResume")
     }
 
-    @Suppress("DEPRECATION")
     @Deprecated("Deprecated in Java")
     override fun overridePendingTransition(enterAnim: Int, exitAnim: Int, backgroundColor: Int) {
 

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.redelf.commons.activity.transition
 
 import android.os.Bundle
@@ -5,7 +7,7 @@ import com.redelf.commons.R
 import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.logging.Console
 
-class BackgroundActivity : BaseActivity() {
+open class BackgroundActivity : BaseActivity() {
 
     private val tag = "Background activity :: ${hashCode()} ::"
 
@@ -33,5 +35,11 @@ class BackgroundActivity : BaseActivity() {
         super.onDestroy()
 
         Console.log("$tag onDestroy")
+    }
+
+    override fun finish() {
+        super.finish()
+
+        Console.log("$tag finish")
     }
 }
