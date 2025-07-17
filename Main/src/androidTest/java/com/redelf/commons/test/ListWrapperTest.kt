@@ -107,9 +107,17 @@ class ListWrapperTest : BaseTest() {
 
                                 val vWrapper = getVersionableWrapper(wrapper)
 
-                                vWrapper?.takeData()?.add(challenge)
+                                val d = vWrapper?.takeData()
 
-                                manager?.pushData()
+                                Assert.assertNotNull(d)
+
+                                val added = d?.add(challenge)
+
+                                Assert.assertTrue(added == true)
+
+                                val pushed = manager?.pushData(vWrapper) == true
+
+                                Assert.assertTrue(pushed)
 
                             } else {
 
@@ -143,17 +151,38 @@ class ListWrapperTest : BaseTest() {
                                 }
                             }
 
-                            val size = wrapper.getSize()
+                            Assert.assertEquals(
 
-                            // FIXME:
-//                            Assert.assertTrue(size > defaultSize)
-//                            Assert.assertTrue(size == defaultSize + (challengeIndex + 1))
-//                            Assert.assertTrue(wrapper.contains(challenge))
-//                            Assert.assertTrue(wrapper.getList().contains(challenge))
+                                withOnChange && !dataAccessManager,
+                                changeDetected.get()
+                            )
 
-                            Assert.assertEquals(withOnChange && !dataAccessManager, changeDetected.get())
-                            Assert.assertEquals(withCallback && !dataAccessManager, callbackExecuted.get())
+                            Assert.assertEquals(
+
+                                withCallback && !dataAccessManager,
+                                callbackExecuted.get()
+                            )
                         }
+
+                        if (dataAccessManager) {
+
+                            val vWrapper = getVersionableWrapper(wrapper)
+
+                            val d = vWrapper?.takeData()
+
+                            Assert.assertNotNull(d)
+
+                            Assert.assertEquals(defaultSize * 2, d?.size ?: 0)
+                        }
+
+                        val size = wrapper.getSize()
+
+                        Console.log(
+
+                            "$dataAccessManager, $onUI, $withCallback, $withOnChange"
+                        )
+
+                        Assert.assertEquals((defaultSize * 2) + 1, size + 1)
                     }
                 }
             }
@@ -610,7 +639,7 @@ class ListWrapperTest : BaseTest() {
         return manager
     }
 
-    private fun getVersionableWrapper(wrapper: DefaultListWrapper<Purgable<Int>>) : VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>? {
+    private fun getVersionableWrapper(wrapper: DefaultListWrapper<Purgable<Int>>): VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>? {
 
         val manager = getManager(wrapper)
 
