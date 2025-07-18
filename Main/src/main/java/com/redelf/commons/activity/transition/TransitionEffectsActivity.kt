@@ -191,7 +191,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                         parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
                                 Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
 
-                        overridePendingTransition(0, 0)
+                        val hold = R.anim.hold
+
+                        overridePendingTransition(hold, hold)
 
                         doStartActivity("startActivity.notActive.noGroup.parent", parentIntent) {
 
@@ -496,14 +498,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (enter > 0) {
 
-                val hold = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-
-                    R.anim.hold
-
-                } else {
-
-                    0
-                }
+                val hold = R.anim.hold
 
                 overridePendingTransition(enter, hold, background)
 
@@ -533,7 +528,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             if (exit > 0) {
 
-                overridePendingTransition(0, exit, background)
+                val hold = R.anim.hold
+
+                overridePendingTransition(hold, exit, background)
 
                 Console.debug("$tag Pending transition override")
 
