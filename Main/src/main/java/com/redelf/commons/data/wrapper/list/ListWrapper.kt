@@ -485,7 +485,19 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     if (found == null) {
 
-                        if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
+                        if (lItem is Number && wItem is Number) {
+
+                            if (lItem == wItem) {
+
+                                found = lItem
+
+                                if (lItem != wItem) {
+
+                                    where = indexOf(wItem)
+                                }
+                            }
+
+                        } else if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
 
                             if (lItem.getId() == wItem.getId()) {
 
@@ -526,7 +538,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 changedCount += toRemove.size
 
-                doRemoveAll( toRemove)
+                doRemoveAll(toRemove)
             }
 
             if (toUpdate.isNotEmpty()) {
