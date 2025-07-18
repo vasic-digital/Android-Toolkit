@@ -243,7 +243,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
             return
         }
 
-        fun next() {
+        fun next(from: String) {
+
+            val tag = "$tag Next :: From='$from' ::"
 
             Console.log("$tag ENDING")
 
@@ -302,7 +304,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                 val duration =
                     (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
 
-                next()
+                next("finish.activities.empty.(expectedFinish=$expectedFinish)")
 
                 if (!expectedFinish) {
 
@@ -354,12 +356,12 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
             } else {
 
-                next()
+                next("finish.activities.notEmpty")
             }
 
         } else {
 
-            next()
+            next("finish.noGroup")
         }
     }
 
