@@ -610,7 +610,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 val targetClass: Class<*> = Class.forName(c.className)
 
-                whichOne = targetClass::class.simpleName ?: whichOne
+                whichOne = targetClass.simpleName ?: whichOne
 
             } catch (e: Throwable) {
 
