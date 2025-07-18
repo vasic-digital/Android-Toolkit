@@ -166,7 +166,7 @@ abstract class BaseActivity :
 
             Console.log(
 
-                "Activity :: On create :: " +
+                "Activity :: On create :: Get caller info :: " +
                         "${this::class.simpleName} :: ${hashCode()} :: " +
                         "Data=($data), Action=($action), Source.package=($sourcePackage), " +
                         "Caller=($caller)"
