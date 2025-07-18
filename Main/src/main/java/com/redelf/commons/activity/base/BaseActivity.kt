@@ -13,13 +13,13 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.Uri
+import android.os.Binder
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
 import android.util.DisplayMetrics
 import android.webkit.WebView
-import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
@@ -65,9 +65,7 @@ import kotlin.reflect.KClass
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity()
-
-{
+    StatefulActivity() {
 
     companion object {
 
@@ -157,6 +155,29 @@ abstract class BaseActivity :
         BaseApplication.takeContext().initTerminationListener()
 
         super.onCreate(savedInstanceState)
+
+        try {
+
+            val intent = getIntent()
+            val data = intent.data // if it was opened via a deep link, etc.
+            val action = intent.action // like ACTION_VIEW, etc.
+            val sourcePackage = intent.getStringExtra("source_package") // if passed explicitly
+            val caller = callingPackage
+
+            Console.log(
+
+                "Activity :: On create :: " +
+                        "${this::class.simpleName} :: ${hashCode()} :: " +
+                        "Data=($data), Action=($action), Source.package=($sourcePackage), " +
+                        "Caller=($caller)"
+            )
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+
 
         WebView(this).apply {
 
@@ -425,7 +446,8 @@ abstract class BaseActivity :
 
         if (DEBUG_RESOURCES_OVERRIDES.get()) {
 
-            val tag = "Override ready :: GET :: From = '${this::class.simpleName}.${this.hashCode()}' ::"
+            val tag =
+                "Override ready :: GET :: From = '${this::class.simpleName}.${this.hashCode()}' ::"
             val msg = "$tag Value = $ready"
 
             if (ready) {
@@ -771,7 +793,8 @@ abstract class BaseActivity :
         dismissDialogs()
 
         LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(finishReceiver)
-        LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(finishByClassReceiver)
+        LocalBroadcastManager.getInstance(applicationContext)
+            .unregisterReceiver(finishByClassReceiver)
 
         unregistrar?.unregister()
 
