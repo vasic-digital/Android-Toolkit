@@ -106,11 +106,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
             }
         }
 
-
-
         if (!checked) {
 
-            doStartActivity(intent)
+            doStartActivity("startActivity.notChecked", intent)
 
             Console.log("$tag SKIPPED")
 
@@ -124,7 +122,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         if (group.isEmpty()) {
 
-            doStartActivity(intent)
+            doStartActivity("startActivity.group.empty", intent)
 
         } else {
 
@@ -174,7 +172,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 if (active) {
 
-                    doStartActivity(intent)
+                    doStartActivity("startActivity.active", intent)
 
                 } else {
 
@@ -195,7 +193,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                         overridePendingTransition(0, 0)
 
-                        doStartActivity(parentIntent) {
+                        doStartActivity("startActivity.notActive.noGroup.parent", parentIntent) {
 
                             val duration =
                                 (resources.getInteger(R.integer.transition_effect_duration)).toLong()
@@ -206,7 +204,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                             ) {
 
-                                doStartActivity(intent)
+                                doStartActivity("startActivity.notActive.noGroup.child", intent)
                             }
                         }
 
@@ -214,7 +212,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                         Console.log("$tag Background activity :: Skipping")
 
-                        doStartActivity(intent)
+                        doStartActivity("startActivity.notActive.group", intent)
                     }
                 }
 
@@ -222,13 +220,13 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 addToGroups()
 
-                doStartActivity(intent)
+                doStartActivity("startActivity.activities.notEmpty", intent)
             }
         }
 
         if (transition == null) {
 
-            doStartActivity(intent)
+            doStartActivity("startActivity.noTransition", intent)
         }
     }
 
@@ -297,7 +295,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                             "$tag Groups parent :: Starting :: Parent='${parent.simpleName}'"
                         )
 
-                        doStartActivity(intent)
+                        doStartActivity("finish.hasParent", intent)
                     }
                 }
 
@@ -467,9 +465,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         }
     }
 
-    protected fun startActivity(intent: Intent, callback: () -> Unit) {
+    protected fun startActivity(from: String, intent: Intent, callback: () -> Unit) {
 
-        doStartActivity(intent, callback)
+        doStartActivity("startActivity.withCallback.(from='$from')", intent, callback)
     }
 
     protected fun startActivityAndFinish(intent: Intent, from: String) {
@@ -601,7 +599,28 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     private fun clazz() = this@TransitionEffectsActivity::class.java
 
-    private fun doStartActivity(intent: Intent, callback: (() -> Unit)? = null) {
+    private fun doStartActivity(from: String, intent: Intent, callback: (() -> Unit)? = null) {
+
+        var whichOne = "Unknown"
+        val component = intent.component
+
+        component?.let { c ->
+
+            try {
+
+                val targetClass: Class<*> = Class.forName(c.className)
+
+                whichOne = targetClass::class.simpleName ?: whichOne
+
+            } catch (e: Throwable) {
+
+                recordException(e)
+            }
+        }
+
+        "$tag Do start activity :: Which='$whichOne', From='$from'"
+
+        Console.log("$tag START")
 
         applyExitTransition("startActivity")
 
@@ -616,7 +635,11 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                     it()
                 }
 
+                Console.log("$tag END")
+
             } catch (e: Throwable) {
+
+                Console.error("$tag END :: Error='${e.message}'")
 
                 recordException(e)
             }
