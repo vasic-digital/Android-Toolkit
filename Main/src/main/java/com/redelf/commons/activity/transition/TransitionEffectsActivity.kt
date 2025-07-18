@@ -2,10 +2,8 @@
 
 package com.redelf.commons.activity.transition
 
-import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
