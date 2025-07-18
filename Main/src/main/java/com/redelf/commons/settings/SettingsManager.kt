@@ -3,6 +3,9 @@ package com.redelf.commons.settings
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.creation.instantiation.SingleInstantiated
+import com.redelf.commons.extensions.isOnMainThread
+import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.sync
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.atomic.AtomicBoolean
@@ -64,6 +67,21 @@ class SettingsManager private constructor() :
         }
 
         callback.onCompleted(false)
+    }
+
+    fun <T> get(key: String, defaultValue: T): T {
+
+        if (isOnMainThread()) {
+
+            val e = IllegalStateException("Obtain settings value from the main thread")
+            recordException(e)
+        }
+
+        return sync("settings.get.$key") { callback ->
+
+            get(key, defaultValue, callback)
+
+        } ?: defaultValue
     }
 
     @Suppress("UNCHECKED_CAST")
