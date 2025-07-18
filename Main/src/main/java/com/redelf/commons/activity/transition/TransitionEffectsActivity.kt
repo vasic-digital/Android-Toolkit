@@ -618,7 +618,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
             }
         }
 
-        "$tag Do start activity :: Which='$whichOne', From='$from'"
+        val tag = "$tag Do start activity :: Which='$whichOne', From='$from'"
 
         Console.log("$tag START")
 
