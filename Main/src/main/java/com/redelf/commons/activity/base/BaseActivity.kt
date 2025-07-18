@@ -161,15 +161,16 @@ abstract class BaseActivity :
             val intent = getIntent()
             val data = intent.data // if it was opened via a deep link, etc.
             val action = intent.action // like ACTION_VIEW, etc.
-            val sourcePackage = intent.getStringExtra("source_package") // if passed explicitly
+            val sourcePackage = intent.getStringExtra("source_package")
+            val from = intent.getStringExtra(Broadcast.EXTRA_ACTIVITY_START_FROM)// if passed explicitly
             val caller = callingPackage
 
             Console.log(
 
                 "Activity :: On create :: Get caller info :: " +
                         "${this::class.simpleName} :: ${hashCode()} :: " +
-                        "Data=($data), Action=($action), Source.package=($sourcePackage), " +
-                        "Caller=($caller)"
+                        "Data=($data), From=($from), Action=($action), " +
+                        "Source.package=($sourcePackage), Caller=($caller)"
             )
 
         } catch (e: Throwable) {
