@@ -5,5 +5,5 @@ import java.util.LinkedList
 
 interface FilterAsync<T> {
 
-    fun filter(what: MutableList<T>, callback: OnObtain<FilterResult<T>>)
+    fun filter(what: MutableList<T>, callback: OnObtain<FilterResult<T>?>)
 }

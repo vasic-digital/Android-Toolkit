@@ -5,6 +5,7 @@ import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.sync
 import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterAsync
 import com.redelf.commons.filtering.FilterResult
@@ -466,204 +467,209 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
-        if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
+        exec {
 
-        fun next() {
+            if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
 
-            var modified = false
-            var changedCount = 0
-            val linked = LinkedList(what ?: emptyList())
+            fun next() {
 
-            val toRemove = mutableListOf<T>()
-            val toUpdate = mutableListOf<T>()
+                var modified = false
+                var changedCount = 0
+                val linked = LinkedList(what ?: emptyList())
 
-            list.forEach { wItem ->
+                val toRemove = mutableListOf<T>()
+                val toUpdate = mutableListOf<T>()
 
-                var where = -1
-                var found: T? = null
+                list.forEach { wItem ->
 
-                linked.forEach { lItem ->
+                    var where = -1
+                    var found: T? = null
 
-                    if (found == null) {
+                    linked.forEach { lItem ->
 
-                        if (lItem is Number && wItem is Number) {
+                        if (found == null) {
 
-                            if (lItem == wItem) {
+                            if (lItem is Number && wItem is Number) {
 
-                                found = lItem
+                                if (lItem == wItem) {
 
-                                if (lItem != wItem) {
+                                    found = lItem
 
-                                    where = indexOf(wItem)
+                                    if (lItem != wItem) {
+
+                                        where = indexOf(wItem)
+                                    }
                                 }
-                            }
 
-                        } else if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
+                            } else if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
 
-                            if (lItem.getId() == wItem.getId()) {
+                                if (lItem.getId() == wItem.getId()) {
 
-                                found = lItem
+                                    found = lItem
 
-                                if (lItem != wItem) {
+                                    if (lItem != wItem) {
 
-                                    where = indexOf(wItem)
+                                        where = indexOf(wItem)
+                                    }
                                 }
+
+                            } else {
+
+                                val e = IllegalArgumentException("Non-identifiable items found")
+                                Console.warning(e)
                             }
-
-                        } else {
-
-                            val e = IllegalArgumentException("Non-identifiable items found")
-                            Console.warning(e)
                         }
                     }
-                }
 
-                if (found != null) {
+                    if (found != null) {
 
-                    toUpdate.add(found)
+                        toUpdate.add(found)
 
-                    if (where > -1) {
+                        if (where > -1) {
 
-                        doUpdate(found, where)
-                    }
-
-                } else {
-
-                    toRemove.add(wItem)
-                }
-            }
-
-            if (toRemove.isNotEmpty()) {
-
-                modified = true
-
-                changedCount += toRemove.size
-
-                doRemoveAll(toRemove)
-            }
-
-            if (toUpdate.isNotEmpty()) {
-
-                changedCount += toUpdate.size
-            }
-
-            linked.forEach { linked ->
-
-                linked?.let { lkd ->
-
-                    if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
-
-                        modified = true
-
-                        changedCount++
-
-                        doAdd(lkd)
-                    }
-                }
-            }
-
-            fun filter() {
-
-                fun notify() {
-
-                    if (modified) {
-
-                        notifyChanged(onChange, "addAllAndFilter.${what?.size ?: 0}")
-                    }
-
-                    callback?.let {
-
-                        if (onUi) {
-
-                            onUiThread {
-
-                                it(modified, changedCount)
-                            }
-
-                        } else {
-
-                            it(modified, changedCount)
-                        }
-                    }
-                }
-
-                if (filters.isEmpty()) {
-
-                    notify()
-
-                } else {
-
-                    val filtered = FilterResult(filteredItems = list, wasModified = false)
-
-                    // FIXME:
-//                    filters.forEach { filter ->
-//
-//                        val res = filter.filter(filtered.filteredItems)
-//
-//                        filtered.filteredItems.clear()
-//                        filtered.filteredItems.addAll(res.filteredItems)
-//
-//                        filtered.changedCount.set(filtered.changedCount.get() + res.changedCount.get())
-//
-//                        if (!filtered.modified.get()) {
-//
-//                            filtered.modified.set(res.isModified())
-//                        }
-//                    }
-
-                    if (!modified) {
-
-                        modified = filtered.modified.get()
-                    }
-
-                    changedCount += filtered.changedCount.get()
-
-                    if (filtered != list) {
-
-                        doClear {
-
-                            doAddAll(filtered.filteredItems) {
-
-                                notify()
-                            }
+                            doUpdate(found, where)
                         }
 
                     } else {
 
-                        notify()
+                        toRemove.add(wItem)
                     }
+                }
+
+                if (toRemove.isNotEmpty()) {
+
+                    modified = true
+
+                    changedCount += toRemove.size
+
+                    doRemoveAll(toRemove)
+                }
+
+                if (toUpdate.isNotEmpty()) {
+
+                    changedCount += toUpdate.size
+                }
+
+                linked.forEach { linked ->
+
+                    linked?.let { lkd ->
+
+                        if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
+
+                            modified = true
+
+                            changedCount++
+
+                            doAdd(lkd)
+                        }
+                    }
+                }
+
+                fun filter() {
+
+                    fun notify() {
+
+                        if (modified) {
+
+                            notifyChanged(onChange, "addAllAndFilter.${what?.size ?: 0}")
+                        }
+
+                        callback?.let {
+
+                            if (onUi) {
+
+                                onUiThread {
+
+                                    it(modified, changedCount)
+                                }
+
+                            } else {
+
+                                it(modified, changedCount)
+                            }
+                        }
+                    }
+
+                    if (filters.isEmpty()) {
+
+                        notify()
+
+                    } else {
+
+                        val filtered = FilterResult(filteredItems = list, wasModified = false)
+
+                        filters.forEach { filter ->
+
+                            val res = sync("filter.each") { callback ->
+
+                                filter.filter(filtered.filteredItems, callback)
+                            }
+
+                            filtered.filteredItems.clear()
+                            filtered.filteredItems.addAll(res?.filteredItems ?: emptyList())
+
+                            filtered.changedCount.set(filtered.changedCount.get() + (res?.changedCount?.get() ?: 0))
+
+                            if (!filtered.modified.get()) {
+
+                                filtered.modified.set(res?.isModified() == true)
+                            }
+                        }
+
+                        if (!modified) {
+
+                            modified = filtered.modified.get()
+                        }
+
+                        changedCount += filtered.changedCount.get()
+
+                        if (filtered != list) {
+
+                            doClear {
+
+                                doAddAll(filtered.filteredItems) {
+
+                                    notify()
+                                }
+                            }
+
+                        } else {
+
+                            notify()
+                        }
+                    }
+                }
+
+                if (removeDeleted) {
+
+                    doPurge { purgedCount ->
+
+                        if (purgedCount > 0) {
+
+                            modified = true
+                            changedCount += purgedCount
+                        }
+
+                        filter()
+                    }
+
+                } else {
+
+                    filter()
                 }
             }
 
-            if (removeDeleted) {
+            if (replace) {
 
-                doPurge { purgedCount ->
+                doClear {
 
-                    if (purgedCount > 0) {
-
-                        modified = true
-                        changedCount += purgedCount
-                    }
-
-                    filter()
+                    next()
                 }
 
             } else {
 
-                filter()
-            }
-        }
-
-        if (replace) {
-
-            doClear {
-
                 next()
             }
-
-        } else {
-
-            next()
         }
     }
 
