@@ -6,6 +6,7 @@ import com.redelf.commons.destruction.delete.DeletionCheck
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.filtering.Filter
+import com.redelf.commons.filtering.FilterAsync
 import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.lifecycle.initialization.InitializedCheck
 import com.redelf.commons.lifecycle.termination.TerminationSynchronized
@@ -272,7 +273,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
         what: Collection<T?>?,
         from: String,
         removeDeleted: Boolean = true,
-        filters: List<Filter<T>> = emptyList(),
+        filters: List<FilterAsync<T>> = emptyList(),
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
@@ -292,7 +293,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
-        filters: List<Filter<T>> = emptyList(),
+        filters: List<FilterAsync<T>> = emptyList(),
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
@@ -459,7 +460,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
-        filters: List<Filter<T>> = emptyList(),
+        filters: List<FilterAsync<T>> = emptyList(),
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
@@ -594,20 +595,21 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     val filtered = FilterResult(filteredItems = list, wasModified = false)
 
-                    filters.forEach { filter ->
-
-                        val res = filter.filter(filtered.filteredItems)
-
-                        filtered.filteredItems.clear()
-                        filtered.filteredItems.addAll(res.filteredItems)
-
-                        filtered.changedCount.set(filtered.changedCount.get() + res.changedCount.get())
-
-                        if (!filtered.modified.get()) {
-
-                            filtered.modified.set(res.isModified())
-                        }
-                    }
+                    // FIXME:
+//                    filters.forEach { filter ->
+//
+//                        val res = filter.filter(filtered.filteredItems)
+//
+//                        filtered.filteredItems.clear()
+//                        filtered.filteredItems.addAll(res.filteredItems)
+//
+//                        filtered.changedCount.set(filtered.changedCount.get() + res.changedCount.get())
+//
+//                        if (!filtered.modified.get()) {
+//
+//                            filtered.modified.set(res.isModified())
+//                        }
+//                    }
 
                     if (!modified) {
 
