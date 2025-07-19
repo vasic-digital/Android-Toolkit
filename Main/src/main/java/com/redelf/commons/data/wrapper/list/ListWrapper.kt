@@ -73,16 +73,19 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     init {
 
-        dataPushListener?.let {
+        exec {
 
-            getManager()?.registerDataPushListener(it)
-        }
+            dataPushListener?.let {
 
-        val items = getCollection()
+                getManager()?.registerDataPushListener(it)
+            }
 
-        replaceAllAndFilter(items, "init") { _, _ ->
+            val items = getCollection()
 
-            initialized.set(true)
+            replaceAllAndFilter(items, "init") { _, _ ->
+
+                initialized.set(true)
+            }
         }
     }
 
@@ -467,11 +470,11 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
-        exec {
+        if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
 
-            if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
+        fun next() {
 
-            fun next() {
+            exec {
 
                 var modified = false
                 var changedCount = 0
@@ -658,18 +661,18 @@ open class ListWrapper<T, M : DataManagement<*>>(
                     filter()
                 }
             }
+        }
 
-            if (replace) {
+        if (replace) {
 
-                doClear {
-
-                    next()
-                }
-
-            } else {
+            doClear {
 
                 next()
             }
+
+        } else {
+
+            next()
         }
     }
 
