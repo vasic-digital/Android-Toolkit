@@ -73,7 +73,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
                                 Console.log(
 
                                     "$tag dataPushListener :: " +
-                                            "Changes :: Detected :: Count=$count"
+                                            "Changes :: Detected :: Count=$count" +
+                                            ", Source count=${items?.size ?: 0}"
                                 )
                             }
 
@@ -86,7 +87,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
                                 Console.log(
 
                                     "$tag dataPushListener :: " +
-                                            "Changes :: None detected :: Count=$count"
+                                            "Changes :: None detected :: Count=$count" +
+                                            ", Source count=${items?.size ?: 0}"
                                 )
                             }
                         }
@@ -135,7 +137,28 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 if (modified) {
 
+                    if (DEBUG.get()) {
+
+                        Console.log(
+
+                            "$tag Init :: " +
+                                    "Changes :: Detected :: Count=$count" +
+                                    ", Source count=${items.size}"
+                        )
+                    }
+
                     notifyChanged(action = action)
+                } else {
+
+                    if (DEBUG.get()) {
+
+                        Console.log(
+
+                            "$tag Init :: " +
+                                    "Changes :: None detected :: Count=$count" +
+                                    ", Source count=${items.size}"
+                        )
+                    }
                 }
             }
         }
