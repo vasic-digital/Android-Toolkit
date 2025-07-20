@@ -74,7 +74,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                                     "$tag dataPushListener :: " +
                                             "Changes :: Detected :: Count=$count" +
-                                            ", Source count=${items?.size ?: 0}"
+                                            ", getCollection().count=${items?.size ?: 0}"
                                 )
                             }
 
@@ -88,7 +88,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                                     "$tag dataPushListener :: " +
                                             "Changes :: None detected :: Count=$count" +
-                                            ", Source count=${items?.size ?: 0}"
+                                            ", getCollection().count=${items?.size ?: 0}"
                                 )
                             }
                         }
@@ -152,7 +152,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             "$tag Init :: " +
                                     "Changes :: Detected :: Count=$count" +
-                                    ", Source count=${items.size}"
+                                    ", getCollection().count=${items.size}"
                         )
                     }
 
@@ -166,7 +166,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             "$tag Init :: " +
                                     "Changes :: None detected :: Count=$count" +
-                                    ", Source count=${items.size}"
+                                    ", getCollection().count=${items.size}"
                         )
                     }
                 }
@@ -960,9 +960,22 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             val coll = dataAccess?.obtain()
 
+            if (DEBUG.get()) {
+
+                Console.log("$tag Get collection :: From='$from', " +
+                        "getCollection().count=${coll?.size ?: 0}")
+            }
+
             return coll
 
         } catch (e: Throwable) {
+
+            Console.log(
+
+                "$tag Fet collection :: " +
+                        "From='$from', getCollection().count=0, " +
+                        "Error=${e.message ?: e::class.simpleName}"
+            )
 
             recordException(e)
         }
