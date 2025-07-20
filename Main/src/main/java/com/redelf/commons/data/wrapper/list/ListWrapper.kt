@@ -97,6 +97,15 @@ open class ListWrapper<T, M : DataManagement<*>>(
                 } else {
 
                     onDataPushed?.onCompleted(data)
+
+                    if (DEBUG.get()) {
+
+                        Console.error(
+
+                            "$tag dataPushListener :: " +
+                                    "Changes :: None detected :: Data push failed"
+                        )
+                    }
                 }
             }
 
@@ -148,6 +157,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
                     }
 
                     notifyChanged(action = action)
+
                 } else {
 
                     if (DEBUG.get()) {
