@@ -50,13 +50,18 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             override fun onCompleted(data: Boolean?) {
 
-                onDataPushed?.onCompleted(data)
-
                 if (data == true) {
 
                     val items = getCollection()
 
-                    replaceAllAndFilter(items, "dataPushListener")
+                    replaceAllAndFilter(items, "dataPushListener") { modified, cont ->
+
+                        onDataPushed?.onCompleted(data && modified)
+                    }
+
+                } else {
+
+                    onDataPushed?.onCompleted(data)
                 }
             }
 
