@@ -61,7 +61,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     ) { modified, cont ->
 
-                        onDataPushed?.onCompleted(data && modified)
+                        if (modified) {
+
+                            onDataPushed?.onCompleted(data)
+                        }
                     }
 
                 } else {
