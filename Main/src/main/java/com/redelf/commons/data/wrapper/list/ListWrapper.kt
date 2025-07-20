@@ -52,7 +52,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 if (data == true) {
 
-                    val items = getCollection()
+                    val items = getCollection("dataPushListener")
                     val from = "dataPushListener(size=${items?.size ?: 0})"
 
                     replaceAllAndFilter(
@@ -60,7 +60,17 @@ open class ListWrapper<T, M : DataManagement<*>>(
                         from = from,
                         what = items
 
-                    ) { modified, cont ->
+                    ) { modified, count ->
+
+                        if (DEBUG.get()) {
+
+                        }
+
+                        Console.log(
+
+                            "$tag Data pushed :: From='$from', " +
+                                    "Modified=${true}, Count=$count, Empty=${isEmpty("$from(pushedCount=$count)")}"
+                        )
 
                         if (modified) {
 
@@ -96,15 +106,27 @@ open class ListWrapper<T, M : DataManagement<*>>(
                 getManager()?.registerDataPushListener(it)
             }
 
-            val items = getCollection()
+            val action = "init"
+            val from = action
+            val items = getCollection(from)
 
-            replaceAllAndFilter(items, "init") { modified, count ->
+            replaceAllAndFilter(items, from) { modified, count ->
 
                 initialized.set(true)
 
+                if (DEBUG.get()) {
+
+                }
+
+                Console.log(
+
+                    "$tag Data pushed :: From='init', " +
+                            "Modified=${true}, Count=$count, Empty=${isEmpty("$from(pushedCount=$count)")}"
+                )
+
                 if (modified) {
 
-                    notifyChanged(action = "init")
+                    notifyChanged(action = action)
                 }
             }
         }
@@ -155,15 +177,26 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     fun isEmpty(): Boolean {
 
-        if (DEBUG.get()) {
-
-            Console.log("$tag Is empty :: Size=${list.size}")
-        }
-
-        return list.isEmpty()
+        return isEmpty("isEmpty")
     }
 
-    fun isNotEmpty() = !isEmpty()
+    private fun isEmpty(from: String): Boolean {
+
+        val empty = list.isEmpty()
+
+//        if (DEBUG.get()) {
+
+        Console.log(
+
+            "$tag Is empty :: From='$from', List=${list.hashCode()}, " +
+                    "Size=${list.size}, Empty=$empty"
+        )
+//        }
+
+        return empty
+    }
+
+    fun isNotEmpty() = !isEmpty("isNotEmpty")
 
     fun get(index: Int): T? {
 
@@ -641,7 +674,9 @@ open class ListWrapper<T, M : DataManagement<*>>(
                             filtered.filteredItems.clear()
                             filtered.filteredItems.addAll(res?.filteredItems ?: emptyList())
 
-                            filtered.changedCount.set(filtered.changedCount.get() + (res?.changedCount?.get() ?: 0))
+                            filtered.changedCount.set(
+                                filtered.changedCount.get() + (res?.changedCount?.get() ?: 0)
+                            )
 
                             if (!filtered.modified.get()) {
 
@@ -854,16 +889,11 @@ open class ListWrapper<T, M : DataManagement<*>>(
         }
     }
 
-    private fun getCollection(): Collection<T?>? {
+    private fun getCollection(from: String): Collection<T?>? {
 
         try {
 
             val coll = dataAccess?.obtain()
-
-            if (DEBUG.get()) {
-
-                Console.log("$tag Get collection :: Size=${coll?.size ?: 0}")
-            }
 
             return coll
 
