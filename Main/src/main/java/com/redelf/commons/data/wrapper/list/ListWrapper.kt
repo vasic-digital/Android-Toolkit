@@ -40,7 +40,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     }
 
     private val busy = AtomicBoolean()
-    private var list: CopyOnWriteArrayList<T> = CopyOnWriteArrayList()
+    private val list: CopyOnWriteArrayList<T> = CopyOnWriteArrayList()
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
@@ -154,6 +154,11 @@ open class ListWrapper<T, M : DataManagement<*>>(
     override fun isNotInitialized() = !isInitialized()
 
     fun isEmpty(): Boolean {
+
+        if (DEBUG.get()) {
+
+            Console.log("$tag Is empty :: Size=${list.size}")
+        }
 
         return list.isEmpty()
     }
