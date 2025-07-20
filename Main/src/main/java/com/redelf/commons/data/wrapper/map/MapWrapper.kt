@@ -70,7 +70,11 @@ class MapWrapper<T> (
 
     fun toKeysList(): CopyOnWriteArrayList<Long> {
 
-        return dataMap.keys.toCollection(CopyOnWriteArrayList())
+        val destination = CopyOnWriteArrayList<Long>()
+
+        destination.addAll(dataMap.keys)
+
+        return destination
     }
 
     fun getDataCopy(from: String):  ConcurrentHashMap<Long, T> {
