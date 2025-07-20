@@ -3,9 +3,11 @@ package com.redelf.commons.data.wrapper.list
 import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
+import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.sync
+import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterAsync
 import com.redelf.commons.filtering.FilterResult
@@ -55,6 +57,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
                     val items = getCollection("dataPushListener")
                     val from = "dataPushListener(size=${items?.size ?: 0})"
 
+                    onDataPushed?.onCompleted(data)
+
                     replaceAllAndFilter(
 
                         from = from,
@@ -62,21 +66,27 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     ) { modified, count ->
 
-                        if (DEBUG.get()) {
-
-                        }
-
-                        Console.log(
-
-                            "$tag Data pushed :: From='$from', " +
-                                    "Modified=${true}, Count=$count, Empty=${isEmpty("$from(pushedCount=$count)")}"
-                        )
-
                         if (modified) {
 
-                            onDataPushed?.onCompleted(data)
+                            if (DEBUG.get()) {
+
+                                Console.log(
+
+                                    "$tag dataPushListener :: Changes detected"
+                                )
+                            }
 
                             notifyChanged(action = "dataPushed")
+
+                        } else {
+
+                            if (DEBUG.get()) {
+
+                                Console.log(
+
+                                    "$tag dataPushListener :: No changes detected"
+                                )
+                            }
                         }
                     }
 
@@ -110,19 +120,16 @@ open class ListWrapper<T, M : DataManagement<*>>(
             val from = action
             val items = getCollection(from)
 
-            replaceAllAndFilter(items, from) { modified, count ->
+            if (items == null || items.isEmpty()) {
 
                 initialized.set(true)
 
-                if (DEBUG.get()) {
+                return@exec
+            }
 
-                }
+            replaceAllAndFilter(items, from) { modified, count ->
 
-                Console.log(
-
-                    "$tag Data pushed :: From='init', " +
-                            "Modified=${true}, Count=$count, Empty=${isEmpty("$from(pushedCount=$count)")}"
-                )
+                initialized.set(true)
 
                 if (modified) {
 
@@ -184,14 +191,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         val empty = list.isEmpty()
 
-//        if (DEBUG.get()) {
+        if (DEBUG.get()) {
 
-        Console.log(
+            Console.log(
 
-            "$tag Is empty :: From='$from', List=${list.hashCode()}, " +
-                    "Size=${list.size}, Empty=$empty"
-        )
-//        }
+                "$tag Is empty :: From='$from', List=${list.hashCode()}, " +
+                        "Size=${list.size}, Empty=$empty"
+            )
+        }
 
         return empty
     }
@@ -345,7 +352,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
-        val from = "replaceAllAndFilter(from='$from')"
+        val from = "replaceAllAndFilter(from='$from',size=${what?.size ?: 0})"
 
         exec {
 
@@ -891,7 +898,30 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     private fun getCollection(from: String): Collection<T?>? {
 
+        if (isOnMainThread()) {
+
+            val e = IllegalStateException("Shall not obtain collection from the main thread")
+            recordException(e)
+        }
+
         try {
+
+            val manager = getManager()
+
+            if (manager == null) {
+
+                Console.error(
+
+                    "$tag getCollection(from='$from') :: Manager is null"
+                )
+
+                return null
+            }
+
+            yieldWhile {
+
+                manager.isBusy() || manager.isReading() || manager.isWriting()
+            }
 
             val coll = dataAccess?.obtain()
 
