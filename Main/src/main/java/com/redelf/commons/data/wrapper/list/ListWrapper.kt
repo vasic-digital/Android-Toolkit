@@ -54,7 +54,12 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     val items = getCollection()
 
-                    replaceAllAndFilter(items, "dataPushListener") { modified, cont ->
+                    replaceAllAndFilter(
+
+                        items,
+                        "dataPushListener(size=${items?.size ?: 0})"
+
+                    ) { modified, cont ->
 
                         onDataPushed?.onCompleted(data && modified)
                     }
