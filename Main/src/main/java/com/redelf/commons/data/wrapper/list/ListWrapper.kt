@@ -281,7 +281,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doClear(onChange, callback)
+            doClear("clear(from='$from')", onChange, callback)
         }
     }
 
@@ -456,6 +456,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     private fun doClear(
 
+        from: String,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
@@ -465,7 +466,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.isEmpty()) {
 
-            notifyChanged(onChange, "clear")
+            notifyChanged(onChange, "clear(from='$from')")
         }
 
         notifyCallback(callback)
@@ -641,7 +642,13 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         if (filtered != list) {
 
-                            doClear {
+                            doClear(
+
+                                "doAddAllAndFilter(from='$from," +
+                                        "filteredCount=${filtered.filteredItems.size}'," +
+                                        "originalCount=${list.size})"
+
+                            ) {
 
                                 doAddAll(filtered.filteredItems) {
 
@@ -678,7 +685,13 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (replace) {
 
-            doClear {
+            doClear(
+
+                "doAddAllAndFilter(from='$from," +
+                        "filteredCount=NONE'," +
+                        "originalCount=${list.size})"
+
+            ) {
 
                 next()
             }
