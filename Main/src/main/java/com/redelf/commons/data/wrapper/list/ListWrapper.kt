@@ -53,17 +53,20 @@ open class ListWrapper<T, M : DataManagement<*>>(
                 if (data == true) {
 
                     val items = getCollection()
+                    val from = "dataPushListener(size=${items?.size ?: 0})"
 
                     replaceAllAndFilter(
 
-                        items,
-                        "dataPushListener(size=${items?.size ?: 0})"
+                        from = from,
+                        what = items
 
                     ) { modified, cont ->
 
                         if (modified) {
 
                             onDataPushed?.onCompleted(data)
+
+                            notifyChanged(action = "dataPushed")
                         }
                     }
 
@@ -95,9 +98,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             val items = getCollection()
 
-            replaceAllAndFilter(items, "init") { _, _ ->
+            replaceAllAndFilter(items, "init") { modified, count ->
 
                 initialized.set(true)
+
+                if (modified) {
+
+                    notifyChanged(action = "init")
+                }
             }
         }
     }
@@ -357,7 +365,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
         }
     }
 
-    private fun notifyChanged(onChange: OnChangeCompleted?, action: String) {
+    private fun notifyChanged(onChange: OnChangeCompleted? = null, action: String) {
 
         if (onUi) {
 
