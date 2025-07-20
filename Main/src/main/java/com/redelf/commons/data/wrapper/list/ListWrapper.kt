@@ -842,7 +842,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         try {
 
-            return dataAccess?.obtain()
+            val coll = dataAccess?.obtain()
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag Get collection :: Size=${coll?.size ?: 0}")
+            }
+
+            return coll
 
         } catch (e: Throwable) {
 
