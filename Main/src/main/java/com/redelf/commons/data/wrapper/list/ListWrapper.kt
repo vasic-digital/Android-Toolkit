@@ -72,7 +72,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                                 Console.log(
 
-                                    "$tag dataPushListener :: Changes detected"
+                                    "$tag dataPushListener :: " +
+                                            "Changes :: Detected :: Count=$count"
                                 )
                             }
 
@@ -84,7 +85,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                                 Console.log(
 
-                                    "$tag dataPushListener :: No changes detected"
+                                    "$tag dataPushListener :: " +
+                                            "Changes :: None detected :: Count=$count"
                                 )
                             }
                         }
