@@ -153,9 +153,12 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     override fun isNotInitialized() = !isInitialized()
 
-    fun isEmpty() = list.isEmpty()
+    fun isEmpty(): Boolean {
 
-    fun isNotEmpty() = list.isNotEmpty()
+        return list.isEmpty()
+    }
+
+    fun isNotEmpty() = !isEmpty()
 
     fun get(index: Int): T? {
 
