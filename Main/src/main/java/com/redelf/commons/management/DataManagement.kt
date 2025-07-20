@@ -851,9 +851,27 @@ abstract class DataManagement<T> :
 
     private fun notifyOnPushCompleted(success: Boolean) {
 
+        if (DEBUG.get()) {
+
+            Console.log(
+
+                "${getLogTag()} Notify on push completed :: " +
+                        "Success=$success, Subscribers=${pushCallbacks.size()}"
+            )
+        }
+
         pushCallbacks.doOnAll(object : CallbackOperation<OnObtain<Boolean?>> {
 
             override fun perform(callback: OnObtain<Boolean?>) {
+
+                if (DEBUG.get()) {
+
+                    Console.log(
+
+                        "${getLogTag()} Notify on push completed :: " +
+                                "Success=$success, Subscriber=$callback"
+                    )
+                }
 
                 callback.onCompleted(success)
             }
