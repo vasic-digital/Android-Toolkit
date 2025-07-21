@@ -4,5 +4,5 @@ import com.redelf.commons.activity.transition.TransitionEffectsActivity
 
 interface ActivityPresentable {
 
-    fun showInActivity(context: TransitionEffectsActivity): Boolean
+    fun showInActivity(activity: Class<*>, context: TransitionEffectsActivity): Boolean
 }

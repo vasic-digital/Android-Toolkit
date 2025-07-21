@@ -29,11 +29,12 @@ open class FragmentWrapperActivity : BaseActivity() {
         fun createIntent(
 
             context: TransitionEffectsActivity,
-            dialogFragment: BaseDialogFragment
+            dialogFragment: BaseDialogFragment,
+            wrapperClass: Class<*> = FragmentWrapperActivity::class.java
 
         ): Intent {
 
-            val intent = Intent(context, FragmentWrapperActivity::class.java)
+            val intent = Intent(context, wrapperClass)
             intent.putExtra(EXTRA_FRAGMENT, dialogFragment.hashCode())
 
             FRAGMENTS[dialogFragment.hashCode()] = dialogFragment

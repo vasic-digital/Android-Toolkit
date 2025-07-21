@@ -73,9 +73,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         Console.log("$tag END")
     }
 
-    fun showInActivity(what: BaseDialogFragment) {
+    fun showInActivity(activity: Class<*>, what: BaseDialogFragment) {
 
-        if (!what.showInActivity(this)) {
+        if (!what.showInActivity(activity, this)) {
 
             val clazz = what::class.simpleName
             val msg = "'$clazz' was not shown in activity"

@@ -71,11 +71,16 @@ abstract class BaseDialogFragment :
         fitInsideSystemBoundaries()
     }
 
-    override fun showInActivity(context: TransitionEffectsActivity): Boolean {
+    override fun showInActivity(
+
+        activity: Class<*>,
+        context: TransitionEffectsActivity,
+
+    ): Boolean {
 
         try {
 
-            val intent = FragmentWrapperActivity.createIntent(context, this)
+            val intent = FragmentWrapperActivity.createIntent(context, this, activity)
             context.startActivity(intent)
 
         } catch (e: Throwable) {
