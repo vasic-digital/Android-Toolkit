@@ -19,6 +19,7 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.iteration.Iterable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.management.Management
 import com.redelf.commons.measure.Size
 import com.redelf.commons.modification.Add
@@ -541,13 +542,16 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
                 dataManager.obtain().pushData(
 
+
                     data,
 
-                    object : OnObtain<Boolean?> {
+                    "${getWho()}.persist",
 
-                        override fun onCompleted(data: Boolean?) {
+                    object : OnObtain<DataPushResult?> {
 
-                            val success = data == true
+                        override fun onCompleted(data: DataPushResult?) {
+
+                            val success = data?.success == true
 
                             if (success) {
 
