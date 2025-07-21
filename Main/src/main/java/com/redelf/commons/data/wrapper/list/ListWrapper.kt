@@ -15,6 +15,7 @@ import com.redelf.commons.lifecycle.initialization.InitializedCheck
 import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
@@ -32,7 +33,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private val dataAccess: DataAccess<T, M>? = null,
     private val onUi: Boolean,
     private var onChange: OnChangeCompleted? = null,
-    private val onDataPushed: OnObtain<Boolean?>? = null
+    private val onDataPushed: OnObtain<DataPushResult?>? = null
 
 ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
@@ -46,16 +47,16 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
-    private val dataPushListener: OnObtain<Boolean?>? = if (dataAccess != null) {
+    private val dataPushListener: OnObtain<DataPushResult?>? = if (dataAccess != null) {
 
-        object : OnObtain<Boolean?> {
+        object : OnObtain<DataPushResult?> {
 
-            override fun onCompleted(data: Boolean?) {
+            override fun onCompleted(data: DataPushResult?) {
 
-                if (data == true) {
+                if (data?.success == true) {
 
-                    val items = getCollection("dataPushListener")
-                    val from = "dataPushListener(size=${items?.size ?: 0})"
+                    val items = getCollection("dataPushListener(pushFrom='${data.pushFrom}')")
+                    val from = "dataPushListener(pushFrom='${data.pushFrom}',size=${items?.size ?: 0})"
 
                     onDataPushed?.onCompleted(data)
 

@@ -3,6 +3,7 @@ package com.redelf.commons.data.wrapper.list
 import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.wrapper.VersionableWrapper
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
@@ -18,7 +19,7 @@ class DefaultListWrapper<T>(
     persistData: Boolean = true,
     environment: String = "default",
     onChange: OnChangeCompleted? = null,
-    onDataPushed: OnObtain<Boolean?>? = null
+    onDataPushed: OnObtain<DataPushResult?>? = null
 
 ) : ListWrapper<T, ListWrapperManager<T>>(
 

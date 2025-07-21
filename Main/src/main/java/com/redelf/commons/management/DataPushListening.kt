@@ -4,9 +4,9 @@ import com.redelf.commons.obtain.OnObtain
 
 interface DataPushListening {
 
-    fun isRegisteredDataPushListener(subscriber: OnObtain<Boolean?>): Boolean
+    fun isRegisteredDataPushListener(subscriber: OnObtain<DataPushResult?>): Boolean
 
-    fun registerDataPushListener(subscriber: OnObtain<Boolean?>)
+    fun registerDataPushListener(subscriber: OnObtain<DataPushResult?>)
 
-    fun unregisterDataPushListener(subscriber: OnObtain<Boolean?>)
+    fun unregisterDataPushListener(subscriber: OnObtain<DataPushResult?>)
 }

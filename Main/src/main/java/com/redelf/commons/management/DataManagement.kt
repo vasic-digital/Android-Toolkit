@@ -6,7 +6,6 @@ import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
 import com.redelf.commons.data.Empty
-import com.redelf.commons.data.type.Typed
 import com.redelf.commons.destruction.reset.Resettable
 import com.redelf.commons.destruction.reset.ResettableAsync
 import com.redelf.commons.enable.Enabling
@@ -101,7 +100,7 @@ abstract class DataManagement<T> :
     private var enabled = AtomicBoolean(true)
     private val lastDataVersion = AtomicLong(-1)
     private var session = Session(name = javaClass.simpleName)
-    private val pushCallbacks = Callbacks<OnObtain<Boolean?>>("on_push")
+    private val pushCallbacks = Callbacks<OnObtain<DataPushResult?>>("on_push")
 
     protected abstract fun getLogTag(): String
 
@@ -145,7 +144,7 @@ abstract class DataManagement<T> :
         return isReading() || isWriting()
     }
 
-    override fun registerDataPushListener(subscriber: OnObtain<Boolean?>) {
+    override fun registerDataPushListener(subscriber: OnObtain<DataPushResult?>) {
 
         if (isRegisteredDataPushListener(subscriber)) {
 
@@ -155,7 +154,7 @@ abstract class DataManagement<T> :
         pushCallbacks.register(subscriber)
     }
 
-    override fun unregisterDataPushListener(subscriber: OnObtain<Boolean?>) {
+    override fun unregisterDataPushListener(subscriber: OnObtain<DataPushResult?>) {
 
         if (isRegisteredDataPushListener(subscriber)) {
 
@@ -163,7 +162,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    override fun isRegisteredDataPushListener(subscriber: OnObtain<Boolean?>): Boolean {
+    override fun isRegisteredDataPushListener(subscriber: OnObtain<DataPushResult?>): Boolean {
 
         return pushCallbacks.isRegistered(subscriber)
     }
@@ -425,14 +424,14 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
-    fun pushData(): Boolean {
+    fun pushData(from: String): Boolean {
 
         val data = obtain()
 
-        return pushData(data)
+        return pushData("pushData(from='$from')", data)
     }
 
-    fun pushData(data: T?): Boolean {
+    fun pushData(from: String, data: T?): Boolean {
 
         if (isOnMainThread()) {
 
@@ -441,18 +440,30 @@ abstract class DataManagement<T> :
             recordException(e)
         }
 
-        return sync("${getWho()}.pushData") { callback ->
+        val from = "pushData(from='$from').withData"
 
-            pushData(data, callback)
+        return sync("${getWho()}.$from") { callback ->
 
-        } == true
+            pushData(data, from, callback)
+
+        }?.success == true
     }
 
-    open fun pushData(data: T?, callback: OnObtain<Boolean?>?) {
+    open fun pushData(
+
+        data: T?,
+        from: String,
+        callback: OnObtain<DataPushResult?>?
+
+    ) {
+
+        val from = "pushData(from='$from').withData.withCallback"
 
         if (!isEnabled()) {
 
-            callback?.onCompleted(false)
+            val res = DataPushResult(from, false)
+            callback?.onCompleted(res)
+
             return
         }
 
@@ -460,7 +471,13 @@ abstract class DataManagement<T> :
 
         data?.let {
 
-            doPushData(it, retry = 0, callback)
+            doPushData(
+
+                it,
+                from,
+                retry = 0,
+                callback
+            )
         }
 
         if (data == null) {
@@ -469,7 +486,13 @@ abstract class DataManagement<T> :
 
             dObject?.let {
 
-                doPushData(it, retry = 0, callback)
+                doPushData(
+
+                    it,
+                    "$from.dataObjCreated",
+                    retry = 0,
+                    callback
+                )
             }
 
             if (dObject == null) {
@@ -483,13 +506,22 @@ abstract class DataManagement<T> :
         }
     }
 
-    protected fun doPushData(data: T, retry: Int = 0, callback: OnObtain<Boolean?>? = null) {
+    protected fun doPushData(
 
-        val callbackWrapper = object : OnObtain<Boolean?> {
+        data: T,
+        from: String,
+        retry: Int = 0,
+        callback: OnObtain<DataPushResult?>? = null
 
-            override fun onCompleted(data: Boolean?) {
+    ) {
 
-                notifyOnPushCompleted(data == true)
+        val from = "doPushData(from='$from')"
+
+        val callbackWrapper = object : OnObtain<DataPushResult?> {
+
+            override fun onCompleted(data: DataPushResult?) {
+
+                notifyOnPushCompleted(data)
 
                 callback?.onCompleted(data)
             }
@@ -503,7 +535,7 @@ abstract class DataManagement<T> :
         if (!isEnabled()) {
 
             onDataPushed(success = false)
-            callbackWrapper.onCompleted(data = false)
+            callbackWrapper.onCompleted(data = DataPushResult(from, false))
             return
         }
 
@@ -512,7 +544,7 @@ abstract class DataManagement<T> :
             Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
 
             onDataPushed(success = false)
-            callbackWrapper.onCompleted(data = false)
+            callbackWrapper.onCompleted(data = DataPushResult(from, false))
             return
         }
 
@@ -533,7 +565,13 @@ abstract class DataManagement<T> :
 
                     ) {
 
-                        doPushData(data, retry = retry + 1, callback)
+                        doPushData(
+
+                            data,
+                            from = "$from.retry.$retry",
+                            retry = retry + 1,
+                            callback
+                        )
                     }
 
                 } else {
@@ -601,7 +639,7 @@ abstract class DataManagement<T> :
                         }
 
                         onDataPushed(success = success)
-                        callbackWrapper.onCompleted(data = success)
+                        callbackWrapper.onCompleted(data = DataPushResult(from, success))
 
                     } else {
 
@@ -625,7 +663,7 @@ abstract class DataManagement<T> :
                 writing.set(false)
 
                 onDataPushed(success = true)
-                callbackWrapper.onCompleted(data = true)
+                callbackWrapper.onCompleted(data = DataPushResult(from, true))
             }
         }
     }
@@ -667,6 +705,7 @@ abstract class DataManagement<T> :
 
     override fun reset(callback: OnObtain<Boolean?>) {
 
+        val from = "reset"
         val tag = "${getLogTag()} Reset ::"
 
         if (!isEnabled()) {
@@ -738,11 +777,13 @@ abstract class DataManagement<T> :
 
                                     retry = 0,
 
-                                    callback = object : OnObtain<Boolean?> {
+                                    from = from,
 
-                                        override fun onCompleted(data: Boolean?) {
+                                    callback = object : OnObtain<DataPushResult?> {
 
-                                            completeReset(data)
+                                        override fun onCompleted(data: DataPushResult?) {
+
+                                            completeReset(data?.success)
                                         }
 
                                         override fun onFailure(error: Throwable) {
@@ -849,31 +890,33 @@ abstract class DataManagement<T> :
         return false
     }
 
-    private fun notifyOnPushCompleted(success: Boolean) {
+    private fun notifyOnPushCompleted(data: DataPushResult?) {
 
         if (DEBUG.get()) {
 
             Console.log(
 
                 "${getLogTag()} Notify on push completed :: " +
-                        "Success=$success, Subscribers=${pushCallbacks.size()}"
+                        "Success=${data?.success == true}, " +
+                        "Subscribers=${pushCallbacks.size()}"
             )
         }
 
-        pushCallbacks.doOnAll(object : CallbackOperation<OnObtain<Boolean?>> {
+        pushCallbacks.doOnAll(object : CallbackOperation<OnObtain<DataPushResult?>> {
 
-            override fun perform(callback: OnObtain<Boolean?>) {
+            override fun perform(callback: OnObtain<DataPushResult?>) {
 
                 if (DEBUG.get()) {
 
                     Console.log(
 
                         "${getLogTag()} Notify on push completed :: " +
-                                "Success=$success, Subscriber=$callback"
+                                "Success=${data?.success == true}, " +
+                                "Subscriber=$callback"
                     )
                 }
 
-                callback.onCompleted(success)
+                callback.onCompleted(data)
             }
 
         }, operationName = "push.completed")
@@ -984,13 +1027,21 @@ abstract class DataManagement<T> :
 
                                         it,
 
-                                        object : OnObtain<Boolean?> {
+                                        "transaction.end.$name",
 
-                                            override fun onCompleted(data: Boolean?) {
+                                        object : OnObtain<DataPushResult?> {
 
-                                                val result = data == true
+                                            override fun onCompleted(data: DataPushResult?) {
 
-                                                if (canLog) Console.log("$tag Session: $session :: ENDED :: $name")
+                                                val result = data?.success == true
+
+                                                if (canLog) {
+
+                                                    Console.log(
+
+                                                        "$tag Session: $session :: ENDED :: $name"
+                                                    )
+                                                }
 
                                                 callback.onCompleted(result)
                                             }
