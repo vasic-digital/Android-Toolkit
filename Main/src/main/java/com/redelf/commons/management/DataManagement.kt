@@ -346,10 +346,9 @@ abstract class DataManagement<T> :
 
                 pulled?.let {
 
-                    if (overwriteData(pulled)) {
+                    if (!overwriteData(pulled)) {
 
-                        // FIXME: We need data available at once [IN_PROGRESS]
-//                        notifyOnPushCompleted(data = DataPushResult("onPulled", true))
+                        Console.error("$dataObjTag Overwrite failed")
                     }
                 }
 
