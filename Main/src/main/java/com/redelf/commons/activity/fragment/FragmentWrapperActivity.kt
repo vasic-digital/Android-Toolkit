@@ -12,9 +12,12 @@ import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.activity.stateful.StatefulActivity
 import androidx.core.graphics.drawable.toDrawable
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
+import com.redelf.commons.logging.Console
 
 
 open class FragmentWrapperActivity : BaseActivity() {
+
+    private val tag = "Fragment Wrapper Activity ::"
 
     companion object {
 
@@ -43,6 +46,8 @@ open class FragmentWrapperActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Console.log("$tag onCreate")
+
         window.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
 
         setContentView(R.layout.activity_fragment_wrapper)
@@ -60,9 +65,14 @@ open class FragmentWrapperActivity : BaseActivity() {
         //                intent.getIntExtra(EXTRA_THEME, 0)
         //            )
 
-        dialogFragment?.show(supportFragmentManager, "dialog_host") ?: run {
+        Console.log("$tag Dialog='$dialogFragment'")
 
-            finishFrom("fragment.none")
-        }
+        dialogFragment?.show(supportFragmentManager, "dialog_host")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        Console.log("$tag onDestroy")
     }
 }
