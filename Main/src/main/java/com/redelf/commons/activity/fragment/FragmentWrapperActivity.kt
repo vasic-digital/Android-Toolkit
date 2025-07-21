@@ -11,6 +11,7 @@ import com.redelf.commons.R
 import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.activity.stateful.StatefulActivity
 import androidx.core.graphics.drawable.toDrawable
+import com.redelf.commons.activity.transition.TransitionEffectsActivity
 
 
 open class FragmentWrapperActivity : BaseActivity() {
@@ -21,7 +22,7 @@ open class FragmentWrapperActivity : BaseActivity() {
 
         fun createIntent(
 
-            context: StatefulActivity,
+            context: TransitionEffectsActivity,
             dialogFragment: DialogFragment
 
         ): Intent {

@@ -75,10 +75,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     fun showInActivity(what: BaseDialogFragment) {
 
-        if (!what.showInActivity()) {
+        if (!what.showInActivity(this)) {
 
             val clazz = what::class.simpleName
-            val msg = "'$clazz' cannot be shown in activity"
+            val msg = "'$clazz' was not shown in activity"
             val e = IllegalStateException(msg)
 
             recordException(e)
