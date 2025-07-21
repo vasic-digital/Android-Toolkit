@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toDrawable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.R
+import com.redelf.commons.activity.base.BaseDialogFragment
 import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
@@ -70,6 +71,18 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         finish()
 
         Console.log("$tag END")
+    }
+
+    fun showInActivity(what: BaseDialogFragment) {
+
+        if (!what.showInActivity()) {
+
+            val clazz = what::class.simpleName
+            val msg = "'$clazz' cannot be shown in activity"
+            val e = IllegalStateException(msg)
+
+            recordException(e)
+        }
     }
 
     /*
