@@ -54,7 +54,9 @@ abstract class DataManagement<T> :
     Contextual<BaseApplication>,
     ResettableParametrized<String>,
     ResettableAsyncParametrized<String>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
+    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
+
+{
 
     companion object {
 
@@ -305,6 +307,7 @@ abstract class DataManagement<T> :
                 Console.warning("$tag Locked")
 
                 callback.onCompleted(null)
+
                 return@exec
             }
 
@@ -343,7 +346,11 @@ abstract class DataManagement<T> :
 
                 pulled?.let {
 
-                    overwriteData(pulled)
+                    if (overwriteData(pulled)) {
+
+                        // FIXME: We need data available at once [IN_PROGRESS]
+//                        notifyOnPushCompleted(data = DataPushResult("onPulled", true))
+                    }
                 }
 
                 if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
@@ -535,7 +542,9 @@ abstract class DataManagement<T> :
         if (!isEnabled()) {
 
             onDataPushed(success = false)
+
             callbackWrapper.onCompleted(data = DataPushResult(from, false))
+
             return
         }
 
@@ -544,7 +553,9 @@ abstract class DataManagement<T> :
             Console.warning("${getLogTag()} Push data :: Locked: SKIPPING")
 
             onDataPushed(success = false)
+
             callbackWrapper.onCompleted(data = DataPushResult(from, false))
+
             return
         }
 
@@ -639,6 +650,7 @@ abstract class DataManagement<T> :
                         }
 
                         onDataPushed(success = success)
+
                         callbackWrapper.onCompleted(data = DataPushResult(from, success))
 
                     } else {
@@ -649,12 +661,14 @@ abstract class DataManagement<T> :
                         val e = java.lang.IllegalArgumentException(msg)
 
                         onDataPushed(err = e)
+
                         callbackWrapper.onFailure(e)
                     }
 
                 } catch (e: RejectedExecutionException) {
 
                     onDataPushed(err = e)
+
                     callbackWrapper.onFailure(e)
                 }
 
@@ -663,6 +677,7 @@ abstract class DataManagement<T> :
                 writing.set(false)
 
                 onDataPushed(success = true)
+
                 callbackWrapper.onCompleted(data = DataPushResult(from, true))
             }
         }
@@ -892,7 +907,7 @@ abstract class DataManagement<T> :
         return false
     }
 
-    private fun notifyOnPushCompleted(data: DataPushResult?) {
+    protected fun notifyOnPushCompleted(data: DataPushResult?) {
 
         if (DEBUG.get()) {
 

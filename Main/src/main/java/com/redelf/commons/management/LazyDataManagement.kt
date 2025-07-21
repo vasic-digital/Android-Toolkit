@@ -248,6 +248,7 @@ abstract class LazyDataManagement<T> :
         if (!isEnabled()) {
 
             callback?.onCompleted(data = DataPushResult(from, false))
+
             return
         }
 
@@ -255,7 +256,11 @@ abstract class LazyDataManagement<T> :
 
             saved.set(false)
 
-            callback?.onCompleted(data = DataPushResult(from, true))
+            val result = DataPushResult(from, true)
+
+            callback?.onCompleted(data = result)
+
+            notifyOnPushCompleted(data = result)
 
         } else {
 
