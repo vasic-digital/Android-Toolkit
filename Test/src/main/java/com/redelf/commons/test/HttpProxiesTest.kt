@@ -1,18 +1,5 @@
 package com.redelf.commons.test
 
-import com.redelf.commons.data.list.HttpStringsListDataSource
-import com.redelf.commons.data.list.RawStringsListDataSource
-import com.redelf.commons.extensions.deobfuscateString
-import com.redelf.commons.extensions.isNotEmpty
-import com.redelf.commons.logging.Console
-import com.redelf.commons.net.endpoint.http.HttpEndpoint
-import com.redelf.commons.net.proxy.http.HttpProxies
-import com.redelf.commons.net.proxy.http.HttpProxy
-import com.redelf.commons.obtain.Obtain
-import org.junit.Assert
-import org.junit.Test
-import java.util.concurrent.atomic.AtomicLong
-
 abstract class HttpProxiesTest : ProxiesTest() {
 
     // FIXME: Fix the test

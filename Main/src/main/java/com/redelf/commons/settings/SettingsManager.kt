@@ -35,11 +35,11 @@ class SettingsManager private constructor() :
 
     override fun createDataObject() = Settings()
 
-    override fun reset(callback: OnObtain<Boolean?>) {
+    override fun reset(arg: String, callback: OnObtain<Boolean?>) {
 
         loaded.set(false)
 
-        super.reset(callback)
+        super.reset("${getWho()}.reset(from='$arg')", callback)
     }
 
     override fun isLazyReady() = loaded.get()

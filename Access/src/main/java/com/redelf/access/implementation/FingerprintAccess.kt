@@ -1,9 +1,7 @@
 package com.redelf.access.implementation
 
-import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager

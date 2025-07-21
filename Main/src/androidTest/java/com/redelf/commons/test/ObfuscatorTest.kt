@@ -1,12 +1,5 @@
 package com.redelf.commons.test
 
-import com.redelf.commons.extensions.isNotEmpty
-import com.redelf.commons.security.obfuscation.Obfuscator
-import com.redelf.commons.security.obfuscation.ObfuscatorSalt
-import com.redelf.commons.security.obfuscation.ObfuscatorSaltProvider
-import org.junit.Assert
-import org.junit.Test
-
 class ObfuscatorTest : BaseTest() {
 
     // FIXME: Fix the test

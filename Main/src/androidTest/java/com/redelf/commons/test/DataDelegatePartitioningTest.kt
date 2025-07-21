@@ -2,29 +2,8 @@ package com.redelf.commons.test
 
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.logging.Console
-import com.redelf.commons.test.test_data.SampleData
-import com.redelf.commons.test.test_data.SampleData2
-import com.redelf.commons.test.test_data.SampleData3
-import com.redelf.commons.test.test_data.SampleDataOnlyP2
-import com.redelf.commons.test.test_data.SampleDataOnlyP3
-import com.redelf.commons.test.test_data.SampleDataOnlyP4
-import com.redelf.commons.test.test_data.SampleDataOnlyP5
-import com.redelf.commons.test.test_data.wrapper.BoolListWrapper
-import com.redelf.commons.test.test_data.wrapper.BoolWrapper
-import com.redelf.commons.test.test_data.wrapper.LongListWrapper
-import com.redelf.commons.test.test_data.wrapper.LongWrapper
-import com.redelf.commons.test.test_data.wrapper.ObjectListWrapper
-import com.redelf.commons.test.test_data.wrapper.ObjectMapWrapper
-import com.redelf.commons.test.test_data.wrapper.StringListWrapper
-import com.redelf.commons.test.test_data.wrapper.StringToLongMapWrapper
-import com.redelf.commons.test.test_data.wrapper.StringWrapper
-import com.redelf.commons.test.test_data.wrapper.UUIDtoStringMapWrapper
-import org.junit.Assert
 import org.junit.Before
-import org.junit.Test
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 
 class DataDelegatePartitioningTest : BaseTest() {
 

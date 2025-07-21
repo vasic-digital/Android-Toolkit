@@ -8,7 +8,6 @@ import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.sync
 import com.redelf.commons.extensions.yieldWhile
-import com.redelf.commons.filtering.Filter
 import com.redelf.commons.filtering.FilterAsync
 import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.lifecycle.initialization.InitializedCheck

@@ -3,8 +3,6 @@ package com.redelf.commons.data.wrapper.map
 import com.redelf.commons.logging.Console
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.get
-import kotlin.text.get
 
 class DoubleMapWrapper<T>(
 

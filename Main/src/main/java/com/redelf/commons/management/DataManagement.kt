@@ -6,8 +6,8 @@ import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
 import com.redelf.commons.data.Empty
-import com.redelf.commons.destruction.reset.Resettable
-import com.redelf.commons.destruction.reset.ResettableAsync
+import com.redelf.commons.destruction.reset.ResettableAsyncParametrized
+import com.redelf.commons.destruction.reset.ResettableParametrized
 import com.redelf.commons.enable.Enabling
 import com.redelf.commons.enable.EnablingCallback
 import com.redelf.commons.environment.Environment
@@ -46,14 +46,14 @@ abstract class DataManagement<T> :
     Enabling,
     BusyCheck,
     Management,
-    Resettable,
     Environment,
     ReadingCheck,
     WritingCheck,
     ObtainAsync<T?>,
-    ResettableAsync,
     DataPushListening,
     Contextual<BaseApplication>,
+    ResettableParametrized<String>,
+    ResettableAsyncParametrized<String>,
     ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
 
     companion object {
@@ -687,7 +687,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    override fun reset(): Boolean {
+    override fun reset(arg: String): Boolean {
 
         if (isOnMainThread()) {
 
@@ -696,17 +696,19 @@ abstract class DataManagement<T> :
             recordException(e)
         }
 
-        return sync("${getWho()}.reset") { callback ->
+        val from = "reset(from='$arg')"
 
-            reset(callback)
+        return sync("${getWho()}.$from") { callback ->
+
+            reset(from, callback)
 
         } == true
     }
 
-    override fun reset(callback: OnObtain<Boolean?>) {
+    override fun reset(arg: String, callback: OnObtain<Boolean?>) {
 
-        val from = "reset"
-        val tag = "${getLogTag()} Reset ::"
+        val from = "reset(from='$arg').withCallback"
+        val tag = "${getLogTag()} Reset :: From='$arg' ::"
 
         if (!isEnabled()) {
 

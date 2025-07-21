@@ -4,9 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import com.redelf.commons.Debuggable
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.sync
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.OnObtain
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

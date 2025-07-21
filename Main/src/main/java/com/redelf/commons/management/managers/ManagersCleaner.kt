@@ -103,6 +103,8 @@ class ManagersCleaner {
 
                     manager.reset(
 
+                        "cleanupManagers",
+
                         object : OnObtain<Boolean?> {
 
                             override fun onCompleted(data: Boolean?) {

@@ -4,13 +4,12 @@ import android.annotation.SuppressLint
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.data.wrapper.VersionableWrapper
-import com.redelf.commons.destruction.reset.Resettable
+import com.redelf.commons.destruction.reset.ResettableParametrized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.set
 
 @SuppressLint("StaticFieldLeak")
 open class ListWrapperManager<T> private constructor(
@@ -23,7 +22,7 @@ open class ListWrapperManager<T> private constructor(
 
 ) :
 
-    Resettable,
+    ResettableParametrized<String>,
     ContextualManager<VersionableWrapper<CopyOnWriteArrayList<T>>>()
 
 {

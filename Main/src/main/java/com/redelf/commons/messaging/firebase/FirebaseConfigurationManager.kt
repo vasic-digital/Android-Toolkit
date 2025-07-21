@@ -37,9 +37,11 @@ object FirebaseConfigurationManager :
 
     override fun isLoaded() = isLazyReady()
 
-    override fun reset(callback: OnObtain<Boolean?>) {
+    override fun reset(arg: String, callback: OnObtain<Boolean?>) {
 
         super.reset(
+
+            "${getWho()}.reset(from='$arg')",
 
             object : OnObtain<Boolean?> {
 
