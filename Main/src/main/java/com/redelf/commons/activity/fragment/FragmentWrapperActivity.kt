@@ -97,6 +97,12 @@ open class FragmentWrapperActivity : BaseActivity() {
         }
     }
 
+    override fun onBack() {
+        super.onBack()
+
+        Console.log("$tag On back")
+    }
+
     override fun onDestroy() {
 
         FRAGMENTS.remove(hash)

@@ -125,6 +125,8 @@ abstract class BaseDialogFragment :
 
     protected open fun onBack() {
 
+        dismiss()
+
         Console.log("On back :: In='${this::class.simpleName}'")
     }
 }
