@@ -1,6 +1,8 @@
 package com.redelf.commons.activity.base
 
+import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
@@ -9,11 +11,59 @@ import com.redelf.commons.activity.fragment.ActivityPresentable
 import com.redelf.commons.activity.fragment.FragmentWrapperActivity
 import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
+import com.redelf.commons.callback.CallbackOperation
+import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.extensions.fitInsideSystemBoundaries
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
+import com.redelf.commons.registration.Registration
 
-abstract class BaseDialogFragment : DialogFragment(), ActivityPresentable {
+abstract class BaseDialogFragment :
+
+    DialogFragment(),
+    ActivityPresentable,
+    Registration<DialogInterface.OnDismissListener>
+
+{
+
+    private val callbacks = Callbacks<DialogInterface.OnDismissListener>("onDismiss")
+
+    private val onDismiss = DialogInterface.OnDismissListener { dialog ->
+
+        callbacks.doOnAll(object : CallbackOperation<DialogInterface.OnDismissListener> {
+
+            override fun perform(callback: DialogInterface.OnDismissListener) {
+
+                callback.onDismiss(dialog)
+                callbacks.unregister(callback)
+            }
+
+        }, operationName = "Dialog dismiss")
+    }
+
+    override fun register(subscriber: DialogInterface.OnDismissListener) {
+
+        if (isRegistered(subscriber)) {
+
+            return
+        }
+
+        callbacks.register(subscriber)
+    }
+
+    override fun unregister(subscriber: DialogInterface.OnDismissListener) {
+
+        if (isRegistered(subscriber)) {
+
+            callbacks.unregister(subscriber)
+        }
+    }
+
+    override fun isRegistered(subscriber: DialogInterface.OnDismissListener): Boolean {
+
+        return callbacks.isRegistered(subscriber)
+    }
 
     override fun onResume() {
         super.onResume()
@@ -36,6 +86,7 @@ abstract class BaseDialogFragment : DialogFragment(), ActivityPresentable {
         return true
     }
 
+    @SuppressLint("DialogFragmentCallbacksDetector")
     @Throws(IllegalArgumentException::class)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
@@ -63,6 +114,8 @@ abstract class BaseDialogFragment : DialogFragment(), ActivityPresentable {
 
                 a.onBackPressedDispatcher.addCallback(a, callback)
             }
+
+            dialog.setOnDismissListener(onDismiss)
 
             return dialog
         }

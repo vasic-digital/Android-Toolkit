@@ -1,5 +1,6 @@
 package com.redelf.commons.activity.fragment
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -18,9 +19,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 open class FragmentWrapperActivity : BaseActivity() {
-
-    private var hash = -1
-    private val tag = "Fragment Wrapper Activity ::"
 
     companion object {
 
@@ -44,6 +42,19 @@ open class FragmentWrapperActivity : BaseActivity() {
         }
     }
 
+    private var hash = -1
+    private val tag = "Fragment Wrapper Activity ::"
+    private var dialogFragment: BaseDialogFragment? = null
+
+    private val onDismiss = DialogInterface.OnDismissListener {
+
+        Console.log("$tag onDismiss")
+
+        FRAGMENTS.remove(hash)
+
+        finishFrom("onDismiss")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -57,24 +68,40 @@ open class FragmentWrapperActivity : BaseActivity() {
 
         if (hash > 0) {
 
-            val dialogFragment = FRAGMENTS[hash]
-
             // TODO: Support this
             //            df.setStyle(
             //                intent.getIntExtra(EXTRA_STYLE, DialogFragment.STYLE_NORMAL),
             //                intent.getIntExtra(EXTRA_THEME, 0)
             //            )
 
-            Console.log("$tag Dialog='$dialogFragment'")
+            dialogFragment = FRAGMENTS[hash]
+
+            if (dialogFragment == null) {
+
+                Console.log("$tag No dialog found for hash $hash")
+
+                finishFrom("dialogFragment.null")
+
+                return
+            }
+
+            Console.log("$tag Dialog fragment found for hash $hash :: Dialog='$dialogFragment'")
+
+            dialogFragment?.register(onDismiss)
 
             dialogFragment?.show(supportFragmentManager, "dialog_host")
+
+        } else {
+
+            finishFrom("hash.notValid")
         }
     }
 
     override fun onDestroy() {
-        super.onDestroy()
 
         FRAGMENTS.remove(hash)
+
+        super.onDestroy()
 
         Console.log("$tag onDestroy")
     }
