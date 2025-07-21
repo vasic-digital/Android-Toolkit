@@ -84,5 +84,8 @@ abstract class BaseDialogFragment : DialogFragment(), ActivityPresentable {
         throw IllegalArgumentException("Activity must not be null")
     }
 
-    protected open fun onBack() = Unit
+    protected open fun onBack() {
+
+        Console.log("On back :: In='${this::class.simpleName}'")
+    }
 }
