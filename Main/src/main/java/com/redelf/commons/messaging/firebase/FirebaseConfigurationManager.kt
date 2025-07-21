@@ -8,6 +8,7 @@ import com.redelf.commons.defaults.ResourceDefaults
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -19,9 +20,7 @@ object FirebaseConfigurationManager :
 
     Loadable,
     ResourceDefaults,
-    ContextualManager<FirebaseConfiguration>()
-
-{
+    ContextualManager<FirebaseConfiguration>() {
 
     override val persist = false
     override val storageKey = "remote_configuration"
@@ -104,10 +103,12 @@ object FirebaseConfigurationManager :
 
                         newMap,
 
+                        "remoteConfig.fetchAndActivate.success",
 
-                        object : OnObtain<Boolean?> {
 
-                            override fun onCompleted(data: Boolean?) {
+                        object : OnObtain<DataPushResult?> {
+
+                            override fun onCompleted(data: DataPushResult?) {
 
                                 loaded.set(true)
 
@@ -151,7 +152,8 @@ object FirebaseConfigurationManager :
 
             } else {
 
-                val e = TimeoutException("Timeout-ed while waiting for firebase manager to load data")
+                val e =
+                    TimeoutException("Timeout-ed while waiting for firebase manager to load data")
 
                 recordException(e)
 

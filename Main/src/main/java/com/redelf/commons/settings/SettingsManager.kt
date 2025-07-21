@@ -7,6 +7,7 @@ import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.sync
 import com.redelf.commons.loading.Loadable
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -15,9 +16,7 @@ class SettingsManager private constructor() :
     Loadable,
     SingleInstantiated,
     SettingsManagement,
-    ContextualManager<Settings>()
-
-{
+    ContextualManager<Settings>() {
 
     companion object : SingleInstance<SettingsManager>() {
 
@@ -157,11 +156,13 @@ class SettingsManager private constructor() :
 
                                 it,
 
-                                object : OnObtain<Boolean?> {
+                                "putBoolean.$key",
 
-                                    override fun onCompleted(data: Boolean?) {
+                                object : OnObtain<DataPushResult?> {
 
-                                        callback.onCompleted(data == true)
+                                    override fun onCompleted(data: DataPushResult?) {
+
+                                        callback.onCompleted(data?.success == true)
                                     }
 
                                     override fun onFailure(error: Throwable) {
@@ -209,11 +210,13 @@ class SettingsManager private constructor() :
 
                                 it,
 
-                                object : OnObtain<Boolean?> {
+                                "putString.$key",
 
-                                    override fun onCompleted(data: Boolean?) {
+                                object : OnObtain<DataPushResult?> {
 
-                                        callback.onCompleted(data == true)
+                                    override fun onCompleted(data: DataPushResult?) {
+
+                                        callback.onCompleted(data?.success == true)
                                     }
 
                                     override fun onFailure(error: Throwable) {
@@ -370,11 +373,13 @@ class SettingsManager private constructor() :
 
                                 it,
 
-                                object : OnObtain<Boolean?> {
+                                "putLong.$key",
 
-                                    override fun onCompleted(data: Boolean?) {
+                                object : OnObtain<DataPushResult?> {
 
-                                        callback.onCompleted(data == true)
+                                    override fun onCompleted(data: DataPushResult?) {
+
+                                        callback.onCompleted(data?.success == true)
                                     }
 
                                     override fun onFailure(error: Throwable) {
