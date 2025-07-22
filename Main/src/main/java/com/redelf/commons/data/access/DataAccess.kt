@@ -6,6 +6,10 @@ import com.redelf.commons.obtain.Obtain
 abstract class DataAccess<T, M : DataManagement<*>>(
 
     val managerAccess: Obtain<M>,
-    val linkedManagers: List<Obtain<M>>? = null,
+
+    /*
+        TODO: Introduce some nice method such as: link(manager: DataManagement<*>)
+    */
+    val linkedManagers: List<Obtain<DataManagement<*>>>? = null,
 
 ) : Obtain<Collection<T?>?>

@@ -16,6 +16,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.modification.OnChangeCompleted
+import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
@@ -54,45 +55,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 if (data?.success == true) {
 
-                    val items = getCollection("dataPushListener(pushFrom='${data.pushFrom}')")
-                    val from = "dataPushListener(pushFrom='${data.pushFrom}',size=${items?.size ?: 0})"
-
-                    onDataPushed?.onCompleted(data)
-
-                    replaceAllAndFilter(
-
-                        from = from,
-                        what = items
-
-                    ) { modified, count ->
-
-                        if (modified) {
-
-                            if (DEBUG.get()) {
-
-                                Console.log(
-
-                                    "$tag dataPushListener :: " +
-                                            "Changes :: Detected :: Count=$count" +
-                                            ", getCollection().count=${items?.size ?: 0}"
-                                )
-                            }
-
-                            notifyChanged(action = "dataPushed")
-
-                        } else {
-
-                            if (DEBUG.get()) {
-
-                                Console.log(
-
-                                    "$tag dataPushListener :: " +
-                                            "Changes :: None detected :: Count=$count" +
-                                            ", getCollection().count=${items?.size ?: 0}"
-                                )
-                            }
-                        }
-                    }
+                    onDataPushed("dataPushListener", data)
 
                 } else {
 
@@ -120,6 +83,43 @@ open class ListWrapper<T, M : DataManagement<*>>(
         null
     }
 
+    private val linkedManagersDataPushListener: OnObtain<DataPushResult?>? =
+        if (dataAccess != null) {
+
+            object : OnObtain<DataPushResult?> {
+
+                override fun onCompleted(data: DataPushResult?) {
+
+                    if (data?.success == true) {
+
+                        onDataPushed("linkedManagersDataPushListener", data)
+
+                    } else {
+
+                        onDataPushed?.onCompleted(data)
+
+                        if (DEBUG.get()) {
+
+                            Console.error(
+
+                                "$tag linkedManagersDataPushListener :: " +
+                                        "Changes :: None detected :: Data push failed"
+                            )
+                        }
+                    }
+                }
+
+                override fun onFailure(error: Throwable) {
+
+                    Console.error(error)
+                }
+            }
+
+        } else {
+
+            null
+        }
+
     init {
 
         exec {
@@ -127,6 +127,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
             dataPushListener?.let {
 
                 getManager()?.registerDataPushListener(it)
+            }
+
+            linkedManagersDataPushListener?.let {
+
+                getLinkedManagers()?.forEach { manager ->
+
+                    manager.obtain().registerDataPushListener(it)
+                }
             }
 
             val action = "init"
@@ -188,7 +196,23 @@ open class ListWrapper<T, M : DataManagement<*>>(
         return null
     }
 
+    fun getLinkedManagers(): List<Obtain<DataManagement<*>>>? {
+
+        try {
+
+            return dataAccess?.linkedManagers
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return null
+    }
+
     override fun terminate(vararg args: Any): Boolean {
+
+        var success = true
 
         dataPushListener?.let {
 
@@ -196,17 +220,23 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 dataAccess?.managerAccess?.obtain()?.unregisterDataPushListener(dataPushListener)
 
-                return true
-
             } catch (e: Throwable) {
 
                 recordException(e)
-            }
 
-            return false
+                success = false
+            }
         }
 
-        return true
+        linkedManagersDataPushListener?.let {
+
+            getLinkedManagers()?.forEach { manager ->
+
+                manager.obtain().unregisterDataPushListener(it)
+            }
+        }
+
+        return success
     }
 
     private val tag = "$identifier :: $environment :: ${getHashCode()} ::"
@@ -708,7 +738,6 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         filters.forEach { filter ->
 
-                            // FIXME: [IN_PROGRESS] TimeoutException: filter.each latch expired
                             val res = sync(
 
                                 debug = true,
@@ -969,8 +998,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             if (DEBUG.get()) {
 
-                Console.log("$tag Get collection :: From='$from', " +
-                        "getCollection().count=${coll?.size ?: 0}")
+                Console.log(
+                    "$tag Get collection :: From='$from', " +
+                            "getCollection().count=${coll?.size ?: 0}"
+                )
             }
 
             return coll
@@ -988,5 +1019,50 @@ open class ListWrapper<T, M : DataManagement<*>>(
         }
 
         return null
+    }
+
+    private fun onDataPushed(pushContext: String, data: DataPushResult) {
+
+        val items = getCollection("$pushContext(pushFrom='${data.pushFrom}')")
+
+        val from =
+            "$pushContext(pushFrom='${data.pushFrom}',size=${items?.size ?: 0})"
+
+        onDataPushed?.onCompleted(data)
+
+        replaceAllAndFilter(
+
+            from = from,
+            what = items
+
+        ) { modified, count ->
+
+            if (modified) {
+
+                if (DEBUG.get()) {
+
+                    Console.log(
+
+                        "$tag $pushContext :: " +
+                                "Changes :: Detected :: Count=$count" +
+                                ", getCollection().count=${items?.size ?: 0}"
+                    )
+                }
+
+                notifyChanged(action = "$pushContext.dataPushed")
+
+            } else {
+
+                if (DEBUG.get()) {
+
+                    Console.log(
+
+                        "$tag $pushContext :: " +
+                                "Changes :: None detected :: Count=$count" +
+                                ", getCollection().count=${items?.size ?: 0}"
+                    )
+                }
+            }
+        }
     }
 }
