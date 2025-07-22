@@ -712,7 +712,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
                             val res = sync(
 
                                 debug = true,
-                                context = "filter.each"
+                                context = "${identifier}.filter.each"
 
                             ) { callback ->
 
