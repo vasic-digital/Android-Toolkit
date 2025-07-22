@@ -717,6 +717,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
                             filtered.filteredItems.addAll(res?.filteredItems ?: emptyList())
 
                             filtered.changedCount.set(
+
                                 filtered.changedCount.get() + (res?.changedCount?.get() ?: 0)
                             )
 
