@@ -709,7 +709,12 @@ open class ListWrapper<T, M : DataManagement<*>>(
                         filters.forEach { filter ->
 
                             // FIXME: [IN_PROGRESS] TimeoutException: filter.each latch expired
-                            val res = sync("filter.each") { callback ->
+                            val res = sync(
+
+                                debug = true,
+                                context = "filter.each"
+
+                            ) { callback ->
 
                                 filter.filter(filtered.filteredItems, callback)
                             }
