@@ -412,7 +412,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
         if (dataEmpty()) {
 
-            Console.warning("$logTag No data to be sent yet")
+            Console.log("$logTag No data to be sent yet")
+
             setSending(false)
 
             return

@@ -895,12 +895,12 @@ abstract class DataManagement<T> :
 
             } else {
 
-                Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED (1)")
+                Console.log("${getLogTag()} Data :: Overwrite :: SKIPPED (1)")
             }
 
         } else {
 
-            Console.warning("${getLogTag()} Data :: Overwrite :: SKIPPED (2)")
+            Console.log("${getLogTag()} Data :: Overwrite :: SKIPPED (2)")
         }
 
         return false
