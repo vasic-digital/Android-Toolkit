@@ -224,7 +224,9 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         linkedManagersDataPushListener?.let {
 
-            getLinkedManagers()?.forEach { manager ->
+            val linkedManagers = getLinkedManagers()
+
+            linkedManagers?.forEach { manager ->
 
                 manager.obtain().unregisterDataPushListener(it)
             }
@@ -250,7 +252,9 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         linkedManagersDataPushListener?.let {
 
-            getLinkedManagers()?.forEach { manager ->
+            val linkedManagers = getLinkedManagers()
+
+            linkedManagers?.forEach { manager ->
 
                 manager.obtain().registerDataPushListener(it)
             }
