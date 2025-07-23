@@ -1,6 +1,10 @@
 package com.redelf.commons.activity.popup
 
+import android.content.Context
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -17,6 +21,21 @@ abstract class Popup : PopupFragment() {
             activity?.supportFragmentManager?.isDestroyed == false &&
             isVisible &&
             !instanceStateSaved.get()
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        Console.log(
+
+            "Popup :: ${this::class.simpleName} :: " +
+                    "${hashCode()} :: STATE=Attached"
+        )
+    }
+
+    override fun onBack() {
+
+        closePopup("onBack")
+    }
 
     override fun dismiss() {
 
@@ -70,10 +89,5 @@ abstract class Popup : PopupFragment() {
                 recordException(e)
             }
         }
-    }
-
-    override fun onBack() {
-
-        closePopup("onBack")
     }
 }
