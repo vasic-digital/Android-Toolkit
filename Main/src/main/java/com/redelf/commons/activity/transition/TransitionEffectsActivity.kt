@@ -209,8 +209,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                             GROUPS_BACKGROUND_ACTIVITIES[group]
                         )
 
-                        parentIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        parentIntent.flags =
+                            Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK
 
                         val hold = R.anim.hold
 
