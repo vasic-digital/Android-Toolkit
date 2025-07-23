@@ -85,6 +85,8 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                 this, creator, activity
             )
 
+            intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK
+
             startActivity(intent)
 
         } catch (e: Throwable) {
