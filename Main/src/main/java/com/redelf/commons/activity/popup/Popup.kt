@@ -69,8 +69,6 @@ abstract class Popup : PopupFragment() {
 
     protected open fun closePopup(from: String) {
 
-        dismiss()
-
         activity?.let {
 
             try {
