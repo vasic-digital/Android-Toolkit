@@ -3,16 +3,11 @@ package com.redelf.commons.activity.fragment
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
+import androidx.core.graphics.drawable.toDrawable
 import com.redelf.commons.R
 import com.redelf.commons.activity.base.BaseActivity
-import com.redelf.commons.activity.stateful.StatefulActivity
-import androidx.core.graphics.drawable.toDrawable
-import com.redelf.commons.activity.base.BaseDialogFragment
+import com.redelf.commons.activity.popup.PopupFragment
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.logging.Console
 import java.util.concurrent.ConcurrentHashMap
@@ -24,12 +19,12 @@ open class FragmentWrapperActivity : BaseActivity() {
 
         const val EXTRA_FRAGMENT = "fragment"
 
-        private val FRAGMENTS = ConcurrentHashMap<Int, BaseDialogFragment>()
+        private val FRAGMENTS = ConcurrentHashMap<Int, PopupFragment>()
 
         fun createIntent(
 
             context: TransitionEffectsActivity,
-            dialogFragment: BaseDialogFragment,
+            dialogFragment: PopupFragment,
             wrapperClass: Class<*> = FragmentWrapperActivity::class.java
 
         ): Intent {
@@ -45,7 +40,7 @@ open class FragmentWrapperActivity : BaseActivity() {
 
     private var hash = -1
     private val tag = "Fragment Wrapper Activity ::"
-    private var dialogFragment: BaseDialogFragment? = null
+    private var dialogFragment: PopupFragment? = null
 
     private val onDismiss = DialogInterface.OnDismissListener {
 

@@ -1,4 +1,4 @@
-package com.redelf.commons.activity.base
+package com.redelf.commons.activity.popup
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -6,20 +6,18 @@ import android.content.DialogInterface
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
-import com.google.android.play.integrity.internal.ac
+import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.activity.fragment.ActivityPresentable
 import com.redelf.commons.activity.fragment.FragmentWrapperActivity
-import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
-import com.redelf.commons.execution.CommonExecutionCallback
 import com.redelf.commons.extensions.fitInsideSystemBoundaries
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
 
-abstract class BaseDialogFragment :
+abstract class PopupFragment :
 
     DialogFragment(),
     ActivityPresentable,

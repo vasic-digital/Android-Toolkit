@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toDrawable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.R
-import com.redelf.commons.activity.base.BaseDialogFragment
+import com.redelf.commons.activity.popup.PopupFragment
 import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
@@ -73,7 +73,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         Console.log("$tag END")
     }
 
-    fun showInActivity(activity: Class<*>, what: BaseDialogFragment) {
+    fun showInActivity(activity: Class<*>, what: PopupFragment) {
 
         if (!what.showInActivity(activity, this)) {
 
