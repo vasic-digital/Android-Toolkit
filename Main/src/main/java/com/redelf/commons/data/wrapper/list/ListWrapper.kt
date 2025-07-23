@@ -194,7 +194,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         try {
 
-            return dataAccess?.linkedManagers
+            return dataAccess?.linkedManagers?.obtain()
 
         } catch (e: Throwable) {
 
