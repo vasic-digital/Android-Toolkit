@@ -7,9 +7,11 @@ import android.os.Bundle
 import androidx.core.graphics.drawable.toDrawable
 import com.redelf.commons.R
 import com.redelf.commons.activity.base.BaseActivity
+import com.redelf.commons.activity.popup.Popup
 import com.redelf.commons.activity.popup.PopupFragment
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -19,20 +21,20 @@ open class FragmentWrapperActivity : BaseActivity() {
 
         const val EXTRA_FRAGMENT = "fragment"
 
-        private val FRAGMENTS = ConcurrentHashMap<Int, PopupFragment>()
+        private val FRAGMENTS = ConcurrentHashMap<Int, Obtain<Popup>>()
 
         fun createIntent(
 
             context: TransitionEffectsActivity,
-            dialogFragment: PopupFragment,
+            creator: Obtain<Popup>,
             wrapperClass: Class<*> = FragmentWrapperActivity::class.java
 
         ): Intent {
 
             val intent = Intent(context, wrapperClass)
-            intent.putExtra(EXTRA_FRAGMENT, dialogFragment.hashCode())
+            intent.putExtra(EXTRA_FRAGMENT, creator.hashCode())
 
-            FRAGMENTS[dialogFragment.hashCode()] = dialogFragment
+            FRAGMENTS[creator.hashCode()] = creator
 
             return intent
         }
@@ -70,7 +72,7 @@ open class FragmentWrapperActivity : BaseActivity() {
             //                intent.getIntExtra(EXTRA_THEME, 0)
             //            )
 
-            dialogFragment = FRAGMENTS[hash]
+            dialogFragment = FRAGMENTS[hash]?.obtain()
 
             if (dialogFragment == null) {
 

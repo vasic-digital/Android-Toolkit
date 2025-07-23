@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toDrawable
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.R
+import com.redelf.commons.activity.fragment.FragmentWrapperActivity
+import com.redelf.commons.activity.popup.Popup
 import com.redelf.commons.activity.popup.PopupFragment
 import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.application.BaseApplication
@@ -18,6 +20,7 @@ import com.redelf.commons.extensions.getAnimationResource
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.broadcast.Broadcast
+import com.redelf.commons.obtain.Obtain
 import java.lang.annotation.Inherited
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
@@ -73,13 +76,18 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         Console.log("$tag END")
     }
 
-    fun showInActivity(activity: Class<*>, what: PopupFragment) {
+    fun showInActivity(activity: Class<*>, creator: Obtain<Popup>) {
 
-        if (!what.showInActivity(activity, this)) {
+        try {
 
-            val clazz = what::class.simpleName
-            val msg = "'$clazz' was not shown in activity"
-            val e = IllegalStateException(msg)
+            val intent = FragmentWrapperActivity.createIntent(
+
+                this, creator, activity
+            )
+
+            startActivity(intent)
+
+        } catch (e: Throwable) {
 
             recordException(e)
         }

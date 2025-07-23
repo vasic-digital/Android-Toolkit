@@ -3,7 +3,7 @@ package com.redelf.commons.activity.popup
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.extensions.recordException
 
-open class Popup : PopupFragment() {
+abstract class Popup : PopupFragment() {
 
     protected open fun closePopup() {
 

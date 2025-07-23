@@ -20,7 +20,6 @@ import com.redelf.commons.registration.Registration
 abstract class PopupFragment :
 
     DialogFragment(),
-    ActivityPresentable,
     Registration<DialogInterface.OnDismissListener>
 
 {
@@ -67,26 +66,6 @@ abstract class PopupFragment :
         super.onResume()
 
         fitInsideSystemBoundaries()
-    }
-
-    override fun showInActivity(
-
-        activity: Class<*>,
-        context: TransitionEffectsActivity,
-
-    ): Boolean {
-
-        try {
-
-            val intent = FragmentWrapperActivity.createIntent(context, this, activity)
-            context.startActivity(intent)
-
-        } catch (e: Throwable) {
-
-            recordException(e)
-        }
-
-        return true
     }
 
     @SuppressLint("DialogFragmentCallbacksDetector")
