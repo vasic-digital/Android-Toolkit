@@ -129,13 +129,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
                 getManager()?.registerDataPushListener(it)
             }
 
-            linkedManagersDataPushListener?.let {
-
-                getLinkedManagers()?.forEach { manager ->
-
-                    manager.obtain().registerDataPushListener(it)
-                }
-            }
+            registerLinkedManagersDataPushListener()
 
             val action = "init"
             val from = action
@@ -250,6 +244,17 @@ open class ListWrapper<T, M : DataManagement<*>>(
     fun isEmpty(): Boolean {
 
         return isEmpty("isEmpty")
+    }
+
+    protected fun registerLinkedManagersDataPushListener() {
+
+        linkedManagersDataPushListener?.let {
+
+            getLinkedManagers()?.forEach { manager ->
+
+                manager.obtain().registerDataPushListener(it)
+            }
+        }
     }
 
     private fun isEmpty(from: String): Boolean {
