@@ -92,7 +92,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         var checked = false
         val component = intent.component
-        val tag = "$tag Start activity ::"
+        val tag = "$tag Start activity :: MAIN ::"
 
         component?.let { c ->
 
