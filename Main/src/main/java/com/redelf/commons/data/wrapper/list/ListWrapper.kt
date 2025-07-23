@@ -967,7 +967,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
         }
     }
 
-    private fun getCollection(from: String): Collection<T?>? {
+    protected open fun getCollection(from: String): Collection<T?>? {
 
         if (isOnMainThread()) {
 

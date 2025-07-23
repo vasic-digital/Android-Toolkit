@@ -26,6 +26,7 @@ import android.util.Base64OutputStream
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.room.paging.util.queryItemCount
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -1544,6 +1545,20 @@ fun <F, S> getPair(map: LinkedTreeMap<String, Any>): Pair<F, S> {
 fun <T> Any.wrapToList(): List<T> {
 
     return mutableListOf(this as T)
+}
+
+fun <IN, OUT> List<IN>.prepack(converter: (what: IN) -> OUT): List<OUT> {
+
+    val items = mutableListOf<OUT>()
+
+    forEach { item ->
+
+        val converted = converter(item)
+
+        items.add(converted)
+    }
+
+    return items
 }
 
 fun Context.dpToPx(dp: Float): Float {
