@@ -71,4 +71,9 @@ abstract class Popup : PopupFragment() {
             }
         }
     }
+
+    override fun onBack() {
+
+        closePopup("onBack")
+    }
 }
