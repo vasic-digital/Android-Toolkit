@@ -408,6 +408,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+
+        Console.log("$tag onResume :: ${this::class.simpleName} :: ${hashCode()}")
+
         super.onResume()
 
         applyEnterTransition("onResume")
