@@ -1,10 +1,12 @@
 package com.redelf.commons.activity.popup
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.redelf.commons.activity.fragment.FragmentWrapperActivity
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -87,5 +89,29 @@ abstract class Popup : PopupFragment() {
                 recordException(e)
             }
         }
+    }
+
+    override fun startActivity(intent: Intent) {
+
+        getPopupActivity()?.startActivity(intent)
+    }
+
+    override fun startActivity(intent: Intent, options: Bundle?) {
+
+        getPopupActivity()?.startActivity(intent, options)
+    }
+
+    fun getPopupActivity(): FragmentWrapperActivity? {
+
+        if (activity !is FragmentWrapperActivity) {
+
+            val msg = "Popup must be used with ${FragmentWrapperActivity::class.simpleName}"
+            val e = IllegalArgumentException(msg)
+            recordException(e)
+
+            return null
+        }
+
+        return activity as? FragmentWrapperActivity
     }
 }
