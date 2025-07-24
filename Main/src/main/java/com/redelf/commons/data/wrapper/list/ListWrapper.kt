@@ -228,7 +228,16 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             linkedManagers?.forEach { manager ->
 
-                manager.obtain().unregisterDataPushListener(it)
+                try {
+
+                    manager.obtain().unregisterDataPushListener(it)
+
+                } catch (e: Throwable) {
+
+                    recordException(e)
+
+                    success = false
+                }
             }
         }
 
@@ -256,7 +265,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             linkedManagers?.forEach { manager ->
 
-                manager.obtain().registerDataPushListener(it)
+                try {
+
+                    manager.obtain().registerDataPushListener(it)
+
+                } catch (e: Throwable) {
+
+                    recordException(e)
+                }
             }
         }
     }
