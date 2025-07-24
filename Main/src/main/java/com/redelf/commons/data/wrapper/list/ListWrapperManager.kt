@@ -9,13 +9,14 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("StaticFieldLeak")
 open class ListWrapperManager<T> private constructor(
 
     private val identifier: String,
-    private val creator: Obtain<VersionableWrapper<CopyOnWriteArrayList<T>>>,
+    private val creator: Obtain<VersionableWrapper<CopyOnWriteArraySet<T>>>,
 
     lazySavingData: Boolean = true,
     persistData: Boolean = true
@@ -23,7 +24,7 @@ open class ListWrapperManager<T> private constructor(
 ) :
 
     ResettableParametrized<String>,
-    ContextualManager<VersionableWrapper<CopyOnWriteArrayList<T>>>()
+    ContextualManager<VersionableWrapper<CopyOnWriteArraySet<T>>>()
 
 {
 
@@ -37,7 +38,7 @@ open class ListWrapperManager<T> private constructor(
         fun <T> instantiate(
 
             identifier: String,
-            creator: Obtain<VersionableWrapper<CopyOnWriteArrayList<T>>>,
+            creator: Obtain<VersionableWrapper<CopyOnWriteArraySet<T>>>,
 
             lazySavingData: Boolean = true,
             persistData: Boolean = true

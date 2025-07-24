@@ -6,6 +6,7 @@ import com.redelf.commons.data.wrapper.list.ListWrapperManager
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.logging.Console
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
@@ -14,6 +15,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -70,11 +72,11 @@ class ListWrapperTest : BaseTest() {
 
                         val pushed = AtomicInteger()
 
-                        val onDataPushed = object : OnObtain<Boolean?> {
+                        val onDataPushed = object : OnObtain<DataPushResult?> {
 
-                            override fun onCompleted(data: Boolean?) {
+                            override fun onCompleted(data: DataPushResult?) {
 
-                                if (data == true) {
+                                if (data?.success == true) {
 
                                     pushed.incrementAndGet()
 
@@ -146,7 +148,7 @@ class ListWrapperTest : BaseTest() {
 
                                 Assert.assertTrue(added == true)
 
-                                val pushed = manager?.pushData(vWrapper) == true
+                                val pushed = manager?.pushData("test", vWrapper) == true
 
                                 Assert.assertTrue(pushed)
 
@@ -632,7 +634,7 @@ class ListWrapperTest : BaseTest() {
         collection: MutableList<Purgable<Int>>,
         onUI: Boolean = true,
         expectedSize: Int = collection.size,
-        onDataPushed: OnObtain<Boolean?>? = null
+        onDataPushed: OnObtain<DataPushResult?>? = null
 
     ): DefaultListWrapper<Purgable<Int>> {
 
@@ -644,11 +646,11 @@ class ListWrapperTest : BaseTest() {
             onDataPushed = onDataPushed,
             identifier = "test.${System.currentTimeMillis()}",
 
-            creator = object : Obtain<VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>> {
+            creator = object : Obtain<VersionableWrapper<CopyOnWriteArraySet<Purgable<Int>>>> {
 
-                override fun obtain(): VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>> {
+                override fun obtain(): VersionableWrapper<CopyOnWriteArraySet<Purgable<Int>>> {
 
-                    val collection = CopyOnWriteArrayList(collection)
+                    val collection = CopyOnWriteArraySet(collection)
 
                     return VersionableWrapper(collection)
                 }
@@ -674,7 +676,7 @@ class ListWrapperTest : BaseTest() {
         return manager
     }
 
-    private fun getVersionableWrapper(wrapper: DefaultListWrapper<Purgable<Int>>): VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>? {
+    private fun getVersionableWrapper(wrapper: DefaultListWrapper<Purgable<Int>>): VersionableWrapper<CopyOnWriteArraySet<Purgable<Int>>>? {
 
         val manager = getManager(wrapper)
 

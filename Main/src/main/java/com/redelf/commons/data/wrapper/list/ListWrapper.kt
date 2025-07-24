@@ -3,9 +3,12 @@ package com.redelf.commons.data.wrapper.list
 import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
+import com.redelf.commons.extensions.addAt
+import com.redelf.commons.extensions.getAtIndex
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.removeAt
 import com.redelf.commons.extensions.sync
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.filtering.FilterAsync
@@ -21,6 +24,7 @@ import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -43,7 +47,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     }
 
     private val busy = AtomicBoolean()
-    private val list: CopyOnWriteArrayList<T> = CopyOnWriteArrayList()
+    private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
@@ -297,7 +301,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     fun get(index: Int): T? {
 
-        return list[index]
+        return list.getAtIndex(index)
     }
 
     fun getLast(): T? {
@@ -583,7 +587,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             if (list.removeAt(where) != null) {
 
-                list.add(where, what)
+                list.addAt(where, what)
 
                 if (list.elementAt(where) == what) {
 

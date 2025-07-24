@@ -8,12 +8,13 @@ import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 
 class DefaultListWrapper<T>(
 
     onUi: Boolean,
     identifier: String,
-    creator: Obtain<VersionableWrapper<CopyOnWriteArrayList<T>>>,
+    creator: Obtain<VersionableWrapper<CopyOnWriteArraySet<T>>>,
 
     lazySaving: Boolean = true,
     persistData: Boolean = true,
