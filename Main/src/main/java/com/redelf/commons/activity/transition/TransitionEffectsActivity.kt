@@ -183,7 +183,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                     GROUPS_PARENT = clazz()
 
-                    Console.debug("$tag Groups parent :: Set :: Parent='${GROUPS_PARENT?.simpleName}'")
+                    Console.debug("$tag Group parent :: Set :: Parent='${GROUPS_PARENT?.simpleName}'")
                 }
 
                 val active = BaseApplication.takeContext().activityTracker.isActivityInStack(
@@ -304,7 +304,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                         GROUPS_PARENT = null
 
-                        Console.debug("$tag Groups parent :: Cleared :: Parent='null'")
+                        Console.debug("$tag Group parent :: Cleared :: Parent='null'")
 
                         val intent = Intent(
 
@@ -317,7 +317,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                         Console.log(
 
-                            "$tag Groups parent :: Starting :: Parent='${parent.simpleName}'"
+                            "$tag Group parent :: Starting :: Parent='${parent.simpleName}'"
                         )
 
                         doStartActivity("finish.hasParent", intent)
