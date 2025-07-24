@@ -301,23 +301,29 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                     val parent = removeParentClass()
 
-                    Console.debug("$tag Group parent :: Cleared :: Parent='null'")
+                    Console.debug(
 
-                    val intent = Intent(
-
-                        applicationContext,
-                        parent
+                        "$tag Group parent :: Cleared :: Parent='${parent?.simpleName}'"
                     )
 
-                    intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    parent?.let {
 
-                    Console.log(
+                        val intent = Intent(
 
-                        "$tag Group parent :: Starting :: Parent='${parent?.simpleName}'"
-                    )
+                            applicationContext,
+                            parent
+                        )
 
-                    doStartActivity("finish.hasParent", intent)
+                        intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
+                        Console.log(
+
+                            "$tag Group parent :: Starting :: Parent='${parent?.simpleName}'"
+                        )
+
+                        doStartActivity("finish.hasParent", intent)
+                    }
                 }
 
                 val duration =
