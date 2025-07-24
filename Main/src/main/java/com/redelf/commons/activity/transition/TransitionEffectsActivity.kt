@@ -196,7 +196,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 } else {
 
-                    if (BACKGROUND_ACTIVITIES[group] == null) {
+                    if (group.isNotEmpty() && BACKGROUND_ACTIVITIES[group] == null) {
 
                         Console.log("$tag Background activity :: Starting")
 
@@ -205,7 +205,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                         val parentIntent = Intent(
 
                             applicationContext,
-                            BACKGROUND_ACTIVITIES[group]
+                            backgroundActivity
                         )
 
                         parentIntent.flags =
@@ -353,7 +353,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                             }
                         )
 
-                        if (sent) {
+                        if (sent && BACKGROUND_ACTIVITIES.contains(group)) {
 
                             Console.log("$tag Background activity :: Finish scheduled")
 
