@@ -71,24 +71,7 @@ abstract class Popup : PopupFragment() {
 
     protected open fun closePopup(from: String) {
 
-        activity?.let {
-
-            try {
-
-                if (it is TransitionEffectsActivity) {
-
-                    it.finishFrom("Popup.Close(from='$from')")
-
-                } else {
-
-                    it.finish()
-                }
-
-            } catch (e: Throwable) {
-
-                recordException(e)
-            }
-        }
+        getPopupActivity()?.finishFrom("Popup.Close(from='$from')")
     }
 
     override fun startActivity(intent: Intent) {
