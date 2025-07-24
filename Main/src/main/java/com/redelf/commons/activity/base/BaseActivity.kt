@@ -64,7 +64,9 @@ import kotlin.reflect.KClass
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity() {
+    StatefulActivity()
+
+{
 
     companion object {
 

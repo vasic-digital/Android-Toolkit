@@ -4,12 +4,14 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.widget.FrameLayout
 import androidx.core.graphics.drawable.toDrawable
 import com.redelf.commons.R
 import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.activity.popup.Popup
 import com.redelf.commons.activity.popup.PopupFragment
 import com.redelf.commons.activity.transition.TransitionEffectsActivity
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.ConcurrentHashMap
@@ -44,15 +46,6 @@ open class FragmentWrapperActivity : BaseActivity() {
     private val tag = "Fragment Wrapper Activity ::"
     private var dialogFragment: PopupFragment? = null
 
-    private val onDismiss = DialogInterface.OnDismissListener {
-
-        Console.log("$tag onDismiss")
-
-        FRAGMENTS.remove(hash)
-
-        finishFrom("onDismiss")
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -65,12 +58,6 @@ open class FragmentWrapperActivity : BaseActivity() {
         hash = intent.getIntExtra(EXTRA_FRAGMENT, -1)
 
         if (hash > 0) {
-
-            // TODO: Support this
-            //            df.setStyle(
-            //                intent.getIntExtra(EXTRA_STYLE, DialogFragment.STYLE_NORMAL),
-            //                intent.getIntExtra(EXTRA_THEME, 0)
-            //            )
 
             dialogFragment = FRAGMENTS[hash]?.obtain()
 
@@ -85,9 +72,27 @@ open class FragmentWrapperActivity : BaseActivity() {
 
             Console.log("$tag Dialog fragment found for hash $hash :: Dialog='$dialogFragment'")
 
-            dialogFragment?.register(onDismiss)
+            val container = findViewById<FrameLayout?>(R.id.container)
 
-            dialogFragment?.show(supportFragmentManager, "dialog_host")
+            container?.let {
+
+                if (savedInstanceState == null) {
+
+                    dialogFragment?.let { f ->
+
+                        try {
+
+                            supportFragmentManager.beginTransaction()
+                                .replace(R.id.container, f)
+                                .commit()
+
+                        } catch (e: Throwable) {
+
+                            recordException(e)
+                        }
+                    }
+                }
+            }
 
         } else {
 
@@ -108,5 +113,10 @@ open class FragmentWrapperActivity : BaseActivity() {
         super.onDestroy()
 
         Console.log("$tag onDestroy")
+    }
+
+    protected fun getFragment(): PopupFragment? {
+
+        return dialogFragment
     }
 }
