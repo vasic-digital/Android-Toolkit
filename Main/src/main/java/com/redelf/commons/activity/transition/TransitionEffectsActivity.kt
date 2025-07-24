@@ -12,7 +12,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.R
 import com.redelf.commons.activity.fragment.FragmentWrapperActivity
 import com.redelf.commons.activity.popup.Popup
-import com.redelf.commons.activity.popup.PopupFragment
 import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
@@ -40,9 +39,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     companion object {
 
-        private var GROUPS_PARENT: Class<*>? = null
+        private val BACKGROUND_ACTIVITIES = ConcurrentHashMap<String, Class<*>>()
         private val GROUPS = ConcurrentHashMap<String, CopyOnWriteArraySet<String>>()
-        private val GROUPS_BACKGROUND_ACTIVITIES = ConcurrentHashMap<String, Class<*>>()
+        private var PARENTS: ConcurrentHashMap<String, Class<*>?> = ConcurrentHashMap()
 
         private val transitionCache = mutableMapOf<Class<*>, TransitionEffects?>()
     }
@@ -181,9 +180,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 if (!hasTransitionAssigned("startActivity")) {
 
-                    GROUPS_PARENT = clazz()
+                    val parent = setParentClass(clazz())
 
-                    Console.debug("$tag Group parent :: Set :: Parent='${GROUPS_PARENT?.simpleName}'")
+                    Console.debug("$tag Group parent :: Set :: Parent='${parent?.simpleName}'")
                 }
 
                 val active = BaseApplication.takeContext().activityTracker.isActivityInStack(
@@ -197,16 +196,16 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 } else {
 
-                    if (GROUPS_BACKGROUND_ACTIVITIES[group] == null) {
+                    if (BACKGROUND_ACTIVITIES[group] == null) {
 
                         Console.log("$tag Background activity :: Starting")
 
-                        GROUPS_BACKGROUND_ACTIVITIES[group] = backgroundActivity
+                        BACKGROUND_ACTIVITIES[group] = backgroundActivity
 
                         val parentIntent = Intent(
 
                             applicationContext,
-                            GROUPS_BACKGROUND_ACTIVITIES[group]
+                            BACKGROUND_ACTIVITIES[group]
                         )
 
                         parentIntent.flags =
@@ -255,7 +254,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     override fun finish() {
 
-        val tag = "$tag Finish :: Group parent='${GROUPS_PARENT?.simpleName}' ::"
+        val parent = getParentClass()
+
+        val tag = "$tag Finish :: Group parent='${parent?.simpleName}' ::"
 
         Console.log("$tag START")
 
@@ -298,30 +299,25 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 if (!expectedFinish) {
 
-                    GROUPS_PARENT?.let {
+                    val parent = removeParentClass()
 
-                        val parent = it
+                    Console.debug("$tag Group parent :: Cleared :: Parent='null'")
 
-                        GROUPS_PARENT = null
+                    val intent = Intent(
 
-                        Console.debug("$tag Group parent :: Cleared :: Parent='null'")
+                        applicationContext,
+                        parent
+                    )
 
-                        val intent = Intent(
+                    intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
 
-                            applicationContext,
-                            parent
-                        )
+                    Console.log(
 
-                        intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        "$tag Group parent :: Starting :: Parent='${parent?.simpleName}'"
+                    )
 
-                        Console.log(
-
-                            "$tag Group parent :: Starting :: Parent='${parent.simpleName}'"
-                        )
-
-                        doStartActivity("finish.hasParent", intent)
-                    }
+                    doStartActivity("finish.hasParent", intent)
                 }
 
                 val duration =
@@ -355,7 +351,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                             Console.log("$tag Background activity :: Finish scheduled")
 
-                            val cleared = GROUPS_BACKGROUND_ACTIVITIES.remove(group)
+                            val cleared = BACKGROUND_ACTIVITIES.remove(group)
 
                             cleared?.let {
 
@@ -428,7 +424,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     override fun onDestroy() {
 
-        Console.log("$tag onDestroy :: Group parent='${GROUPS_PARENT?.simpleName}'")
+        val parent = getParentClass()
+
+        Console.log("$tag onDestroy :: Group parent='${parent?.simpleName}'")
 
         super.onDestroy()
     }
@@ -730,5 +728,38 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         }
 
         return group
+    }
+
+    private fun getParentClass(): Class<*>? {
+
+        val group = getGroup()
+
+        return PARENTS[group]
+    }
+
+    private fun setParentClass(clazz: Class<*>): Class<*>? {
+
+        val group = getGroup()
+
+        if (group.isNotEmpty()) {
+
+            PARENTS[group] = clazz
+
+            return clazz
+        }
+
+        return null
+    }
+
+    private fun removeParentClass(): Class<*>? {
+
+        val group = getGroup()
+
+        if (group.isNotEmpty()) {
+
+            return PARENTS.remove(group)
+        }
+
+        return null
     }
 }
