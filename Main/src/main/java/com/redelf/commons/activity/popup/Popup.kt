@@ -1,17 +1,15 @@
 package com.redelf.commons.activity.popup
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import com.redelf.commons.activity.fragment.FragmentWrapperActivity
-import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.atomic.AtomicBoolean
+
 
 abstract class Popup : PopupFragment() {
 
@@ -34,9 +32,12 @@ abstract class Popup : PopupFragment() {
         )
     }
 
+    /*
+        Back action is handled by the parent activity
+    */
     override fun onBack() {
 
-        closePopup("onBack")
+        getPopupActivity()?.onBack()
     }
 
     override fun dismiss() {
@@ -50,7 +51,7 @@ abstract class Popup : PopupFragment() {
 
         if (readyToDismiss()) {
 
-            super.dismiss()
+            getPopupActivity()?.onBack()
         }
     }
 
@@ -69,9 +70,18 @@ abstract class Popup : PopupFragment() {
 
     protected open fun getDismissResult() = true
 
-    protected open fun closePopup(from: String) {
+    protected open fun closePopup(from: String): Boolean {
 
-        getPopupActivity()?.finishFrom("Popup.Close(from='$from')")
+        val ctx = getPopupActivity()
+
+        ctx?.let {
+
+            it.finishFrom("Popup.Close(from='$from')")
+
+            return true
+        }
+
+        return false
     }
 
     override fun startActivity(intent: Intent) {
@@ -86,15 +96,23 @@ abstract class Popup : PopupFragment() {
 
     fun getPopupActivity(): FragmentWrapperActivity? {
 
-        if (activity !is FragmentWrapperActivity) {
+        activity?.let {
 
-            val msg = "Popup must be used with ${FragmentWrapperActivity::class.simpleName}"
-            val e = IllegalArgumentException(msg)
-            recordException(e)
+            if (it !is FragmentWrapperActivity) {
 
-            return null
+                val msg = "Popup must be used with " +
+                        "${FragmentWrapperActivity::class.simpleName}, " +
+                        "current is '${it::class.simpleName}'"
+
+                val e = IllegalArgumentException(msg)
+                recordException(e)
+
+                return null
+            }
+
+            return it
         }
 
-        return activity as? FragmentWrapperActivity
+        return null
     }
 }

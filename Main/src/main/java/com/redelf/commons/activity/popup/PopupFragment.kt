@@ -62,6 +62,17 @@ abstract class PopupFragment :
         return callbacks.isRegistered(subscriber)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setCancelable(true)
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+
+        onBack()
+    }
+
     override fun onResume() {
         super.onResume()
 
@@ -105,10 +116,5 @@ abstract class PopupFragment :
         throw IllegalArgumentException("Activity must not be null")
     }
 
-    protected open fun onBack() {
-
-        dismiss()
-
-        Console.log("On back :: In='${this::class.simpleName}'")
-    }
+    protected open fun onBack() = Unit
 }
