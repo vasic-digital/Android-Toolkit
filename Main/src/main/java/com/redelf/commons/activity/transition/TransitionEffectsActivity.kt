@@ -504,7 +504,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         }
     }
 
-    protected fun startActivity(from: String, intent: Intent, callback: () -> Unit) {
+    fun startActivity(from: String, intent: Intent, callback: () -> Unit) {
 
         doStartActivity("startActivity.withCallback.(from='$from')", intent, callback)
     }
