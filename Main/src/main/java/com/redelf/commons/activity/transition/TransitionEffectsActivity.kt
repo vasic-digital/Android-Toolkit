@@ -255,7 +255,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     override fun finish() {
 
-        val tag = "$tag Finish ::"
+        val tag = "$tag Finish :: Group parent='${GROUPS_PARENT?.simpleName}' ::"
 
         Console.log("$tag START")
 
@@ -424,6 +424,13 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         super.onResume()
 
         applyEnterTransition("onResume")
+    }
+
+    override fun onDestroy() {
+
+        Console.log("$tag onDestroy :: Group parent='${GROUPS_PARENT?.simpleName}'")
+
+        super.onDestroy()
     }
 
     @Deprecated("Deprecated in Java")
