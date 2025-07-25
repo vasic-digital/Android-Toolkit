@@ -196,7 +196,10 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                 } else {
 
-                    if (group.isNotEmpty() && BACKGROUND_ACTIVITIES[group] == null) {
+                    val hasGroup = group.isNotEmpty()
+                    val noBackgroundOpen = BACKGROUND_ACTIVITIES[group] == null
+
+                    if (hasGroup && noBackgroundOpen) {
 
                         Console.log("$tag Background activity :: Starting")
 
@@ -341,7 +344,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                         Console.log("$tag Background activity :: Going to finish")
 
-                        val sent = LocalBroadcastManager.getInstance(this).sendBroadcast(
+                        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(
 
                             Intent(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS).apply {
 
@@ -353,7 +356,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
                             }
                         )
 
-                        if (sent && BACKGROUND_ACTIVITIES.contains(group)) {
+                        if (BACKGROUND_ACTIVITIES.containsKey(group)) {
 
                             Console.log("$tag Background activity :: Finish scheduled")
 
