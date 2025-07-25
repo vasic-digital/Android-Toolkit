@@ -51,7 +51,7 @@ open class FragmentWrapperActivity : BaseActivity() {
 
         Console.log("$tag onCreate")
 
-        window.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+        window.setBackgroundDrawable(background.toDrawable())
 
         setContentView(R.layout.activity_fragment_wrapper)
 
