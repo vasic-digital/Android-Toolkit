@@ -13,6 +13,7 @@ import com.redelf.commons.logging.Console
 abstract class PopupFragment : Fragment() {
 
     protected open val fragmentTheme = R.style.FragmentWrapper
+    protected open var logTag = "Popup Fragment :: ${this::class.simpleName} ::"
 
     fun goBack() = onBack()
 

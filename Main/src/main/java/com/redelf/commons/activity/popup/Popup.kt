@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class Popup : PopupFragment() {
 
+    override var logTag = "Popup :: ${this::class.simpleName} ::"
+
     var onDismissed: OnObtain<Boolean>? = null
 
     private val instanceStateSaved = AtomicBoolean()
@@ -43,14 +45,22 @@ abstract class Popup : PopupFragment() {
 
         onDismissed?.let {
 
-            Console.log("$tag Triggering the callback")
+            Console.log("$logTag Triggering the callback")
 
             it.onCompleted(getDismissResult())
         }
 
-        if (readyToDismiss()) {
+        val readyTo = readyToDismiss()
 
-            getPopupActivity()?.onBack()
+        if (readyTo) {
+
+            val pActivity = getPopupActivity()
+
+            pActivity?.onBack()
+
+        } else {
+
+            Console.warning("$logTag Dismiss skipped")
         }
     }
 
