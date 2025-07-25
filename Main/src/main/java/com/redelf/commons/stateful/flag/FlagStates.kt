@@ -1,7 +1,6 @@
 package com.redelf.commons.stateful.flag
 
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.jvm.Throws
 
 object FlagStates {
 
