@@ -516,7 +516,6 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     private fun notifyChanged(
 
-        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         action: String
 
@@ -527,21 +526,13 @@ open class ListWrapper<T, M : DataManagement<*>>(
             onUiThread {
 
                 onChange?.onChange(action, true)
-
-                if (!skipNotifying) {
-
-                    this@ListWrapper.onChange?.onChange(action, true)
-                }
+                this@ListWrapper.onChange?.onChange(action, true)
             }
 
         } else {
 
             onChange?.onChange(action, true)
-
-            if (!skipNotifying) {
-
-                this@ListWrapper.onChange?.onChange(action, true)
-            }
+            this@ListWrapper.onChange?.onChange(action, true)
         }
     }
 
@@ -574,7 +565,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.add(value)) {
 
-            notifyChanged(skipNotifying, onChange, "add")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "add")
+            }
         }
 
         notifyCallback(callback)
@@ -591,7 +585,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.addAll(what)) {
 
-            notifyChanged(skipNotifying, onChange, "addAll.${what.size}")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "addAll.${what.size}")
+            }
         }
 
         notifyCallback(callback)
@@ -615,7 +612,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 if (list.elementAt(where) == what) {
 
-                    notifyChanged(skipNotifying, onChange, "update.$where")
+                    if (!skipNotifying) {
+
+                        notifyChanged(onChange, "update.$where")
+                    }
                 }
             }
 
@@ -641,12 +641,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.isEmpty()) {
 
-            notifyChanged(
+            if (!skipNotifying) {
 
-                skipNotifying = skipNotifying,
-                onChange,
-                "clear(from='$from')",
-            )
+                notifyChanged(
+
+                    onChange,
+                    "clear(from='$from')",
+                )
+            }
         }
 
         notifyCallback(callback)
@@ -777,7 +779,6 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             notifyChanged(
 
-                                false,
                                 onChange,
                                 action
                             )
@@ -967,7 +968,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         if (changed) {
 
-                            notifyChanged(skipNotifying, onChange, "purge")
+                            if (!skipNotifying) {
+
+                                notifyChanged(onChange, "purge")
+                            }
                         }
                     }
                 }
@@ -995,7 +999,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.removeAll(what)) {
 
-            notifyChanged(skipNotifying, onChange, "removeAll.${what.size}")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "removeAll.${what.size}")
+            }
         }
 
         notifyCallback(callback)
@@ -1012,7 +1019,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.remove(what)) {
 
-            notifyChanged(skipNotifying, onChange, "remove")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "remove")
+            }
         }
 
         notifyCallback(callback)
@@ -1029,7 +1039,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         list.removeAt(index)?.let {
 
-            notifyChanged(skipNotifying, onChange, "remove.$index")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "remove.$index")
+            }
         }
 
         notifyCallback(callback)
