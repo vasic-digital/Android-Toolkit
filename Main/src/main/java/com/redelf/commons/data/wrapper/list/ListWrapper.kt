@@ -797,8 +797,32 @@ open class ListWrapper<T, M : DataManagement<*>>(
                                 filter.filter(filtered.filteredItems, callback)
                             }
 
-                            filtered.filteredItems.clear()
-                            filtered.filteredItems.addAll(res?.filteredItems ?: emptyList())
+                            val newItems = CopyOnWriteArraySet<T>()
+
+                            val fItems = res?.filteredItems
+
+                            fItems?.let { fIt ->
+
+                                if (fIt.isNotEmpty()) {
+
+                                    newItems.addAll(fIt)
+
+                                    filtered.filteredItems.clear()
+                                    filtered.filteredItems.addAll(newItems)
+
+                                    if (filtered.filteredItems.isEmpty()) {
+
+                                        Console.error("Empty after adding filtered items")
+
+                                    } else {
+
+                                        if (DEBUG.get()) {
+
+                                            Console.log("Filtered items added")
+                                        }
+                                    }
+                                }
+                            }
 
                             filtered.changedCount.set(
 
@@ -818,7 +842,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         changedCount += filtered.changedCount.get()
 
-                        if (filtered != list) {
+                        if (filtered.filteredItems != list) {
 
                             doClear(
 
@@ -1072,6 +1096,39 @@ open class ListWrapper<T, M : DataManagement<*>>(
         }
 
         return null
+    }
+
+    fun refresh(
+
+        from: String,
+        filters: List<FilterAsync<T>> = emptyList(),
+        callback: ((Boolean, Int) -> Unit)? = null
+
+    ) {
+
+        Console.log("$tag Refresh :: From='$from'")
+
+        val from = "refresh(from='$from')"
+        val items = getCollection(from)
+
+        replaceAllAndFilter(
+
+            from = from,
+            what = items,
+            filters = filters
+
+        ) { modified, count ->
+
+            if (modified) {
+
+                notifyChanged(action = "refreshed")
+            }
+
+            callback?.let {
+
+                it(modified, count)
+            }
+        }
     }
 
     private fun onDataPushed(pushContext: String, data: DataPushResult) {
