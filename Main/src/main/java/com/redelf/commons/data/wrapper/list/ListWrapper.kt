@@ -57,9 +57,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             override fun onCompleted(data: DataPushResult?) {
 
+                if (DEBUG.get()) {
+
+                    Console.log("$tag Data push listener :: Push from = '$${data?.pushFrom}'")
+                }
+
                 if (data?.success == true) {
 
-                    onDataPushed("dataPushListener", data)
+                    onDataPushed("dataPushListener.${data.pushFrom}", data)
 
                 } else {
 
@@ -1106,27 +1111,30 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
-        Console.log("$tag Refresh :: From='$from'")
+        exec {
 
-        val from = "refresh(from='$from')"
-        val items = getCollection(from)
+            Console.log("$tag Refresh :: From='$from'")
 
-        replaceAllAndFilter(
+            val from = "refresh(from='$from')"
+            val items = getCollection(from)
 
-            from = from,
-            what = items,
-            filters = filters
+            replaceAllAndFilter(
 
-        ) { modified, count ->
+                from = from,
+                what = items,
+                filters = filters
 
-            if (modified) {
+            ) { modified, count ->
 
-                notifyChanged(action = "refreshed")
-            }
+                if (modified) {
 
-            callback?.let {
+                    notifyChanged(action = "refreshed")
+                }
 
-                it(modified, count)
+                callback?.let {
+
+                    it(modified, count)
+                }
             }
         }
     }
