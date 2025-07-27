@@ -548,6 +548,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
                     "${getWho()}.persist",
 
+                    true,
+
                     object : OnObtain<DataPushResult?> {
 
                         override fun onCompleted(data: DataPushResult?) {

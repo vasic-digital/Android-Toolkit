@@ -82,6 +82,8 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
                                 transaction.end(
 
+                                    true,
+
                                     object : OnObtain<Boolean?> {
 
                                         override fun onCompleted(data: Boolean?) {

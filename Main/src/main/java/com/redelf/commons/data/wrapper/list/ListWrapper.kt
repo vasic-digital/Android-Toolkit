@@ -35,6 +35,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     val environment: String = "default",
 
     private val dataAccess: DataAccess<T, M>? = null,
+    private val busyCheck: BusyCheck? = null,
     private val onUi: Boolean,
     private var onChange: OnChangeCompleted? = null,
     private val onDataPushed: OnObtain<DataPushResult?>? = null
@@ -791,6 +792,11 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     } else {
 
+                        yieldWhile {
+
+                            busyCheck?.isBusy() == true
+                        }
+
                         val filtered = FilterResult(filteredItems = list, wasModified = false)
 
                         filters.forEach { filter ->
@@ -1145,6 +1151,11 @@ open class ListWrapper<T, M : DataManagement<*>>(
     }
 
     private fun onDataPushed(pushContext: String, data: DataPushResult) {
+
+        if (DEBUG.get()) {
+
+            Console.log("On data pushed :: $pushContext :: Push from = '${data.pushFrom}'")
+        }
 
         val items = getCollection("$pushContext(pushFrom='${data.pushFrom}')")
 

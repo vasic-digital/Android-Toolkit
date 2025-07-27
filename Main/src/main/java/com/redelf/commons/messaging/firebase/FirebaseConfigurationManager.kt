@@ -107,6 +107,7 @@ object FirebaseConfigurationManager :
 
                         "remoteConfig.fetchAndActivate.success",
 
+                        false,
 
                         object : OnObtain<DataPushResult?> {
 

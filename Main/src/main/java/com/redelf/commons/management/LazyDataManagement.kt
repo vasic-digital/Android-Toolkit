@@ -241,7 +241,14 @@ abstract class LazyDataManagement<T> :
 
     override fun isRegistered(subscriber: Context) = registered.get() && terminationRegistered.get()
 
-    override fun pushData(data: T?, from: String, callback: OnObtain<DataPushResult?>?) {
+    override fun pushData(
+
+        data: T?,
+        from: String,
+        notify: Boolean,
+        callback: OnObtain<DataPushResult?>?
+
+    ) {
 
         val from = "lazy.pushData(from='$from').withData.withCallback"
 
@@ -260,11 +267,14 @@ abstract class LazyDataManagement<T> :
 
             callback?.onCompleted(data = result)
 
-            notifyOnPushCompleted(data = result)
+            if (notify) {
+
+                notifyOnPushCompleted(data = result)
+            }
 
         } else {
 
-            super.pushData(data, from, callback)
+            super.pushData(data, from, notify, callback)
         }
     }
 
@@ -348,7 +358,12 @@ abstract class LazyDataManagement<T> :
 
                             overwriteData(it)
 
-                            doPushData(it, "onBackground(from='$from')")
+                            doPushData(
+
+                                it,
+                                "onBackground(from='$from')",
+                                false
+                            )
                         }
 
                         empty?.let {
