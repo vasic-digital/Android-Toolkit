@@ -4,6 +4,7 @@ import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
 import com.redelf.commons.extensions.addAt
+import com.redelf.commons.extensions.contentEquals
 import com.redelf.commons.extensions.getAtIndex
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
@@ -665,7 +666,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
 
-        fun next() {
+        fun next(nextFrom: String) {
 
             exec {
 
@@ -761,13 +762,23 @@ open class ListWrapper<T, M : DataManagement<*>>(
                     }
                 }
 
-                fun filter() {
+                fun filter(filteredFrom: String) {
 
-                    fun notify() {
+                    fun notify(from: String) {
 
                         if (modified) {
 
-                            notifyChanged(false, onChange, "addAllAndFilter.${what?.size ?: 0}")
+                            val action = "addAllAndFilter" +
+                                    ".next(from='$nextFrom')" +
+                                    ".filter(from='$filteredFrom')" +
+                                    ".notify(size=${what?.size ?: 0},from='$from')"
+
+                            notifyChanged(
+
+                                false,
+                                onChange,
+                                action
+                            )
                         }
 
                         callback?.let {
@@ -788,7 +799,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     if (filters.isEmpty()) {
 
-                        notify()
+                        notify("filters.empty")
 
                     } else {
 
@@ -856,7 +867,13 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         changedCount += filtered.changedCount.get()
 
-                        if (filtered.filteredItems != list) {
+                        val equalLists = filtered.filteredItems.contentEquals(list)
+
+                        if (equalLists) {
+
+                            notify("filtered.notChanged")
+
+                        } else {
 
                             doClear(
 
@@ -870,13 +887,9 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                                 doAddAll(filtered.filteredItems, true) {
 
-                                    notify()
+                                    notify("filtered.changed.doAddAll.callback")
                                 }
                             }
-
-                        } else {
-
-                            notify()
                         }
                     }
                 }
@@ -891,12 +904,12 @@ open class ListWrapper<T, M : DataManagement<*>>(
                             changedCount += purgedCount
                         }
 
-                        filter()
+                        filter("doRemoveDeleted")
                     }
 
                 } else {
 
-                    filter()
+                    filter("doNotRemoveDeleted")
                 }
             }
         }
@@ -913,12 +926,12 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             ) {
 
-                next()
+                next("doClear.completed")
             }
 
         } else {
 
-            next()
+            next("doNotClear")
         }
     }
 

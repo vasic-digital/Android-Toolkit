@@ -65,6 +65,30 @@ fun <T> CopyOnWriteArraySet<T>.sortWith(comparator: Comparator<in T>) {
     this.addAll(sortedList)
 }
 
+fun <T> CopyOnWriteArraySet<T>.contentEquals(other: CopyOnWriteArraySet<T>): Boolean {
+
+    // Check if they're the same instance
+    if (this === other) return true
+
+    // Check size first for quick rejection
+    if (this.size != other.size) return false
+
+    // Compare elements in order using iterator
+    val thisIterator = this.iterator()
+    val otherIterator = other.iterator()
+
+    while (thisIterator.hasNext() && otherIterator.hasNext()) {
+
+        if (thisIterator.next() != otherIterator.next()) {
+
+            return false
+        }
+    }
+
+    // If we get here, all elements were equal in the same order
+    return true
+}
+
 fun <T> CopyOnWriteArrayList<T>.addUnique(index: Int, element: T): Boolean {
 
     if (!contains(element)) {
