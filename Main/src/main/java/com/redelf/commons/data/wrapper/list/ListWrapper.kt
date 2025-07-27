@@ -930,11 +930,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
             }
         }
 
-        if (toRemove.isEmpty()) {
-
-            if (DEBUG.get()) Console.log("$tag END :: Nothing to remove")
-
-        } else {
+        if (toRemove.isNotEmpty()) {
 
             Console.debug("$tag Removing ${toRemove.size} items")
 
