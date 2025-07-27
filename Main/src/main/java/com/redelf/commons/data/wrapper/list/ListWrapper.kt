@@ -351,7 +351,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doAdd(value, onChange, callback)
+            doAdd(value, false, onChange, callback)
         }
     }
 
@@ -368,7 +368,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doRemove(index, onChange, callback)
+            doRemove(index, false, onChange, callback)
         }
     }
 
@@ -385,7 +385,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doRemove(what, onChange, callback)
+            doRemove(what, false, onChange, callback)
         }
     }
 
@@ -403,7 +403,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doUpdate(what, where, onChange, callback)
+            doUpdate(what, where, false, onChange, callback)
         }
     }
 
@@ -420,7 +420,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doRemoveAll(what, onChange, callback)
+            doRemoveAll(what, false, onChange, callback)
         }
     }
 
@@ -490,7 +490,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doAddAll(what, onChange, callback)
+            doAddAll(what, false, onChange, callback)
         }
     }
 
@@ -508,7 +508,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doPurge(onChange, callback)
+            doPurge(false, onChange, callback)
         }
     }
 
@@ -564,6 +564,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doAdd(
 
         value: T,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
@@ -571,7 +572,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.add(value)) {
 
-            notifyChanged(false, onChange, "add")
+            notifyChanged(skipNotifying, onChange, "add")
         }
 
         notifyCallback(callback)
@@ -580,6 +581,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doAddAll(
 
         what: Collection<T>,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
@@ -587,7 +589,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.addAll(what)) {
 
-            notifyChanged(false, onChange, "addAll.${what.size}")
+            notifyChanged(skipNotifying, onChange, "addAll.${what.size}")
         }
 
         notifyCallback(callback)
@@ -597,6 +599,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         what: T,
         where: Int,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
@@ -610,7 +613,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 if (list.elementAt(where) == what) {
 
-                    notifyChanged(false, onChange, "update.$where")
+                    notifyChanged(skipNotifying, onChange, "update.$where")
                 }
             }
 
@@ -719,7 +722,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         if (where > -1) {
 
-                            doUpdate(found, where)
+                            doUpdate(found, where, true)
                         }
 
                     } else {
@@ -734,7 +737,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                     changedCount += toRemove.size
 
-                    doRemoveAll(toRemove)
+                    doRemoveAll(toRemove, true)
                 }
 
                 if (toUpdate.isNotEmpty()) {
@@ -752,7 +755,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             changedCount++
 
-                            doAdd(lkd)
+                            doAdd(lkd, true)
                         }
                     }
                 }
@@ -859,7 +862,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             ) {
 
-                                doAddAll(filtered.filteredItems) {
+                                doAddAll(filtered.filteredItems, true) {
 
                                     notify()
                                 }
@@ -874,7 +877,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 if (removeDeleted) {
 
-                    doPurge { purgedCount ->
+                    doPurge(true) { purgedCount ->
 
                         if (purgedCount > 0) {
 
@@ -915,6 +918,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     private fun doPurge(
 
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: ((purgedCount: Int) -> Unit)? = null
 
@@ -938,13 +942,15 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 toRemove,
 
+                true,
+
                 onChange = object : OnChangeCompleted {
 
                     override fun onChange(action: String, changed: Boolean) {
 
                         if (changed) {
 
-                            notifyChanged(false, onChange, "purge")
+                            notifyChanged(skipNotifying, onChange, "purge")
                         }
                     }
                 }
@@ -964,6 +970,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doRemoveAll(
 
         what: Collection<T>,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
@@ -971,7 +978,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.removeAll(what)) {
 
-            notifyChanged(false, onChange, "removeAll.${what.size}")
+            notifyChanged(skipNotifying, onChange, "removeAll.${what.size}")
         }
 
         notifyCallback(callback)
@@ -980,6 +987,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doRemove(
 
         what: T,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
@@ -987,7 +995,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (list.remove(what)) {
 
-            notifyChanged(false, onChange, "remove")
+            notifyChanged(skipNotifying, onChange, "remove")
         }
 
         notifyCallback(callback)
@@ -996,6 +1004,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doRemove(
 
         index: Int,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
@@ -1003,7 +1012,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         list.removeAt(index)?.let {
 
-            notifyChanged(false, onChange, "remove.$index")
+            notifyChanged(skipNotifying, onChange, "remove.$index")
         }
 
         notifyCallback(callback)
