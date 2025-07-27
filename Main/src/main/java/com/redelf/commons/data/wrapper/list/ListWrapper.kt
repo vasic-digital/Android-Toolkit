@@ -666,6 +666,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
 
+        val doAddFrom = from
+
         fun next(nextFrom: String) {
 
             exec {
@@ -768,7 +770,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         if (modified) {
 
-                            val action = "addAllAndFilter" +
+                            val action = "addAllAndFilter(from='$doAddFrom')" +
                                     ".next(from='$nextFrom')" +
                                     ".filter(from='$filteredFrom')" +
                                     ".notify(size=${what?.size ?: 0},from='$from')"
@@ -869,11 +871,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         val equalLists = filtered.filteredItems.contentEquals(list)
 
-                        if (equalLists) {
-
-                            notify("filtered.notChanged")
-
-                        } else {
+                        if (!equalLists) {
 
                             doClear(
 
