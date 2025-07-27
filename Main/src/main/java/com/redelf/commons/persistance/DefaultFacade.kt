@@ -179,7 +179,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     override fun <T> get(key: String?, callback: OnObtain<T?>) {
 
-        val tag = "$TAG :: Get (w.no.def) :: Key='$key' ::"
+        val tag = "$TAG Get (w.no.def) :: Key='$key' ::"
 
         Console.log("$tag START")
 
@@ -482,7 +482,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
     private fun getDataInfo(key: String, callback: OnObtain<DataInfo?>) {
 
-        val tag = "$TAG :: Get data info :: Key='$key' ::"
+        val tag = "$TAG Get data info :: Key='$key' ::"
 
         if (DEBUG.get()) {
 
