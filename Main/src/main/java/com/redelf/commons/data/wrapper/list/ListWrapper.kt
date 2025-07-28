@@ -42,7 +42,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private var onChange: OnChangeCompleted? = null,
     private val onDataPushed: OnObtain<DataPushResult?>? = null,
 
-    trackPerItemChanges: Boolean = true,
+    /*
+    * FIXME: Make this work properly and cover with the tests
+    */
+    trackPerItemChanges: Boolean = false,
 
 ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
@@ -1003,29 +1006,26 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
 
-        exec {
+        comparator?.makeCopy("doAddAllAndFilter.${what?.size ?: 0}.${what.hashCode()}")
 
-            comparator?.makeCopy("doAddAllAndFilter.${what?.size ?: 0}.${what.hashCode()}")
+        if (replace) {
 
-            if (replace) {
+            doClear(
 
-                doClear(
+                "doAddAllAndFilter(from='$from," +
+                        "filteredCount=NONE'," +
+                        "originalCount=${list.size})",
 
-                    "doAddAllAndFilter(from='$from," +
-                            "filteredCount=NONE'," +
-                            "originalCount=${list.size})",
+                skipNotifying = true
 
-                    skipNotifying = true
+            ) {
 
-                ) {
-
-                    next("doClear.completed")
-                }
-
-            } else {
-
-                next("doNotClear")
+                next("doClear.completed")
             }
+
+        } else {
+
+            next("doNotClear")
         }
     }
 
