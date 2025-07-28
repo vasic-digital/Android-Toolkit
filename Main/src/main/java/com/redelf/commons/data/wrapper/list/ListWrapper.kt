@@ -146,13 +146,6 @@ open class ListWrapper<T, M : DataManagement<*>>(
             val from = action
             val items = getCollection(from)
 
-            if (items == null || items.isEmpty()) {
-
-                initialized.set(true)
-
-                return@exec
-            }
-
             replaceAllAndFilter(items, from) { modified, count ->
 
                 initialized.set(true)
@@ -165,7 +158,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             "$tag Init :: " +
                                     "Changes :: Detected :: Count=$count" +
-                                    ", getCollection().count=${items.size}"
+                                    ", getCollection().count=${items?.size}"
                         )
                     }
 
@@ -179,7 +172,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             "$tag Init :: " +
                                     "Changes :: None detected :: Count=$count" +
-                                    ", getCollection().count=${items.size}"
+                                    ", getCollection().count=${items?.size}"
                         )
                     }
                 }
@@ -457,7 +450,37 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doAddAllAndFilter(what, from, true, removeDeleted, filters, onChange, callback)
+            if (what == null || what.isEmpty()) {
+
+                val initSize = getSize()
+
+                doClear(
+
+                    from,
+                    onChange,
+                    false
+
+                ) {
+
+                    callback?.let {
+
+                        it(initSize != 0, initSize)
+                    }
+                }
+
+            } else {
+
+                doAddAllAndFilter(
+
+                    what,
+                    from,
+                    true,
+                    removeDeleted,
+                    filters,
+                    onChange,
+                    callback
+                )
+            }
         }
     }
 
