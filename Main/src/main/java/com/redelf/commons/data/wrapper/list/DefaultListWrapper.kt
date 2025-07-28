@@ -6,11 +6,12 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 
-class DefaultListWrapper<T>(
+class DefaultListWrapper<T, I>(
 
     onUi: Boolean,
     identifier: String,
@@ -20,15 +21,18 @@ class DefaultListWrapper<T>(
     persistData: Boolean = true,
     environment: String = "default",
     onChange: OnChangeCompleted? = null,
-    onDataPushed: OnObtain<DataPushResult?>? = null
+    identifierObtainer: ObtainParametrized<I, T>,
+    onDataPushed: OnObtain<DataPushResult?>? = null,
 
-) : ListWrapper<T, ListWrapperManager<T>>(
 
-    identifier = identifier,
-    environment = environment,
+) : ListWrapper<T, I, ListWrapperManager<T>>(
+
     onUi = onUi,
     onChange = onChange,
+    identifier = identifier,
+    environment = environment,
     onDataPushed = onDataPushed,
+    identifierObtainer = identifierObtainer,
 
     dataAccess = object : DataAccess<T, ListWrapperManager<T>>(
 

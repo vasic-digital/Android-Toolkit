@@ -1,28 +1,30 @@
 package com.redelf.commons.data.wrapper.list
 
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.ObtainParametrized
 import java.io.*
 import java.util.concurrent.CopyOnWriteArraySet
 
-class ListComparator<T>(
+class ListComparator<T, I>(
 
     private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet(),
     private val lastCopy: CopyOnWriteArraySet<T> = CopyOnWriteArraySet(),
-    private val changedIndexes: CopyOnWriteArraySet<Int> = CopyOnWriteArraySet<Int>()
+    private val identifierObtainer: ObtainParametrized<I?, Int>,
+    private val changedIdentifiers: CopyOnWriteArraySet<I> = CopyOnWriteArraySet<I>()
 
 ) : Runnable {
 
     override fun run() {
 
-        val changes = findChangedIndexes()
+        val changes = findChangedIdentifiers()
 
-        changedIndexes.clear()
+        changedIdentifiers.clear()
 
         if (changes.isNotEmpty()) {
 
-            changedIndexes.addAll(changes)
+            changedIdentifiers.addAll(changes)
 
-            Console.log("Changed indexes :: ${changes.toList()}")
+            Console.log("Changed identifiers :: ${changes.toList()}")
         }
     }
 
@@ -36,9 +38,9 @@ class ListComparator<T>(
         }
     }
 
-    fun findChangedIndexes(): Set<Int> {
+    fun findChangedIdentifiers(): Set<I> {
 
-        val changedIndexes = mutableSetOf<Int>()
+        val changedIdentifiers = mutableSetOf<I>()
 
         list.forEachIndexed { index, currentItem ->
 
@@ -46,16 +48,25 @@ class ListComparator<T>(
 
             if (!itemsEqual(currentItem, lastItem)) {
 
-                changedIndexes.add(index)
+                identifierObtainer.obtain(index)?.let {
+
+                    changedIdentifiers.add(it)
+                }
             }
         }
 
         if (lastCopy.size > list.size) {
 
-            (list.size until lastCopy.size).forEach { changedIndexes.add(it) }
+            (list.size until lastCopy.size).forEach {
+
+                identifierObtainer.obtain(it)?.let {
+
+                    changedIdentifiers.add(it)
+                }
+            }
         }
 
-        return changedIndexes
+        return changedIdentifiers
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -140,6 +151,6 @@ class ListComparator<T>(
 
         list.clear()
         lastCopy.clear()
-        changedIndexes.clear()
+        changedIdentifiers.clear()
     }
 }

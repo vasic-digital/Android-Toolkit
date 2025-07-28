@@ -21,22 +21,23 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
-open class ListWrapper<T, M : DataManagement<*>>(
+open class ListWrapper<T, I, M : DataManagement<*>>(
 
     val identifier: String,
     val environment: String = "default",
 
     private val dataAccess: DataAccess<T, M>? = null,
     private val busyCheck: BusyCheck? = null,
+    private val identifierObtainer: ObtainParametrized<I, T>,
     private val onUi: Boolean,
     private var onChange: OnChangeCompleted? = null,
     private val onDataPushed: OnObtain<DataPushResult?>? = null
@@ -50,10 +51,32 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     private val busy = AtomicBoolean()
 
+    private val changedIdentifiers = CopyOnWriteArraySet<I>()
     private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
     private val lastCopy: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
-    private val changedIndexes = CopyOnWriteArraySet<Int>()
-    private val comparator = ListComparator(list, lastCopy, changedIndexes)
+
+    private val comparatorIdentifierObtainer = object : ObtainParametrized<I?, Int> {
+
+        override fun obtain(param: Int): I? {
+
+            val item = get(param)
+
+            item?.let {
+
+                return identifierObtainer.obtain(it)
+            }
+
+            return null
+        }
+    }
+
+    private val comparator = ListComparator<T, I>(
+
+        list,
+        lastCopy,
+        comparatorIdentifierObtainer,
+        changedIdentifiers
+    )
 
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
@@ -552,6 +575,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
     ) {
 
         comparator.run()
+
+        if (DEBUG.get()) {
+
+            Console.log(
+
+                "Notify change :: Identifiers='${changedIdentifiers.toList()}'"
+            )
+        }
 
         if (onUi) {
 
@@ -1224,14 +1255,22 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     fun hasChangedAt(position: Int): Boolean {
 
-        val changed = changedIndexes.contains(position)
+        val item = get(position)
 
-        if (DEBUG.get()) {
+        item?.let {
 
-            Console.log("Has changed at :: Position=$position")
+            val identifier = identifierObtainer.obtain(it)
+            val changed = changedIdentifiers.contains(identifier)
+
+            if (DEBUG.get()) {
+
+                Console.log("Has changed at :: Position=$position")
+            }
+
+            return changed
         }
 
-        return changed
+        return false
     }
 
     private fun onDataPushed(pushContext: String, data: DataPushResult) {
