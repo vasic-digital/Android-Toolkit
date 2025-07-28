@@ -49,7 +49,12 @@ open class ListWrapper<T, M : DataManagement<*>>(
     }
 
     private val busy = AtomicBoolean()
+
     private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
+    private val lastCopy: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
+    private val changedIndexes = CopyOnWriteArraySet<Int>()
+    private val comparator = ListComparator(list, lastCopy, changedIndexes)
+
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
@@ -244,6 +249,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
                 }
             }
         }
+
+        comparator.clear()
 
         return success
     }
@@ -544,6 +551,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
+        comparator.run()
+
         if (onUi) {
 
             onUiThread {
@@ -586,6 +595,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
+        comparator.makeCopy()
+
         if (list.add(value)) {
 
             if (!skipNotifying) {
@@ -605,6 +616,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
         callback: (() -> Unit)? = null
 
     ) {
+
+        comparator.makeCopy()
 
         if (list.addAll(what)) {
 
@@ -628,6 +641,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
     ) {
 
         try {
+
+            comparator.makeCopy()
 
             if (list.removeAt(where) != null) {
 
@@ -659,6 +674,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
         callback: (() -> Unit)? = null
 
     ) {
+
+        comparator.makeCopy()
 
         list.clear()
 
@@ -833,6 +850,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             busyCheck?.isBusy() == true
                         }
+
+                        comparator.makeCopy()
 
                         val filtered = FilterResult(filteredItems = list, wasModified = false)
 
@@ -1020,6 +1039,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
+        comparator.makeCopy()
+
         if (list.removeAll(what)) {
 
             if (!skipNotifying) {
@@ -1040,6 +1061,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
+        comparator.makeCopy()
+
         if (list.remove(what)) {
 
             if (!skipNotifying) {
@@ -1059,6 +1082,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
         callback: (() -> Unit)? = null
 
     ) {
+
+        comparator.makeCopy()
 
         list.removeAt(index)?.let {
 
@@ -1199,8 +1224,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     fun hasChangedAt(position: Int): Boolean {
 
-        // TODO:
-        return true
+        val changed = changedIndexes.contains(position)
+
+        if (DEBUG.get()) {
+
+            Console.log("Has changed at :: Position=$position")
+        }
+
+        return changed
     }
 
     private fun onDataPushed(pushContext: String, data: DataPushResult) {
