@@ -72,9 +72,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
     }
 
-    private val comparator: SetsChangesTracker<T, I>? = if (trackPerItemChanges) {
+    private val comparator: CollectionChangesTracker<T, I>? = if (trackPerItemChanges) {
 
-        SetsChangesTracker(
+        CollectionChangesTracker(
 
             identifier,
             list,

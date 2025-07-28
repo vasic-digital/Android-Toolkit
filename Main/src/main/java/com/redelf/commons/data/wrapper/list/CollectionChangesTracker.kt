@@ -7,7 +7,7 @@ import java.io.*
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicBoolean
 
-class SetsChangesTracker<T, I>(
+class CollectionChangesTracker<T, I>(
 
     private val context: String,
     private val set: CopyOnWriteArraySet<T> = CopyOnWriteArraySet(),
