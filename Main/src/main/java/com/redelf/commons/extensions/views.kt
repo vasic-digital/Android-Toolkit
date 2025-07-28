@@ -6,6 +6,7 @@ import android.app.Activity
 import android.text.Html
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -53,7 +54,7 @@ data class ColoredText @JsonCreator constructor(
 
     companion object {
 
-        fun convert (what: ArrayList<LinkedTreeMap<String, Any>>): List<ColoredWord> {
+        fun convert(what: ArrayList<LinkedTreeMap<String, Any>>): List<ColoredWord> {
 
             val items = mutableListOf<ColoredWord>()
 
@@ -258,7 +259,25 @@ fun RecyclerView.notifyDatasetChangedWithFade(
 
                     override fun onAnimationEnd(animation: Animator) {
 
-                        adapter?.notifyItemChanged(i)
+                        viewTreeObserver.addOnPreDrawListener(
+
+                            object : ViewTreeObserver.OnPreDrawListener {
+
+                                override fun onPreDraw(): Boolean {
+
+                                    if (scrollState == RecyclerView.SCROLL_STATE_IDLE) {
+
+                                        viewTreeObserver.removeOnPreDrawListener(this)
+                                        adapter?.notifyItemChanged(i)
+                                        return true
+                                    }
+
+                                    // Postpone drawing until idle
+                                    invalidate()
+
+                                    return false
+                                }
+                            })
                     }
 
                     override fun onAnimationRepeat(animation: Animator) = Unit
