@@ -379,7 +379,7 @@ fun onUiThread(doWhat: () -> Unit) {
 
     try {
 
-        Executor.UI.execute { doWhat() }
+        UI.execute { doWhat() }
 
     } catch (e: RejectedExecutionException) {
 
