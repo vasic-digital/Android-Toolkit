@@ -81,6 +81,13 @@ abstract class Popup : PopupFragment() {
 
     protected open fun closePopup(from: String): Boolean {
 
+        onDismissed?.let {
+
+            Console.log("$logTag Triggering the callback")
+
+            it.onCompleted(getDismissResult())
+        }
+
         val ctx = getPopupActivity()
 
         ctx?.let {
