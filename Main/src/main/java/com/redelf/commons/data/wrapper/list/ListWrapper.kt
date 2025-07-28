@@ -40,7 +40,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val identifierObtainer: ObtainParametrized<I, T>,
     private val onUi: Boolean,
     private var onChange: OnChangeCompleted? = null,
-    private val onDataPushed: OnObtain<DataPushResult?>? = null
+    private val onDataPushed: OnObtain<DataPushResult?>? = null,
+
+    trackPerItemChanges: Boolean = true,
 
 ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
@@ -70,14 +72,18 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
     }
 
-    private val comparator = SetComparator<T, I>(
+    private val comparator: SetsChangesTracker<T, I>? = if (trackPerItemChanges) {
 
-        identifier,
-        list,
-        lastCopy,
-        comparatorIdentifierObtainer,
-        changedIdentifiers
-    )
+        SetsChangesTracker(
+
+            identifier,
+            list,
+            lastCopy,
+            comparatorIdentifierObtainer,
+            changedIdentifiers
+        )
+
+    } else null
 
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
@@ -274,7 +280,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
 
-        comparator.clear()
+        comparator?.clear()
 
         return success
     }
@@ -575,7 +581,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        comparator.run()
+        comparator?.run()
 
         if (DEBUG.get()) {
 
@@ -629,7 +635,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         if (!skipNotifying) {
 
-            comparator.makeCopy("doAdd")
+            comparator?.makeCopy("doAdd")
         }
 
         if (list.add(value)) {
@@ -654,7 +660,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         if (!skipNotifying) {
 
-            comparator.makeCopy("doAddAll")
+            comparator?.makeCopy("doAddAll")
         }
 
         if (list.addAll(what)) {
@@ -682,7 +688,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             if (!skipNotifying) {
 
-                comparator.makeCopy("doUpdate")
+                comparator?.makeCopy("doUpdate")
             }
 
             if (list.size > where && list.removeAt(where) != null) {
@@ -718,7 +724,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         if (!skipNotifying) {
 
-            comparator.makeCopy("doClear")
+            comparator?.makeCopy("doClear")
         }
 
         list.clear()
@@ -999,7 +1005,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         exec {
 
-            comparator.makeCopy("doAddAllAndFilter")
+            comparator?.makeCopy("doAddAllAndFilter.${what?.size ?: 0}.${what.hashCode()}")
 
             if (replace) {
 
@@ -1088,7 +1094,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         if (!skipNotifying) {
 
-            comparator.makeCopy("doRemoveAll")
+            comparator?.makeCopy("doRemoveAll")
         }
 
         if (list.removeAll(what)) {
@@ -1113,7 +1119,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         if (!skipNotifying) {
 
-            comparator.makeCopy("doRemove.item")
+            comparator?.makeCopy("doRemove.item")
         }
 
         if (list.remove(what)) {
@@ -1138,7 +1144,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         if (!skipNotifying) {
 
-            comparator.makeCopy("doRemove.$index")
+            comparator?.makeCopy("doRemove.$index")
         }
 
         list.removeAt(index)?.let {

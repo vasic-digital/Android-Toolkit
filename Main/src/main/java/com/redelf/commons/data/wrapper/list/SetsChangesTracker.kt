@@ -5,8 +5,9 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.ObtainParametrized
 import java.io.*
 import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.atomic.AtomicBoolean
 
-class SetComparator<T, I>(
+class SetsChangesTracker<T, I>(
 
     private val context: String,
     private val set: CopyOnWriteArraySet<T> = CopyOnWriteArraySet(),
@@ -15,6 +16,8 @@ class SetComparator<T, I>(
     private val changedIdentifiers: CopyOnWriteArraySet<I> = CopyOnWriteArraySet<I>()
 
 ) : Runnable {
+
+    private val copying = AtomicBoolean()
 
     override fun run() {
 
@@ -31,6 +34,15 @@ class SetComparator<T, I>(
     }
 
     fun makeCopy(from: String) {
+
+        if (copying.get()) {
+
+            Console.log("Set copy skip for 0 millis :: Context='$context', From='$from'")
+
+            return
+        }
+
+        copying.set(true)
 
         val start = System.currentTimeMillis()
 
@@ -53,6 +65,8 @@ class SetComparator<T, I>(
         val time = System.currentTimeMillis() - start
 
         Console.log("Set copy made for $time millis :: Context='$context', From='$from'")
+
+        copying.set(false)
     }
 
     fun findChangedIdentifiers(): Set<I> {
