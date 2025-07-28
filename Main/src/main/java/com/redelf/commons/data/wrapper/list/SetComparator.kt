@@ -6,10 +6,11 @@ import com.redelf.commons.obtain.ObtainParametrized
 import java.io.*
 import java.util.concurrent.CopyOnWriteArraySet
 
-class ListComparator<T, I>(
+class SetComparator<T, I>(
 
-    private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet(),
-    private val lastCopy: CopyOnWriteArraySet<T> = CopyOnWriteArraySet(),
+    private val context: String,
+    private val set: CopyOnWriteArraySet<T> = CopyOnWriteArraySet(),
+    private val setCopy: CopyOnWriteArraySet<T> = CopyOnWriteArraySet(),
     private val identifierObtainer: ObtainParametrized<I?, Int>,
     private val changedIdentifiers: CopyOnWriteArraySet<I> = CopyOnWriteArraySet<I>()
 
@@ -29,32 +30,38 @@ class ListComparator<T, I>(
         }
     }
 
-    fun makeCopy() {
+    fun makeCopy(from: String) {
 
-        lastCopy.clear()
+        val start = System.currentTimeMillis()
 
-        list.forEach { item ->
+        setCopy.clear()
+
+        set.forEach { item ->
 
             try {
 
                 val c = deepCopyItem(item)
 
-                lastCopy.add(c)
+                setCopy.add(c)
 
             } catch (e: Throwable) {
 
                 recordException(e)
             }
         }
+
+        val time = System.currentTimeMillis() - start
+
+        Console.log("Set copy made for $time millis :: Context='$context', From='$from'")
     }
 
     fun findChangedIdentifiers(): Set<I> {
 
         val changedIdentifiers = mutableSetOf<I>()
 
-        list.forEachIndexed { index, currentItem ->
+        set.forEachIndexed { index, currentItem ->
 
-            val lastItem = lastCopy.elementAtOrNull(index)
+            val lastItem = setCopy.elementAtOrNull(index)
 
             if (!itemsEqual(currentItem, lastItem)) {
 
@@ -65,9 +72,9 @@ class ListComparator<T, I>(
             }
         }
 
-        if (lastCopy.size > list.size) {
+        if (setCopy.size > set.size) {
 
-            (list.size until lastCopy.size).forEach {
+            (set.size until setCopy.size).forEach {
 
                 identifierObtainer.obtain(it)?.let {
 
@@ -153,16 +160,16 @@ class ListComparator<T, I>(
         }
     }
 
-    fun addItem(item: T) = list.add(item)
+    fun addItem(item: T) = set.add(item)
 
-    fun removeItem(item: T) = list.remove(item)
+    fun removeItem(item: T) = set.remove(item)
 
-    fun getItems(): List<T> = list.toList()
+    fun getItems(): List<T> = set.toList()
 
     fun clear() {
 
-        list.clear()
-        lastCopy.clear()
+        set.clear()
+        setCopy.clear()
         changedIdentifiers.clear()
     }
 }

@@ -70,8 +70,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
     }
 
-    private val comparator = ListComparator<T, I>(
+    private val comparator = SetComparator<T, I>(
 
+        identifier,
         list,
         lastCopy,
         comparatorIdentifierObtainer,
@@ -626,7 +627,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        comparator.makeCopy()
+        if (!skipNotifying) {
+
+            comparator.makeCopy("doAdd")
+        }
 
         if (list.add(value)) {
 
@@ -648,7 +652,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        comparator.makeCopy()
+        if (!skipNotifying) {
+
+            comparator.makeCopy("doAddAll")
+        }
 
         if (list.addAll(what)) {
 
@@ -673,9 +680,12 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         try {
 
-            comparator.makeCopy()
+            if (!skipNotifying) {
 
-            if (list.removeAt(where) != null) {
+                comparator.makeCopy("doUpdate")
+            }
+
+            if (list.size > where && list.removeAt(where) != null) {
 
                 list.addAt(where, what)
 
@@ -706,7 +716,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        comparator.makeCopy()
+        if (!skipNotifying) {
+
+            comparator.makeCopy("doClear")
+        }
 
         list.clear()
 
@@ -882,8 +895,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                             busyCheck?.isBusy() == true
                         }
 
-                        comparator.makeCopy()
-
                         val filtered = FilterResult(filteredItems = list, wasModified = false)
 
                         filters.forEach { filter ->
@@ -986,24 +997,29 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
 
-        if (replace) {
+        exec {
 
-            doClear(
+            comparator.makeCopy("doAddAllAndFilter")
 
-                "doAddAllAndFilter(from='$from," +
-                        "filteredCount=NONE'," +
-                        "originalCount=${list.size})",
+            if (replace) {
 
-                skipNotifying = true
+                doClear(
 
-            ) {
+                    "doAddAllAndFilter(from='$from," +
+                            "filteredCount=NONE'," +
+                            "originalCount=${list.size})",
 
-                next("doClear.completed")
+                    skipNotifying = true
+
+                ) {
+
+                    next("doClear.completed")
+                }
+
+            } else {
+
+                next("doNotClear")
             }
-
-        } else {
-
-            next("doNotClear")
         }
     }
 
@@ -1070,7 +1086,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        comparator.makeCopy()
+        if (!skipNotifying) {
+
+            comparator.makeCopy("doRemoveAll")
+        }
 
         if (list.removeAll(what)) {
 
@@ -1092,7 +1111,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        comparator.makeCopy()
+        if (!skipNotifying) {
+
+            comparator.makeCopy("doRemove.item")
+        }
 
         if (list.remove(what)) {
 
@@ -1114,7 +1136,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        comparator.makeCopy()
+        if (!skipNotifying) {
+
+            comparator.makeCopy("doRemove.$index")
+        }
 
         list.removeAt(index)?.let {
 
