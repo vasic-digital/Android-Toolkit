@@ -1,5 +1,6 @@
 package com.redelf.commons.data.wrapper.list
 
+import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.ObtainParametrized
 import java.io.*
@@ -34,7 +35,16 @@ class ListComparator<T, I>(
 
         list.forEach { item ->
 
-            lastCopy.add(deepCopyItem(item))
+            try {
+
+                val c = deepCopyItem(item)
+
+                lastCopy.add(c)
+
+            } catch (e: Throwable) {
+
+                recordException(e)
+            }
         }
     }
 
@@ -70,6 +80,7 @@ class ListComparator<T, I>(
     }
 
     @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class)
     private fun deepCopyItem(item: T): T? {
 
         if (item == null) {
@@ -105,6 +116,7 @@ class ListComparator<T, I>(
     }
 
     @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class)
     private fun <S : Serializable> deepCopyViaSerialization(obj: S): S {
 
         return try {
