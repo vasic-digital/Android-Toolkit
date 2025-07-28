@@ -1197,6 +1197,12 @@ open class ListWrapper<T, M : DataManagement<*>>(
         }
     }
 
+    fun hasChangedAt(position: Int): Boolean {
+
+        // TODO:
+        return true
+    }
+
     private fun onDataPushed(pushContext: String, data: DataPushResult) {
 
         if (DEBUG.get()) {
