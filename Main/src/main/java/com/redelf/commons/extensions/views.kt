@@ -222,7 +222,8 @@ private val refreshingRecyclerViews = ConcurrentHashMap<Int, Boolean>()
 fun RecyclerView.notifyDatasetChangedWithFade(
 
     from: String,
-    duration: Long = 200L
+    duration: Long = 200L,
+    hasItemChanged: (position: Int) -> Boolean,
 
 ) {
 
@@ -245,47 +246,64 @@ fun RecyclerView.notifyDatasetChangedWithFade(
         "Notify dataset changes :: $thisOne :: ${adapter?.hashCode()} :: From='$from'"
     )
 
+    // Track which items need animation
+    val changedPositions = mutableListOf<Int>()
+
+    for (i in 0 until (adapter?.itemCount ?: 0)) {
+
+        if (hasItemChanged(i)) {
+
+            changedPositions.add(i)
+        }
+    }
+
     // Fade out existing items
     for (i in 0 until childCount) {
 
-        getChildAt(i)
-            ?.animate()
-            ?.setDuration(duration)
-            ?.setListener(
+        val child = getChildAt(i)
+        val pos = getChildAdapterPosition(child)
 
-                object : Animator.AnimatorListener {
+        if (pos != RecyclerView.NO_POSITION && pos in changedPositions) {
 
-                    override fun onAnimationCancel(animation: Animator) = Unit
+            getChildAt(i)
+                ?.animate()
+                ?.setDuration(duration)
+                ?.setListener(
 
-                    override fun onAnimationEnd(animation: Animator) {
+                    object : Animator.AnimatorListener {
 
-                        viewTreeObserver.addOnPreDrawListener(
+                        override fun onAnimationCancel(animation: Animator) = Unit
 
-                            object : ViewTreeObserver.OnPreDrawListener {
+                        override fun onAnimationEnd(animation: Animator) {
 
-                                override fun onPreDraw(): Boolean {
+                            viewTreeObserver.addOnPreDrawListener(
 
-                                    if (scrollState == RecyclerView.SCROLL_STATE_IDLE) {
+                                object : ViewTreeObserver.OnPreDrawListener {
 
-                                        viewTreeObserver.removeOnPreDrawListener(this)
-                                        adapter?.notifyItemChanged(i)
-                                        return true
+                                    override fun onPreDraw(): Boolean {
+
+                                        if (scrollState == RecyclerView.SCROLL_STATE_IDLE) {
+
+                                            viewTreeObserver.removeOnPreDrawListener(this)
+                                            adapter?.notifyItemChanged(i)
+                                            return true
+                                        }
+
+                                        // Postpone drawing until idle
+                                        invalidate()
+
+                                        return false
                                     }
+                                })
+                        }
 
-                                    // Postpone drawing until idle
-                                    invalidate()
+                        override fun onAnimationRepeat(animation: Animator) = Unit
 
-                                    return false
-                                }
-                            })
+                        override fun onAnimationStart(animation: Animator) = Unit
                     }
-
-                    override fun onAnimationRepeat(animation: Animator) = Unit
-
-                    override fun onAnimationStart(animation: Animator) = Unit
-                }
-            )
-            ?.start()
+                )
+                ?.start()
+        }
     }
 
     // After delay, fade in new items
@@ -293,9 +311,15 @@ fun RecyclerView.notifyDatasetChangedWithFade(
 
         for (i in 0 until childCount) {
 
-            getChildAt(i)?.apply {
+            val child = getChildAt(i)
+            val pos = getChildAdapterPosition(child)
 
-                animate().setDuration(duration).start()
+            if (pos != RecyclerView.NO_POSITION && pos in changedPositions) {
+
+                getChildAt(i)?.apply {
+
+                    animate().setDuration(duration).start()
+                }
             }
         }
 
