@@ -188,7 +188,8 @@ abstract class StatefulActivity : TransitionEffectsActivity(), ActivityActiveSta
 
         Console.log("$tag START")
 
-        overridePendingTransition(0, 0)
+        val hold = com.redelf.commons.R.anim.hold
+        overridePendingTransition(hold, hold)
 
         if (removeFromHistoryOnFinish) {
 
@@ -201,7 +202,8 @@ abstract class StatefulActivity : TransitionEffectsActivity(), ActivityActiveSta
 
         if (!hasTransitionAssigned("finish")) {
 
-            overridePendingTransition(0, 0)
+            val hold = com.redelf.commons.R.anim.hold
+            overridePendingTransition(hold, hold)
         }
 
         Console.log("$tag END")
