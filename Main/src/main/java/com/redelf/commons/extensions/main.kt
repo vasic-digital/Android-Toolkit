@@ -200,7 +200,7 @@ fun Context.getFileName(uri: Uri): String? {
 
         if (cut != -1 && cut != null) {
 
-            result = result?.substring(cut + 1)
+            result = result.substring(cut + 1)
         }
     }
 
@@ -213,6 +213,15 @@ fun Context.closeKeyboard(v: View) {
         getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
 
     inputMethodManager?.hideSoftInputFromWindow(v.applicationWindowToken, 0)
+}
+
+fun Context.showKeyboard(view: View) {
+
+    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+    view.requestFocus()
+
+    inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
 }
 
 fun Context.clearAllSharedPreferences(): Boolean {
