@@ -47,7 +47,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     */
     trackPerItemChanges: Boolean = false,
 
-) : BusyCheck, InitializedCheck, TerminationSynchronized {
+    ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
     companion object {
 
@@ -716,6 +716,74 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         notifyCallback(callback)
     }
 
+    private fun doUpdate(
+
+        what: T,
+        identifier: I,
+        skipNotifying: Boolean = false,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        try {
+
+            if (!skipNotifying) {
+
+                comparator?.makeCopy("doUpdate")
+            }
+
+            val toRemove = mutableListOf<T>()
+            val wId = identifierObtainer.obtain(what)
+
+            list.forEach {
+
+                val id = identifierObtainer.obtain(it)
+
+                if (id == wId) {
+
+                    toRemove.add(it)
+
+                    if (DEBUG.get()) {
+
+                        Console.log("$tag To remove on update :: Item=$toRemove")
+                    }
+                }
+            }
+
+            if (toRemove.isNotEmpty()) {
+
+                val removed = list.removeAll(toRemove)
+
+                if (removed) {
+
+                    if (DEBUG.get()) {
+
+                        Console.log("$tag To remove on update :: Removed :: Count=${toRemove.size}")
+                    }
+
+                } else {
+
+                    Console.error("$tag To remove on update :: Failed :: Count=${toRemove.size}")
+                }
+            }
+
+            if (list.add(what)) {
+
+                if (!skipNotifying) {
+
+                    notifyChanged(onChange, "update.$identifier")
+                }
+            }
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        notifyCallback(callback)
+    }
+
     private fun doClear(
 
         from: String,
@@ -776,7 +844,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 list.forEach { wItem ->
 
-                    var where = -1
+                    var identifier: I? = null
                     var found: T? = null
 
                     linked.forEach { lItem ->
@@ -791,7 +859,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                                     if (lItem != wItem) {
 
-                                        where = indexOf(wItem)
+                                        identifier = identifierObtainer.obtain(wItem)
                                     }
                                 }
 
@@ -803,7 +871,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                                     if (lItem != wItem) {
 
-                                        where = indexOf(wItem)
+                                        identifier = identifierObtainer.obtain(wItem)
                                     }
                                 }
 
@@ -819,9 +887,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                         toUpdate.add(found)
 
-                        if (where > -1) {
+                        if (identifier != null) {
 
-                            doUpdate(found, where, true)
+                            doUpdate(found, identifier, true)
                         }
 
                     } else {
