@@ -4,7 +4,6 @@ import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
 import com.redelf.commons.extensions.addAt
-import com.redelf.commons.extensions.contentEquals
 import com.redelf.commons.extensions.getAtIndex
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
@@ -13,7 +12,6 @@ import com.redelf.commons.extensions.removeAt
 import com.redelf.commons.extensions.sync
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.filtering.FilterAsync
-import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.lifecycle.initialization.InitializedCheck
 import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.logging.Console
@@ -36,7 +34,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     val environment: String = "default",
 
     private val dataAccess: DataAccess<T, M>? = null,
-    private val busyCheck: BusyCheck? = null,
     private val identifierObtainer: ObtainParametrized<I, T>,
     private val onUi: Boolean,
     private var onChange: OnChangeCompleted? = null,
@@ -1006,12 +1003,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                     } else {
 
-                        yieldWhile {
-
-                            busyCheck?.isBusy() == true
-                        }
-
-                        val filtered = FilterResult(filteredItems = list, wasModified = false)
+                        modified = true
+                        changedCount = list.size
 
                         filters.forEach { filter ->
 
@@ -1022,72 +1015,17 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                             ) { callback ->
 
-                                filter.filter(filtered.filteredItems, callback)
-                            }
+                                filter.filter(list, callback)
 
-                            val newItems = CopyOnWriteArraySet<T>()
+                            } == true
 
-                            val fItems = res?.filteredItems
+                            if (res) {
 
-                            fItems?.let { fIt ->
+                                notify("filtered.changed.doAddAll.callback")
 
-                                if (fIt.isNotEmpty()) {
+                            } else {
 
-                                    newItems.addAll(fIt)
-
-                                    filtered.filteredItems.clear()
-                                    filtered.filteredItems.addAll(newItems)
-
-                                    if (filtered.filteredItems.isEmpty()) {
-
-                                        Console.error("Empty after adding filtered items")
-
-                                    } else {
-
-                                        if (DEBUG.get()) {
-
-                                            Console.log("Filtered items added")
-                                        }
-                                    }
-                                }
-                            }
-
-                            filtered.changedCount.set(
-
-                                filtered.changedCount.get() + (res?.changedCount?.get() ?: 0)
-                            )
-
-                            if (!filtered.modified.get()) {
-
-                                filtered.modified.set(res?.isModified() == true)
-                            }
-                        }
-
-                        if (!modified) {
-
-                            modified = filtered.modified.get()
-                        }
-
-                        changedCount += filtered.changedCount.get()
-
-                        val equalLists = filtered.filteredItems.contentEquals(list)
-
-                        if (!equalLists) {
-
-                            doClear(
-
-                                "doAddAllAndFilter(from='$from," +
-                                        "filteredCount=${filtered.filteredItems.size}'," +
-                                        "originalCount=${list.size})",
-
-                                skipNotifying = true
-
-                            ) {
-
-                                doAddAll(filtered.filteredItems, true) {
-
-                                    notify("filtered.changed.doAddAll.callback")
-                                }
+                                Console.error("$tag Failed to filter data")
                             }
                         }
                     }
