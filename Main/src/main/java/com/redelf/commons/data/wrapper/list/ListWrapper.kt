@@ -436,7 +436,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        Console.log("$tag update(what='$what, where=$where), from='$from'")
+        if (DEBUG.get()) Console.log("$tag update(what='$what, where=$where), from='$from'")
 
         exec {
 
@@ -543,7 +543,16 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         exec {
 
-            doAddAllAndFilter(what, from, replace, removeDeleted, skipNotifying, filters, onChange, callback)
+            doAddAllAndFilter(
+                what,
+                from,
+                replace,
+                removeDeleted,
+                skipNotifying,
+                filters,
+                onChange,
+                callback
+            )
         }
     }
 
@@ -574,7 +583,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         val tag = "$tag purge(from='$from')"
 
-        Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         exec {
 
@@ -1078,7 +1087,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         if (toRemove.isNotEmpty()) {
 
-            Console.debug("$tag Removing ${toRemove.size} items")
+            if (DEBUG.get()) Console.debug("$tag Removing ${toRemove.size} items")
 
             doRemoveAll(
 
@@ -1264,7 +1273,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         } catch (e: Throwable) {
 
-            Console.log(
+            if (DEBUG.get()) Console.log(
 
                 "$tag Fet collection :: " +
                         "From='$from', getCollection().count=0, " +
@@ -1287,7 +1296,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         exec {
 
-            Console.log("$tag Refresh :: From='$from'")
+            if (DEBUG.get()) Console.log("$tag Refresh :: From='$from'")
 
             val from = "refresh(from='$from')"
             val items = getCollection(from)
@@ -1426,7 +1435,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                     val sample = "$first.$second"
 
-                    Console.log(
+                    if (DEBUG.get()) Console.log(
 
                         "$tag END :: Data sorted :: " +
                                 "Size=${list.size} :: $sample"
