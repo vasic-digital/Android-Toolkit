@@ -28,6 +28,9 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
+/*
+* TODO: Code cleanup and improvements needed ...
+*/
 open class ListWrapper<T, I, M : DataManagement<*>>(
 
     val identifier: String,
@@ -54,6 +57,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     private val busy = AtomicBoolean()
 
+    private val filteringInProgress = AtomicBoolean()
     private val changedIdentifiers = CopyOnWriteArraySet<I>()
     private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
     private val lastCopy: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
@@ -1298,7 +1302,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 if (modified) {
 
-                    notifyChanged(action = "refreshed")
+                    notifyChanged(action = from)
                 }
 
                 callback?.let {
@@ -1326,7 +1330,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         replaceAllAndFilter(
 
             from = from,
-            what = items
+            what = items,
+            filters = defaultFilters
 
         ) { modified, count ->
 
@@ -1362,9 +1367,26 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private fun doFilter(
 
         filters: List<FilterAsync<T>> = defaultFilters,
-        callback: () -> Unit)
+        callback: () -> Unit
 
-    {
+    ) {
+
+        /*
+         * FIXME:Solve the issue of parallel sorting with different sets of filters
+         */
+        if (filteringInProgress.get()) {
+
+            yieldWhile {
+
+                filteringInProgress.get()
+            }
+
+            callback()
+
+            return
+        }
+
+        filteringInProgress.set(true)
 
         if (filters.isEmpty()) {
 
@@ -1395,6 +1417,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 }
             }
         }
+
+        filteringInProgress.set(false)
     }
 
     //    fun hasChangedAt(position: Int): Boolean {
