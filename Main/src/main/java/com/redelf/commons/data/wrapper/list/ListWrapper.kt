@@ -1189,10 +1189,12 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             comparator?.makeCopy("doRemoveAll")
         }
 
-        val copy = mutableListOf<T>()
-        val removed = mutableListOf<T>()
+        val copy = mutableListOf<T>().apply {
 
-        copy.addAll(list)
+            addAll(list)
+        }
+
+        val removed = mutableListOf<T>()
 
         copy.forEach { next ->
 
