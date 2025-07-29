@@ -868,25 +868,25 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                     modified = list.size != (what?.size ?: 0)
 
-                    doClear(
+                    val toAdd = mutableListOf<T>()
+                    val toRemove = mutableListOf<T>()
 
-                        from = from,
-                        skipNotifying = true
+                    toRemove.addAll(list)
 
-                    ) {
+                    what?.forEach {
 
-                        val toAdd = mutableListOf<T>()
+                        it?.let {
 
-                        what?.forEach {
-
-                            it?.let {
-
-                                toAdd.add(it)
-                            }
+                            toAdd.add(it)
                         }
-
-                        doAddAll(what = toAdd, skipNotifying = true)
                     }
+
+                    doReplaceAll(
+
+                        add = toAdd,
+                        remove = toRemove,
+                        skipNotifying = true
+                    )
 
                 } else {
 
@@ -1141,6 +1141,72 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 notifyChanged(onChange, "removeAll.${what.size}")
             }
+        }
+
+        notifyCallback(callback)
+    }
+
+    private fun doReplaceAll(
+
+        add: Collection<T>,
+        remove: Collection<T>,
+        skipNotifying: Boolean = false,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doReplaceAll")
+        }
+
+        list.apply {
+
+            removeAll(remove)
+            addAll(add)
+        }
+
+        if (!skipNotifying) {
+
+            notifyChanged(onChange, "doReplaceAll.${remove.size}.${add.size}")
+        }
+
+        notifyCallback(callback)
+    }
+
+    private fun doRemoveAllFirsts(
+
+        what: Collection<T>,
+        skipNotifying: Boolean = false,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doRemoveAll")
+        }
+
+        val copy = mutableListOf<T>()
+        val removed = mutableListOf<T>()
+
+        copy.addAll(list)
+
+        copy.forEach { next ->
+
+            if (what.contains(next) && !removed.contains(next)) {
+
+                list.remove(next)
+
+                removed.add(next)
+            }
+        }
+
+        if (!skipNotifying) {
+
+            notifyChanged(onChange, "doRemoveAllFirsts.${what.size}")
         }
 
         notifyCallback(callback)
