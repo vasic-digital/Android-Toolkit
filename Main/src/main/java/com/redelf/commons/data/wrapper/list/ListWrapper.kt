@@ -836,7 +836,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
+        val from = "doAddAllAndFilter(from='$from',replace='$replace')"
+
+        if (DEBUG.get()) Console.log("$tag $from")
 
         val doAddFrom = from
 
@@ -846,92 +848,120 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 var modified = false
                 var changedCount = 0
-                val linked = LinkedList(what ?: emptyList())
 
-                val toRemove = mutableListOf<T>()
-                val toUpdate = mutableListOf<T>()
+                if (replace) {
 
-                list.forEach { wItem ->
+                    modified = list.size != (what?.size ?: 0)
 
-                    var identifier: I? = null
-                    var found: T? = null
+                    doClear(
 
-                    linked.forEach { lItem ->
+                        from = from,
+                        skipNotifying = true
 
-                        if (found == null) {
+                    ) {
 
-                            if (lItem is Number && wItem is Number) {
+                        val toAdd = mutableListOf<T>()
 
-                                if (lItem == wItem) {
+                        what?.forEach {
 
-                                    found = lItem
+                            it?.let {
 
-                                    if (lItem != wItem) {
-
-                                        identifier = identifierObtainer.obtain(wItem)
-                                    }
-                                }
-
-                            } else if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
-
-                                if (lItem.getId() == wItem.getId()) {
-
-                                    found = lItem
-
-                                    if (lItem != wItem) {
-
-                                        identifier = identifierObtainer.obtain(wItem)
-                                    }
-                                }
-
-                            } else {
-
-                                val e = IllegalArgumentException("Non-identifiable items found")
-                                Console.warning(e)
+                                toAdd.add(it)
                             }
                         }
+
+                        doAddAll(what = toAdd, skipNotifying = true)
                     }
 
-                    if (found != null) {
+                } else {
 
-                        toUpdate.add(found)
+                    val linked = LinkedList(what ?: emptyList())
 
-                        if (identifier != null) {
+                    val toRemove = mutableListOf<T>()
+                    val toUpdate = mutableListOf<T>()
 
-                            doUpdate(found, identifier, true)
+                    list.forEach { wItem ->
+
+                        var found: T? = null
+                        var identifier: I? = null
+
+                        linked.forEach { lItem ->
+
+                            if (found == null) {
+
+                                if (lItem is Number && wItem is Number) {
+
+                                    if (lItem == wItem) {
+
+                                        found = lItem
+
+                                        if (lItem != wItem) {
+
+                                            identifier = identifierObtainer.obtain(wItem)
+                                        }
+                                    }
+
+                                } else if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
+
+                                    if (lItem.getId() == wItem.getId()) {
+
+                                        found = lItem
+
+                                        if (lItem != wItem) {
+
+                                            identifier = identifierObtainer.obtain(wItem)
+                                        }
+                                    }
+
+                                } else {
+
+                                    val e = IllegalArgumentException("Non-identifiable items found")
+                                    Console.warning(e)
+                                }
+                            }
                         }
 
-                    } else {
+                        if (found != null) {
 
-                        toRemove.add(wItem)
+                            toUpdate.add(found)
+
+                            if (identifier != null) {
+
+                                doUpdate(found, identifier, true)
+                            }
+
+                        } else {
+
+                            toRemove.add(wItem)
+                        }
                     }
-                }
 
-                if (toRemove.isNotEmpty()) {
+                    if (toRemove.isNotEmpty()) {
 
-                    modified = true
+                        modified = true
 
-                    changedCount += toRemove.size
+                        changedCount += toRemove.size
 
-                    doRemoveAll(toRemove, true)
-                }
+                        doRemoveAll(toRemove, true)
+                    }
 
-                if (toUpdate.isNotEmpty()) {
+                    if (toUpdate.isNotEmpty()) {
 
-                    changedCount += toUpdate.size
-                }
+                        changedCount += toUpdate.size
+                    }
 
-                linked.forEach { linked ->
+                    linked.forEach { linked ->
 
-                    linked?.let { lkd ->
+                        linked?.let { lkd ->
 
-                        if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
+                            if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
 
-                            modified = true
+                                modified = true
 
-                            changedCount++
+                                changedCount++
 
-                            doAdd(lkd, true)
+                                doAdd(lkd, true)
+                            }
                         }
                     }
                 }
