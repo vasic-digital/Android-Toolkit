@@ -746,7 +746,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                     if (DEBUG.get()) {
 
-                        Console.log("$tag To remove on update :: Item=$toRemove")
+                        Console.log("$tag To remove on update :: Hash=${it.hashCode()}, Item=$it")
                     }
                 }
             }
@@ -770,10 +770,19 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             if (list.add(what)) {
 
+                if (DEBUG.get()) {
+
+                    Console.log("$tag To remove on update :: Added :: Hash=${what.hashCode()}, What=$what")
+                }
+
                 if (!skipNotifying) {
 
                     notifyChanged(onChange, "update.$identifier")
                 }
+
+            } else {
+
+                Console.error("$tag To remove on update :: Not added :: Hash=${what.hashCode()}, What=$what")
             }
 
         } catch (e: Throwable) {
