@@ -1409,6 +1409,29 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 if (res) {
 
+                    val tag = "$tag Sorting :: "
+
+                    var first: I? = null
+                    var second: I? = null
+
+                    list.firstOrNull()?.let {
+
+                        first = identifierObtainer.obtain(it)
+                    }
+
+                    list.lastOrNull()?.let {
+
+                        second = identifierObtainer.obtain(it)
+                    }
+
+                    val sample = "$first.$second"
+
+                    Console.log(
+
+                        "$tag END :: Data sorted :: " +
+                                "Size=${list.size} :: $sample"
+                    )
+
                     callback()
 
                 } else {
