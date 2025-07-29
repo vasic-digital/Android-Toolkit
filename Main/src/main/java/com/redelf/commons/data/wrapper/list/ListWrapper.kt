@@ -38,6 +38,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val onUi: Boolean,
     private var onChange: OnChangeCompleted? = null,
     private val onDataPushed: OnObtain<DataPushResult?>? = null,
+    private val defaultFilters: List<FilterAsync<T>> = emptyList(),
 
     /*
     * FIXME: Make this work properly and cover with the tests
@@ -477,7 +478,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         what: Collection<T?>?,
         from: String,
         removeDeleted: Boolean = true,
-        filters: List<FilterAsync<T>> = emptyList(),
+        filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
@@ -527,7 +528,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
-        filters: List<FilterAsync<T>> = emptyList(),
+        filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
@@ -827,7 +828,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
-        filters: List<FilterAsync<T>> = emptyList(),
+        filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
@@ -997,37 +998,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                         }
                     }
 
-                    if (filters.isEmpty()) {
+                    doFilter {
 
-                        notify("filters.empty")
-
-                    } else {
-
-                        modified = true
-                        changedCount = list.size
-
-                        filters.forEach { filter ->
-
-                            val res = sync(
-
-                                debug = true,
-                                context = "${identifier}.filter.each"
-
-                            ) { callback ->
-
-                                filter.filter(list, callback)
-
-                            } == true
-
-                            if (res) {
-
-                                notify("filtered.changed.doAddAll.callback")
-
-                            } else {
-
-                                Console.error("$tag Failed to filter data")
-                            }
-                        }
+                        notify("filter.end")
                     }
                 }
 
@@ -1296,7 +1269,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     fun refresh(
 
         from: String,
-        filters: List<FilterAsync<T>> = emptyList(),
+        filters: List<FilterAsync<T>> = defaultFilters,
         callback: ((Boolean, Int) -> Unit)? = null
 
     ) {
@@ -1394,6 +1367,44 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                                 "Changes :: None detected :: Count=$count" +
                                 ", getCollection().count=${items?.size ?: 0}"
                     )
+                }
+            }
+        }
+    }
+
+    private fun doFilter(
+
+        filters: List<FilterAsync<T>> = defaultFilters,
+        callback: () -> Unit)
+
+    {
+
+        if (filters.isEmpty()) {
+
+            callback()
+
+        } else {
+
+            filters.forEach { filter ->
+
+                val res = sync(
+
+                    debug = true,
+                    context = "${identifier}.filter.each"
+
+                ) { callback ->
+
+                    filter.filter(list, callback)
+
+                } == true
+
+                if (res) {
+
+                    callback()
+
+                } else {
+
+                    Console.error("$tag Failed to filter data")
                 }
             }
         }
