@@ -48,7 +48,12 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
     open fun onBack() {
 
-        val tag = "On back ::"
+        defaultBackClose("onBack")
+    }
+
+    fun defaultBackClose(from: String, after: (() -> Unit)? = null) {
+
+        val tag = "Do close :: From='$from' ::"
 
         Console.log("$tag START")
 
@@ -62,6 +67,21 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
         Console.log("$tag END")
 
         finishFrom("onBack")
+
+        after?.let {
+
+            val duration =
+                (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+
+            exec(
+
+                delayInMilliseconds = duration
+
+            ) {
+
+                it()
+            }
+        }
     }
 
     open fun finishFrom(from: String) {
