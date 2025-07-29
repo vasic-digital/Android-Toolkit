@@ -478,6 +478,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         what: Collection<T?>?,
         from: String,
         removeDeleted: Boolean = true,
+        skipNotifying: Boolean = false,
         filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
@@ -514,6 +515,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                     from,
                     true,
                     removeDeleted,
+                    skipNotifying,
                     filters,
                     onChange,
                     callback
@@ -528,6 +530,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
+        skipNotifying: Boolean = false,
         filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
@@ -536,7 +539,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         exec {
 
-            doAddAllAndFilter(what, from, replace, removeDeleted, filters, onChange, callback)
+            doAddAllAndFilter(what, from, replace, removeDeleted, skipNotifying, filters, onChange, callback)
         }
     }
 
@@ -828,6 +831,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
+        skipNotifying: Boolean = false,
         filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
@@ -998,9 +1002,12 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                         }
                     }
 
-                    doFilter {
+                    doFilter(filters) {
 
-                        notify("filter.end")
+                        if (!skipNotifying) {
+
+                            notify("filter.end")
+                        }
                     }
                 }
 
@@ -1302,26 +1309,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
     }
 
-    fun hasChangedAt(position: Int): Boolean {
-
-        val item = get(position)
-
-        item?.let {
-
-            val identifier = identifierObtainer.obtain(it)
-            val changed = changedIdentifiers.contains(identifier)
-
-            if (DEBUG.get()) {
-
-                Console.log("Has changed at :: Position=$position")
-            }
-
-            return changed
-        }
-
-        return false
-    }
-
     private fun onDataPushed(pushContext: String, data: DataPushResult) {
 
         if (DEBUG.get()) {
@@ -1409,4 +1396,24 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
     }
+
+    //    fun hasChangedAt(position: Int): Boolean {
+    //
+    //        val item = get(position)
+    //
+    //        item?.let {
+    //
+    //            val identifier = identifierObtainer.obtain(it)
+    //            val changed = changedIdentifiers.contains(identifier)
+    //
+    //            if (DEBUG.get()) {
+    //
+    //                Console.log("Has changed at :: Position=$position")
+    //            }
+    //
+    //            return changed
+    //        }
+    //
+    //        return false
+    //    }
 }
