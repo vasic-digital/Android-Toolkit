@@ -70,6 +70,9 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         after?.let {
 
+            /*
+            * TODO: Move this repeating snippet into extension function or some helper method
+            */
             val duration =
                 (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
 
