@@ -8,7 +8,6 @@ import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 
 class DefaultListWrapper<T, I>(

@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.app.BackgroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -83,17 +84,13 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication>
-
-{
+    ContextAvailability<BaseApplication> {
 
     companion object :
 
         Intentional,
         ApplicationInfo,
-        ContextAvailability<BaseApplication>
-
-    {
+        ContextAvailability<BaseApplication> {
 
         val DEBUG = AtomicBoolean()
         val STRICT_MODE_DISABLED = AtomicBoolean()
@@ -252,7 +249,6 @@ abstract class BaseApplication :
     protected val managersReady = AtomicBoolean()
     protected val audioFocusTag = "Audio focus ::"
 
-    private val updatingTag = "Updating ::"
     private var secretKey: SecretKey? = null
     private val updating = AtomicBoolean()
     private val updatingTag = "Updating ::"

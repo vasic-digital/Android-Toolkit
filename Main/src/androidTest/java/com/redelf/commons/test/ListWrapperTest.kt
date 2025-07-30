@@ -15,7 +15,6 @@ import com.redelf.commons.test.test_data.Purgable
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger

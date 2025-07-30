@@ -8,7 +8,6 @@ import com.redelf.commons.destruction.reset.ResettableParametrized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicBoolean
 
