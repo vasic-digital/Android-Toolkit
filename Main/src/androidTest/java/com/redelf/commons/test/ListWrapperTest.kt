@@ -6,14 +6,17 @@ import com.redelf.commons.data.wrapper.list.ListWrapperManager
 import com.redelf.commons.extensions.GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.logging.Console
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.test.test_data.Purgable
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -70,11 +73,11 @@ class ListWrapperTest : BaseTest() {
 
                         val pushed = AtomicInteger()
 
-                        val onDataPushed = object : OnObtain<Boolean?> {
+                        val onDataPushed = object : OnObtain<DataPushResult?> {
 
-                            override fun onCompleted(data: Boolean?) {
+                            override fun onCompleted(data: DataPushResult?) {
 
-                                if (data == true) {
+                                if (data?.success == true) {
 
                                     pushed.incrementAndGet()
 
@@ -146,7 +149,7 @@ class ListWrapperTest : BaseTest() {
 
                                 Assert.assertTrue(added == true)
 
-                                val pushed = manager?.pushData(vWrapper) == true
+                                val pushed = manager?.pushData("test", vWrapper, true) == true
 
                                 Assert.assertTrue(pushed)
 
@@ -632,9 +635,9 @@ class ListWrapperTest : BaseTest() {
         collection: MutableList<Purgable<Int>>,
         onUI: Boolean = true,
         expectedSize: Int = collection.size,
-        onDataPushed: OnObtain<Boolean?>? = null
+        onDataPushed: OnObtain<DataPushResult?>? = null,
 
-    ): DefaultListWrapper<Purgable<Int>> {
+        ): DefaultListWrapper<Purgable<Int>, Int> {
 
         val wrapper = DefaultListWrapper(
 
@@ -644,11 +647,19 @@ class ListWrapperTest : BaseTest() {
             onDataPushed = onDataPushed,
             identifier = "test.${System.currentTimeMillis()}",
 
-            creator = object : Obtain<VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>> {
+            identifierObtainer = object : ObtainParametrized<Int, Purgable<Int>> {
 
-                override fun obtain(): VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>> {
+                override fun obtain(param: Purgable<Int>): Int {
 
-                    val collection = CopyOnWriteArrayList(collection)
+                    return param.getId() ?: 0
+                }
+            },
+
+            creator = object : Obtain<VersionableWrapper<CopyOnWriteArraySet<Purgable<Int>>>> {
+
+                override fun obtain(): VersionableWrapper<CopyOnWriteArraySet<Purgable<Int>>> {
+
+                    val collection = CopyOnWriteArraySet(collection)
 
                     return VersionableWrapper(collection)
                 }
@@ -665,7 +676,7 @@ class ListWrapperTest : BaseTest() {
         return wrapper
     }
 
-    private fun getManager(wrapper: DefaultListWrapper<Purgable<Int>>): ListWrapperManager<Purgable<Int>>? {
+    private fun getManager(wrapper: DefaultListWrapper<Purgable<Int>, Int>): ListWrapperManager<Purgable<Int>>? {
 
         val manager = wrapper.getManager()
 
@@ -674,7 +685,7 @@ class ListWrapperTest : BaseTest() {
         return manager
     }
 
-    private fun getVersionableWrapper(wrapper: DefaultListWrapper<Purgable<Int>>): VersionableWrapper<CopyOnWriteArrayList<Purgable<Int>>>? {
+    private fun getVersionableWrapper(wrapper: DefaultListWrapper<Purgable<Int>, Int>): VersionableWrapper<CopyOnWriteArraySet<Purgable<Int>>>? {
 
         val manager = getManager(wrapper)
 

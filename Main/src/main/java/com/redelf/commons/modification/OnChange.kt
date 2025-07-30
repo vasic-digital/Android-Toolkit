@@ -2,5 +2,5 @@ package com.redelf.commons.modification
 
 interface OnChange : OnChangeStarted {
 
-    fun onChange(action: String): Boolean
+    fun onChange(notify: Boolean, action: String): Boolean
 }

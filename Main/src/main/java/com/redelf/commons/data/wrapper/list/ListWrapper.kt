@@ -3,13 +3,15 @@ package com.redelf.commons.data.wrapper.list
 import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
+import com.redelf.commons.extensions.addAt
+import com.redelf.commons.extensions.getAtIndex
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.removeAt
 import com.redelf.commons.extensions.sync
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.filtering.FilterAsync
-import com.redelf.commons.filtering.FilterResult
 import com.redelf.commons.lifecycle.initialization.InitializedCheck
 import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.logging.Console
@@ -17,25 +19,36 @@ import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.modification.OnChangeCompleted
 import com.redelf.commons.obtain.Obtain
+import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
-import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
-open class ListWrapper<T, M : DataManagement<*>>(
+/*
+* TODO: Code cleanup and improvements needed ...
+*/
+open class ListWrapper<T, I, M : DataManagement<*>>(
 
     val identifier: String,
     val environment: String = "default",
 
     private val dataAccess: DataAccess<T, M>? = null,
+    private val identifierObtainer: ObtainParametrized<I, T>,
     private val onUi: Boolean,
     private var onChange: OnChangeCompleted? = null,
-    private val onDataPushed: OnObtain<DataPushResult?>? = null
+    private val onDataPushed: OnObtain<DataPushResult?>? = null,
+    private val defaultFilters: List<FilterAsync<T>> = emptyList(),
 
-) : BusyCheck, InitializedCheck, TerminationSynchronized {
+    /*
+    * FIXME: Make this work properly and cover with the tests
+    */
+    trackPerItemChanges: Boolean = false,
+
+    ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
     companion object {
 
@@ -43,7 +56,40 @@ open class ListWrapper<T, M : DataManagement<*>>(
     }
 
     private val busy = AtomicBoolean()
-    private val list: CopyOnWriteArrayList<T> = CopyOnWriteArrayList()
+
+    private val filteringInProgress = AtomicBoolean()
+    private val changedIdentifiers = CopyOnWriteArraySet<I>()
+    private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
+    private val lastCopy: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
+
+    private val comparatorIdentifierObtainer = object : ObtainParametrized<I?, Int> {
+
+        override fun obtain(param: Int): I? {
+
+            val item = get(param)
+
+            item?.let {
+
+                return identifierObtainer.obtain(it)
+            }
+
+            return null
+        }
+    }
+
+    private val comparator: CollectionChangesTracker<T, I>? = if (trackPerItemChanges) {
+
+        CollectionChangesTracker(
+
+            identifier,
+            list,
+            lastCopy,
+            comparatorIdentifierObtainer,
+            changedIdentifiers
+        )
+
+    } else null
+
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
@@ -53,9 +99,14 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
             override fun onCompleted(data: DataPushResult?) {
 
+                if (DEBUG.get()) {
+
+                    Console.log("$tag Data push listener :: Push from = '$${data?.pushFrom}'")
+                }
+
                 if (data?.success == true) {
 
-                    onDataPushed("dataPushListener", data)
+                    onDataPushed("dataPushListener.${data.pushFrom}", data)
 
                 } else {
 
@@ -129,24 +180,11 @@ open class ListWrapper<T, M : DataManagement<*>>(
                 getManager()?.registerDataPushListener(it)
             }
 
-            linkedManagersDataPushListener?.let {
-
-                getLinkedManagers()?.forEach { manager ->
-
-                    manager.obtain().registerDataPushListener(it)
-                }
-            }
+            registerLinkedManagersDataPushListener()
 
             val action = "init"
             val from = action
             val items = getCollection(from)
-
-            if (items == null || items.isEmpty()) {
-
-                initialized.set(true)
-
-                return@exec
-            }
 
             replaceAllAndFilter(items, from) { modified, count ->
 
@@ -160,7 +198,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             "$tag Init :: " +
                                     "Changes :: Detected :: Count=$count" +
-                                    ", getCollection().count=${items.size}"
+                                    ", getCollection().count=${items?.size}"
                         )
                     }
 
@@ -174,7 +212,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                             "$tag Init :: " +
                                     "Changes :: None detected :: Count=$count" +
-                                    ", getCollection().count=${items.size}"
+                                    ", getCollection().count=${items?.size}"
                         )
                     }
                 }
@@ -200,7 +238,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         try {
 
-            return dataAccess?.linkedManagers
+            return dataAccess?.linkedManagers?.obtain()
 
         } catch (e: Throwable) {
 
@@ -230,11 +268,24 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         linkedManagersDataPushListener?.let {
 
-            getLinkedManagers()?.forEach { manager ->
+            val linkedManagers = getLinkedManagers()
 
-                manager.obtain().unregisterDataPushListener(it)
+            linkedManagers?.forEach { manager ->
+
+                try {
+
+                    manager.obtain().unregisterDataPushListener(it)
+
+                } catch (e: Throwable) {
+
+                    recordException(e)
+
+                    success = false
+                }
             }
         }
+
+        comparator?.clear()
 
         return success
     }
@@ -250,6 +301,26 @@ open class ListWrapper<T, M : DataManagement<*>>(
     fun isEmpty(): Boolean {
 
         return isEmpty("isEmpty")
+    }
+
+    protected fun registerLinkedManagersDataPushListener() {
+
+        linkedManagersDataPushListener?.let {
+
+            val linkedManagers = getLinkedManagers()
+
+            linkedManagers?.forEach { manager ->
+
+                try {
+
+                    manager.obtain().registerDataPushListener(it)
+
+                } catch (e: Throwable) {
+
+                    recordException(e)
+                }
+            }
+        }
     }
 
     private fun isEmpty(from: String): Boolean {
@@ -272,7 +343,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     fun get(index: Int): T? {
 
-        return list[index]
+        return list.getAtIndex(index)
     }
 
     fun getLast(): T? {
@@ -317,7 +388,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doAdd(value, onChange, callback)
+            doAdd(value, false, onChange, callback)
         }
     }
 
@@ -334,7 +405,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doRemove(index, onChange, callback)
+            doRemove(index, false, onChange, callback)
         }
     }
 
@@ -351,7 +422,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doRemove(what, onChange, callback)
+            doRemove(what, false, onChange, callback)
         }
     }
 
@@ -365,11 +436,11 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
     ) {
 
-        Console.log("$tag update(what='$what, where=$where), from='$from'")
+        if (DEBUG.get()) Console.log("$tag update(what='$what, where=$where), from='$from'")
 
         exec {
 
-            doUpdate(what, where, onChange, callback)
+            doUpdate(what, where, false, onChange, callback)
         }
     }
 
@@ -386,7 +457,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doRemoveAll(what, onChange, callback)
+            doRemoveAll(what, false, onChange, callback)
         }
     }
 
@@ -402,7 +473,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doClear("clear(from='$from')", onChange, callback)
+            doClear("clear(from='$from')", onChange, false, callback)
         }
     }
 
@@ -411,7 +482,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
         what: Collection<T?>?,
         from: String,
         removeDeleted: Boolean = true,
-        filters: List<FilterAsync<T>> = emptyList(),
+        skipNotifying: Boolean = false,
+        filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
@@ -421,7 +493,38 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doAddAllAndFilter(what, from, true, removeDeleted, filters, onChange, callback)
+            if (what == null || what.isEmpty()) {
+
+                val initSize = getSize()
+
+                doClear(
+
+                    from,
+                    onChange,
+                    false
+
+                ) {
+
+                    callback?.let {
+
+                        it(initSize != 0, initSize)
+                    }
+                }
+
+            } else {
+
+                doAddAllAndFilter(
+
+                    what,
+                    from,
+                    true,
+                    removeDeleted,
+                    skipNotifying,
+                    filters,
+                    onChange,
+                    callback
+                )
+            }
         }
     }
 
@@ -431,7 +534,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
-        filters: List<FilterAsync<T>> = emptyList(),
+        skipNotifying: Boolean = false,
+        filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
@@ -439,7 +543,16 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doAddAllAndFilter(what, from, replace, removeDeleted, filters, onChange, callback)
+            doAddAllAndFilter(
+                what,
+                from,
+                replace,
+                removeDeleted,
+                skipNotifying,
+                filters,
+                onChange,
+                callback
+            )
         }
     }
 
@@ -456,7 +569,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         exec {
 
-            doAddAll(what, onChange, callback)
+            doAddAll(what, false, onChange, callback)
         }
     }
 
@@ -470,15 +583,30 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         val tag = "$tag purge(from='$from')"
 
-        Console.log("$tag START")
+        if (DEBUG.get()) Console.log("$tag START")
 
         exec {
 
-            doPurge(onChange, callback)
+            doPurge(false, onChange, callback)
         }
     }
 
-    private fun notifyChanged(onChange: OnChangeCompleted? = null, action: String) {
+    private fun notifyChanged(
+
+        onChange: OnChangeCompleted? = null,
+        action: String
+
+    ) {
+
+        comparator?.run()
+
+        if (DEBUG.get()) {
+
+            Console.log(
+
+                "Notify change :: Identifiers='${changedIdentifiers.toList()}'"
+            )
+        }
 
         if (onUi) {
 
@@ -516,14 +644,23 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doAdd(
 
         value: T,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
     ) {
 
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doAdd")
+        }
+
         if (list.add(value)) {
 
-            notifyChanged(onChange, "add")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "add")
+            }
         }
 
         notifyCallback(callback)
@@ -532,14 +669,23 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doAddAll(
 
         what: Collection<T>,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
     ) {
 
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doAddAll")
+        }
+
         if (list.addAll(what)) {
 
-            notifyChanged(onChange, "addAll.${what.size}")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "addAll.${what.size}")
+            }
         }
 
         notifyCallback(callback)
@@ -549,6 +695,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         what: T,
         where: Int,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
@@ -556,16 +703,101 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         try {
 
-            if (list.removeAt(where) != null) {
+            if (!skipNotifying) {
 
-                list.add(where, what)
+                comparator?.makeCopy("doUpdate")
+            }
+
+            if (list.size > where && list.removeAt(where) != null) {
+
+                list.addAt(where, what)
 
                 if (list.elementAt(where) == what) {
 
-                    notifyChanged(onChange, "update.$where")
+                    if (!skipNotifying) {
+
+                        notifyChanged(onChange, "update.$where")
+                    }
                 }
             }
 
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        notifyCallback(callback)
+    }
+
+    private fun doUpdate(
+
+        what: T,
+        identifier: I,
+        skipNotifying: Boolean = false,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        try {
+
+            if (!skipNotifying) {
+
+                comparator?.makeCopy("doUpdate")
+            }
+
+            val toRemove = mutableListOf<T>()
+            val wId = identifierObtainer.obtain(what)
+
+            list.forEach {
+
+                val id = identifierObtainer.obtain(it)
+
+                if (id == wId) {
+
+                    toRemove.add(it)
+
+                    if (DEBUG.get()) {
+
+                        Console.log("$tag To remove on update :: Hash=${it.hashCode()}, Item=$it")
+                    }
+                }
+            }
+
+            if (toRemove.isNotEmpty()) {
+
+                val removed = list.removeAll(toRemove)
+
+                if (removed) {
+
+                    if (DEBUG.get()) {
+
+                        Console.log("$tag To remove on update :: Removed :: Count=${toRemove.size}")
+                    }
+
+                } else {
+
+                    Console.error("$tag To remove on update :: Failed :: Count=${toRemove.size}")
+                }
+            }
+
+            if (list.add(what)) {
+
+                if (DEBUG.get()) {
+
+                    Console.log("$tag To remove on update :: Added :: Hash=${what.hashCode()}, What=$what")
+                }
+
+                if (!skipNotifying) {
+
+                    notifyChanged(onChange, "update.$identifier")
+                }
+
+            } else {
+
+                Console.error("$tag To remove on update :: Not added :: Hash=${what.hashCode()}, What=$what")
+            }
 
         } catch (e: Throwable) {
 
@@ -579,15 +811,28 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         from: String,
         onChange: OnChangeCompleted? = null,
+        skipNotifying: Boolean = false,
         callback: (() -> Unit)? = null
 
     ) {
+
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doClear")
+        }
 
         list.clear()
 
         if (list.isEmpty()) {
 
-            notifyChanged(onChange, "clear(from='$from')")
+            if (!skipNotifying) {
+
+                notifyChanged(
+
+                    onChange,
+                    "clear(from='$from')",
+                )
+            }
         }
 
         notifyCallback(callback)
@@ -599,117 +844,159 @@ open class ListWrapper<T, M : DataManagement<*>>(
         from: String,
         replace: Boolean = false,
         removeDeleted: Boolean = true,
-        filters: List<FilterAsync<T>> = emptyList(),
+        skipNotifying: Boolean = false,
+        filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
         callback: ((modified: Boolean, changedCount: Int) -> Unit)? = null
 
     ) {
 
-        if (DEBUG.get()) Console.log("doAddAllAndFilter(from='$from')")
+        val from = "doAddAllAndFilter(from='$from',replace='$replace')"
 
-        fun next() {
+        if (DEBUG.get()) Console.log("$tag $from")
+
+        val doAddFrom = from
+
+        fun next(nextFrom: String) {
 
             exec {
 
                 var modified = false
                 var changedCount = 0
-                val linked = LinkedList(what ?: emptyList())
 
-                val toRemove = mutableListOf<T>()
-                val toUpdate = mutableListOf<T>()
+                if (replace) {
 
-                list.forEach { wItem ->
+                    modified = list.size != (what?.size ?: 0)
 
-                    var where = -1
-                    var found: T? = null
+                    val toAdd = mutableListOf<T>()
+                    val toRemove = mutableListOf<T>()
 
-                    linked.forEach { lItem ->
+                    toRemove.addAll(list)
 
-                        if (found == null) {
+                    what?.forEach {
 
-                            if (lItem is Number && wItem is Number) {
+                        it?.let {
 
-                                if (lItem == wItem) {
+                            toAdd.add(it)
+                        }
+                    }
 
-                                    found = lItem
+                    doReplaceAll(
 
-                                    if (lItem != wItem) {
+                        add = toAdd,
+                        remove = toRemove,
+                        skipNotifying = true
+                    )
 
-                                        where = indexOf(wItem)
+                } else {
+
+                    val linked = LinkedList(what ?: emptyList())
+
+                    val toRemove = mutableListOf<T>()
+                    val toUpdate = mutableListOf<T>()
+
+                    list.forEach { wItem ->
+
+                        var found: T? = null
+                        var identifier: I? = null
+
+                        linked.forEach { lItem ->
+
+                            if (found == null) {
+
+                                if (lItem is Number && wItem is Number) {
+
+                                    if (lItem == wItem) {
+
+                                        found = lItem
+
+                                        if (lItem != wItem) {
+
+                                            identifier = identifierObtainer.obtain(wItem)
+                                        }
                                     }
-                                }
 
-                            } else if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
+                                } else if (lItem is Identifiable<*> && wItem is Identifiable<*>) {
 
-                                if (lItem.getId() == wItem.getId()) {
+                                    if (lItem.getId() == wItem.getId()) {
 
-                                    found = lItem
+                                        found = lItem
 
-                                    if (lItem != wItem) {
+                                        if (lItem != wItem) {
 
-                                        where = indexOf(wItem)
+                                            identifier = identifierObtainer.obtain(wItem)
+                                        }
                                     }
+
+                                } else {
+
+                                    val e = IllegalArgumentException("Non-identifiable items found")
+                                    Console.warning(e)
                                 }
+                            }
+                        }
 
-                            } else {
+                        if (found != null) {
 
-                                val e = IllegalArgumentException("Non-identifiable items found")
-                                Console.warning(e)
+                            toUpdate.add(found)
+
+                            if (identifier != null) {
+
+                                doUpdate(found, identifier, true)
+                            }
+
+                        } else {
+
+                            toRemove.add(wItem)
+                        }
+                    }
+
+                    if (toRemove.isNotEmpty()) {
+
+                        modified = true
+
+                        changedCount += toRemove.size
+
+                        doRemoveAll(toRemove, true)
+                    }
+
+                    if (toUpdate.isNotEmpty()) {
+
+                        changedCount += toUpdate.size
+                    }
+
+                    linked.forEach { linked ->
+
+                        linked?.let { lkd ->
+
+                            if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
+
+                                modified = true
+
+                                changedCount++
+
+                                doAdd(lkd, true)
                             }
                         }
                     }
-
-                    if (found != null) {
-
-                        toUpdate.add(found)
-
-                        if (where > -1) {
-
-                            doUpdate(found, where)
-                        }
-
-                    } else {
-
-                        toRemove.add(wItem)
-                    }
                 }
 
-                if (toRemove.isNotEmpty()) {
+                fun filter(filteredFrom: String) {
 
-                    modified = true
-
-                    changedCount += toRemove.size
-
-                    doRemoveAll(toRemove)
-                }
-
-                if (toUpdate.isNotEmpty()) {
-
-                    changedCount += toUpdate.size
-                }
-
-                linked.forEach { linked ->
-
-                    linked?.let { lkd ->
-
-                        if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
-
-                            modified = true
-
-                            changedCount++
-
-                            doAdd(lkd)
-                        }
-                    }
-                }
-
-                fun filter() {
-
-                    fun notify() {
+                    fun notify(from: String) {
 
                         if (modified) {
 
-                            notifyChanged(onChange, "addAllAndFilter.${what?.size ?: 0}")
+                            val action = "addAllAndFilter(from='$doAddFrom')" +
+                                    ".next(from='$nextFrom')" +
+                                    ".filter(from='$filteredFrom')" +
+                                    ".notify(size=${what?.size ?: 0},from='$from')"
+
+                            notifyChanged(
+
+                                onChange,
+                                action
+                            )
                         }
 
                         callback?.let {
@@ -728,73 +1015,18 @@ open class ListWrapper<T, M : DataManagement<*>>(
                         }
                     }
 
-                    if (filters.isEmpty()) {
+                    doFilter(filters) {
 
-                        notify()
+                        if (!skipNotifying) {
 
-                    } else {
-
-                        val filtered = FilterResult(filteredItems = list, wasModified = false)
-
-                        filters.forEach { filter ->
-
-                            val res = sync(
-
-                                debug = true,
-                                context = "${identifier}.filter.each"
-
-                            ) { callback ->
-
-                                filter.filter(filtered.filteredItems, callback)
-                            }
-
-                            filtered.filteredItems.clear()
-                            filtered.filteredItems.addAll(res?.filteredItems ?: emptyList())
-
-                            filtered.changedCount.set(
-
-                                filtered.changedCount.get() + (res?.changedCount?.get() ?: 0)
-                            )
-
-                            if (!filtered.modified.get()) {
-
-                                filtered.modified.set(res?.isModified() == true)
-                            }
-                        }
-
-                        if (!modified) {
-
-                            modified = filtered.modified.get()
-                        }
-
-                        changedCount += filtered.changedCount.get()
-
-                        if (filtered != list) {
-
-                            doClear(
-
-                                "doAddAllAndFilter(from='$from," +
-                                        "filteredCount=${filtered.filteredItems.size}'," +
-                                        "originalCount=${list.size})"
-
-                            ) {
-
-                                doAddAll(filtered.filteredItems) {
-
-                                    notify()
-                                }
-                            }
-
-                        } else {
-
-                            notify()
+                            notify("filter.end")
                         }
                     }
                 }
 
                 if (removeDeleted) {
 
-                    doPurge { purgedCount ->
+                    doPurge(true) { purgedCount ->
 
                         if (purgedCount > 0) {
 
@@ -802,15 +1034,17 @@ open class ListWrapper<T, M : DataManagement<*>>(
                             changedCount += purgedCount
                         }
 
-                        filter()
+                        filter("doRemoveDeleted")
                     }
 
                 } else {
 
-                    filter()
+                    filter("doNotRemoveDeleted")
                 }
             }
         }
+
+        comparator?.makeCopy("doAddAllAndFilter.${what?.size ?: 0}.${what.hashCode()}")
 
         if (replace) {
 
@@ -818,21 +1052,24 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                 "doAddAllAndFilter(from='$from," +
                         "filteredCount=NONE'," +
-                        "originalCount=${list.size})"
+                        "originalCount=${list.size})",
+
+                skipNotifying = true
 
             ) {
 
-                next()
+                next("doClear.completed")
             }
 
         } else {
 
-            next()
+            next("doNotClear")
         }
     }
 
     private fun doPurge(
 
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: ((purgedCount: Int) -> Unit)? = null
 
@@ -848,17 +1085,15 @@ open class ListWrapper<T, M : DataManagement<*>>(
             }
         }
 
-        if (toRemove.isEmpty()) {
+        if (toRemove.isNotEmpty()) {
 
-            if (DEBUG.get()) Console.log("$tag END :: Nothing to remove")
-
-        } else {
-
-            Console.debug("$tag Removing ${toRemove.size} items")
+            if (DEBUG.get()) Console.debug("$tag Removing ${toRemove.size} items")
 
             doRemoveAll(
 
                 toRemove,
+
+                true,
 
                 onChange = object : OnChangeCompleted {
 
@@ -866,7 +1101,10 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
                         if (changed) {
 
-                            notifyChanged(onChange, "purge")
+                            if (!skipNotifying) {
+
+                                notifyChanged(onChange, "purge")
+                            }
                         }
                     }
                 }
@@ -886,14 +1124,91 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doRemoveAll(
 
         what: Collection<T>,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
     ) {
 
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doRemoveAll")
+        }
+
         if (list.removeAll(what)) {
 
-            notifyChanged(onChange, "removeAll.${what.size}")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "removeAll.${what.size}")
+            }
+        }
+
+        notifyCallback(callback)
+    }
+
+    private fun doReplaceAll(
+
+        add: Collection<T>,
+        remove: Collection<T>,
+        skipNotifying: Boolean = false,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doReplaceAll")
+        }
+
+        list.apply {
+
+            removeAll(remove)
+            addAll(add)
+        }
+
+        if (!skipNotifying) {
+
+            notifyChanged(onChange, "doReplaceAll.${remove.size}.${add.size}")
+        }
+
+        notifyCallback(callback)
+    }
+
+    private fun doRemoveAllFirsts(
+
+        what: Collection<T>,
+        skipNotifying: Boolean = false,
+        onChange: OnChangeCompleted? = null,
+        callback: (() -> Unit)? = null
+
+    ) {
+
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doRemoveAll")
+        }
+
+        val copy = mutableListOf<T>().apply {
+
+            addAll(list)
+        }
+
+        val removed = mutableListOf<T>()
+
+        copy.forEach { next ->
+
+            if (what.contains(next) && !removed.contains(next)) {
+
+                list.remove(next)
+
+                removed.add(next)
+            }
+        }
+
+        if (!skipNotifying) {
+
+            notifyChanged(onChange, "doRemoveAllFirsts.${what.size}")
         }
 
         notifyCallback(callback)
@@ -902,14 +1217,23 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doRemove(
 
         what: T,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
     ) {
 
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doRemove.item")
+        }
+
         if (list.remove(what)) {
 
-            notifyChanged(onChange, "remove")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "remove")
+            }
         }
 
         notifyCallback(callback)
@@ -918,14 +1242,23 @@ open class ListWrapper<T, M : DataManagement<*>>(
     private fun doRemove(
 
         index: Int,
+        skipNotifying: Boolean = false,
         onChange: OnChangeCompleted? = null,
         callback: (() -> Unit)? = null
 
     ) {
 
+        if (!skipNotifying) {
+
+            comparator?.makeCopy("doRemove.$index")
+        }
+
         list.removeAt(index)?.let {
 
-            notifyChanged(onChange, "remove.$index")
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "remove.$index")
+            }
         }
 
         notifyCallback(callback)
@@ -967,7 +1300,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
         }
     }
 
-    private fun getCollection(from: String): Collection<T?>? {
+    protected open fun getCollection(from: String): Collection<T?>? {
 
         if (isOnMainThread()) {
 
@@ -1008,7 +1341,7 @@ open class ListWrapper<T, M : DataManagement<*>>(
 
         } catch (e: Throwable) {
 
-            Console.log(
+            if (DEBUG.get()) Console.log(
 
                 "$tag Fet collection :: " +
                         "From='$from', getCollection().count=0, " +
@@ -1021,7 +1354,48 @@ open class ListWrapper<T, M : DataManagement<*>>(
         return null
     }
 
+    fun refresh(
+
+        from: String,
+        filters: List<FilterAsync<T>> = defaultFilters,
+        callback: ((Boolean, Int) -> Unit)? = null
+
+    ) {
+
+        exec {
+
+            if (DEBUG.get()) Console.log("$tag Refresh :: From='$from'")
+
+            val from = "refresh(from='$from')"
+            val items = getCollection(from)
+
+            replaceAllAndFilter(
+
+                from = from,
+                what = items,
+                filters = filters
+
+            ) { modified, count ->
+
+                if (modified) {
+
+                    notifyChanged(action = from)
+                }
+
+                callback?.let {
+
+                    it(modified, count)
+                }
+            }
+        }
+    }
+
     private fun onDataPushed(pushContext: String, data: DataPushResult) {
+
+        if (DEBUG.get()) {
+
+            Console.log("On data pushed :: $pushContext :: Push from = '${data.pushFrom}'")
+        }
 
         val items = getCollection("$pushContext(pushFrom='${data.pushFrom}')")
 
@@ -1033,7 +1407,8 @@ open class ListWrapper<T, M : DataManagement<*>>(
         replaceAllAndFilter(
 
             from = from,
-            what = items
+            what = items,
+            filters = defaultFilters
 
         ) { modified, count ->
 
@@ -1065,4 +1440,107 @@ open class ListWrapper<T, M : DataManagement<*>>(
             }
         }
     }
+
+    private fun doFilter(
+
+        filters: List<FilterAsync<T>> = defaultFilters,
+        callback: () -> Unit
+
+    ) {
+
+        /*
+         * FIXME:Solve the issue of parallel sorting with different sets of filters
+         */
+        if (filteringInProgress.get()) {
+
+            yieldWhile {
+
+                filteringInProgress.get()
+            }
+
+            callback()
+
+            return
+        }
+
+        filteringInProgress.set(true)
+
+        if (filters.isEmpty()) {
+
+            callback()
+
+        } else {
+
+            filters.forEach { filter ->
+
+                val res = sync(
+
+                    debug = true,
+                    context = "${identifier}.filter.each"
+
+                ) { callback ->
+
+                    filter.filter(list, callback)
+
+                } == true
+
+                if (res) {
+
+                    if (DEBUG.get()) {
+
+                        val tag = "Sorting ::"
+
+                        var first: I? = null
+                        var second: I? = null
+
+                        list.firstOrNull()?.let {
+
+                            first = identifierObtainer.obtain(it)
+                        }
+
+                        list.lastOrNull()?.let {
+
+                            second = identifierObtainer.obtain(it)
+                        }
+
+                        val sample = "$first.$second"
+
+                        Console.log(
+
+                            "$tag END :: Data sorted :: " +
+                                    "Size=${list.size} :: $sample"
+                        )
+                    }
+
+                    callback()
+
+                } else {
+
+                    Console.error("$tag Failed to filter data")
+                }
+            }
+        }
+
+        filteringInProgress.set(false)
+    }
+
+    //    fun hasChangedAt(position: Int): Boolean {
+    //
+    //        val item = get(position)
+    //
+    //        item?.let {
+    //
+    //            val identifier = identifierObtainer.obtain(it)
+    //            val changed = changedIdentifiers.contains(identifier)
+    //
+    //            if (DEBUG.get()) {
+    //
+    //                Console.log("Has changed at :: Position=$position")
+    //            }
+    //
+    //            return changed
+    //        }
+    //
+    //        return false
+    //    }
 }

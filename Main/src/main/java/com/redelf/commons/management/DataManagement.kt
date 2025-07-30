@@ -54,9 +54,7 @@ abstract class DataManagement<T> :
     Contextual<BaseApplication>,
     ResettableParametrized<String>,
     ResettableAsyncParametrized<String>,
-    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable
-
-{
+    ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
 
     companion object {
 
@@ -430,14 +428,14 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
-    fun pushData(from: String): Boolean {
+    fun pushData(from: String, notify: Boolean): Boolean {
 
         val data = obtain()
 
-        return pushData("pushData(from='$from')", data)
+        return pushData("pushData(from='$from')", data, notify)
     }
 
-    fun pushData(from: String, data: T?): Boolean {
+    fun pushData(from: String, data: T?, notify: Boolean): Boolean {
 
         if (isOnMainThread()) {
 
@@ -450,7 +448,7 @@ abstract class DataManagement<T> :
 
         return sync("${getWho()}.$from") { callback ->
 
-            pushData(data, from, callback)
+            pushData(data, from, notify, callback)
 
         }?.success == true
     }
@@ -459,6 +457,7 @@ abstract class DataManagement<T> :
 
         data: T?,
         from: String,
+        notify: Boolean,
         callback: OnObtain<DataPushResult?>?
 
     ) {
@@ -481,6 +480,7 @@ abstract class DataManagement<T> :
 
                 it,
                 from,
+                notify,
                 retry = 0,
                 callback
             )
@@ -496,6 +496,7 @@ abstract class DataManagement<T> :
 
                     it,
                     "$from.dataObjCreated",
+                    notify,
                     retry = 0,
                     callback
                 )
@@ -516,6 +517,7 @@ abstract class DataManagement<T> :
 
         data: T,
         from: String,
+        notify: Boolean,
         retry: Int = 0,
         callback: OnObtain<DataPushResult?>? = null
 
@@ -527,7 +529,10 @@ abstract class DataManagement<T> :
 
             override fun onCompleted(data: DataPushResult?) {
 
-                notifyOnPushCompleted(data)
+                if (notify) {
+
+                    notifyOnPushCompleted(data)
+                }
 
                 callback?.onCompleted(data)
             }
@@ -579,6 +584,7 @@ abstract class DataManagement<T> :
 
                             data,
                             from = "$from.retry.$retry",
+                            notify,
                             retry = retry + 1,
                             callback
                         )
@@ -795,6 +801,8 @@ abstract class DataManagement<T> :
 
                                     from = from,
 
+                                    notify = true,
+
                                     callback = object : OnObtain<DataPushResult?> {
 
                                         override fun onCompleted(data: DataPushResult?) {
@@ -1006,16 +1014,16 @@ abstract class DataManagement<T> :
             return true
         }
 
-        override fun end(): Boolean {
+        override fun end(notify: Boolean): Boolean {
 
             return sync("Transaction.end.$name") { callback ->
 
-                end(callback)
+                end(notify, callback)
 
             } ?: false
         }
 
-        override fun end(callback: OnObtain<Boolean?>) {
+        override fun end(notify: Boolean, callback: OnObtain<Boolean?>) {
 
             exec {
 
@@ -1026,6 +1034,7 @@ abstract class DataManagement<T> :
                     if (canLog) Console.warning("$tag Session: $session :: SKIPPED :: $name")
 
                     callback.onCompleted(false)
+
                     return@exec
                 }
 
@@ -1044,6 +1053,8 @@ abstract class DataManagement<T> :
                                         it,
 
                                         "transaction.end.$name",
+
+                                        notify,
 
                                         object : OnObtain<DataPushResult?> {
 

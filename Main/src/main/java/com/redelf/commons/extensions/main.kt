@@ -200,7 +200,7 @@ fun Context.getFileName(uri: Uri): String? {
 
         if (cut != -1 && cut != null) {
 
-            result = result?.substring(cut + 1)
+            result = result.substring(cut + 1)
         }
     }
 
@@ -213,6 +213,15 @@ fun Context.closeKeyboard(v: View) {
         getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
 
     inputMethodManager?.hideSoftInputFromWindow(v.applicationWindowToken, 0)
+}
+
+fun Context.showKeyboard(view: View) {
+
+    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+    view.requestFocus()
+
+    inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
 }
 
 fun Context.clearAllSharedPreferences(): Boolean {
@@ -379,7 +388,7 @@ fun onUiThread(doWhat: () -> Unit) {
 
     try {
 
-        Executor.UI.execute { doWhat() }
+        UI.execute { doWhat() }
 
     } catch (e: RejectedExecutionException) {
 
@@ -1544,6 +1553,20 @@ fun <F, S> getPair(map: LinkedTreeMap<String, Any>): Pair<F, S> {
 fun <T> Any.wrapToList(): List<T> {
 
     return mutableListOf(this as T)
+}
+
+fun <IN, OUT> List<IN>.prepack(converter: (what: IN) -> OUT): List<OUT> {
+
+    val items = mutableListOf<OUT>()
+
+    forEach { item ->
+
+        val converted = converter(item)
+
+        items.add(converted)
+    }
+
+    return items
 }
 
 fun Context.dpToPx(dp: Float): Float {

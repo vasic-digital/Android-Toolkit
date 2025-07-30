@@ -10,6 +10,6 @@ abstract class DataAccess<T, M : DataManagement<*>>(
     /*
         TODO: Introduce some nice method such as: link(manager: DataManagement<*>)
     */
-    val linkedManagers: List<Obtain<DataManagement<*>>>? = null,
+    val linkedManagers: Obtain<List<Obtain<DataManagement<*>>>>? = null,
 
 ) : Obtain<Collection<T?>?>

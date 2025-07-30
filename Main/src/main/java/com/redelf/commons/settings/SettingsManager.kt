@@ -158,6 +158,8 @@ class SettingsManager private constructor() :
 
                                 "putBoolean.$key",
 
+                                true,
+
                                 object : OnObtain<DataPushResult?> {
 
                                     override fun onCompleted(data: DataPushResult?) {
@@ -211,6 +213,8 @@ class SettingsManager private constructor() :
                                 it,
 
                                 "putString.$key",
+
+                                true,
 
                                 object : OnObtain<DataPushResult?> {
 
@@ -374,6 +378,8 @@ class SettingsManager private constructor() :
                                 it,
 
                                 "putLong.$key",
+
+                                true,
 
                                 object : OnObtain<DataPushResult?> {
 

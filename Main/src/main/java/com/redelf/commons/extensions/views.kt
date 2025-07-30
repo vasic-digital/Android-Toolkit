@@ -1,11 +1,15 @@
 package com.redelf.commons.extensions
 
+import android.animation.Animator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.text.Html
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.fasterxml.jackson.annotation.JsonCreator
@@ -14,6 +18,7 @@ import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.logging.Console
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
+import java.util.concurrent.ConcurrentHashMap
 
 data class ColoredWord @JsonCreator constructor(
 
@@ -49,7 +54,7 @@ data class ColoredText @JsonCreator constructor(
 
     companion object {
 
-        fun convert (what: ArrayList<LinkedTreeMap<String, Any>>): List<ColoredWord> {
+        fun convert(what: ArrayList<LinkedTreeMap<String, Any>>): List<ColoredWord> {
 
             val items = mutableListOf<ColoredWord>()
 
@@ -209,4 +214,116 @@ fun ImageView.circularImage(imgUrl: String, cornerRadius: Int) {
             Console.error(e)
         }
     }
+}
+
+private val refreshingRecyclerViews = ConcurrentHashMap<Int, Boolean>()
+
+@SuppressLint("NotifyDataSetChanged")
+fun RecyclerView.notifyDatasetChangedWithFade(
+
+    from: String,
+    duration: Long = 200L,
+    hasItemChanged: (position: Int) -> Boolean,
+
+) {
+
+    val thisOne = hashCode()
+
+    if (refreshingRecyclerViews[thisOne] == true) {
+
+        Console.log(
+
+            "Notify dataset changes :: $thisOne :: ${adapter?.hashCode()} :: SKIPPED :: From='$from'"
+        )
+
+        return
+    }
+
+    refreshingRecyclerViews[thisOne] = true
+
+    Console.log(
+
+        "Notify dataset changes :: $thisOne :: ${adapter?.hashCode()} :: From='$from'"
+    )
+
+    // Track which items need animation
+    val changedPositions = mutableListOf<Int>()
+
+    for (i in 0 until (adapter?.itemCount ?: 0)) {
+
+        if (hasItemChanged(i)) {
+
+            changedPositions.add(i)
+        }
+    }
+
+    // Fade out existing items
+    for (i in 0 until childCount) {
+
+        val child = getChildAt(i)
+        val pos = getChildAdapterPosition(child)
+
+        if (pos != RecyclerView.NO_POSITION && pos in changedPositions) {
+
+            getChildAt(i)
+                ?.animate()
+                ?.setDuration(duration)
+                ?.setListener(
+
+                    object : Animator.AnimatorListener {
+
+                        override fun onAnimationCancel(animation: Animator) = Unit
+
+                        override fun onAnimationEnd(animation: Animator) {
+
+                            viewTreeObserver.addOnPreDrawListener(
+
+                                object : ViewTreeObserver.OnPreDrawListener {
+
+                                    override fun onPreDraw(): Boolean {
+
+                                        if (scrollState == RecyclerView.SCROLL_STATE_IDLE) {
+
+                                            viewTreeObserver.removeOnPreDrawListener(this)
+                                            adapter?.notifyItemChanged(i)
+                                            return true
+                                        }
+
+                                        // Postpone drawing until idle
+                                        invalidate()
+
+                                        return false
+                                    }
+                                })
+                        }
+
+                        override fun onAnimationRepeat(animation: Animator) = Unit
+
+                        override fun onAnimationStart(animation: Animator) = Unit
+                    }
+                )
+                ?.start()
+        }
+    }
+
+    // After delay, fade in new items
+    postDelayed({
+
+        for (i in 0 until childCount) {
+
+            val child = getChildAt(i)
+            val pos = getChildAdapterPosition(child)
+
+            if (pos != RecyclerView.NO_POSITION && pos in changedPositions) {
+
+                getChildAt(i)?.apply {
+
+                    animate().setDuration(duration).start()
+                }
+            }
+        }
+
+        refreshingRecyclerViews[thisOne] = false
+
+    }, duration)
 }
