@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.redelf.commons.activity
+package com.redelf.commons.activity.base
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -19,7 +19,6 @@ import android.os.IBinder
 import android.text.TextUtils
 import android.util.DisplayMetrics
 import android.webkit.WebView
-import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
@@ -31,6 +30,8 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.redelf.commons.R
+import com.redelf.commons.activity.progress.ProgressActivity
+import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.fitInsideSystemBoundaries
@@ -135,7 +136,19 @@ abstract class BaseActivity :
     private val requestPhoneState = randomInteger()
     private val dialogs = mutableListOf<AlertDialog>()
     private var attachmentsDialog: AttachFileDialog? = null
-    private lateinit var backPressedCallback: OnBackPressedCallback
+
+    private val finishByClassReceiver = object : BroadcastReceiver() {
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            val clazz = intent?.getStringExtra(Broadcast.EXTRA_ACTIVITY_CLASS)
+
+            if (clazz == this@BaseActivity::class.java.name) {
+
+                finishFrom("finishByClassReceiver")
+            }
+        }
+    }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -143,6 +156,30 @@ abstract class BaseActivity :
         BaseApplication.takeContext().initTerminationListener()
 
         super.onCreate(savedInstanceState)
+
+        try {
+
+            val intent = getIntent()
+            val data = intent.data // if it was opened via a deep link, etc.
+            val action = intent.action // like ACTION_VIEW, etc.
+            val sourcePackage = intent.getStringExtra("source_package")
+            val from = intent.getStringExtra(Broadcast.EXTRA_ACTIVITY_START_FROM)// if passed explicitly
+            val caller = callingPackage
+
+            Console.log(
+
+                "Activity :: On create :: Get caller info :: " +
+                        "${this::class.simpleName} :: ${hashCode()} :: " +
+                        "Data=($data), From=($from), Action=($action), " +
+                        "Source.package=($sourcePackage), Caller=($caller)"
+            )
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+
 
         WebView(this).apply {
 
@@ -177,6 +214,11 @@ abstract class BaseActivity :
         LocalBroadcastManager.getInstance(applicationContext)
             .registerReceiver(finishReceiver, filter)
 
+        val finishByClassFilter = IntentFilter(Broadcast.ACTION_FINISH_BY_ACTIVITY_CLASS)
+
+        LocalBroadcastManager.getInstance(applicationContext)
+            .registerReceiver(finishByClassReceiver, finishByClassFilter)
+
         Console.log("Transmission management supported: ${isTransmissionServiceSupported()}")
 
         if (isTransmissionServiceSupported()) {
@@ -184,20 +226,7 @@ abstract class BaseActivity :
             initializeTransmissionManager(transmissionManagerInitCallback)
         }
 
-        backPressedCallback = object : OnBackPressedCallback(true) {
-
-            override fun handleOnBackPressed() {
-
-                onBack()
-            }
-        }
-
-        onBackPressedDispatcher.addCallback(this, backPressedCallback)
-
-        if (fitInsideSystemBoundaries) {
-
-            fitInsideSystemBoundaries()
-        }
+        fitInsideSystemBoundaries()
 
         created = true
     }
@@ -419,7 +448,8 @@ abstract class BaseActivity :
 
         if (DEBUG_RESOURCES_OVERRIDES.get()) {
 
-            val tag = "Override ready :: GET :: From = '${this::class.simpleName}.${this.hashCode()}' ::"
+            val tag =
+                "Override ready :: GET :: From = '${this::class.simpleName}.${this.hashCode()}' ::"
             val msg = "$tag Value = $ready"
 
             if (ready) {
@@ -536,7 +566,7 @@ abstract class BaseActivity :
                 }
 
                 val intent = Intent(this@BaseActivity, clazz)
-                bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+                bindService(intent, serviceConnection, BIND_AUTO_CREATE)
 
             } catch (e: IllegalStateException) {
 
@@ -562,18 +592,6 @@ abstract class BaseActivity :
     protected open fun onTransmissionManagementFailed(error: Throwable) {
 
         Console.error(error)
-    }
-
-    open fun onBack() {
-
-        Console.log("onBack()")
-
-        if (isFinishing) {
-
-            return
-        }
-
-        finish()
     }
 
     open fun showError(
@@ -775,7 +793,10 @@ abstract class BaseActivity :
         Console.log("$tag START")
 
         dismissDialogs()
+
         LocalBroadcastManager.getInstance(applicationContext).unregisterReceiver(finishReceiver)
+        LocalBroadcastManager.getInstance(applicationContext)
+            .unregisterReceiver(finishByClassReceiver)
 
         unregistrar?.unregister()
 
@@ -799,17 +820,6 @@ abstract class BaseActivity :
         Console.log("$tag END")
 
         removeActivityFromHistory()
-    }
-
-    open fun finishFrom(from: String) {
-
-        val tag = "Finish :: Activity='${this.javaClass.simpleName}' :: From='$from'"
-
-        Console.log("$tag START")
-
-        finish()
-
-        Console.log("$tag END")
     }
 
     @Deprecated("Deprecated in Java")
@@ -984,13 +994,13 @@ abstract class BaseActivity :
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
-    
+
     protected open fun onRegistrationWithGoogleCompleted(tokenId: String) {
 
         Console.log("Registration with Google completed: $tokenId")
     }
 
-    
+
     protected open fun onRegistrationWithGoogleFailed() {
 
         Console.error("Registration with Google failed")

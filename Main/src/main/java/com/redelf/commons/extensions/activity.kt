@@ -1,5 +1,6 @@
 package com.redelf.commons.extensions
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -11,6 +12,7 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
+import com.redelf.commons.activity.transition.TransitionEffects
 import com.redelf.commons.logging.Console
 
 fun Activity.fitInsideSystemBoundaries() {
@@ -40,6 +42,67 @@ fun Activity.getSystemBarsInsets(onInsetsChanged: (top: Int, bottom: Int) -> Uni
         }
 
         rootView.requestApplyInsets()
+    }
+}
+
+@Suppress("DEPRECATION")
+fun Activity.startActivityWithTransition(intent: Intent) {
+
+    val destinationClass = intent.component?.className ?: return
+
+    try {
+
+        val clazz = Class.forName(destinationClass)
+        val transition = clazz.getAnnotation(TransitionEffects::class.java)
+
+        startActivity(intent)
+
+        if (transition != null) {
+
+            val enter = getAnimationResource(transition.enter)
+            val exit = getAnimationResource(transition.exit)
+
+            overridePendingTransition(enter, exit)
+        }
+
+    } catch (e: Exception) {
+
+        recordException(e)
+
+        startActivity(intent)
+    }
+}
+
+@Suppress("DEPRECATION")
+fun Activity.finishWithTransition() {
+
+    val transition = this::class.java.getAnnotation(TransitionEffects::class.java)
+
+    finish()
+
+    if (transition != null) {
+
+        val enter = getAnimationResource(transition.enter)
+        val exit = getAnimationResource(transition.exit)
+
+        overridePendingTransition(enter, exit)
+    }
+}
+
+@SuppressLint("DiscouragedApi")
+fun Activity.getAnimationResource(animName: String): Int {
+
+    val type = "anim"
+
+    try {
+
+        return resources.getIdentifier(animName, type, packageName)
+
+    } catch (e: Throwable) {
+
+        recordException(e)
+
+        return 0
     }
 }
 

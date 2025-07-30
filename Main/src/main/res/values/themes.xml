@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="FragmentWrapper" parent="Theme.Material3.Light.NoActionBar">
+
+        <item name="android:windowLightStatusBar">true</item>
+
+        <item name="android:windowIsTranslucent">false</item>
+
+        <item name="android:windowBackground">@android:color/white</item>
+
+        <item name="colorOnPrimary">@android:color/white</item>
+
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowIsFloating">false</item>
+
+    </style>
+
+</resources>

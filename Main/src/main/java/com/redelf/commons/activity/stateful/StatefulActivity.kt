@@ -1,7 +1,7 @@
-package com.redelf.commons.activity
+package com.redelf.commons.activity.stateful
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import com.redelf.commons.activity.transition.TransitionEffectsActivity
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.fitInsideSystemBoundaries
@@ -9,7 +9,7 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscription {
+abstract class StatefulActivity : TransitionEffectsActivity(), ActivityActiveStateSubscription {
 
     protected open val fitInsideSystemBoundaries = true
     protected open val removeFromHistoryOnFinish = false
@@ -192,7 +192,8 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
 
         Console.log("$tag START")
 
-        overridePendingTransition(0, 0)
+        val hold = com.redelf.commons.R.anim.hold
+        overridePendingTransition(hold, hold)
 
         if (removeFromHistoryOnFinish) {
 
@@ -203,7 +204,11 @@ abstract class StatefulActivity : AppCompatActivity(), ActivityActiveStateSubscr
             super.finish()
         }
 
-        overridePendingTransition(0, 0)
+        if (!hasTransitionAssigned("finish")) {
+
+            val hold = com.redelf.commons.R.anim.hold
+            overridePendingTransition(hold, hold)
+        }
 
         Console.log("$tag END")
     }

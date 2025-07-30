@@ -1,4 +1,4 @@
-package com.redelf.commons.activity
+package com.redelf.commons.activity.base
 
 import android.annotation.SuppressLint
 import android.content.Intent

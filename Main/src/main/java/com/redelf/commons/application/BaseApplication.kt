@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
-import android.app.BackgroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -39,6 +38,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
+import com.redelf.commons.activity.tracking.ActivityTracker
 import com.redelf.commons.atomic.AtomicIntWrapper
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
@@ -223,6 +223,8 @@ abstract class BaseApplication :
     open val secretsKey = "com.redelf.commons.security.secrets"
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
+    val activityTracker = ActivityTracker()
+
     protected open val firebaseEnabled = true
     protected open val facebookEnabled = false
     protected open val firebaseAnalyticsEnabled = false
@@ -253,6 +255,7 @@ abstract class BaseApplication :
     private val updatingTag = "Updating ::"
     private var secretKey: SecretKey? = null
     private val updating = AtomicBoolean()
+    private val updatingTag = "Updating ::"
     private val isAppInBackground = AtomicBoolean()
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
@@ -621,6 +624,8 @@ abstract class BaseApplication :
         initFirebaseWithAnalytics()
         initFacebook()
         initializeSQLCipher()
+
+        registerActivityLifecycleCallbacks(activityTracker)
 
         prefs = SharedPreferencesStorage(applicationContext)
 

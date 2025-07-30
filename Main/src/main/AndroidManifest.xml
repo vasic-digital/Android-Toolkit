@@ -89,6 +89,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
+
         </provider>
 
         <provider
@@ -116,6 +117,16 @@
                 android:value="androidx.startup" />
 
         </provider>
+
+        <activity
+
+            android:screenOrientation="portrait"
+            android:name=".activity.transition.BackgroundActivity" />
+
+        <activity
+
+            android:screenOrientation="portrait"
+            android:name=".activity.fragment.FragmentWrapperActivity" />
 
     </application>
 
