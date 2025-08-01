@@ -8,7 +8,7 @@ import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.TerminationSynchronizedParametrized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class DataDelegate private constructor(private val facade: Facade) :
 
     ShutdownSynchronized,
-    TerminationSynchronized,
+    TerminationSynchronizedParametrized,
     InitializationWithContext {
 
     /*

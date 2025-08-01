@@ -8,7 +8,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.destruction.erasing.Erasing
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.TerminationSynchronizedParametrized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Parser
@@ -37,7 +37,7 @@ constructor(
     Erasing,
     Persistence<String>,
     ShutdownSynchronized,
-    TerminationSynchronized,
+    TerminationSynchronizedParametrized,
     InitializationWithContext
 {
 

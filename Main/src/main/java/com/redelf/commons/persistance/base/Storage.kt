@@ -2,13 +2,13 @@ package com.redelf.commons.persistance.base
 
 import com.redelf.commons.lifecycle.InitializationWithContext
 import com.redelf.commons.lifecycle.ShutdownSynchronized
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.TerminationSynchronizedParametrized
 
 /*
     FIXME: We do not need both ShutdownSynchronized and TerminationSynchronized.
        Check other the files as well!
 * */
-interface Storage<T> : ShutdownSynchronized, TerminationSynchronized, InitializationWithContext {
+interface Storage<T> : ShutdownSynchronized, TerminationSynchronizedParametrized, InitializationWithContext {
 
     fun put(key: String?, value: T): Boolean
 
