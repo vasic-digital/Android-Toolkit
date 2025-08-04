@@ -16,6 +16,8 @@ import com.redelf.commons.activity.stateful.StatefulActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.getAnimationResource
+import com.redelf.commons.extensions.getTransitionEffectDuration
+import com.redelf.commons.extensions.getTransitionEffectDurationWithPause
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.messaging.broadcast.Broadcast
@@ -70,8 +72,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         after?.let {
 
-            val duration =
-                (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+            val duration = getTransitionEffectDurationWithPause().toLong()
 
             exec(
 
@@ -240,8 +241,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                         doStartActivity("startActivity.notActive.noGroup.parent", parentIntent) {
 
-                            val duration =
-                                (resources.getInteger(R.integer.transition_effect_duration)).toLong()
+                            val duration = getTransitionEffectDuration()
 
                             exec(
 
@@ -342,15 +342,14 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
                         Console.log(
 
-                            "$tag Group parent :: Starting :: Parent='${parent?.simpleName}'"
+                            "$tag Group parent :: Starting :: Parent='${parent.simpleName}'"
                         )
 
                         doStartActivity("finish.hasParent", intent)
                     }
                 }
 
-                val duration =
-                    (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+                val duration = getTransitionEffectDurationWithPause().toLong()
 
                 next("finish.activities.empty.(expectedFinish=$expectedFinish)")
 
@@ -704,8 +703,7 @@ abstract class TransitionEffectsActivity : AppCompatActivity() {
 
         if (hasTransitionAssigned("startActivity")) {
 
-            val duration =
-                (resources.getInteger(R.integer.transition_effect_duration) * 1.5).toLong()
+            val duration = getTransitionEffectDurationWithPause().toLong()
 
             exec(
 

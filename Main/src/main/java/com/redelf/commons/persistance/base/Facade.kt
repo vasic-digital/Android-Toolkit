@@ -1,13 +1,12 @@
 package com.redelf.commons.persistance.base
 
+import com.redelf.commons.lifecycle.TerminationSynchronizedParametrized
 import com.redelf.commons.lifecycle.initialization.InitializationWithContext
 import com.redelf.commons.lifecycle.shutdown.ShutdownSynchronized
-import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.obtain.OnObtain
-
 import java.lang.reflect.Type
 
-interface Facade : ShutdownSynchronized, TerminationSynchronized, InitializationWithContext {
+interface Facade : ShutdownSynchronized, TerminationSynchronizedParametrized, InitializationWithContext {
     fun <T> put(key: String?, value: T): Boolean
 
     fun <T> get(key: String?, callback: OnObtain<T?>)

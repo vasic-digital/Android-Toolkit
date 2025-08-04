@@ -27,7 +27,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
-
 @Suppress("DEPRECATION")
 class DataDelegate private constructor(private val facade: Facade) :
 
@@ -66,9 +65,9 @@ class DataDelegate private constructor(private val facade: Facade) :
         return facade.shutdown()
     }
 
-    override fun terminate(vararg args: Any): Boolean {
+    override fun terminate(): Boolean {
 
-        return facade.terminate(*args)
+        return facade.terminate()
     }
 
 
@@ -1610,4 +1609,5 @@ class DataDelegate private constructor(private val facade: Facade) :
         }
     }
 }
+
 

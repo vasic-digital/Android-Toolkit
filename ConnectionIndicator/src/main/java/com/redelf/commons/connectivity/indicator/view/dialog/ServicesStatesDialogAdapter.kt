@@ -78,7 +78,7 @@ class ServicesStatesDialogAdapter(
 
                 } else {
 
-                    service.terminate("On dismiss")
+                    service.terminate()
 
                     logServiceTermination(service)
                 }

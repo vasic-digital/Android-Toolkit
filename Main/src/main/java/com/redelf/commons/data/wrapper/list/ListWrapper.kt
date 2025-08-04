@@ -248,7 +248,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         return null
     }
 
-    override fun terminate(vararg args: Any): Boolean {
+    override fun terminate(): Boolean {
 
         var success = true
 

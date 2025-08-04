@@ -22,6 +22,7 @@ import com.redelf.commons.security.encryption.EncryptionListener
 import java.util.concurrent.atomic.AtomicBoolean
 
 class EncryptedPersistence
+
 @Throws(IllegalArgumentException::class, IllegalStateException::class)
 constructor(
 
@@ -110,9 +111,9 @@ constructor(
         return dataDelegate?.shutdown() == true
     }
 
-    override fun terminate(vararg args: Any): Boolean {
+    override fun terminate(): Boolean {
 
-        return dataDelegate?.terminate(*args) == true
+        return dataDelegate?.terminate() == true
     }
 
     override fun initialize(ctx: Context) {

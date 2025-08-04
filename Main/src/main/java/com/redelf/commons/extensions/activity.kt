@@ -160,3 +160,13 @@ fun Activity.openUri(uri: Uri): Boolean {
 
     return false
 }
+
+fun Activity.getTransitionEffectDuration(): Long {
+
+    return (resources.getInteger(com.redelf.commons.R.integer.transition_effect_duration)).toLong()
+}
+
+fun Activity.getTransitionEffectDurationWithPause(): Double {
+
+    return getTransitionEffectDuration() * 1.1
+}
