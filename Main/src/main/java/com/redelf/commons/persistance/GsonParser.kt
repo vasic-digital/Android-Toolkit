@@ -300,7 +300,10 @@ class GsonParser private constructor(
                             )
                         }
 
-                        recordException(e)
+                        /*
+                        * FIXME: Raw persisted JSONs have to be base64 encoded / decoded [IN_PROGRESS]
+                        *  Removed line to stop spamming Crashlytics: recordException(e)
+                        */
                     }
                 }
             }
