@@ -303,9 +303,12 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     fun get(index: Int): T? {
 
-        if (list.size > index) {
+        synchronized(list) {
 
-            return list.getAtIndex(index)
+            if (list.size > index) {
+
+                return list.getAtIndex(index)
+            }
         }
 
         return null
