@@ -9,6 +9,7 @@ import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.removeAt
+import com.redelf.commons.extensions.sync
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.filtering.FilterAsync
 import com.redelf.commons.lifecycle.initialization.InitializedCheck
@@ -1043,39 +1044,36 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
 
             var success = false
-            val currentList = synchronized(list) { list.toList() }
             val filteredList = CopyOnWriteArraySet<T>()
 
-            filteredList.addAll(currentList)
+            filteredList.addAll(list)
 
-            filters.forEach { filter ->
+            filteredList.apply {
 
-                try {
+                filters.forEach { filter ->
 
-                    filter.filter(
+                    try {
 
-                        filteredList,
+                        val result = sync<Boolean?>("") { callback ->
 
-                        object : OnObtain<Boolean?> {
+                            filter.filter(
 
-                            override fun onCompleted(data: Boolean?) {
+                                filteredList,
 
-                                if (data == true) {
+                                callback
+                            )
 
-                                    success = true
-                                }
-                            }
+                        } == true
 
-                            override fun onFailure(error: Throwable) {
+                        if (!success && result) {
 
-                                recordException(error)
-                            }
+                            success = true
                         }
-                    )
 
-                } catch (e: Exception) {
+                    } catch (e: Exception) {
 
-                    recordException(e)
+                        recordException(e)
+                    }
                 }
             }
 
@@ -1088,14 +1086,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                         list.clear()
                         list.addAll(filteredList)
                     }
-
-                    callback()
                 }
-
-            } else {
-
-                callback()
             }
+
+            callback()
         }
     }
 
