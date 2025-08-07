@@ -5,5 +5,5 @@ import java.util.concurrent.CopyOnWriteArraySet
 
 interface FilterAsync<T> {
 
-    fun filter(what: CopyOnWriteArraySet<T>, callback: OnObtain<Boolean?>)
+    fun filter(what: MutableList<T>, callback: OnObtain<Boolean?>)
 }

@@ -3,13 +3,9 @@ package com.redelf.commons.data.wrapper.list
 import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
-import com.redelf.commons.extensions.addAt
-import com.redelf.commons.extensions.getAtIndex
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.removeAt
-import com.redelf.commons.extensions.sync
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.filtering.FilterAsync
 import com.redelf.commons.lifecycle.initialization.InitializedCheck
@@ -23,10 +19,12 @@ import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
-import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.Collections
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /*
 * TODO: Code cleanup and improvements needed ...
@@ -46,52 +44,55 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     /*
     * FIXME: Make this work properly and cover with the tests
     */
-    trackPerItemChanges: Boolean = false,
+    // trackPerItemChanges: Boolean = false,
 
-    ) : BusyCheck, InitializedCheck, TerminationSynchronized {
+) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
     companion object {
 
         val DEBUG = AtomicBoolean()
     }
 
+    private val filterMutex = Any()
     private val busy = AtomicBoolean()
+    private val operationMutex = Any()
+    private val version = AtomicLong(0)
+    private val executor: ExecutorService = Executors.newFixedThreadPool(1)
+    private val list: MutableList<T> = Collections.synchronizedList(mutableListOf())
 
-    private val filteringInProgress = AtomicBoolean()
-    private val changedIdentifiers = CopyOnWriteArraySet<I>()
-    private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
-    private val lastCopy: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
+    //    private val changedIdentifiers = CopyOnWriteArraySet<I>()
+    //    private val lastCopy: MutableList<T> = Collections.synchronizedList(mutableListOf())
+    //
+    //    private val comparatorIdentifierObtainer = object : ObtainParametrized<I?, Int> {
+    //
+    //        override fun obtain(param: Int): I? {
+    //
+    //            val item = get(param)
+    //
+    //            item?.let {
+    //
+    //                return identifierObtainer.obtain(it)
+    //            }
+    //
+    //            return null
+    //        }
+    //    }
+    //
+    //    private val comparator: CollectionChangesTracker<T, I>? = if (trackPerItemChanges) {
+    //
+    //        CollectionChangesTracker(
+    //
+    //            identifier,
+    //            list,
+    //            lastCopy,
+    //            comparatorIdentifierObtainer,
+    //            changedIdentifiers
+    //        )
+    //
+    //    } else null
 
-    private val comparatorIdentifierObtainer = object : ObtainParametrized<I?, Int> {
-
-        override fun obtain(param: Int): I? {
-
-            val item = get(param)
-
-            item?.let {
-
-                return identifierObtainer.obtain(it)
-            }
-
-            return null
-        }
-    }
-
-    private val comparator: CollectionChangesTracker<T, I>? = if (trackPerItemChanges) {
-
-        CollectionChangesTracker(
-
-            identifier,
-            list,
-            lastCopy,
-            comparatorIdentifierObtainer,
-            changedIdentifiers
-        )
-
-    } else null
 
     private val initialized = AtomicBoolean(dataAccess == null)
-    private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
     private val dataPushListener: OnObtain<DataPushResult?>? = if (dataAccess != null) {
 
@@ -285,7 +286,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
 
-        comparator?.clear()
+//        comparator?.clear()
 
         return success
     }
@@ -343,7 +344,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     fun get(index: Int): T? {
 
-        return list.getAtIndex(index)
+        return list.get(index)
     }
 
     fun getLast(): T? {
@@ -594,26 +595,22 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private fun notifyChanged(
 
         onChange: OnChangeCompleted? = null,
-        action: String
+        action: String,
+        //        changes: List<Pair<Int, T>>? = null
 
     ) {
 
-        comparator?.run()
-
-        if (DEBUG.get()) {
-
-            Console.log(
-
-                "Notify change :: Identifiers='${changedIdentifiers.toList()}'"
-            )
-        }
+        val currentVersion = version.incrementAndGet()
 
         if (onUi) {
 
             onUiThread {
 
-                onChange?.onChange(action, true)
-                this@ListWrapper.onChange?.onChange(action, true)
+                if (version.get() == currentVersion) {
+
+                    onChange?.onChange(action, true)
+                    this@ListWrapper.onChange?.onChange(action, true)
+                }
             }
 
         } else {
@@ -622,6 +619,28 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             this@ListWrapper.onChange?.onChange(action, true)
         }
     }
+
+//    private fun calculateDiff(newItems: List<T>): DiffUtil.DiffResult {
+//
+//        return DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+//
+//            override fun getOldListSize(): Int = list.size
+//
+//            override fun getNewListSize(): Int = newItems.size
+//
+//            override fun areItemsTheSame(oldPos: Int, newPos: Int): Boolean {
+//
+//                val oldItem = list[oldPos]
+//                val newItem = newItems[newPos]
+//                return identifierObtainer.obtain(oldItem) == identifierObtainer.obtain(newItem)
+//            }
+//
+//            override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
+//
+//                return list[oldPos] == newItems[newPos]
+//            }
+//        })
+//    }
 
     private fun notifyCallback(callback: (() -> Unit)?) {
 
@@ -650,10 +669,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (!skipNotifying) {
-
-            comparator?.makeCopy("doAdd")
-        }
+//        if (!skipNotifying) {
+//
+//            comparator?.makeCopy("doAdd")
+//        }
 
         if (list.add(value)) {
 
@@ -675,10 +694,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (!skipNotifying) {
-
-            comparator?.makeCopy("doAddAll")
-        }
+//        if (!skipNotifying) {
+//
+//            comparator?.makeCopy("doAddAll")
+//        }
 
         if (list.addAll(what)) {
 
@@ -703,14 +722,14 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         try {
 
-            if (!skipNotifying) {
-
-                comparator?.makeCopy("doUpdate")
-            }
+//            if (!skipNotifying) {
+//
+//                comparator?.makeCopy("doUpdate")
+//            }
 
             if (list.size > where && list.removeAt(where) != null) {
 
-                list.addAt(where, what)
+                list.add(where, what)
 
                 if (list.elementAt(where) == what) {
 
@@ -742,10 +761,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         try {
 
-            if (!skipNotifying) {
-
-                comparator?.makeCopy("doUpdate")
-            }
+//            if (!skipNotifying) {
+//
+//                comparator?.makeCopy("doUpdate")
+//            }
 
             val toRemove = mutableListOf<T>()
             val wId = identifierObtainer.obtain(what)
@@ -816,10 +835,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (!skipNotifying) {
-
-            comparator?.makeCopy("doClear")
-        }
+//        if (!skipNotifying) {
+//
+//            comparator?.makeCopy("doClear")
+//        }
 
         list.clear()
 
@@ -1044,7 +1063,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
 
-        comparator?.makeCopy("doAddAllAndFilter.${what?.size ?: 0}.${what.hashCode()}")
+        // comparator?.makeCopy("doAddAllAndFilter.${what?.size ?: 0}.${what.hashCode()}")
 
         if (replace) {
 
@@ -1064,6 +1083,65 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         } else {
 
             next("doNotClear")
+        }
+    }
+
+    private fun doFilter(
+
+        filters: List<FilterAsync<T>> = defaultFilters,
+        callback: () -> Unit
+
+    ) {
+
+        synchronized(filterMutex) {
+
+            if (filters.isEmpty()) {
+
+                callback()
+
+                return@synchronized
+            }
+
+            val currentList = synchronized(list) { list.toList() }
+            val filteredList = currentList.toMutableList()
+
+            filters.forEach { filter ->
+
+                try {
+
+                    filter.filter(
+
+                        filteredList,
+
+                        object : OnObtain<Boolean?> {
+
+                            override fun onCompleted(data: Boolean?) {
+
+                                if (data == true) {
+
+                                    synchronized(list) {
+
+                                        list.clear()
+                                        list.addAll(filteredList)
+                                    }
+
+                                }
+                            }
+
+                            override fun onFailure(error: Throwable) {
+
+                                recordException(error)
+                            }
+                        }
+                    )
+
+                } catch (e: Exception) {
+
+                    recordException(e)
+                }
+            }
+
+            callback()
         }
     }
 
@@ -1130,10 +1208,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (!skipNotifying) {
-
-            comparator?.makeCopy("doRemoveAll")
-        }
+        //        if (!skipNotifying) {
+        //
+        //            comparator?.makeCopy("doRemoveAll")
+        //        }
 
         if (list.removeAll(what)) {
 
@@ -1156,10 +1234,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (!skipNotifying) {
-
-            comparator?.makeCopy("doReplaceAll")
-        }
+//        if (!skipNotifying) {
+//
+//            comparator?.makeCopy("doReplaceAll")
+//        }
 
         list.apply {
 
@@ -1184,10 +1262,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (!skipNotifying) {
-
-            comparator?.makeCopy("doRemoveAll")
-        }
+        //        if (!skipNotifying) {
+        //
+        //            comparator?.makeCopy("doRemoveAll")
+        //        }
 
         val copy = mutableListOf<T>().apply {
 
@@ -1223,10 +1301,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (!skipNotifying) {
-
-            comparator?.makeCopy("doRemove.item")
-        }
+//        if (!skipNotifying) {
+//
+//            comparator?.makeCopy("doRemove.item")
+//        }
 
         if (list.remove(what)) {
 
@@ -1248,10 +1326,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        if (!skipNotifying) {
-
-            comparator?.makeCopy("doRemove.$index")
-        }
+//        if (!skipNotifying) {
+//
+//            comparator?.makeCopy("doRemove.$index")
+//        }
 
         list.removeAt(index)?.let {
 
@@ -1275,7 +1353,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 try {
 
-                    what()
+                    synchronized(operationMutex) {
+
+                        what()
+                    }
 
                 } catch (e: Throwable) {
 
@@ -1439,89 +1520,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 }
             }
         }
-    }
-
-    private fun doFilter(
-
-        filters: List<FilterAsync<T>> = defaultFilters,
-        callback: () -> Unit
-
-    ) {
-
-        /*
-         * FIXME:Solve the issue of parallel sorting with different sets of filters
-         */
-        if (filteringInProgress.get()) {
-
-            yieldWhile {
-
-                filteringInProgress.get()
-            }
-
-            callback()
-
-            return
-        }
-
-        filteringInProgress.set(true)
-
-        if (filters.isEmpty()) {
-
-            callback()
-
-        } else {
-
-            filters.forEach { filter ->
-
-                val res = sync(
-
-                    debug = true,
-                    context = "${identifier}.filter.each"
-
-                ) { callback ->
-
-                    filter.filter(list, callback)
-
-                } == true
-
-                if (res) {
-
-                    if (DEBUG.get()) {
-
-                        val tag = "Sorting ::"
-
-                        var first: I? = null
-                        var second: I? = null
-
-                        list.firstOrNull()?.let {
-
-                            first = identifierObtainer.obtain(it)
-                        }
-
-                        list.lastOrNull()?.let {
-
-                            second = identifierObtainer.obtain(it)
-                        }
-
-                        val sample = "$first.$second"
-
-                        Console.log(
-
-                            "$tag END :: Data sorted :: " +
-                                    "Size=${list.size} :: $sample"
-                        )
-                    }
-
-                    callback()
-
-                } else {
-
-                    Console.error("$tag Failed to filter data")
-                }
-            }
-        }
-
-        filteringInProgress.set(false)
     }
 
     //    fun hasChangedAt(position: Int): Boolean {
