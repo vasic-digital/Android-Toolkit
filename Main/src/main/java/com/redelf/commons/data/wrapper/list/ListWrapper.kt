@@ -3,9 +3,12 @@ package com.redelf.commons.data.wrapper.list
 import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
+import com.redelf.commons.extensions.addAt
+import com.redelf.commons.extensions.getAtIndex
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.removeAt
 import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.filtering.FilterAsync
 import com.redelf.commons.lifecycle.initialization.InitializedCheck
@@ -20,15 +23,11 @@ import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.Collections
-import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
-/*
-* TODO: Code cleanup and improvements needed ...
-*/
 open class ListWrapper<T, I, M : DataManagement<*>>(
 
     val identifier: String,
@@ -41,12 +40,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val onDataPushed: OnObtain<DataPushResult?>? = null,
     private val defaultFilters: List<FilterAsync<T>> = emptyList(),
 
-    /*
-    * FIXME: Make this work properly and cover with the tests
-    */
-    // trackPerItemChanges: Boolean = false,
-
-) : BusyCheck, InitializedCheck, TerminationSynchronized {
+    ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
     companion object {
 
@@ -57,42 +51,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val busy = AtomicBoolean()
     private val operationMutex = Any()
     private val version = AtomicLong(0)
-    private val executor: ExecutorService = Executors.newFixedThreadPool(1)
-    private val list: MutableList<T> = Collections.synchronizedList(mutableListOf())
-
-    //    private val changedIdentifiers = CopyOnWriteArraySet<I>()
-    //    private val lastCopy: MutableList<T> = Collections.synchronizedList(mutableListOf())
-    //
-    //    private val comparatorIdentifierObtainer = object : ObtainParametrized<I?, Int> {
-    //
-    //        override fun obtain(param: Int): I? {
-    //
-    //            val item = get(param)
-    //
-    //            item?.let {
-    //
-    //                return identifierObtainer.obtain(it)
-    //            }
-    //
-    //            return null
-    //        }
-    //    }
-    //
-    //    private val comparator: CollectionChangesTracker<T, I>? = if (trackPerItemChanges) {
-    //
-    //        CollectionChangesTracker(
-    //
-    //            identifier,
-    //            list,
-    //            lastCopy,
-    //            comparatorIdentifierObtainer,
-    //            changedIdentifiers
-    //        )
-    //
-    //    } else null
-
-
+    private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
     private val initialized = AtomicBoolean(dataAccess == null)
+    private val executor: ExecutorService = Executors.newFixedThreadPool(1)
 
     private val dataPushListener: OnObtain<DataPushResult?>? = if (dataAccess != null) {
 
@@ -286,8 +247,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
 
-//        comparator?.clear()
-
         return success
     }
 
@@ -344,7 +303,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     fun get(index: Int): T? {
 
-        return list.get(index)
+        return list.getAtIndex(index)
     }
 
     fun getLast(): T? {
@@ -389,7 +348,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         exec {
 
-            doAdd(value, false, onChange, callback)
+            synchronized(list) {
+
+                doAdd(value, false, onChange, callback)
+            }
         }
     }
 
@@ -595,8 +557,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private fun notifyChanged(
 
         onChange: OnChangeCompleted? = null,
-        action: String,
-        //        changes: List<Pair<Int, T>>? = null
+        action: String
 
     ) {
 
@@ -619,28 +580,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             this@ListWrapper.onChange?.onChange(action, true)
         }
     }
-
-//    private fun calculateDiff(newItems: List<T>): DiffUtil.DiffResult {
-//
-//        return DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-//
-//            override fun getOldListSize(): Int = list.size
-//
-//            override fun getNewListSize(): Int = newItems.size
-//
-//            override fun areItemsTheSame(oldPos: Int, newPos: Int): Boolean {
-//
-//                val oldItem = list[oldPos]
-//                val newItem = newItems[newPos]
-//                return identifierObtainer.obtain(oldItem) == identifierObtainer.obtain(newItem)
-//            }
-//
-//            override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
-//
-//                return list[oldPos] == newItems[newPos]
-//            }
-//        })
-//    }
 
     private fun notifyCallback(callback: (() -> Unit)?) {
 
@@ -669,11 +608,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-//        if (!skipNotifying) {
-//
-//            comparator?.makeCopy("doAdd")
-//        }
-
         if (list.add(value)) {
 
             if (!skipNotifying) {
@@ -694,20 +628,18 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-//        if (!skipNotifying) {
-//
-//            comparator?.makeCopy("doAddAll")
-//        }
+        synchronized(list) {
 
-        if (list.addAll(what)) {
+            if (list.addAll(what)) {
 
-            if (!skipNotifying) {
+                if (!skipNotifying) {
 
-                notifyChanged(onChange, "addAll.${what.size}")
+                    notifyChanged(onChange, "addAll.${what.size}")
+                }
             }
-        }
 
-        notifyCallback(callback)
+            notifyCallback(callback)
+        }
     }
 
     private fun doUpdate(
@@ -720,33 +652,33 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        try {
+        synchronized(list) {
 
-//            if (!skipNotifying) {
-//
-//                comparator?.makeCopy("doUpdate")
-//            }
+            try {
 
-            if (list.size > where && list.removeAt(where) != null) {
+                list.apply {
 
-                list.add(where, what)
+                    if (list.size > where && list.removeAt(where) != null) {
 
-                if (list.elementAt(where) == what) {
+                        list.addAt(where, what)
 
-                    if (!skipNotifying) {
+                        if (list.elementAt(where) == what) {
 
-                        notifyChanged(onChange, "update.$where")
+                            if (!skipNotifying) {
+
+                                notifyChanged(onChange, "update.$where")
+                            }
+                        }
                     }
                 }
+
+            } catch (e: Throwable) {
+
+                recordException(e)
             }
 
-
-        } catch (e: Throwable) {
-
-            recordException(e)
+            notifyCallback(callback)
         }
-
-        notifyCallback(callback)
     }
 
     private fun doUpdate(
@@ -759,71 +691,72 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        try {
+        synchronized(list) {
 
-//            if (!skipNotifying) {
-//
-//                comparator?.makeCopy("doUpdate")
-//            }
+            try {
 
-            val toRemove = mutableListOf<T>()
-            val wId = identifierObtainer.obtain(what)
+                val toRemove = mutableListOf<T>()
+                val wId = identifierObtainer.obtain(what)
 
-            list.forEach {
+                list.apply {
 
-                val id = identifierObtainer.obtain(it)
+                    list.forEach {
 
-                if (id == wId) {
+                        val id = identifierObtainer.obtain(it)
 
-                    toRemove.add(it)
+                        if (id == wId) {
 
-                    if (DEBUG.get()) {
+                            toRemove.add(it)
 
-                        Console.log("$tag To remove on update :: Hash=${it.hashCode()}, Item=$it")
-                    }
-                }
-            }
+                            if (DEBUG.get()) {
 
-            if (toRemove.isNotEmpty()) {
-
-                val removed = list.removeAll(toRemove)
-
-                if (removed) {
-
-                    if (DEBUG.get()) {
-
-                        Console.log("$tag To remove on update :: Removed :: Count=${toRemove.size}")
+                                Console.log("$tag To remove on update :: Hash=${it.hashCode()}, Item=$it")
+                            }
+                        }
                     }
 
-                } else {
+                    if (toRemove.isNotEmpty()) {
 
-                    Console.error("$tag To remove on update :: Failed :: Count=${toRemove.size}")
+                        val removed = list.removeAll(toRemove)
+
+                        if (removed) {
+
+                            if (DEBUG.get()) {
+
+                                Console.log("$tag To remove on update :: Removed :: Count=${toRemove.size}")
+                            }
+
+                        } else {
+
+                            Console.error("$tag To remove on update :: Failed :: Count=${toRemove.size}")
+                        }
+                    }
+
+                    if (list.add(what)) {
+
+                        if (DEBUG.get()) {
+
+                            Console.log("$tag To remove on update :: Added :: Hash=${what.hashCode()}, What=$what")
+                        }
+
+                        if (!skipNotifying) {
+
+                            notifyChanged(onChange, "update.$identifier")
+                        }
+
+                    } else {
+
+                        Console.error("$tag To remove on update :: Not added :: Hash=${what.hashCode()}, What=$what")
+                    }
                 }
+
+            } catch (e: Throwable) {
+
+                recordException(e)
             }
 
-            if (list.add(what)) {
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag To remove on update :: Added :: Hash=${what.hashCode()}, What=$what")
-                }
-
-                if (!skipNotifying) {
-
-                    notifyChanged(onChange, "update.$identifier")
-                }
-
-            } else {
-
-                Console.error("$tag To remove on update :: Not added :: Hash=${what.hashCode()}, What=$what")
-            }
-
-        } catch (e: Throwable) {
-
-            recordException(e)
+            notifyCallback(callback)
         }
-
-        notifyCallback(callback)
     }
 
     private fun doClear(
@@ -834,11 +767,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         callback: (() -> Unit)? = null
 
     ) {
-
-//        if (!skipNotifying) {
-//
-//            comparator?.makeCopy("doClear")
-//        }
 
         list.clear()
 
@@ -984,17 +912,23 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                         changedCount += toUpdate.size
                     }
 
-                    linked.forEach { linked ->
+                    synchronized(list) {
 
-                        linked?.let { lkd ->
+                        list.apply {
 
-                            if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
+                            linked.forEach { linked ->
 
-                                modified = true
+                                linked?.let { lkd ->
 
-                                changedCount++
+                                    if (!toUpdate.contains(lkd) && !toRemove.contains(lkd)) {
 
-                                doAdd(lkd, true)
+                                        modified = true
+
+                                        changedCount++
+
+                                        doAdd(lkd, true)
+                                    }
+                                }
                             }
                         }
                     }
@@ -1063,8 +997,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
 
-        // comparator?.makeCopy("doAddAllAndFilter.${what?.size ?: 0}.${what.hashCode()}")
-
         if (replace) {
 
             doClear(
@@ -1102,8 +1034,11 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 return@synchronized
             }
 
+            var success = false
             val currentList = synchronized(list) { list.toList() }
-            val filteredList = currentList.toMutableList()
+            val filteredList = CopyOnWriteArraySet<T>()
+
+            filteredList.addAll(currentList)
 
             filters.forEach { filter ->
 
@@ -1119,12 +1054,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                                 if (data == true) {
 
-                                    synchronized(list) {
-
-                                        list.clear()
-                                        list.addAll(filteredList)
-                                    }
-
+                                    success = true
                                 }
                             }
 
@@ -1141,7 +1071,23 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 }
             }
 
-            callback()
+            if (success) {
+
+                synchronized(list) {
+
+                    list.apply {
+
+                        list.clear()
+                        list.addAll(filteredList)
+                    }
+
+                    callback()
+                }
+
+            } else {
+
+                callback()
+            }
         }
     }
 
@@ -1208,11 +1154,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        //        if (!skipNotifying) {
-        //
-        //            comparator?.makeCopy("doRemoveAll")
-        //        }
-
         if (list.removeAll(what)) {
 
             if (!skipNotifying) {
@@ -1234,62 +1175,21 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-//        if (!skipNotifying) {
-//
-//            comparator?.makeCopy("doReplaceAll")
-//        }
+        synchronized(list) {
 
-        list.apply {
+            list.apply {
 
-            removeAll(remove)
-            addAll(add)
-        }
-
-        if (!skipNotifying) {
-
-            notifyChanged(onChange, "doReplaceAll.${remove.size}.${add.size}")
-        }
-
-        notifyCallback(callback)
-    }
-
-    private fun doRemoveAllFirsts(
-
-        what: Collection<T>,
-        skipNotifying: Boolean = false,
-        onChange: OnChangeCompleted? = null,
-        callback: (() -> Unit)? = null
-
-    ) {
-
-        //        if (!skipNotifying) {
-        //
-        //            comparator?.makeCopy("doRemoveAll")
-        //        }
-
-        val copy = mutableListOf<T>().apply {
-
-            addAll(list)
-        }
-
-        val removed = mutableListOf<T>()
-
-        copy.forEach { next ->
-
-            if (what.contains(next) && !removed.contains(next)) {
-
-                list.remove(next)
-
-                removed.add(next)
+                removeAll(remove)
+                addAll(add)
             }
+
+            if (!skipNotifying) {
+
+                notifyChanged(onChange, "doReplaceAll.${remove.size}.${add.size}")
+            }
+
+            notifyCallback(callback)
         }
-
-        if (!skipNotifying) {
-
-            notifyChanged(onChange, "doRemoveAllFirsts.${what.size}")
-        }
-
-        notifyCallback(callback)
     }
 
     private fun doRemove(
@@ -1300,11 +1200,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         callback: (() -> Unit)? = null
 
     ) {
-
-//        if (!skipNotifying) {
-//
-//            comparator?.makeCopy("doRemove.item")
-//        }
 
         if (list.remove(what)) {
 
@@ -1325,11 +1220,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         callback: (() -> Unit)? = null
 
     ) {
-
-//        if (!skipNotifying) {
-//
-//            comparator?.makeCopy("doRemove.$index")
-//        }
 
         list.removeAt(index)?.let {
 
@@ -1479,9 +1369,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
 
         val items = getCollection("$pushContext(pushFrom='${data.pushFrom}')")
-
-        val from =
-            "$pushContext(pushFrom='${data.pushFrom}',size=${items?.size ?: 0})"
+        val from = "$pushContext(pushFrom='${data.pushFrom}',size=${items?.size ?: 0})"
 
         onDataPushed?.onCompleted(data)
 
@@ -1521,24 +1409,4 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
         }
     }
-
-    //    fun hasChangedAt(position: Int): Boolean {
-    //
-    //        val item = get(position)
-    //
-    //        item?.let {
-    //
-    //            val identifier = identifierObtainer.obtain(it)
-    //            val changed = changedIdentifiers.contains(identifier)
-    //
-    //            if (DEBUG.get()) {
-    //
-    //                Console.log("Has changed at :: Position=$position")
-    //            }
-    //
-    //            return changed
-    //        }
-    //
-    //        return false
-    //    }
 }
