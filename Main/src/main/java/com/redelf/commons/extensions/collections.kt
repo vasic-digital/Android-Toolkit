@@ -5,7 +5,10 @@ import java.util.concurrent.CopyOnWriteArraySet
 
 fun <T> CopyOnWriteArraySet<T>.getAtIndex(index: Int): T? {
 
-    if (index < 0 || index >= size) return null
+    if (index < 0 || index >= size) {
+
+        return null
+    }
 
     return this.elementAt(index)
 }

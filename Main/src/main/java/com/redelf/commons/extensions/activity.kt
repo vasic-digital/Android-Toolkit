@@ -78,7 +78,7 @@ fun Activity.shareLink(subject: String, link: String, message: String) {
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
 
             type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "Join me on Sekur Messenger")
+            putExtra(Intent.EXTRA_SUBJECT, subject)
             putExtra(Intent.EXTRA_TEXT, shareText)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }

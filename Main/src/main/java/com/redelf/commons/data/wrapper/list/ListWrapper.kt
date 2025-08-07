@@ -22,10 +22,10 @@ import com.redelf.commons.obtain.ObtainParametrized
 import com.redelf.commons.obtain.OnObtain
 import com.redelf.commons.state.BusyCheck
 import java.util.LinkedList
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 open class ListWrapper<T, I, M : DataManagement<*>>(
@@ -303,17 +303,22 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     fun get(index: Int): T? {
 
-        return list.getAtIndex(index)
+        if (list.size > index) {
+
+            return list.getAtIndex(index)
+        }
+
+        return null
     }
 
     fun getLast(): T? {
 
-        return list.last()
+        return list.lastOrNull()
     }
 
     fun getFirst(): T? {
 
-        return list.first()
+        return list.firstOrNull()
     }
 
     fun indexOf(what: T): Int {
