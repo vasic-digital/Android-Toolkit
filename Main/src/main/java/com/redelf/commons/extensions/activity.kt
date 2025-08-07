@@ -65,6 +65,46 @@ fun Activity.openLink(url: Int) {
     openLink(url)
 }
 
+fun Activity.shareLink(subject: String, link: String, message: String) {
+
+    try {
+
+        val shareText = """
+            $message
+            
+            $link
+        """.trimIndent()
+
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, "Join me on Sekur Messenger")
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+
+        val chooserIntent = Intent.createChooser(shareIntent, subject).apply {
+
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+
+        if (shareIntent.resolveActivity(packageManager) != null) {
+
+            startActivity(chooserIntent)
+
+        } else {
+
+            toast("No sharing apps available")
+        }
+
+    } catch (e: Throwable) {
+
+        toast("Error sharing link")
+
+        recordException(e)
+    }
+}
+
 fun Activity.openLink(url: String) {
 
     val tag = "Open link ::"
