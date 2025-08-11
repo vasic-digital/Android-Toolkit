@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
-import android.app.BackgroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -25,6 +24,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
+import androidx.work.Configuration
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsConstants
 import com.facebook.appevents.AppEventsLogger
@@ -83,8 +83,11 @@ abstract class BaseApplication :
     ActivityCount,
     Updatable<Long>,
     LifecycleObserver,
+    Configuration.Provider,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication> {
+    ContextAvailability<BaseApplication>
+
+{
 
     companion object :
 
@@ -297,6 +300,8 @@ abstract class BaseApplication :
 
         Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Foreground")
     }
+
+    fun isAppInBackground() = isAppInBackground.get()
 
     protected open fun onApplicationWentToBackground() {
 
@@ -661,6 +666,11 @@ abstract class BaseApplication :
             doCreate()
         }
     }
+
+    override val workManagerConfiguration = Configuration.Builder()
+        .setMinimumLoggingLevel(android.util.Log.DEBUG)
+        // .setWorkerFactory(MyWorkerFactory()) // TODO: We can support this
+        .build()
 
     fun initTerminationListener() {
 

@@ -334,6 +334,8 @@ dependencies {
     //    api platform('androidx.compose:compose-bom:2025.01.01')
     api "com.facebook.android:facebook-android-sdk:18.0.3"
 
+    api "androidx.work:work-runtime-ktx:2.10.3"
+
     testImplementation project("${toolkit_context}:Test")
 
     androidTestImplementation project("${toolkit_context}:Test")
