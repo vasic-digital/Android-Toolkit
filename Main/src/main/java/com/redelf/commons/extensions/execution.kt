@@ -92,3 +92,13 @@ fun Context.executeWithWakeLock(
         }
     }
 }
+
+fun Context.executeWithWorkManager(
+
+    onError: (e: Throwable) -> Unit = { e -> recordException(e)},
+    block: () -> Unit
+
+) {
+
+
+}

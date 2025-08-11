@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
-import android.app.BackgroundServiceStartNotAllowedException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -81,7 +80,9 @@ abstract class BaseApplication :
     Updatable<Long>,
     LifecycleObserver,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication> {
+    ContextAvailability<BaseApplication>
+
+{
 
     companion object :
 
@@ -274,6 +275,8 @@ abstract class BaseApplication :
 
         Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Foreground")
     }
+
+    fun isAppInBackground() = isAppInBackground.get()
 
     protected open fun onApplicationWentToBackground() {
 
