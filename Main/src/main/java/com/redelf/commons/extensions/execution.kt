@@ -5,8 +5,12 @@ import android.content.Context
 import android.os.PowerManager
 import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
 import android.os.PowerManager.PARTIAL_WAKE_LOCK
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
+import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.execution.BackgroundTaskWorker
 import com.redelf.commons.logging.Console
-import net.bytebuddy.implementation.bytecode.Throw
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
@@ -53,7 +57,7 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
 fun Context.executeWithWakeLock(
 
     duration: Long = 30000L,
-    onError: (e: Throwable) -> Unit = { e -> recordException(e)},
+    onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
 
 ) {
@@ -95,10 +99,26 @@ fun Context.executeWithWakeLock(
 
 fun Context.executeWithWorkManager(
 
-    onError: (e: Throwable) -> Unit = { e -> recordException(e)},
+    onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
 
 ) {
 
+    try {
 
+        BackgroundTaskWorker.setTask(block)
+
+        val workRequest =
+            OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .build()
+
+        val ctx = BaseApplication.takeContext()
+
+        WorkManager.getInstance(ctx).enqueue(workRequest)
+
+    } catch (e: Throwable) {
+
+        onError(e)
+    }
 }
