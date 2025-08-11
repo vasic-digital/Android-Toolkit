@@ -1,6 +1,12 @@
 package com.redelf.commons.extensions
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.os.PowerManager
+import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
+import android.os.PowerManager.PARTIAL_WAKE_LOCK
 import com.redelf.commons.logging.Console
+import net.bytebuddy.implementation.bytecode.Throw
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
@@ -38,6 +44,45 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
         } else {
 
             Console.log("$tag END :: Duration = $time millis")
+        }
+    }
+}
+
+@Suppress("DEPRECATION")
+@SuppressLint("Wakelock")
+fun Context.executeWithWakeLock(block: () -> Unit, duration: Long = 30000L) {
+
+    var wakeLock: PowerManager.WakeLock? = null
+
+    try {
+
+        val tag = "WakeLockExecute.${block.hashCode()}"
+        val flags = PARTIAL_WAKE_LOCK or ACQUIRE_CAUSES_WAKEUP
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager?
+
+        wakeLock = pm?.newWakeLock(flags, tag)?.apply {
+
+            acquire(duration)
+        }
+
+    } catch (e: Throwable) {
+
+        recordException(e)
+    }
+
+    try {
+
+        block()
+
+    } finally {
+
+        try {
+
+            wakeLock?.release()
+
+        } catch (e: Throwable) {
+
+            recordException(e)
         }
     }
 }

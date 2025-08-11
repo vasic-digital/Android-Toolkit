@@ -271,6 +271,8 @@ dependencies {
     api "com.android.installreferrer:installreferrer:2.2"
     api "com.facebook.android:facebook-android-sdk:18.0.3"
 
+    api "androidx.work:work-runtime-ktx:2.10.3"
+
     testImplementation project("${toolkit_context}:Test")
 
     testImplementation "junit:junit:4.13.2"
