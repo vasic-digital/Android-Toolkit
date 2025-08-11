@@ -54,9 +54,9 @@ fun Context.executeWithWakeLock(
 
     duration: Long = 30000L,
     onError: (e: Throwable) -> Unit = { e -> recordException(e)},
-    block: () -> Unit)
+    block: () -> Unit
 
-{
+) {
 
     var wakeLock: PowerManager.WakeLock? = null
 
