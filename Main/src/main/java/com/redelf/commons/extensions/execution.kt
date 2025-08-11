@@ -50,7 +50,13 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
 
 @Suppress("DEPRECATION")
 @SuppressLint("Wakelock")
-fun Context.executeWithWakeLock(duration: Long = 30000L, block: () -> Unit) {
+fun Context.executeWithWakeLock(
+
+    duration: Long = 30000L,
+    onError: (e: Throwable) -> Unit = { e -> recordException(e)},
+    block: () -> Unit)
+
+{
 
     var wakeLock: PowerManager.WakeLock? = null
 
@@ -67,7 +73,7 @@ fun Context.executeWithWakeLock(duration: Long = 30000L, block: () -> Unit) {
 
     } catch (e: Throwable) {
 
-        recordException(e)
+        onError(e)
     }
 
     try {
@@ -82,7 +88,7 @@ fun Context.executeWithWakeLock(duration: Long = 30000L, block: () -> Unit) {
 
         } catch (e: Throwable) {
 
-            recordException(e)
+            onError(e)
         }
     }
 }
