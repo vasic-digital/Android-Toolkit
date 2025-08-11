@@ -101,20 +101,6 @@
 
         </provider>
 
-        <provider
-
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:enabled="false"
-            android:exported="false">
-
-            <meta-data
-
-                android:name="com.example.LoggerInitializer"
-                android:value="androidx.startup" />
-
-        </provider>
-
     </application>
 
 </manifest>
