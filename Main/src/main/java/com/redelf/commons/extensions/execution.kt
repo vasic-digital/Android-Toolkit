@@ -50,7 +50,7 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
 
 @Suppress("DEPRECATION")
 @SuppressLint("Wakelock")
-fun Context.executeWithWakeLock(block: () -> Unit, duration: Long = 30000L) {
+fun Context.executeWithWakeLock(duration: Long = 30000L, block: () -> Unit) {
 
     var wakeLock: PowerManager.WakeLock? = null
 
