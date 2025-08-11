@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.PowerManager
 import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
+import android.os.PowerManager.FULL_WAKE_LOCK
+import android.os.PowerManager.ON_AFTER_RELEASE
 import android.os.PowerManager.PARTIAL_WAKE_LOCK
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
@@ -67,8 +69,8 @@ fun Context.executeWithWakeLock(
     try {
 
         val tag = "WakeLockExecute.${block.hashCode()}"
-        val flags = PARTIAL_WAKE_LOCK or ACQUIRE_CAUSES_WAKEUP
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager?
+        val flags = FULL_WAKE_LOCK or ACQUIRE_CAUSES_WAKEUP or ON_AFTER_RELEASE
 
         wakeLock = pm?.newWakeLock(flags, tag)?.apply {
 
