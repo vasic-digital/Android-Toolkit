@@ -182,10 +182,10 @@ android {
 dependencies {
 
     final String okioVersion = "3.9.0"
-    final String okHttpVersion = "4.12.0"
+    final String okHttpVersion = "5.1.0"
     final String jacksonVersion = "2.12.5"
     final String lifecycleVersion = "2.9.1"
-    final String retrofitHttpVersion = "2.11.0"
+    final String retrofitHttpVersion = "3.0.0"
 
     api project("$toolkit_obfuscator_project")
     testApi project("$toolkit_obfuscator_project")
@@ -202,7 +202,7 @@ dependencies {
     api "com.squareup.retrofit2:converter-jackson:$retrofitHttpVersion"
 
     api "com.squareup.retrofit2:adapter-rxjava2:$retrofitHttpVersion"
-    api "io.reactivex.rxjava2:rxandroid:2.0.1"
+    api "io.reactivex.rxjava2:rxandroid:2.1.1"
     api "io.reactivex.rxjava2:rxjava:2.2.21"
 
     api "org.apache.commons:commons-compress:1.27.1"
