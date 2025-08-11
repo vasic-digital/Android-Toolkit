@@ -6,7 +6,6 @@ import android.os.PowerManager
 import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
 import android.os.PowerManager.FULL_WAKE_LOCK
 import android.os.PowerManager.ON_AFTER_RELEASE
-import android.os.PowerManager.PARTIAL_WAKE_LOCK
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
