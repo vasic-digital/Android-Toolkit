@@ -290,32 +290,15 @@ abstract class LazyDataManagement<T> :
         }
     }
 
-    protected open fun isLazyReady() = isEnabled()
-
-    private fun onForeground() {
+    fun save(from: String) {
 
         if (!isEnabled()) {
 
             return
         }
 
-        if (DEBUG.get()) Console.log("Application is in foreground")
-    }
-
-    private fun onBackground(from: String) {
-
-        if (!isEnabled()) {
-
-            return
-        }
-
-        if (!lazySaving) {
-
-            return
-        }
-
-        val tag =
-            "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
+        val tag = "Lazy :: Who = '${getWho()}', " +
+                "From='$from' :: Save (${takeContext().getActivityCount()}) ::"
 
         if (isLazyReady()) {
 
@@ -390,5 +373,27 @@ abstract class LazyDataManagement<T> :
         }
 
         if (DEBUG.get()) Console.log("$tag END")
+    }
+
+    protected open fun isLazyReady() = isEnabled()
+
+    private fun onForeground() {
+
+        if (!isEnabled()) {
+
+            return
+        }
+
+        if (DEBUG.get()) Console.log("Application is in foreground")
+    }
+
+    private fun onBackground(from: String) {
+
+        if (!lazySaving) {
+
+            return
+        }
+
+        save("onBackground(from='$from')")
     }
 }
