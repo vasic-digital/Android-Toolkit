@@ -7,6 +7,8 @@ import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
 import android.os.PowerManager.FULL_WAKE_LOCK
 import android.os.PowerManager.ON_AFTER_RELEASE
 import android.os.PowerManager.PARTIAL_WAKE_LOCK
+import androidx.work.Constraints
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
@@ -110,9 +112,14 @@ fun Context.executeWithWorkManager(
 
         BackgroundTaskWorker.setTask(block)
 
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
         val workRequest =
             OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .setConstraints(constraints)
                 .build()
 
         val ctx = BaseApplication.takeContext()
