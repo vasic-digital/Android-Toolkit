@@ -17,6 +17,7 @@ import com.redelf.commons.execution.BackgroundTaskWorker
 import com.redelf.commons.logging.Console
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 val DEBUG_EXEC_EXTENSION = AtomicBoolean()
@@ -120,6 +121,7 @@ fun Context.executeWithWorkManager(
             OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .setConstraints(constraints)
+                .setInitialDelay(0, TimeUnit.MILLISECONDS)
                 .build()
 
         val ctx = BaseApplication.takeContext()
