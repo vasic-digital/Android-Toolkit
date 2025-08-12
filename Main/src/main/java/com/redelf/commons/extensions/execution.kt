@@ -117,8 +117,7 @@ fun Context.executeWithWorkManager(
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        val workRequest =
-            OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
+        val workRequest = OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .setConstraints(constraints)
                 .setInitialDelay(0, TimeUnit.MILLISECONDS)
