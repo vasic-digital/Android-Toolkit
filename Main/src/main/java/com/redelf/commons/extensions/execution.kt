@@ -6,6 +6,9 @@ import android.os.PowerManager
 import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
 import android.os.PowerManager.FULL_WAKE_LOCK
 import android.os.PowerManager.ON_AFTER_RELEASE
+import android.os.PowerManager.PARTIAL_WAKE_LOCK
+import androidx.work.Constraints
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
@@ -14,6 +17,7 @@ import com.redelf.commons.execution.BackgroundTaskWorker
 import com.redelf.commons.logging.Console
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 val DEBUG_EXEC_EXTENSION = AtomicBoolean()
@@ -109,9 +113,14 @@ fun Context.executeWithWorkManager(
 
         BackgroundTaskWorker.setTask(block)
 
-        val workRequest =
-            OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val workRequest = OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .setConstraints(constraints)
+                .setInitialDelay(0, TimeUnit.MILLISECONDS)
                 .build()
 
         val ctx = BaseApplication.takeContext()
