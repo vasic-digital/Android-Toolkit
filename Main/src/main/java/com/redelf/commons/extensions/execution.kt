@@ -6,7 +6,6 @@ import android.os.PowerManager
 import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
 import android.os.PowerManager.FULL_WAKE_LOCK
 import android.os.PowerManager.ON_AFTER_RELEASE
-import android.os.PowerManager.PARTIAL_WAKE_LOCK
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -63,6 +62,7 @@ fun Context.executeWithWakeLock(
 
     enabled: Boolean = BaseApplication.takeContext().canWakeLock(),
     duration: Long = 30000L,
+    dismiss: Boolean = true,
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
 
@@ -101,7 +101,10 @@ fun Context.executeWithWakeLock(
 
         try {
 
-            wakeLock?.release()
+            if (dismiss) {
+
+                wakeLock?.release()
+            }
 
         } catch (e: Throwable) {
 

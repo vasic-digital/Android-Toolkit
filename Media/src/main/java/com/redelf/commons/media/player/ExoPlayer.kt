@@ -22,9 +22,12 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.creation.instantiation.Instantiable
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.executeWithWakeLock
+import com.redelf.commons.extensions.executeWithWorkManager
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.wakeUpScreen
 import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.player.base.PlayerAbstraction
