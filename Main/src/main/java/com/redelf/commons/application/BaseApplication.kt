@@ -1343,7 +1343,7 @@ abstract class BaseApplication :
         }
     }
 
-    fun doStartService(serviceIntent: Intent) {
+    fun doStartForegroundService(serviceIntent: Intent) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
