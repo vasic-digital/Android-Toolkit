@@ -1343,6 +1343,18 @@ abstract class BaseApplication :
         }
     }
 
+    fun doStartService(serviceIntent: Intent) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            startForegroundService(serviceIntent)
+
+        } else {
+
+            startService(serviceIntent)
+        }
+    }
+
     protected open fun getUpdatesCodes() = setOf<Long>()
 
     override fun isUpdating(): Boolean {
