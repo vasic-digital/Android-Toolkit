@@ -68,16 +68,16 @@ fun Context.executeWithWakeLock(
 
 ) {
 
-    if (!enabled) {
-
-        block()
-
-        return
-    }
-
     var wakeLock: PowerManager.WakeLock? = null
 
     try {
+
+        if (!enabled) {
+
+            block()
+
+            return
+        }
 
         val tag = "WakeLockExecute.${block.hashCode()}"
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager?
@@ -112,12 +112,20 @@ fun Context.executeWithWakeLock(
 
 fun Context.executeWithWorkManager(
 
+    enabled: Boolean = true,
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
 
 ) {
 
     try {
+
+        if (!enabled) {
+
+            block()
+
+            return
+        }
 
         BackgroundTaskWorker.setTask(block)
 
