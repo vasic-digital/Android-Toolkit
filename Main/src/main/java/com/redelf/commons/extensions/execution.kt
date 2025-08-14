@@ -61,11 +61,19 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
 @SuppressLint("Wakelock")
 fun Context.executeWithWakeLock(
 
+    enabled: Boolean = true,
     duration: Long = 30000L,
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
 
 ) {
+
+    if (!enabled) {
+
+        block()
+
+        return
+    }
 
     var wakeLock: PowerManager.WakeLock? = null
 
