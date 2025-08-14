@@ -263,6 +263,10 @@ abstract class BaseApplication :
 
     open fun canRecordApplicationLogs() = false
 
+    open fun canWakeLock() = true
+
+    open fun canWorkManager() = true
+
     abstract fun isProduction(): Boolean
 
     protected abstract fun takeSalt(): String
@@ -1340,18 +1344,6 @@ abstract class BaseApplication :
         intent?.let {
 
             LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
-        }
-    }
-
-    fun doStartForegroundService(serviceIntent: Intent) {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            startForegroundService(serviceIntent)
-
-        } else {
-
-            startService(serviceIntent)
         }
     }
 
