@@ -823,7 +823,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setLoadControl(loadControl)
             .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
             .setWakeMode(C.WAKE_MODE_NETWORK)                           // Keep network alive
-            .experimentalSetForegroundModeTimeoutMs(5_000)   // Faster FG transition
             .build()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
