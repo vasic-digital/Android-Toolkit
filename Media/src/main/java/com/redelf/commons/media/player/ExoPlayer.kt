@@ -812,7 +812,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setBackBuffer(3_000, true)
             .build()
 
-        val httpDataSourceFactory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val httpDataSourceFactory = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 
             DefaultHttpDataSource.Factory()
                 .setConnectTimeoutMs(15000)

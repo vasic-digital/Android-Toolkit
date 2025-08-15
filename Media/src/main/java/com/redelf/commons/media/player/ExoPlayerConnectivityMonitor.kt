@@ -16,7 +16,7 @@ class ExoPlayerConnectivityMonitor(
 ) : Player.Listener, PlayerConnectivityMonitor {
 
     private val isPlayerLoading = AtomicBoolean()
-    private val context = BaseApplication.takeContext()
+//    private val context = BaseApplication.takeContext()
 
     init {
 
@@ -30,15 +30,15 @@ class ExoPlayerConnectivityMonitor(
 
     override fun hasConnectivity(): Boolean {
 
-        return hasNetwork() && (isPlayerLoading.get() || player.playbackState == Player.STATE_READY)
+        return isPlayerLoading.get() || player.playbackState == Player.STATE_READY
     }
 
-    private fun hasNetwork(): Boolean {
-
-        val cm = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager?
-        val activeNetwork = cm?.activeNetwork
-        val caps = cm?.getNetworkCapabilities(activeNetwork)
-
-        return caps?.hasCapability(NET_CAPABILITY_INTERNET) == true
-    }
+//    private fun hasNetwork(): Boolean {
+//
+//        val cm = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager?
+//        val activeNetwork = cm?.activeNetwork
+//        val caps = cm?.getNetworkCapabilities(activeNetwork)
+//
+//        return caps?.hasCapability(NET_CAPABILITY_INTERNET) == true
+//    }
 }

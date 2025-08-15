@@ -19,22 +19,35 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.logging.Console
 import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.net.URL
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import androidx.lifecycle.asFlow
+import com.redelf.commons.logging.Console
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.ByteArrayOutputStream
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 @UnstableApi
 class ExoPlayerWorkManagerDataSource : DataSource {
 
+    companion object {
+
+        val DEBUG = AtomicBoolean(true)
+        val VERBOSE = AtomicBoolean(false)
+    }
+
     private var opened = false
     private var bytesRemaining: Long = 0
     private var inputStream: InputStream? = null
+    private val tag = "Exo :: Worker Manager Data Source ::"
 
     @OptIn(UnstableApi::class)
     @Throws(IllegalStateException::class)
@@ -46,6 +59,8 @@ class ExoPlayerWorkManagerDataSource : DataSource {
         }
 
         if (bytesRemaining == 0L) {
+
+            if (DEBUG.get() && VERBOSE.get()) Console.log("$tag Read :: END")
 
             return C.RESULT_END_OF_INPUT
         }
@@ -64,6 +79,8 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
                 bytesRemaining -= bytesRead
             }
+
+            if (DEBUG.get() && VERBOSE.get()) Console.log("$tag Read :: $bytesRead")
 
             return bytesRead
 
@@ -84,6 +101,8 @@ class ExoPlayerWorkManagerDataSource : DataSource {
             throw IllegalStateException("Already opened")
         }
 
+        if (DEBUG.get()) Console.log("$tag Open :: START")
+
         try {
 
             val result = runBlocking {
@@ -95,6 +114,11 @@ class ExoPlayerWorkManagerDataSource : DataSource {
             this.bytesRemaining = result.size.toLong()
             this.opened = true
 
+            if (DEBUG.get()) {
+
+                Console.log("$tag Open :: END :: Bytes remaining = $bytesRemaining")
+            }
+
             return bytesRemaining
 
         } catch (e: Throwable) {
@@ -105,54 +129,60 @@ class ExoPlayerWorkManagerDataSource : DataSource {
         return 0
     }
 
+    @Throws(IOException::class)
     private suspend fun fetchViaWorkManager(url: String): ByteArray {
+
+        if (DEBUG.get()) Console.log("$tag Fetching")
 
         val context = BaseApplication.takeContext()
 
-        return suspendCoroutine { continuation ->
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
 
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
+        val workRequest = OneTimeWorkRequestBuilder<NetworkWorker>()
+            .setInputData(workDataOf("url" to url))
+            .setConstraints(constraints)
+            .build()
 
+        WorkManager.getInstance(context).enqueue(workRequest)
 
-            val workRequest = OneTimeWorkRequestBuilder<NetworkWorker>()
-                .setInputData(workDataOf("url" to url))
-                .setConstraints(constraints)
-                .build()
+        return WorkManager.getInstance(context)
+            .getWorkInfoByIdLiveData(workRequest.id)
+            .asFlow()
+            .first { workInfo ->
+                workInfo?.state?.isFinished == true
+            }
+            .let { workInfo ->
 
-            WorkManager.getInstance(context).enqueue(workRequest)
+                if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
 
-            WorkManager.getInstance(context)
-                .getWorkInfoByIdLiveData(workRequest.id)
-                .observeForever { workInfo ->
+                    readFromCache()
 
-                    if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
+                } else {
 
-                        val outputData = workInfo.outputData
-                        val byteArray = outputData.getByteArray("data") ?: byteArrayOf()
-
-                        continuation.resume(byteArray)
-
-                    } else if (workInfo?.state == WorkInfo.State.FAILED) {
-
-                        continuation.resumeWithException(
-
-                            IOException("WorkManager failed")
-                        )
-                    }
+                    throw IOException("Work failed: ${workInfo?.state}")
                 }
-        }
+            }
     }
 
     override fun close() {
+
+        if (DEBUG.get()) Console.log("$tag Close :: START")
 
         try {
 
             inputStream?.close()
             opened = false
 
+            if (DEBUG.get()) Console.log("$tag Close :: END")
+
         } catch (e: Throwable) {
+
+            Console.error(
+
+                "$tag Close :: END :: Error='${e.message ?: e::class.simpleName}'"
+            )
 
             recordException(e)
         }
@@ -161,36 +191,137 @@ class ExoPlayerWorkManagerDataSource : DataSource {
     override fun getUri(): Uri? = null
 
     @OptIn(UnstableApi::class)
-    override fun addTransferListener(transferListener: TransferListener) {
-    }
+    override fun addTransferListener(transferListener: TransferListener) {}
 
     override fun getResponseHeaders(): Map<String, List<String>> = emptyMap()
 
+    @Throws(IOException::class)
+    private suspend fun readFromCache(): ByteArray {
+
+        if (DEBUG.get()) Console.log("$tag Read from cache")
+
+        val context = BaseApplication.takeContext()
+
+        val cacheDir = File(context.cacheDir, "media_cache")
+
+        if (!cacheDir.exists()) {
+
+            cacheDir.mkdirs()
+        }
+
+        val cacheFile = cacheDir.listFiles()
+            ?.filter { it.name.endsWith(".mp3") }
+            ?.maxByOrNull { it.lastModified() }
+            ?: throw IOException("No cached file found")
+
+        return try {
+
+            cacheFile.inputStream().use { input ->
+
+                ByteArrayOutputStream().use { output ->
+
+                    input.copyTo(output)
+                    output.toByteArray()
+                }
+
+            }
+
+        } catch (e: Exception) {
+
+            throw IOException("Failed to read cache: ${e.message}", e)
+        }
+    }
+
     @SuppressLint("WorkerHasAPublicModifier")
-    private class NetworkWorker(
+    class NetworkWorker(
 
         context: Context, params: WorkerParameters
 
     ) : CoroutineWorker(context, params) {
 
+        private val tag = "Exo :: Worker Manager Data Source :: Network worker ::"
+
         override suspend fun doWork(): Result {
+
+            if (DEBUG.get()) Console.log("$tag Do work")
 
             return try {
 
-                val url = inputData.getString("url")
+                val url = inputData.getString("url") ?: return Result.failure()
+                val data = fetchMediaFromNetwork(url)
 
-                /*
-                    TODO: Use OkHttp/Retrofit [IN_PROGRESS]
-                */
-                val data = URL(url).readBytes()
+                saveToCache(data, url)
 
-                Result.success(workDataOf("data" to data))
+                Result.success(workDataOf(
+
+                    "cache_key" to url.hashCode().toString()
+                ))
 
             } catch (e: Throwable) {
 
-                Console.error(e)
+                Result.failure(workDataOf(
 
-                Result.failure()
+                    "error" to e.message
+                ))
+            }
+        }
+
+        @Throws(IOException::class)
+        private suspend fun fetchMediaFromNetwork(url: String): ByteArray {
+
+            if (DEBUG.get()) Console.log("$tag Fetch media from network")
+
+            return withContext(Dispatchers.IO) {
+
+                val client = OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .build()
+
+                val request = Request.Builder()
+                    .url(url)
+                    .header("Accept", "audio/mpeg")
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+
+                    if (!response.isSuccessful) {
+
+                        throw IOException("Network error: ${response.code}")
+                    }
+
+                    response.body.bytes()
+                }
+            }
+        }
+
+        @Throws(IOException::class)
+        private suspend fun saveToCache(data: ByteArray, url: String) {
+
+            if (DEBUG.get()) Console.log("$tag Save to cache")
+
+            val context = BaseApplication.takeContext()
+
+            val cacheDir = File(context.cacheDir, "media_cache")
+
+            if (!cacheDir.exists()) {
+
+                cacheDir.mkdirs()
+            }
+
+            val filename = "media_${url.hashCode()}_${System.currentTimeMillis()}.mp3"
+
+            val cacheFile = File(cacheDir, filename)
+
+            try {
+
+                cacheFile.outputStream().use { it.write(data) }
+
+            } catch (e: Exception) {
+
+                cacheFile.delete()
+
+                throw IOException("Failed to write cache: ${e.message}", e)
             }
         }
     }
