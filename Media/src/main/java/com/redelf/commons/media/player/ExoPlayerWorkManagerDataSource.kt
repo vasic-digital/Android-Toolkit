@@ -25,6 +25,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import androidx.lifecycle.asFlow
+import com.redelf.commons.extensions.executeWithWorkManager
 import com.redelf.commons.logging.Console
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -269,30 +270,63 @@ class ExoPlayerWorkManagerDataSource : DataSource {
         @Throws(IOException::class)
         private suspend fun fetchMediaFromNetwork(url: String): ByteArray {
 
-            if (DEBUG.get()) Console.log("$tag Fetch media from network")
+            val tag = "$tag Fetch media from network"
 
-            return withContext(Dispatchers.IO) {
+            if (DEBUG.get()) Console.log("$tag START")
 
-                val client = OkHttpClient.Builder()
-                    .connectTimeout(30, TimeUnit.SECONDS)
-                    .readTimeout(60, TimeUnit.SECONDS)
-                    .build()
+            var bytes: ByteArray = byteArrayOf()
+            val context = BaseApplication.takeContext()
 
-                val request = Request.Builder()
-                    .url(url)
-                    .header("Accept", "audio/mpeg")
-                    .build()
+            context.executeWithWorkManager {
 
-                client.newCall(request).execute().use { response ->
+                if (DEBUG.get()) Console.log("$tag Obtaining bytes")
 
-                    if (!response.isSuccessful) {
+                try {
 
-                        throw IOException("Network error: ${response.code}")
+                    val client = OkHttpClient.Builder()
+                        .connectTimeout(30, TimeUnit.SECONDS)
+                        .readTimeout(60, TimeUnit.SECONDS)
+                        .build()
+
+                    val request = Request.Builder()
+                        .url(url)
+                        .header("Accept", "audio/mpeg")
+                        .build()
+
+                    bytes = client.newCall(request).execute().use { response ->
+
+                        if (!response.isSuccessful) {
+
+                            throw IOException("Network error: ${response.code}")
+                        }
+
+                        response.body.bytes()
                     }
 
-                    response.body.bytes()
+                    if (DEBUG.get()) Console.log("$tag Bytes obtained")
+
+                } catch (e: Throwable) {
+
+                    Console.error(
+
+                        "$tag Bytes not obtained :: " +
+                                "Error='${e.message ?: e::class.simpleName}'"
+                    )
+
+                    recordException(e)
                 }
             }
+
+            if (bytes.isNotEmpty()) {
+
+                if (DEBUG.get()) Console.log("$tag END")
+
+            } else {
+
+                Console.error("$tag END")
+            }
+
+            return bytes
         }
 
         @Throws(IOException::class)
