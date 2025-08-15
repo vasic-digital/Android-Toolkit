@@ -27,9 +27,7 @@ import java.io.InputStream
 import androidx.lifecycle.asFlow
 import com.redelf.commons.extensions.executeWithWorkManager
 import com.redelf.commons.logging.Console
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.ByteArrayOutputStream
@@ -42,7 +40,7 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
     companion object {
 
-        val DEBUG = AtomicBoolean(true)
+        val DEBUG = AtomicBoolean(false)
         val VERBOSE = AtomicBoolean(false)
     }
 
@@ -193,7 +191,8 @@ class ExoPlayerWorkManagerDataSource : DataSource {
     override fun getUri(): Uri? = null
 
     @OptIn(UnstableApi::class)
-    override fun addTransferListener(transferListener: TransferListener) {}
+    override fun addTransferListener(transferListener: TransferListener) {
+    }
 
     override fun getResponseHeaders(): Map<String, List<String>> = emptyMap()
 
@@ -254,17 +253,21 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
                 saveToCache(data, url)
 
-                Result.success(workDataOf(
+                Result.success(
+                    workDataOf(
 
-                    "cache_key" to url.hashCode().toString()
-                ))
+                        "cache_key" to url.hashCode().toString()
+                    )
+                )
 
             } catch (e: Throwable) {
 
-                Result.failure(workDataOf(
+                Result.failure(
+                    workDataOf(
 
-                    "error" to e.message
-                ))
+                        "error" to e.message
+                    )
+                )
             }
         }
 
