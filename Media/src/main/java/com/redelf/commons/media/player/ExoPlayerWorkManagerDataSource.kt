@@ -177,7 +177,11 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
             return try {
 
-                val url = inputData.getString("url")!!
+                val url = inputData.getString("url")
+
+                /*
+                    TODO: Use OkHttp/Retrofit [IN_PROGRESS]
+                */
                 val data = URL(url).readBytes()
 
                 Result.success(workDataOf("data" to data))
