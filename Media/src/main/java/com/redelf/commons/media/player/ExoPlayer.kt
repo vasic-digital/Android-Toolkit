@@ -812,25 +812,27 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setBackBuffer(3_000, true)
             .build()
 
-        val httpDataSourceFactory = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+        val httpDataSourceFactory = ExoPlayerWorkManagerDataSourceFactory()
 
-            DefaultHttpDataSource.Factory()
-                .setConnectTimeoutMs(15000)
-                .setReadTimeoutMs(30000)
-                .setAllowCrossProtocolRedirects(true)
-                .setDefaultRequestProperties(
-
-                    mapOf(
-
-                        "User-Agent" to "ExoPlayer",
-                        "Cache-Control" to "max-stale=3600"
-                    )
-                )
-
-        } else {
-
-            ExoPlayerWorkManagerDataSourceFactory()
-        }
+//            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+//
+//            DefaultHttpDataSource.Factory()
+//                .setConnectTimeoutMs(15000)
+//                .setReadTimeoutMs(30000)
+//                .setAllowCrossProtocolRedirects(true)
+//                .setDefaultRequestProperties(
+//
+//                    mapOf(
+//
+//                        "User-Agent" to "ExoPlayer",
+//                        "Cache-Control" to "max-stale=3600"
+//                    )
+//                )
+//
+//        } else {
+//
+//            ExoPlayerWorkManagerDataSourceFactory()
+//        }
 
         /* FIXME: [IN_PROGRESS]
 

@@ -157,6 +157,7 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
                 if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
 
+                    // FIXME: Do not use filesystem [IN_PROGRESS]
                     readFromCache()
 
                 } else {
@@ -251,6 +252,7 @@ class ExoPlayerWorkManagerDataSource : DataSource {
                 val url = inputData.getString("url") ?: return Result.failure()
                 val data = fetchMediaFromNetwork(url)
 
+                // FIXME: Do not use filesystem [IN_PROGRESS]
                 saveToCache(data, url)
 
                 Result.success(
@@ -278,7 +280,7 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
             if (DEBUG.get()) Console.log("$tag START")
 
-            val latch = CountDownLatch(1)
+            val latch = CountDownLatch(1) // FIXME: Do we need this? [IN_PROGRESS]
             var bytes: ByteArray = byteArrayOf()
             val context = BaseApplication.takeContext()
 
