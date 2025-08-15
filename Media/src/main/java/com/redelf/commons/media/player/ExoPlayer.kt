@@ -2,6 +2,7 @@ package com.redelf.commons.media.player
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
@@ -794,25 +795,44 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
 
-                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
-                DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 2,
-                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
-                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+                30_000,                  // MIN_BUFFER_MS (30s for stable start)
+                300_000,                // MAX_BUFFER_MS (5min for Doze tolerance)
+                2_500,            // BUFFER_FOR_PLAYBACK_MS
+                5_000   // BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
             )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .setBackBuffer(15_000, true)
             .build()
 
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()
-            .setConnectTimeoutMs(15000)
-            .setReadTimeoutMs(30000)
+            .setConnectTimeoutMs(30_000)               // Extended timeout for Doze
+            .setReadTimeoutMs(60_000)                  // Longer read timeout
             .setAllowCrossProtocolRedirects(true)
-            .setDefaultRequestProperties(mapOf("User-Agent" to "ExoPlayer"))
+            .setDefaultRequestProperties(
+
+                mapOf(
+
+                    "User-Agent" to "ExoPlayer",
+                    "Cache-Control" to "max-stale=3600" // Cache-friendly
+                )
+            )
 
         val exoPlayer = ExoPlayer.Builder(context)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .setLoadControl(loadControl)
             .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
+            .setWakeMode(C.WAKE_MODE_NETWORK)                           // Keep network alive
+            .experimentalSetForegroundModeTimeoutMs(5_000)   // Faster FG transition
             .build()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            // Use Media3's built-in Doze compatibility
+            exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
+                .buildUpon()
+                .build()
+        }
 
         exoPlayer.addAnalyticsListener(object : AnalyticsListener {
 
