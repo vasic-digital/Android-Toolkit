@@ -14,6 +14,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.DefaultLoadControl
@@ -811,18 +812,25 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setBackBuffer(3_000, true)
             .build()
 
-        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
-            .setConnectTimeoutMs(15000)
-            .setReadTimeoutMs(30000)
-            .setAllowCrossProtocolRedirects(true)
-            .setDefaultRequestProperties(
+        val httpDataSourceFactory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 
-                mapOf(
+            DefaultHttpDataSource.Factory()
+                .setConnectTimeoutMs(15000)
+                .setReadTimeoutMs(30000)
+                .setAllowCrossProtocolRedirects(true)
+                .setDefaultRequestProperties(
 
-                    "User-Agent" to "ExoPlayer",
-                    "Cache-Control" to "max-stale=3600" // Cache-friendly
+                    mapOf(
+
+                        "User-Agent" to "ExoPlayer",
+                        "Cache-Control" to "max-stale=3600"
+                    )
                 )
-            )
+
+        } else {
+
+            ExoPlayerWorkManagerDataSourceFactory()
+        }
 
         /* FIXME: [IN_PROGRESS]
 
