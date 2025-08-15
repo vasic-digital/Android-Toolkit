@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -270,10 +271,11 @@ class ExoPlayerWorkManagerDataSource : DataSource {
         @Throws(IOException::class)
         private suspend fun fetchMediaFromNetwork(url: String): ByteArray {
 
-            val tag = "$tag Fetch media from network"
+            val tag = "$tag Fetch media from network ::"
 
             if (DEBUG.get()) Console.log("$tag START")
 
+            val latch = CountDownLatch(1)
             var bytes: ByteArray = byteArrayOf()
             val context = BaseApplication.takeContext()
 
@@ -305,6 +307,8 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
                     if (DEBUG.get()) Console.log("$tag Bytes obtained")
 
+                    latch.countDown()
+
                 } catch (e: Throwable) {
 
                     Console.error(
@@ -314,16 +318,39 @@ class ExoPlayerWorkManagerDataSource : DataSource {
                     )
 
                     recordException(e)
+
+                    latch.countDown()
                 }
             }
 
-            if (bytes.isNotEmpty()) {
+            try {
 
-                if (DEBUG.get()) Console.log("$tag END")
+                if (DEBUG.get()) Console.log("$tag Await")
 
-            } else {
+                if (latch.await(60, TimeUnit.SECONDS)) {
 
-                Console.error("$tag END")
+                    if (DEBUG.get()) Console.log("$tag Await OK")
+
+                    if (bytes.isNotEmpty()) {
+
+                        if (DEBUG.get()) Console.log("$tag END")
+
+                    } else {
+
+                        Console.error("$tag END :: No data received")
+                    }
+
+                } else {
+
+                    Console.error("$tag Await timed out")
+                }
+
+            } catch (e: Throwable) {
+
+                Console.error(
+
+                    "$tag ERROR :: Latch await error='${e.message ?: e::class.simpleName}'"
+                )
             }
 
             return bytes
