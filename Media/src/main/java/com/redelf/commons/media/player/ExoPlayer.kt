@@ -23,15 +23,13 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.creation.instantiation.Instantiable
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.extensions.executeWithWakeLock
-import com.redelf.commons.extensions.executeWithWorkManager
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.wakeUpScreen
 import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.player.base.PlayerAbstraction
+import com.redelf.commons.media.player.base.PlayerConnectivityMonitor
 import com.redelf.commons.obtain.Obtain
 import java.util.UUID
 
@@ -44,6 +42,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
     companion object {
 
         private var exo: EPlayer? = null
+        private var monitor: PlayerConnectivityMonitor? = null
     }
 
     private var currentDuration: Long = 0
@@ -284,6 +283,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                             what.onError(e)
                             Console.error("$playerTag $logTag Error: ${error.errorCode}")
+                        }
+
+                        override fun onIsLoadingChanged(isLoading: Boolean) {
+
+                            if (!isLoading) {
+
+                                Console.warning("$playerTag $logTag Not loading")
+                            }
                         }
                     }
 
@@ -795,6 +802,33 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
 
+                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS / 5,
+                (DefaultLoadControl.DEFAULT_MAX_BUFFER_MS / 5) * 2,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+            )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .setBackBuffer(3_000, true)
+            .build()
+
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+            .setConnectTimeoutMs(15000)
+            .setReadTimeoutMs(30000)
+            .setAllowCrossProtocolRedirects(true)
+            .setDefaultRequestProperties(
+
+                mapOf(
+
+                    "User-Agent" to "ExoPlayer",
+                    "Cache-Control" to "max-stale=3600" // Cache-friendly
+                )
+            )
+
+        /* FIXME: [IN_PROGRESS]
+
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+
                 30_000,                  // MIN_BUFFER_MS (30s for stable start)
                 300_000,                // MAX_BUFFER_MS (5min for Doze tolerance)
                 2_500,            // BUFFER_FOR_PLAYBACK_MS
@@ -816,6 +850,8 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                     "Cache-Control" to "max-stale=3600" // Cache-friendly
                 )
             )
+
+         */
 
         val exoPlayer = ExoPlayer.Builder(context)
             .setAudioAttributes(audioAttributes, true)
@@ -1144,11 +1180,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         return exo
     }
 
+    override fun getMonitor() = monitor
+
     override fun setMediaPlayer(value: EPlayer) {
 
         Console.log("$playerTag Set player :: ${value.hashCode()}")
 
         exo = value
+        monitor = ExoPlayerConnectivityMonitor(value)
     }
 
     override fun unsetMediaPlayer() {
@@ -1156,6 +1195,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         Console.log("$playerTag UnSet player")
 
         exo = null
+        monitor = null
     }
 
     private fun doStop(ep: EPlayer): Boolean {
