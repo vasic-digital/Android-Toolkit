@@ -1,13 +1,26 @@
 package com.redelf.commons.media.player.wrapped
 
+import androidx.annotation.NonNull
+import androidx.annotation.Nullable
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.executeWithWorkManager
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.sync
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+
 
 object Util {
+
+    @JvmStatic
+    val DEBUG = AtomicBoolean(true)
 
     @JvmStatic
     fun onWorker(runnable: Runnable) {
@@ -21,11 +34,39 @@ object Util {
     }
 
     @JvmStatic
-    fun <T> syncOnWorker(obtainable: Obtain<T?>): T? {
+    fun <T> syncOnWorkerJava(obtainable: Obtain<T?>): T? {
 
-        return sync("") { callback ->
+        return runBlocking {
 
-            onWorkerAsync(obtainable, callback)
+            syncOnWorker(obtainable)
+        }
+    }
+
+    @JvmStatic
+    suspend fun <T> syncOnWorker(
+
+        obtainable: Obtain<T?>,
+        context: CoroutineContext = Dispatchers.IO
+
+    ): T? = withContext(context) {
+
+        val ctx = BaseApplication.takeContext()
+
+        suspendCoroutine { continuation ->
+
+            ctx.executeWithWorkManager {
+
+                try {
+
+                    val result = obtainable.obtain()
+
+                    continuation.resume(result)
+
+                } catch (e: Throwable) {
+
+                    continuation.resumeWithException(e)
+                }
+            }
         }
     }
 

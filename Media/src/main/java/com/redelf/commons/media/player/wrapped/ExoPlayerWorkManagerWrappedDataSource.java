@@ -485,23 +485,13 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
     @UnstableApi
     @Override
-    public int read(@NonNull byte[] buffer, int offset, int length) {
-
-        final Obtain<Integer> obtainer = () -> {
-
-            try {
-
-                return readInternal(buffer, offset, length);
-
-            } catch (IOException e) {
-
-                Console.error(e);
-            }
-
-            return 0;
-        };
-
-        return obtainer.obtain();
+    public int read(@NonNull byte[] buffer, int offset, int length) throws HttpDataSourceException {
+        try {
+            return readInternal(buffer, offset, length);
+        } catch (IOException e) {
+            throw HttpDataSourceException.createForIOException(
+                    e, castNonNull(dataSpec), HttpDataSourceException.TYPE_READ);
+        }
     }
 
     @UnstableApi
