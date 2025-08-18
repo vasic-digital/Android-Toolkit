@@ -14,8 +14,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
@@ -31,6 +29,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.player.base.PlayerAbstraction
 import com.redelf.commons.media.player.base.PlayerConnectivityMonitor
+import com.redelf.commons.media.player.wrapped.ExoPlayerWorkManagerDataSourceFactory
 import com.redelf.commons.obtain.Obtain
 import java.util.UUID
 
@@ -800,40 +799,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setUsage(C.USAGE_MEDIA)
             .build()
 
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(
-
-                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS / 5,
-                (DefaultLoadControl.DEFAULT_MAX_BUFFER_MS / 5) * 2,
-                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
-                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
-            )
-            .setPrioritizeTimeOverSizeThresholds(true)
-            .setBackBuffer(3_000, true)
-            .build()
-
-        val httpDataSourceFactory = ExoPlayerWorkManagerDataSourceFactory()
-
-//            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-//
-//            DefaultHttpDataSource.Factory()
-//                .setConnectTimeoutMs(15000)
-//                .setReadTimeoutMs(30000)
-//                .setAllowCrossProtocolRedirects(true)
-//                .setDefaultRequestProperties(
-//
-//                    mapOf(
-//
-//                        "User-Agent" to "ExoPlayer",
-//                        "Cache-Control" to "max-stale=3600"
-//                    )
-//                )
-//
-//        } else {
-//
-//            ExoPlayerWorkManagerDataSourceFactory()
-//        }
-
         /* FIXME: [IN_PROGRESS]
 
         val loadControl = DefaultLoadControl.Builder()
@@ -847,21 +812,21 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setPrioritizeTimeOverSizeThresholds(true)
             .setBackBuffer(15_000, true)
             .build()
+        */
 
-        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
-            .setConnectTimeoutMs(30_000)               // Extended timeout for Doze
-            .setReadTimeoutMs(60_000)                  // Longer read timeout
-            .setAllowCrossProtocolRedirects(true)
-            .setDefaultRequestProperties(
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
 
-                mapOf(
-
-                    "User-Agent" to "ExoPlayer",
-                    "Cache-Control" to "max-stale=3600" // Cache-friendly
-                )
+                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS / 5,
+                (DefaultLoadControl.DEFAULT_MAX_BUFFER_MS / 5) * 2,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
             )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .setBackBuffer(3_000, true)
+            .build()
 
-         */
+        val httpDataSourceFactory = ExoPlayerWorkManagerDataSourceFactory()
 
         val exoPlayer = ExoPlayer.Builder(context)
             .setAudioAttributes(audioAttributes, true)

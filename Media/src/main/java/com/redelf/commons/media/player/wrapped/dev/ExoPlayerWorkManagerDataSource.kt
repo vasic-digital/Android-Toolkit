@@ -1,9 +1,10 @@
-package com.redelf.commons.media.player
+package com.redelf.commons.media.player.wrapped.dev
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.OptIn
+import androidx.lifecycle.asFlow
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
@@ -18,24 +19,24 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.extensions.executeWithWorkManager
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.logging.Console
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import androidx.lifecycle.asFlow
-import com.redelf.commons.extensions.executeWithWorkManager
-import com.redelf.commons.logging.Console
-import kotlinx.coroutines.flow.first
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.ByteArrayOutputStream
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 @UnstableApi
+@Deprecated("Just for the development purposes")
 class ExoPlayerWorkManagerDataSource : DataSource {
 
     companion object {
@@ -134,7 +135,7 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
         if (DEBUG.get()) Console.log("$tag Fetching")
 
-        val context = BaseApplication.takeContext()
+        val context = BaseApplication.Companion.takeContext()
 
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -145,9 +146,9 @@ class ExoPlayerWorkManagerDataSource : DataSource {
             .setConstraints(constraints)
             .build()
 
-        WorkManager.getInstance(context).enqueue(workRequest)
+        WorkManager.Companion.getInstance(context).enqueue(workRequest)
 
-        return WorkManager.getInstance(context)
+        return WorkManager.Companion.getInstance(context)
             .getWorkInfoByIdLiveData(workRequest.id)
             .asFlow()
             .first { workInfo ->
@@ -202,7 +203,7 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
         if (DEBUG.get()) Console.log("$tag Read from cache")
 
-        val context = BaseApplication.takeContext()
+        val context = BaseApplication.Companion.takeContext()
 
         val cacheDir = File(context.cacheDir, "media_cache")
 
@@ -282,7 +283,7 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
             val latch = CountDownLatch(1) // FIXME: Do we need this? [IN_PROGRESS]
             var bytes: ByteArray = byteArrayOf()
-            val context = BaseApplication.takeContext()
+            val context = BaseApplication.Companion.takeContext()
 
             context.executeWithWorkManager {
 
@@ -366,7 +367,7 @@ class ExoPlayerWorkManagerDataSource : DataSource {
 
             if (DEBUG.get()) Console.log("$tag Save to cache")
 
-            val context = BaseApplication.takeContext()
+            val context = BaseApplication.Companion.takeContext()
 
             val cacheDir = File(context.cacheDir, "media_cache")
 
