@@ -799,8 +799,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setUsage(C.USAGE_MEDIA)
             .build()
 
-        /* FIXME: [IN_PROGRESS]
-
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
 
@@ -811,19 +809,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             )
             .setPrioritizeTimeOverSizeThresholds(true)
             .setBackBuffer(15_000, true)
-            .build()
-        */
-
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(
-
-                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS / 5,
-                (DefaultLoadControl.DEFAULT_MAX_BUFFER_MS / 5) * 2,
-                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
-                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
-            )
-            .setPrioritizeTimeOverSizeThresholds(true)
-            .setBackBuffer(3_000, true)
             .build()
 
         val httpDataSourceFactory = ExoPlayerWorkManagerDataSourceFactory()
