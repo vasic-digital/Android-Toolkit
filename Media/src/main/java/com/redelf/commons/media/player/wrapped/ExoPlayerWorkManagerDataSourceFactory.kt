@@ -45,11 +45,7 @@ class ExoPlayerWorkManagerDataSourceFactory : DataSource.Factory {
 
     override fun createDataSource(): DataSource {
 
-        val cacheParameters = mapOf(
-
-            "User-Agent" to "ExoPlayer",
-            "Cache-Control" to "max-stale=3600"
-        )
+        val cacheParameters = mapOf("User-Agent" to "ExoPlayer")
 
         return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 
