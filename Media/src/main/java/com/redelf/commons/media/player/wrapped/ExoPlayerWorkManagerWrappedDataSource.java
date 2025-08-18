@@ -532,6 +532,19 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
                 Console.debug("%s Connection OFF", TAG);
 
+                Console.log("%s Connection COOLING DOWN", TAG);
+
+                long now = System.currentTimeMillis();
+
+                while (
+
+                        System.currentTimeMillis() - now <= 30_000 &&
+                                (connection == null || connection.getInputStream() == null)
+
+                ) {}
+
+                Console.debug("%s Connection COOLED DOWN", TAG);
+
             } catch (Throwable e) {
 
                 Console.error(
