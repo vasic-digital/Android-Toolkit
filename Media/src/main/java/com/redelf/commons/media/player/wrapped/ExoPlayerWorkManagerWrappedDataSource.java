@@ -76,21 +76,28 @@ import java.util.zip.GZIPInputStream;
 @UnstableApi
 public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implements HttpDataSource {
 
-    /** {@link DataSource.Factory} for {@link ExoPlayerWorkManagerWrappedDataSource} instances. */
+    /**
+     * {@link DataSource.Factory} for {@link ExoPlayerWorkManagerWrappedDataSource} instances.
+     */
     public static final class Factory implements HttpDataSource.Factory {
 
         private final RequestProperties defaultRequestProperties;
 
-        @Nullable private TransferListener transferListener;
-        @Nullable private Predicate<String> contentTypePredicate;
-        @Nullable private String userAgent;
+        @Nullable
+        private TransferListener transferListener;
+        @Nullable
+        private Predicate<String> contentTypePredicate;
+        @Nullable
+        private String userAgent;
         private int connectTimeoutMs;
         private int readTimeoutMs;
         private boolean allowCrossProtocolRedirects;
         private boolean crossProtocolRedirectsForceOriginal;
         private boolean keepPostFor302Redirects;
 
-        /** Creates an instance. */
+        /**
+         * Creates an instance.
+         */
         public Factory() {
             defaultRequestProperties = new RequestProperties();
             connectTimeoutMs = DEFAULT_CONNECT_TIMEOUT_MILLIS;
@@ -112,7 +119,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
          * platform to be used.
          *
          * @param userAgent The user agent that will be used, or {@code null} to use the default user
-         *     agent of the underlying platform.
+         *                  agent of the underlying platform.
          * @return This factory.
          */
         @CanIgnoreReturnValue
@@ -191,7 +198,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
          * <p>The default is {@code null}.
          *
          * @param contentTypePredicate The content type {@link Predicate}, or {@code null} to clear a
-         *     predicate that was previously set.
+         *                             predicate that was previously set.
          * @return This factory.
          */
         @CanIgnoreReturnValue
@@ -250,13 +257,19 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         }
     }
 
-    /** The default connection timeout, in milliseconds. */
-    @UnstableApi public static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 8 * 1000;
+    /**
+     * The default connection timeout, in milliseconds.
+     */
+    @UnstableApi
+    public static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 8 * 1000;
 
-    /** The default read timeout, in milliseconds. */
-    @UnstableApi public static final int DEFAULT_READ_TIMEOUT_MILLIS = 8 * 1000;
+    /**
+     * The default read timeout, in milliseconds.
+     */
+    @UnstableApi
+    public static final int DEFAULT_READ_TIMEOUT_MILLIS = 8 * 1000;
 
-    private static final String TAG = "DefaultHttpDataSource ::";
+    private static final String TAG = "Exo :: Work manager wrapped data source ::";
     private static final int MAX_REDIRECTS = 20; // Same limit as okhttp.
     private static final int HTTP_STATUS_TEMPORARY_REDIRECT = 307;
     private static final int HTTP_STATUS_PERMANENT_REDIRECT = 308;
@@ -265,15 +278,21 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     private final boolean crossProtocolRedirectsForceOriginal;
     private final int connectTimeoutMillis;
     private final int readTimeoutMillis;
-    @Nullable private final String userAgent;
-    @Nullable private final RequestProperties defaultRequestProperties;
+    @Nullable
+    private final String userAgent;
+    @Nullable
+    private final RequestProperties defaultRequestProperties;
     private final RequestProperties requestProperties;
-    @Nullable private final Predicate<String> contentTypePredicate;
+    @Nullable
+    private final Predicate<String> contentTypePredicate;
     private final boolean keepPostFor302Redirects;
 
-    @Nullable private DataSpec dataSpec;
-    @Nullable private HttpURLConnection connection;
-    @Nullable private InputStream inputStream;
+    @Nullable
+    private DataSpec dataSpec;
+    @Nullable
+    private HttpURLConnection connection;
+    @Nullable
+    private InputStream inputStream;
     private boolean transferStarted;
     private int responseCode;
     private long bytesToRead;
@@ -362,148 +381,166 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         requestProperties.clear();
     }
 
-    /** Opens the source to read the specified data. */
+    /**
+     * Opens the source to read the specified data.
+     */
     @UnstableApi
     @Override
-    public long open(DataSpec dataSpec) throws HttpDataSourceException {
+    public long open(@NonNull DataSpec dataSpec) throws HttpDataSourceException {
 
-        final Obtain<Long> obtainable = new Obtain<Long>() {
+        final Obtain<Long> obtainable = () -> {
 
-            @Override
-            public Long obtain()  {
+            try {
+
+                ExoPlayerWorkManagerWrappedDataSource.this.dataSpec = dataSpec;
+
+                bytesRead = 0;
+                bytesToRead = 0;
+                transferInitializing(dataSpec);
+
+                String responseMessage;
+                HttpURLConnection connection;
 
                 try {
 
-                    ExoPlayerWorkManagerWrappedDataSource.this.dataSpec = dataSpec;
+                    ExoPlayerWorkManagerWrappedDataSource.this.connection = makeConnection(dataSpec);
+                    connection = ExoPlayerWorkManagerWrappedDataSource.this.connection;
+                    responseCode = connection.getResponseCode();
+                    responseMessage = connection.getResponseMessage();
 
-                    bytesRead = 0;
-                    bytesToRead = 0;
-                    transferInitializing(dataSpec);
+                } catch (IOException e) {
 
-                    String responseMessage;
-                    HttpURLConnection connection;
-
-                    try {
-
-                        ExoPlayerWorkManagerWrappedDataSource.this.connection = makeConnection(dataSpec);
-                        connection = ExoPlayerWorkManagerWrappedDataSource.this.connection;
-                        responseCode = connection.getResponseCode();
-                        responseMessage = connection.getResponseMessage();
-
-                    } catch (IOException e) {
-
-                        closeConnectionQuietly();
-                        throw HttpDataSourceException.createForIOException(
-                                e, dataSpec, HttpDataSourceException.TYPE_OPEN);
-                    }
-
-                    // Check for a valid response code.
-                    if (responseCode < 200 || responseCode > 299) {
-                        Map<String, List<String>> headers = connection.getHeaderFields();
-                        if (responseCode == 416) {
-                            long documentSize =
-                                    HttpUtil.getDocumentSize(connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
-                            if (dataSpec.position == documentSize) {
-                                transferStarted = true;
-                                transferStarted(dataSpec);
-                                return dataSpec.length != C.LENGTH_UNSET ? dataSpec.length : 0;
-                            }
-                        }
-
-                        @Nullable InputStream errorStream = connection.getErrorStream();
-                        byte[] errorResponseBody;
-                        try {
-                            errorResponseBody =
-                                    errorStream != null ? ByteStreams.toByteArray(errorStream) : Util.EMPTY_BYTE_ARRAY;
-                        } catch (IOException e) {
-                            errorResponseBody = Util.EMPTY_BYTE_ARRAY;
-                        }
-                        closeConnectionQuietly();
-                        @Nullable
-                        IOException cause =
-                                responseCode == 416
-                                        ? new DataSourceException(PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE)
-                                        : null;
-                        throw new InvalidResponseCodeException(
-                                responseCode, responseMessage, cause, headers, dataSpec, errorResponseBody);
-                    }
-
-                    // Check for a valid content type.
-                    String contentType = connection.getContentType();
-                    if (contentTypePredicate != null && !contentTypePredicate.apply(contentType)) {
-                        closeConnectionQuietly();
-                        throw new InvalidContentTypeException(contentType, dataSpec);
-                    }
-
-                    // If we requested a range starting from a non-zero position and received a 200 rather than a
-                    // 206, then the server does not support partial requests. We'll need to manually skip to the
-                    // requested position.
-                    long bytesToSkip = responseCode == 200 && dataSpec.position != 0 ? dataSpec.position : 0;
-
-                    // Determine the length of the data to be read, after skipping.
-                    boolean isCompressed = isCompressed(connection);
-                    if (!isCompressed) {
-                        if (dataSpec.length != C.LENGTH_UNSET) {
-                            bytesToRead = dataSpec.length;
-                        } else {
-                            long contentLength =
-                                    HttpUtil.getContentLength(
-                                            connection.getHeaderField(HttpHeaders.CONTENT_LENGTH),
-                                            connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
-                            bytesToRead =
-                                    contentLength != C.LENGTH_UNSET ? (contentLength - bytesToSkip) : C.LENGTH_UNSET;
-                        }
-                    } else {
-                        // Gzip is enabled. If the server opts to use gzip then the content length in the response
-                        // will be that of the compressed data, which isn't what we want. Always use the dataSpec
-                        // length in this case.
-                        bytesToRead = dataSpec.length;
-                    }
-
-                    try {
-                        inputStream = connection.getInputStream();
-                        if (isCompressed) {
-                            inputStream = new GZIPInputStream(inputStream);
-                        }
-                    } catch (IOException e) {
-                        closeConnectionQuietly();
-                        throw new HttpDataSourceException(
-                                e,
-                                dataSpec,
-                                PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
-                                HttpDataSourceException.TYPE_OPEN);
-                    }
-
-                    transferStarted = true;
-                    transferStarted(dataSpec);
-
-                    try {
-                        skipFully(bytesToSkip, dataSpec);
-                    } catch (IOException e) {
-                        closeConnectionQuietly();
-
-                        if (e instanceof HttpDataSourceException) {
-                            throw (HttpDataSourceException) e;
-                        }
-                        throw new HttpDataSourceException(
-                                e,
-                                dataSpec,
-                                PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
-                                HttpDataSourceException.TYPE_OPEN);
-                    }
-
-                    return bytesToRead;
-
-                } catch (Throwable e) {
-
-                    Console.error(e);
+                    closeConnectionQuietly();
+                    throw HttpDataSourceException.createForIOException(
+                            e, dataSpec, HttpDataSourceException.TYPE_OPEN);
                 }
 
-                return 0L;
+                // Check for a valid response code.
+                if (responseCode < 200 || responseCode > 299) {
+                    Map<String, List<String>> headers = connection.getHeaderFields();
+                    if (responseCode == 416) {
+                        long documentSize =
+                                HttpUtil.getDocumentSize(connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
+                        if (dataSpec.position == documentSize) {
+                            transferStarted = true;
+                            transferStarted(dataSpec);
+                            return dataSpec.length != C.LENGTH_UNSET ? dataSpec.length : 0;
+                        }
+                    }
+
+                    @Nullable InputStream errorStream = connection.getErrorStream();
+                    byte[] errorResponseBody;
+                    try {
+                        errorResponseBody =
+                                errorStream != null ? ByteStreams.toByteArray(errorStream) : Util.EMPTY_BYTE_ARRAY;
+                    } catch (IOException e) {
+                        errorResponseBody = Util.EMPTY_BYTE_ARRAY;
+                    }
+                    closeConnectionQuietly();
+                    @Nullable
+                    IOException cause =
+                            responseCode == 416
+                                    ? new DataSourceException(PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE)
+                                    : null;
+                    throw new InvalidResponseCodeException(
+                            responseCode, responseMessage, cause, headers, dataSpec, errorResponseBody);
+                }
+
+                // Check for a valid content type.
+                String contentType = connection.getContentType();
+                if (contentTypePredicate != null && !contentTypePredicate.apply(contentType)) {
+                    closeConnectionQuietly();
+                    throw new InvalidContentTypeException(contentType, dataSpec);
+                }
+
+                // If we requested a range starting from a non-zero position and received a 200 rather than a
+                // 206, then the server does not support partial requests. We'll need to manually skip to the
+                // requested position.
+                long bytesToSkip = responseCode == 200 && dataSpec.position != 0 ? dataSpec.position : 0;
+
+                // Determine the length of the data to be read, after skipping.
+                boolean isCompressed = isCompressed(connection);
+                if (!isCompressed) {
+                    if (dataSpec.length != C.LENGTH_UNSET) {
+                        bytesToRead = dataSpec.length;
+                    } else {
+                        long contentLength =
+                                HttpUtil.getContentLength(
+                                        connection.getHeaderField(HttpHeaders.CONTENT_LENGTH),
+                                        connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
+                        bytesToRead =
+                                contentLength != C.LENGTH_UNSET ? (contentLength - bytesToSkip) : C.LENGTH_UNSET;
+                    }
+                } else {
+                    // Gzip is enabled. If the server opts to use gzip then the content length in the response
+                    // will be that of the compressed data, which isn't what we want. Always use the dataSpec
+                    // length in this case.
+                    bytesToRead = dataSpec.length;
+                }
+
+                try {
+                    inputStream = connection.getInputStream();
+                    if (isCompressed) {
+                        inputStream = new GZIPInputStream(inputStream);
+                    }
+                } catch (IOException e) {
+                    closeConnectionQuietly();
+                    throw new HttpDataSourceException(
+                            e,
+                            dataSpec,
+                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+                            HttpDataSourceException.TYPE_OPEN);
+                }
+
+                transferStarted = true;
+                transferStarted(dataSpec);
+
+                try {
+                    skipFully(bytesToSkip, dataSpec);
+                } catch (IOException e) {
+                    closeConnectionQuietly();
+
+                    if (e instanceof HttpDataSourceException) {
+                        throw (HttpDataSourceException) e;
+                    }
+                    throw new HttpDataSourceException(
+                            e,
+                            dataSpec,
+                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+                            HttpDataSourceException.TYPE_OPEN);
+                }
+
+                return bytesToRead;
+
+            } catch (Throwable e) {
+
+                Console.error(e);
             }
+
+            return 0L;
         };
 
         final Long result = com.redelf.commons.media.player.wrapped.Util.syncOnWorkerJava(obtainable);
+
+        com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
+
+            Console.debug("%s Connection ON", TAG);
+
+            try {
+
+                while (connection != null && connection.getInputStream() != null) {}
+
+                Console.debug("%s Connection OFF", TAG);
+
+            } catch (Throwable e) {
+
+                Console.error(
+
+                        "%s Connection ERROR :: Error='%s'",
+                        TAG, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
+                );
+            }
+        });
 
         return result != null ? result : 0L;
     }
@@ -548,7 +585,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         }
     }
 
-    /** Establishes a connection, following redirects to do so where permitted. */
+    /**
+     * Establishes a connection, following redirects to do so where permitted.
+     */
     private HttpURLConnection makeConnection(DataSpec dataSpec) throws IOException {
         URL url = new URL(dataSpec.uri.toString());
         @HttpMethod int httpMethod = dataSpec.httpMethod;
@@ -628,13 +667,13 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     /**
      * Configures a connection and opens it.
      *
-     * @param url The url to connect to.
-     * @param httpMethod The http method.
-     * @param httpBody The body data, or {@code null} if not required.
-     * @param position The byte offset of the requested data.
-     * @param length The length of the requested data, or {@link C#LENGTH_UNSET}.
-     * @param allowGzip Whether to allow the use of gzip.
-     * @param followRedirects Whether to follow redirects.
+     * @param url               The url to connect to.
+     * @param httpMethod        The http method.
+     * @param httpBody          The body data, or {@code null} if not required.
+     * @param position          The byte offset of the requested data.
+     * @param length            The length of the requested data, or {@link C#LENGTH_UNSET}.
+     * @param allowGzip         Whether to allow the use of gzip.
+     * @param followRedirects   Whether to follow redirects.
      * @param requestParameters parameters (HTTP headers) to include in request.
      */
     private HttpURLConnection makeConnection(
@@ -686,7 +725,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         return connection;
     }
 
-    /** Creates an {@link HttpURLConnection} that is connected with the {@code url}. */
+    /**
+     * Creates an {@link HttpURLConnection} that is connected with the {@code url}.
+     */
     @VisibleForTesting
     /* package */ HttpURLConnection openConnection(URL url) throws IOException {
         return (HttpURLConnection) url.openConnection();
@@ -696,8 +737,8 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
      * Handles a redirect.
      *
      * @param originalUrl The original URL.
-     * @param location The Location header in the response. May be {@code null}.
-     * @param dataSpec The {@link DataSpec}.
+     * @param location    The Location header in the response. May be {@code null}.
+     * @param dataSpec    The {@link DataSpec}.
      * @return The next URL.
      * @throws HttpDataSourceException If redirection isn't possible.
      */
@@ -761,9 +802,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
      * Attempts to skip the specified number of bytes in full.
      *
      * @param bytesToSkip The number of bytes to skip.
-     * @param dataSpec The {@link DataSpec}.
+     * @param dataSpec    The {@link DataSpec}.
      * @throws IOException If the thread is interrupted during the operation, or if the data ended
-     *     before skipping the specified number of bytes.
+     *                     before skipping the specified number of bytes.
      */
     private void skipFully(long bytesToSkip, DataSpec dataSpec) throws IOException {
         if (bytesToSkip == 0) {
@@ -798,11 +839,11 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
      * <p>This method blocks until at least one byte of data can be read, the end of the opened range
      * is detected, or an exception is thrown.
      *
-     * @param buffer The buffer into which the read data should be stored.
-     * @param offset The start offset into {@code buffer} at which data should be written.
+     * @param buffer     The buffer into which the read data should be stored.
+     * @param offset     The start offset into {@code buffer} at which data should be written.
      * @param readLength The maximum number of bytes to read.
      * @return The number of bytes read, or {@link C#RESULT_END_OF_INPUT} if the end of the opened
-     *     range is reached.
+     * range is reached.
      * @throws IOException If an error occurs reading from the source.
      */
     private int readInternal(byte[] buffer, int offset, int readLength) throws IOException {
@@ -827,7 +868,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         return read;
     }
 
-    /** Closes the current connection quietly, if there is one. */
+    /**
+     * Closes the current connection quietly, if there is one.
+     */
     private void closeConnectionQuietly() {
 
         com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
