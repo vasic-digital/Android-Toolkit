@@ -1426,7 +1426,15 @@ abstract class BaseApplication :
                 "identifier = $identifier"
 
         val error = IllegalStateException(msg)
-        recordException(error)
+
+        if (isProduction()) {
+
+            recordException(error)
+
+        } else {
+
+            Console.warning(msg)
+        }
     }
 
     override fun onUpdated(identifier: Long) {
