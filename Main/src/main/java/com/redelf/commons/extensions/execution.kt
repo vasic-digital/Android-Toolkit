@@ -14,10 +14,17 @@ import androidx.work.WorkManager
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.BackgroundTaskWorker
 import com.redelf.commons.logging.Console
+import com.redelf.commons.obtain.Obtain
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 val DEBUG_EXEC_EXTENSION = AtomicBoolean()
 
@@ -149,5 +156,32 @@ fun Context.executeWithWorkManager(
     } catch (e: Throwable) {
 
         onError(e)
+    }
+}
+
+suspend fun <T> syncOnWorker(
+
+    obtainable: Obtain<T?>,
+    context: CoroutineContext = Dispatchers.IO
+
+): T? = withContext(context) {
+
+    val ctx = BaseApplication.takeContext()
+
+    suspendCoroutine { continuation ->
+
+        ctx.executeWithWorkManager {
+
+            try {
+
+                val result = obtainable.obtain()
+
+                continuation.resume(result)
+
+            } catch (e: Throwable) {
+
+                continuation.resumeWithException(e)
+            }
+        }
     }
 }
