@@ -45,20 +45,20 @@ class ExoPlayerWorkManagerDataSourceFactory : DataSource.Factory {
 
     override fun createDataSource(): DataSource {
 
+        val cacheParameters = mapOf(
+
+            "User-Agent" to "ExoPlayer",
+            "Cache-Control" to "max-stale=3600"
+        )
+
         return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 
             DefaultHttpDataSource.Factory()
                 .setConnectTimeoutMs(15000)
                 .setReadTimeoutMs(30000)
                 .setAllowCrossProtocolRedirects(true)
-                .setDefaultRequestProperties(
-
-                    mapOf(
-
-                        "User-Agent" to "ExoPlayer",
-                        "Cache-Control" to "max-stale=3600"
-                    )
-                ).createDataSource()
+                .setDefaultRequestProperties(cacheParameters)
+                .createDataSource()
 
         } else {
 
@@ -66,14 +66,8 @@ class ExoPlayerWorkManagerDataSourceFactory : DataSource.Factory {
                 .setConnectTimeoutMs(15000)
                 .setReadTimeoutMs(30000)
                 .setAllowCrossProtocolRedirects(true)
-                .setDefaultRequestProperties(
-
-                    mapOf(
-
-                        "User-Agent" to "ExoPlayer",
-                        "Cache-Control" to "max-stale=3600"
-                    )
-                ).createDataSource()
+                .setDefaultRequestProperties(cacheParameters)
+                .createDataSource()
         }
     }
 }
