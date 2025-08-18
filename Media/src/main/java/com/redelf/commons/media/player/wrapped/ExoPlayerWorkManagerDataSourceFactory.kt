@@ -1,7 +1,9 @@
 package com.redelf.commons.media.player.wrapped
 
+import android.os.Build
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultHttpDataSource
 
 @UnstableApi
 class ExoPlayerWorkManagerDataSourceFactory : DataSource.Factory {
@@ -43,17 +45,35 @@ class ExoPlayerWorkManagerDataSourceFactory : DataSource.Factory {
 
     override fun createDataSource(): DataSource {
 
-        return ExoPlayerWorkManagerWrappedDataSource.Factory()
-            .setConnectTimeoutMs(15000)
-            .setReadTimeoutMs(30000)
-            .setAllowCrossProtocolRedirects(true)
-            .setDefaultRequestProperties(
+        return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 
-                mapOf(
+            DefaultHttpDataSource.Factory()
+                .setConnectTimeoutMs(15000)
+                .setReadTimeoutMs(30000)
+                .setAllowCrossProtocolRedirects(true)
+                .setDefaultRequestProperties(
 
-                    "User-Agent" to "ExoPlayer",
-                    "Cache-Control" to "max-stale=3600"
-                )
-            ).createDataSource()
+                    mapOf(
+
+                        "User-Agent" to "ExoPlayer",
+                        "Cache-Control" to "max-stale=3600"
+                    )
+                ).createDataSource()
+
+        } else {
+
+            ExoPlayerWorkManagerWrappedDataSource.Factory()
+                .setConnectTimeoutMs(15000)
+                .setReadTimeoutMs(30000)
+                .setAllowCrossProtocolRedirects(true)
+                .setDefaultRequestProperties(
+
+                    mapOf(
+
+                        "User-Agent" to "ExoPlayer",
+                        "Cache-Control" to "max-stale=3600"
+                    )
+                ).createDataSource()
+        }
     }
 }
