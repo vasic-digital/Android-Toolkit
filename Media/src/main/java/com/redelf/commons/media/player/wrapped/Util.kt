@@ -20,9 +20,6 @@ import kotlin.coroutines.suspendCoroutine
 object Util {
 
     @JvmStatic
-    val DEBUG = AtomicBoolean(true)
-
-    @JvmStatic
     fun onWorker(runnable: Runnable) {
 
         val ctx = BaseApplication.takeContext()
@@ -66,26 +63,6 @@ object Util {
 
                     continuation.resumeWithException(e)
                 }
-            }
-        }
-    }
-
-    @JvmStatic
-    fun <T> onWorkerAsync(obtainable: Obtain<T?>, callback: OnObtain<T?>) {
-
-        val ctx = BaseApplication.takeContext()
-
-        ctx.executeWithWorkManager {
-
-            try {
-
-                val result = obtainable.obtain()
-
-                callback.onCompleted(result)
-
-            } catch (e: Throwable) {
-
-                recordException(e)
             }
         }
     }
