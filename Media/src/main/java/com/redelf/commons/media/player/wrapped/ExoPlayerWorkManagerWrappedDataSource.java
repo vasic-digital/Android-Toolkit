@@ -257,7 +257,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     /** The default read timeout, in milliseconds. */
     @UnstableApi public static final int DEFAULT_READ_TIMEOUT_MILLIS = 8 * 1000;
 
-    private static final String TAG = "DefaultHttpDataSource";
+    private static final String TAG = "DefaultHttpDataSource ::";
     private static final int MAX_REDIRECTS = 20; // Same limit as okhttp.
     private static final int HTTP_STATUS_TEMPORARY_REDIRECT = 307;
     private static final int HTTP_STATUS_PERMANENT_REDIRECT = 308;
@@ -813,13 +813,26 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
     /** Closes the current connection quietly, if there is one. */
     private void closeConnectionQuietly() {
-        if (connection != null) {
-            try {
-                connection.disconnect();
-            } catch (Exception e) {
-                Log.e(TAG, "Unexpected error while disconnecting", e);
+
+        com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
+
+            if (connection != null) {
+
+                try {
+
+                    connection.disconnect();
+
+                } catch (Exception e) {
+
+                    Console.error(
+
+                            "%s Unexpected error while disconnecting :: Error='%s'",
+                            TAG, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
+
+                    );
+                }
             }
-        }
+        });
     }
 
     private static boolean isCompressed(HttpURLConnection connection) {
