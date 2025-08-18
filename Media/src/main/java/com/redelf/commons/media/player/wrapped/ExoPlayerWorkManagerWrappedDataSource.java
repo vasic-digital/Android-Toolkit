@@ -886,13 +886,15 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
      */
     private void closeConnectionQuietly() {
 
-        com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
+        final Obtain<Boolean> obtainer = () -> {
 
             if (connection != null) {
 
                 try {
 
                     connection.disconnect();
+
+                    return true;
 
                 } catch (Exception e) {
 
@@ -904,7 +906,11 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                     );
                 }
             }
-        });
+
+            return false;
+        };
+
+        com.redelf.commons.media.player.wrapped.Util.syncOnWorkerJava(obtainer);
     }
 
     private static boolean isCompressed(HttpURLConnection connection) {
