@@ -109,7 +109,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         @CanIgnoreReturnValue
         @UnstableApi
         @Override
-        public Factory setDefaultRequestProperties(Map<String, String> defaultRequestProperties) {
+        public Factory setDefaultRequestProperties(@NonNull Map<String, String> defaultRequestProperties) {
             this.defaultRequestProperties.clearAndSet(defaultRequestProperties);
             return this;
         }
@@ -402,186 +402,179 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
         Console.log("%s START", TAG);
 
-        final Obtain<Long> obtainable = () -> {
+        final String oTag = TAG + " Obtain ::";
 
-            final String oTag = TAG + " Obtain ::";
+        Console.log("%s START", oTag);
 
-            Console.log("%s START", oTag);
+        try {
+
+            ExoPlayerWorkManagerWrappedDataSource.this.dataSpec = dataSpec;
+
+            bytesRead = 0;
+            bytesToRead = 0;
+            transferInitializing(dataSpec);
+
+            String responseMessage;
+            HttpURLConnection connection;
 
             try {
 
-                ExoPlayerWorkManagerWrappedDataSource.this.dataSpec = dataSpec;
+                ExoPlayerWorkManagerWrappedDataSource.this.connection = makeConnection(dataSpec);
+                connection = ExoPlayerWorkManagerWrappedDataSource.this.connection;
+                responseCode = connection.getResponseCode();
+                responseMessage = connection.getResponseMessage();
 
-                bytesRead = 0;
-                bytesToRead = 0;
-                transferInitializing(dataSpec);
+            } catch (IOException e) {
 
-                String responseMessage;
-                HttpURLConnection connection;
+                closeConnectionQuietly();
+                throw HttpDataSourceException.createForIOException(
+                        e, dataSpec, HttpDataSourceException.TYPE_OPEN);
+            }
 
+            // Check for a valid response code.
+            if (responseCode < 200 || responseCode > 299) {
+
+                Map<String, List<String>> headers = connection.getHeaderFields();
+
+                if (responseCode == 416) {
+
+                    long documentSize =
+                            HttpUtil.getDocumentSize(connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
+
+                    if (dataSpec.position == documentSize) {
+
+                        transferStarted = true;
+                        transferStarted(dataSpec);
+
+                        Console.log("%s END :: Response code = %s", oTag, responseCode);
+
+                        return dataSpec.length != C.LENGTH_UNSET ? dataSpec.length : 0;
+                    }
+                }
+
+                @Nullable InputStream errorStream = connection.getErrorStream();
+                byte[] errorResponseBody;
                 try {
-
-                    ExoPlayerWorkManagerWrappedDataSource.this.connection = makeConnection(dataSpec);
-                    connection = ExoPlayerWorkManagerWrappedDataSource.this.connection;
-                    responseCode = connection.getResponseCode();
-                    responseMessage = connection.getResponseMessage();
-
+                    errorResponseBody =
+                            errorStream != null ? ByteStreams.toByteArray(errorStream) : Util.EMPTY_BYTE_ARRAY;
                 } catch (IOException e) {
-
-                    closeConnectionQuietly();
-                    throw HttpDataSourceException.createForIOException(
-                            e, dataSpec, HttpDataSourceException.TYPE_OPEN);
+                    errorResponseBody = Util.EMPTY_BYTE_ARRAY;
                 }
 
-                // Check for a valid response code.
-                if (responseCode < 200 || responseCode > 299) {
+                closeConnectionQuietly();
 
-                    Map<String, List<String>> headers = connection.getHeaderFields();
+                @Nullable
+                IOException cause =
+                        responseCode == 416
+                                ? new DataSourceException(PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE)
+                                : null;
+                throw new InvalidResponseCodeException(
+                        responseCode, responseMessage, cause, headers, dataSpec, errorResponseBody);
+            }
 
-                    if (responseCode == 416) {
+            // Check for a valid content type.
+            String contentType = connection.getContentType();
 
-                        long documentSize =
-                                HttpUtil.getDocumentSize(connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
+            if (contentTypePredicate != null && !contentTypePredicate.apply(contentType)) {
 
-                        if (dataSpec.position == documentSize) {
+                closeConnectionQuietly();
+                throw new InvalidContentTypeException(contentType, dataSpec);
+            }
 
-                            transferStarted = true;
-                            transferStarted(dataSpec);
+            // If we requested a range starting from a non-zero position and received a 200 rather than a
+            // 206, then the server does not support partial requests. We'll need to manually skip to the
+            // requested position.
+            long bytesToSkip = responseCode == 200 && dataSpec.position != 0 ? dataSpec.position : 0;
 
-                            Console.log("%s END :: Response code = %s", oTag, responseCode);
+            // Determine the length of the data to be read, after skipping.
+            boolean isCompressed = isCompressed(connection);
+            if (!isCompressed) {
 
-                            return dataSpec.length != C.LENGTH_UNSET ? dataSpec.length : 0;
-                        }
-                    }
+                if (dataSpec.length != C.LENGTH_UNSET) {
 
-                    @Nullable InputStream errorStream = connection.getErrorStream();
-                    byte[] errorResponseBody;
-                    try {
-                        errorResponseBody =
-                                errorStream != null ? ByteStreams.toByteArray(errorStream) : Util.EMPTY_BYTE_ARRAY;
-                    } catch (IOException e) {
-                        errorResponseBody = Util.EMPTY_BYTE_ARRAY;
-                    }
-
-                    closeConnectionQuietly();
-
-                    @Nullable
-                    IOException cause =
-                            responseCode == 416
-                                    ? new DataSourceException(PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE)
-                                    : null;
-                    throw new InvalidResponseCodeException(
-                            responseCode, responseMessage, cause, headers, dataSpec, errorResponseBody);
-                }
-
-                // Check for a valid content type.
-                String contentType = connection.getContentType();
-
-                if (contentTypePredicate != null && !contentTypePredicate.apply(contentType)) {
-
-                    closeConnectionQuietly();
-                    throw new InvalidContentTypeException(contentType, dataSpec);
-                }
-
-                // If we requested a range starting from a non-zero position and received a 200 rather than a
-                // 206, then the server does not support partial requests. We'll need to manually skip to the
-                // requested position.
-                long bytesToSkip = responseCode == 200 && dataSpec.position != 0 ? dataSpec.position : 0;
-
-                // Determine the length of the data to be read, after skipping.
-                boolean isCompressed = isCompressed(connection);
-                if (!isCompressed) {
-
-                    if (dataSpec.length != C.LENGTH_UNSET) {
-
-                        bytesToRead = dataSpec.length;
-
-                    } else {
-
-                        long contentLength =
-                                HttpUtil.getContentLength(
-                                        connection.getHeaderField(HttpHeaders.CONTENT_LENGTH),
-                                        connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
-                        bytesToRead =
-                                contentLength != C.LENGTH_UNSET ? (contentLength - bytesToSkip) : C.LENGTH_UNSET;
-                    }
+                    bytesToRead = dataSpec.length;
 
                 } else {
 
-                    // Gzip is enabled. If the server opts to use gzip then the content length in the response
-                    // will be that of the compressed data, which isn't what we want. Always use the dataSpec
-                    // length in this case.
-                    bytesToRead = dataSpec.length;
+                    long contentLength =
+                            HttpUtil.getContentLength(
+                                    connection.getHeaderField(HttpHeaders.CONTENT_LENGTH),
+                                    connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
+                    bytesToRead =
+                            contentLength != C.LENGTH_UNSET ? (contentLength - bytesToSkip) : C.LENGTH_UNSET;
                 }
 
-                try {
+            } else {
 
-                    inputStream = connection.getInputStream();
-
-                    if (isCompressed) {
-
-                        inputStream = new GZIPInputStream(inputStream);
-                    }
-
-                } catch (IOException e) {
-
-                    closeConnectionQuietly();
-
-                    throw new HttpDataSourceException(
-                            e,
-                            dataSpec,
-                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
-                            HttpDataSourceException.TYPE_OPEN);
-                }
-
-                transferStarted = true;
-                transferStarted(dataSpec);
-
-                try {
-
-                    skipFully(bytesToSkip, dataSpec);
-
-                } catch (IOException e) {
-
-                    closeConnectionQuietly();
-
-                    if (e instanceof HttpDataSourceException) {
-
-                        throw (HttpDataSourceException) e;
-                    }
-
-                    throw new HttpDataSourceException(
-                            e,
-                            dataSpec,
-                            PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
-                            HttpDataSourceException.TYPE_OPEN);
-                }
-
-                Console.log("%s END", oTag);
-
-                return bytesToRead;
-
-            } catch (Throwable e) {
-
-                Console.error(
-
-                        "%s END :: Error='%s'", oTag,
-                        e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
-                );
-
-                Console.error(e);
+                // Gzip is enabled. If the server opts to use gzip then the content length in the response
+                // will be that of the compressed data, which isn't what we want. Always use the dataSpec
+                // length in this case.
+                bytesToRead = dataSpec.length;
             }
 
-            return 0L;
-        };
+            try {
 
-        final Long result = com.redelf.commons.media.player.wrapped.Util.syncOnWorkerJava(obtainable);
+                inputStream = connection.getInputStream();
 
-        Console.debug("%s END :: Result = %s", TAG, result);
+                if (isCompressed) {
 
-        keepAlive();
+                    inputStream = new GZIPInputStream(inputStream);
+                }
 
-        return result != null ? result : 0L;
+            } catch (IOException e) {
+
+                closeConnectionQuietly();
+
+                throw new HttpDataSourceException(
+                        e,
+                        dataSpec,
+                        PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+                        HttpDataSourceException.TYPE_OPEN);
+            }
+
+            transferStarted = true;
+            transferStarted(dataSpec);
+
+            try {
+
+                skipFully(bytesToSkip, dataSpec);
+
+            } catch (IOException e) {
+
+                closeConnectionQuietly();
+
+                if (e instanceof HttpDataSourceException) {
+
+                    throw (HttpDataSourceException) e;
+                }
+
+                throw new HttpDataSourceException(
+                        e,
+                        dataSpec,
+                        PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+                        HttpDataSourceException.TYPE_OPEN);
+            }
+
+            Console.log("%s END", oTag);
+
+            keepAlive(false);
+
+            return bytesToRead;
+
+        } catch (Throwable e) {
+
+            Console.error(
+
+                    "%s END :: Error='%s'", oTag,
+                    e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
+            );
+
+            Console.error(e);
+
+            cooldown();
+        }
+
+        return 0L;
     }
 
     @UnstableApi
@@ -599,7 +592,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     @UnstableApi
     @Override
     public void close() throws HttpDataSourceException {
+
         try {
+
             @Nullable InputStream inputStream = this.inputStream;
             if (inputStream != null) {
                 try {
@@ -612,7 +607,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                             HttpDataSourceException.TYPE_CLOSE);
                 }
             }
+
         } finally {
+
             inputStream = null;
             closeConnectionQuietly();
             if (transferStarted) {
@@ -621,6 +618,8 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
             }
             connection = null;
             dataSpec = null;
+
+            cooldown();
         }
     }
 
@@ -999,7 +998,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     }
 
     /** @noinspection StatementWithEmptyBody*/
-    private void keepAlive() {
+    private void keepAlive(boolean cooldown) {
 
         final String TAG = ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() + " ::";
 
@@ -1009,15 +1008,45 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
             try {
 
-                while (connection != null && connection.getInputStream() != null) {}
+                while (connection != null && isInputStreamOpen(connection.getInputStream())) {}
 
                 Console.debug("%s Connection OFF", TAG);
+
+                if (cooldown) {
+
+                    cooldown();
+                }
+
+            } catch (Throwable e) {
+
+                Console.error(
+
+                        "%s Connection ERROR :: Error='%s'",
+                        TAG, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
+                );
+            }
+        });
+    }
+
+    /** @noinspection StatementWithEmptyBody*/
+    private void cooldown() {
+
+        final String TAG = ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() + " ::";
+
+        com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
+
+            try {
 
                 Console.log("%s Connection COOLING DOWN", TAG);
 
                 long now = System.currentTimeMillis();
 
-                while (System.currentTimeMillis() - now <= (8.5 * 60_000)) {}
+                while (
+
+                        System.currentTimeMillis() - now <= (10 * 60_000) &&
+                                !(connection != null && isInputStreamOpen(connection.getInputStream()))
+
+                ) {}
 
                 Console.debug("%s Connection COOLED DOWN", TAG);
 
@@ -1030,5 +1059,39 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                 );
             }
         });
+    }
+
+    private boolean isInputStreamOpen(InputStream inputStream) {
+
+        try {
+
+            if (inputStream != null) {
+
+                if (inputStream.markSupported()) {
+
+                    inputStream.mark(1);
+
+                    int byteRead = inputStream.read();
+
+                    if (byteRead != -1) {
+
+                        inputStream.reset();
+                    }
+
+                } else {
+
+                    inputStream.available();
+                }
+
+                return true;
+            }
+
+        } catch (IOException | NullPointerException e) {
+
+            return false;
+
+        }
+
+        return false;
     }
 }
