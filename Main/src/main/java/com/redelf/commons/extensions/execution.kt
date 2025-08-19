@@ -2,7 +2,7 @@ package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Build
+import android.content.Context.POWER_SERVICE
 import android.os.PowerManager
 import android.os.WorkSource
 import androidx.work.Constraints
@@ -33,6 +33,7 @@ val DEBUG_EXEC_EXTENSION = AtomicBoolean()
 val KEEP_ALIVE_DURATION = AtomicLong(5 * 60_000) // 5 minutes
 
 private val KEEPING_ALIVE = AtomicBoolean()
+private var WAKE_LOCK: PowerManager.WakeLock? = null
 
 @Throws(RejectedExecutionException::class)
 fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
@@ -75,8 +76,7 @@ fun executeWithWakeLock(
 
     enabled: Boolean = BaseApplication.takeContext().canWakeLock(),
     delay: Long = 0,
-    duration: Long = 30_000,
-    dismiss: Boolean = true,
+    duration: Long = 10 * 60 * 1000L,
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
 
@@ -93,28 +93,12 @@ fun executeWithWakeLock(
             return
         }
 
-        val tag = "WakeLockExecute::$duration"
-        val ctx = BaseApplication.takeContext()
-        val pm = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager?
-
-        if (pm?.isInteractive == true) {
-
-            block()
-
-            return
-        }
-
-        wakeLock = pm?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)?.apply {
-
-            setWorkSource(WorkSource())
-
-            acquire(duration)
-        }
-
     } catch (e: Throwable) {
 
         onError(e)
     }
+
+    acquireWakeLock(duration)
 
     try {
 
@@ -122,19 +106,9 @@ fun executeWithWakeLock(
 
         block()
 
-    } finally {
+    } catch (e: Throwable) {
 
-        try {
-
-            if (dismiss) {
-
-                wakeLock?.release()
-            }
-
-        } catch (e: Throwable) {
-
-            onError(e)
-        }
+        onError(e)
     }
 }
 
@@ -157,14 +131,6 @@ fun executeWithWorkManager(
         }
 
         val ctx = BaseApplication.takeContext()
-        val pm = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager?
-
-        if (pm?.isInteractive == true && !force) {
-
-            block()
-
-            return
-        }
 
         BackgroundTaskWorker.setTask(block)
 
@@ -216,8 +182,7 @@ suspend fun <T> syncOnWorker(
 
         executeWithWakeLock(
 
-            delay = 500,
-            dismiss = false
+            delay = 500
 
         ) {
 
@@ -345,4 +310,27 @@ fun isDeviceInDozeMode(context: Context): Boolean {
 
     val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
     return powerManager.isDeviceIdleMode
+}
+
+@SuppressLint("Wakelock")
+fun acquireWakeLock(duration: Long = 10 * 60 * 1000L) { // 10 minutes
+
+    try {
+
+        WAKE_LOCK?.release()
+
+        val powerManager = BaseApplication.takeContext().getSystemService(POWER_SERVICE) as PowerManager?
+
+        WAKE_LOCK = powerManager?.newWakeLock(
+
+            PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            "PlayerService::WakeLock"
+        )
+
+        WAKE_LOCK?.acquire(duration)
+
+    } catch (e: Throwable) {
+
+        recordException(e)
+    }
 }

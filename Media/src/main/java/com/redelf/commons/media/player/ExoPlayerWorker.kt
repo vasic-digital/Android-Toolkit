@@ -22,7 +22,7 @@ class ExoPlayerWorker (
 
     override suspend fun doWork(): Result {
 
-        val wakeLock = acquireWakeLock()
+        acquireWakeLock()
 
         try {
 
@@ -42,10 +42,6 @@ class ExoPlayerWorker (
             Console.error(e.message ?: "Error: ${e.javaClass.name}")
 
             return Result.failure()
-
-        } finally {
-
-            wakeLock?.release()
         }
     }
 
