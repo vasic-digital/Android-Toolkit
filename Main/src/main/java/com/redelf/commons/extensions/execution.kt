@@ -170,12 +170,15 @@ fun executeWithWorkManager(
 
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiresBatteryNotLow(false)  // Important for Doze
+            .setRequiresCharging(false)       // Important for Doze
+            .setRequiresDeviceIdle(false)     // CRITICAL: Don't require device idle!
             .build()
 
         val workRequest = OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .setInitialDelay(0, TimeUnit.MILLISECONDS)
             .setConstraints(constraints)
+            .setInitialDelay(0, TimeUnit.MILLISECONDS)
             .build()
 
         WorkManager.getInstance(ctx).enqueue(workRequest)
