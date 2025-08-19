@@ -20,6 +20,7 @@ class ExoPlayerDataSourceFactory : DataSource.Factory {
 
         //        val cTimeout = 15_000
         //        val rTimeout = 30_000
+
         val cacheParameters = mapOf("User-Agent" to "ExoPlayer")
 
         //        val ctx = BaseApplication.takeContext()

@@ -47,7 +47,6 @@ import com.google.common.io.ByteStreams;
 import com.google.common.net.HttpHeaders;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.redelf.commons.logging.Console;
-import com.redelf.commons.obtain.Obtain;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,18 +63,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
-/**
- * An {@link HttpDataSource} that uses Android's {@link HttpURLConnection}.
- *
- * <p>By default this implementation will not follow cross-protocol redirects (i.e. redirects from
- * HTTP to HTTPS or vice versa). Cross-protocol redirects can be enabled by passing {@code true} to
- * {@link Factory#setAllowCrossProtocolRedirects(boolean)}.
- *
- * <p>Note: HTTP request headers will be set using all parameters passed via (in order of decreasing
- * priority) the {@code dataSpec}, {@link #setRequestProperty} and the default properties that can
- * be passed to {@link HttpDataSource.Factory#setDefaultRequestProperties(Map)}.
- */
 @UnstableApi
+@Deprecated
 public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implements HttpDataSource {
 
     /**
