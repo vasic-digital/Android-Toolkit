@@ -14,7 +14,7 @@ class BackgroundTaskWorker(
 
     companion object {
 
-        var customCodeBlock: (suspend () -> Unit)? = null
+        private var customCodeBlock: (suspend () -> Unit)? = null
 
         fun setTask(what: suspend () -> Unit) {
 

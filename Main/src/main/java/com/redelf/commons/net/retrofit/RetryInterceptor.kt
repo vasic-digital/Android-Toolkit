@@ -4,9 +4,7 @@ import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.extensions.syncOnWorkerJava
 import com.redelf.commons.logging.Console
-import com.redelf.commons.obtain.Obtain
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.io.IOException
@@ -50,35 +48,24 @@ class RetryInterceptor(
 
             try {
 
-                val obtainer: Obtain<Response?> = object : Obtain<Response?> {
+                response = chain.proceed(chain.request())
 
-                    override fun obtain(): Response {
-
-                        return chain.proceed(chain.request())
-                    }
-                }
-
-                response = syncOnWorkerJava(obtainer) ?: throw Exception("Null response")
-                // response = chain.proceed(chain.request())
-
-                if (response.isSuccessful) {
+                if (response.isSuccessful || response.code == 404) {
 
                     return response
                 }
-
-                response.close()
 
             } catch (e: IOException) {
 
                 if (attempt == maxRetries) {
 
-                    fail("$msg2 (request=${chain.request().url})")
+                    fail(msg2)
 
                     throw e
 
                 } else {
 
-                    fail("$msg1 (attempt=$attempt, request=${chain.request().url})")
+                    fail(msg1)
                 }
             }
 
@@ -91,9 +78,9 @@ class RetryInterceptor(
             return it
         }
 
-        fail("$msg2 (request=${chain.request().url})")
+        fail(msg2)
 
-        throw IOException("$msg2 (request=${chain.request().url})")
+        throw IOException(msg2)
     }
 
     private fun fail(msg: String) = exec {

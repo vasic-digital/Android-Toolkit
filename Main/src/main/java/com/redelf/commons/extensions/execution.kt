@@ -2,6 +2,7 @@ package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.os.PowerManager
 import android.os.WorkSource
 import androidx.work.Constraints
@@ -301,28 +302,44 @@ fun keepAlive(with: Any? = null) {
     }
 }
 
-private fun isInputStreamOpen(inputStream: InputStream?): Boolean {
+fun isInputStreamOpen(inputStream: InputStream?): Boolean {
+
     try {
+
         if (inputStream != null) {
+
             if (inputStream.markSupported()) {
+
                 inputStream.mark(1)
 
                 val byteRead = inputStream.read()
 
                 if (byteRead != -1) {
+
                     inputStream.reset()
                 }
+
             } else {
+
                 inputStream.available()
             }
 
             return true
         }
     } catch (e: IOException) {
+
         return false
+
     } catch (e: NullPointerException) {
+
         return false
     }
 
     return false
+}
+
+fun isDeviceInDozeMode(context: Context): Boolean {
+
+    val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    return powerManager.isDeviceIdleMode
 }

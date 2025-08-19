@@ -1,6 +1,7 @@
 package com.redelf.commons.media.player
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
@@ -33,7 +34,7 @@ import java.util.UUID
 
 typealias EPlayer = ExoPlayer
 
-abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
+abstract class ExoPlayer(private val ctx: Context) : PlayerAbstraction<EPlayer>() {
 
     val playerTag = "Player :: Exo ::"
 
@@ -790,8 +791,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             destroyMediaPlayer(it)
         }
 
-        val context = BaseApplication.takeContext()
-
         val audioAttributes = AudioAttributes.Builder()
             .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
             .setUsage(C.USAGE_MEDIA)
@@ -809,7 +808,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
         val httpDataSourceFactory = ExoPlayerDataSourceFactory()
 
-        val exoPlayer = ExoPlayer.Builder(context)
+        val exoPlayer = ExoPlayer.Builder(ctx)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .setLoadControl(loadControl)
