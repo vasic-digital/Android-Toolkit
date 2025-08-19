@@ -343,6 +343,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         return connection == null || responseCode <= 0 ? -1 : responseCode;
     }
 
+    @NonNull
     @UnstableApi
     @Override
     public Map<String, List<String>> getResponseHeaders() {
@@ -362,7 +363,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
     @UnstableApi
     @Override
-    public void setRequestProperty(String name, String value) {
+    public void setRequestProperty(@NonNull String name, @NonNull String value) {
         checkNotNull(name);
         checkNotNull(value);
         requestProperties.set(name, value);
@@ -370,7 +371,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
     @UnstableApi
     @Override
-    public void clearRequestProperty(String name) {
+    public void clearRequestProperty(@NonNull String name) {
         checkNotNull(name);
         requestProperties.remove(name);
     }
@@ -388,7 +389,16 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     @Override
     public long open(@NonNull DataSpec dataSpec) throws HttpDataSourceException {
 
+        final String TAG = ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() +
+                " :: Connection :: Open ::";
+
+        Console.log("%s START", TAG);
+
         final Obtain<Long> obtainable = () -> {
+
+            final String oTag = TAG + " Obtain ::";
+
+            Console.log("%s START", oTag);
 
             try {
 
@@ -417,13 +427,21 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
                 // Check for a valid response code.
                 if (responseCode < 200 || responseCode > 299) {
+
                     Map<String, List<String>> headers = connection.getHeaderFields();
+
                     if (responseCode == 416) {
+
                         long documentSize =
                                 HttpUtil.getDocumentSize(connection.getHeaderField(HttpHeaders.CONTENT_RANGE));
+
                         if (dataSpec.position == documentSize) {
+
                             transferStarted = true;
                             transferStarted(dataSpec);
+
+                            Console.log("%s END :: Response code = %s", oTag, responseCode);
+
                             return dataSpec.length != C.LENGTH_UNSET ? dataSpec.length : 0;
                         }
                     }
@@ -436,7 +454,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                     } catch (IOException e) {
                         errorResponseBody = Util.EMPTY_BYTE_ARRAY;
                     }
+
                     closeConnectionQuietly();
+
                     @Nullable
                     IOException cause =
                             responseCode == 416
@@ -448,7 +468,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
                 // Check for a valid content type.
                 String contentType = connection.getContentType();
+
                 if (contentTypePredicate != null && !contentTypePredicate.apply(contentType)) {
+
                     closeConnectionQuietly();
                     throw new InvalidContentTypeException(contentType, dataSpec);
                 }
@@ -461,9 +483,13 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                 // Determine the length of the data to be read, after skipping.
                 boolean isCompressed = isCompressed(connection);
                 if (!isCompressed) {
+
                     if (dataSpec.length != C.LENGTH_UNSET) {
+
                         bytesToRead = dataSpec.length;
+
                     } else {
+
                         long contentLength =
                                 HttpUtil.getContentLength(
                                         connection.getHeaderField(HttpHeaders.CONTENT_LENGTH),
@@ -471,7 +497,9 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                         bytesToRead =
                                 contentLength != C.LENGTH_UNSET ? (contentLength - bytesToSkip) : C.LENGTH_UNSET;
                     }
+
                 } else {
+
                     // Gzip is enabled. If the server opts to use gzip then the content length in the response
                     // will be that of the compressed data, which isn't what we want. Always use the dataSpec
                     // length in this case.
@@ -479,12 +507,18 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                 }
 
                 try {
+
                     inputStream = connection.getInputStream();
+
                     if (isCompressed) {
+
                         inputStream = new GZIPInputStream(inputStream);
                     }
+
                 } catch (IOException e) {
+
                     closeConnectionQuietly();
+
                     throw new HttpDataSourceException(
                             e,
                             dataSpec,
@@ -496,13 +530,18 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                 transferStarted(dataSpec);
 
                 try {
+
                     skipFully(bytesToSkip, dataSpec);
+
                 } catch (IOException e) {
+
                     closeConnectionQuietly();
 
                     if (e instanceof HttpDataSourceException) {
+
                         throw (HttpDataSourceException) e;
                     }
+
                     throw new HttpDataSourceException(
                             e,
                             dataSpec,
@@ -510,9 +549,17 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                             HttpDataSourceException.TYPE_OPEN);
                 }
 
+                Console.log("%s END", oTag);
+
                 return bytesToRead;
 
             } catch (Throwable e) {
+
+                Console.error(
+
+                        "%s END :: Error='%s'", oTag,
+                        e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
+                );
 
                 Console.error(e);
             }
@@ -521,6 +568,8 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         };
 
         final Long result = com.redelf.commons.media.player.wrapped.Util.syncOnWorkerJava(obtainable);
+
+        Console.debug("%s END :: Result = %s", TAG, result);
 
         keepAlive();
 
