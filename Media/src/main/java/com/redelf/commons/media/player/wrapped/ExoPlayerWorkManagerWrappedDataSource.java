@@ -957,7 +957,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
                 while (
 
-                        System.currentTimeMillis() - now <= 30_000 &&
+                        System.currentTimeMillis() - now <= (2 * 60_000) &&
                                 (connection == null || connection.getInputStream() == null)
 
                 ) {}
