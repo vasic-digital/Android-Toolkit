@@ -67,6 +67,7 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
     }
 }
 
+@Suppress("DEPRECATION")
 @SuppressLint("Wakelock")
 fun Context.executeWithWakeLock(
 
@@ -90,13 +91,13 @@ fun Context.executeWithWakeLock(
         }
 
         val tag = "WakeLockExecute.${block.hashCode()}"
-        val flags = PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager?
+        val flags = FULL_WAKE_LOCK or ACQUIRE_CAUSES_WAKEUP or ON_AFTER_RELEASE
 
         wakeLock = pm?.newWakeLock(flags, tag)?.apply {
 
-            // For Android 9+ (API 28+), we can make it work in Doze mode
-            setWorkSource(WorkSource()) // <-- Needed for Doze mode
+            setWorkSource(WorkSource())
+
             acquire(duration)
         }
 
