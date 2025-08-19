@@ -3,6 +3,8 @@ package com.redelf.commons.media.player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import com.redelf.commons.extensions.keepAlive
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.syncOnWorkerJava
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.retrofit.RetryInterceptor
@@ -16,40 +18,16 @@ import java.util.concurrent.TimeUnit
 @UnstableApi
 class ExoPlayerDataSourceFactory : DataSource.Factory {
 
-    override fun createDataSource(): DataSource {
+    companion object {
 
-        //        val cTimeout = 15_000
-        //        val rTimeout = 30_000
-
-        val cacheParameters = mapOf("User-Agent" to "ExoPlayer")
-
-        //        val ctx = BaseApplication.takeContext()
-        //
-        //        if (ctx.isNotLegacyDevice()) {
-        //
-        //            return DefaultHttpDataSource.Factory()
-        //                .setConnectTimeoutMs(cTimeout)
-        //                .setReadTimeoutMs(rTimeout)
-        //                .setAllowCrossProtocolRedirects(true)
-        //                .setDefaultRequestProperties(cacheParameters)
-        //                .createDataSource()
-        //        }
-
-        //        return ExoPlayerWorkManagerWrappedDataSource.Factory()
-        //            .setConnectTimeoutMs(cTimeout)
-        //            .setReadTimeoutMs(rTimeout)
-        //            .setAllowCrossProtocolRedirects(true)
-        //            .setDefaultRequestProperties(cacheParameters)
-        //            .createDataSource()
-
-        val pool = ConnectionPool(
+        private val pool = ConnectionPool(
 
             maxIdleConnections = 10,
             keepAliveDuration = 5,
             timeUnit = TimeUnit.MINUTES
         )
 
-        val c = OkHttpClient.Builder()
+        val client = OkHttpClient.Builder()
             .retryOnConnectionFailure(true)
             .connectionPool(pool)
             .addInterceptor(HttpLoggingInterceptor())
@@ -89,8 +67,35 @@ class ExoPlayerDataSourceFactory : DataSource.Factory {
                 result
             }
             .build()
+    }
 
-        return OkHttpDataSource.Factory(c)
+    override fun createDataSource(): DataSource {
+
+        //        val cTimeout = 15_000
+        //        val rTimeout = 30_000
+
+        val cacheParameters = mapOf("User-Agent" to "ExoPlayer")
+
+        //        val ctx = BaseApplication.takeContext()
+        //
+        //        if (ctx.isNotLegacyDevice()) {
+        //
+        //            return DefaultHttpDataSource.Factory()
+        //                .setConnectTimeoutMs(cTimeout)
+        //                .setReadTimeoutMs(rTimeout)
+        //                .setAllowCrossProtocolRedirects(true)
+        //                .setDefaultRequestProperties(cacheParameters)
+        //                .createDataSource()
+        //        }
+
+        //        return ExoPlayerWorkManagerWrappedDataSource.Factory()
+        //            .setConnectTimeoutMs(cTimeout)
+        //            .setReadTimeoutMs(rTimeout)
+        //            .setAllowCrossProtocolRedirects(true)
+        //            .setDefaultRequestProperties(cacheParameters)
+        //            .createDataSource()
+
+        return OkHttpDataSource.Factory(client)
             .setDefaultRequestProperties(cacheParameters)
             .createDataSource()
     }

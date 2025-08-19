@@ -2,18 +2,13 @@ package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Build
 import android.os.PowerManager
-import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
-import android.os.PowerManager.FULL_WAKE_LOCK
-import android.os.PowerManager.ON_AFTER_RELEASE
 import android.os.WorkSource
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.BackgroundTaskWorker
 import com.redelf.commons.logging.Console
@@ -21,16 +16,22 @@ import com.redelf.commons.obtain.Obtain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.io.IOException
+import java.io.InputStream
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 val DEBUG_EXEC_EXTENSION = AtomicBoolean()
+val KEEP_ALIVE_DURATION = AtomicLong(5 * 60_000) // 5 minutes
+
+private val KEEPING_ALIVE = AtomicBoolean()
 
 @Throws(RejectedExecutionException::class)
 fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
@@ -241,4 +242,87 @@ suspend fun <T> syncOnWorker(
             }
         }
     }
+}
+
+fun keepAlive(with: Any? = null) {
+
+    val tag = "Keep alive :: With='${with?.javaClass?.simpleName}' ::"
+
+    if (KEEPING_ALIVE.get()) {
+
+        Console.warning("$tag Already keeping alive")
+
+        return
+    }
+
+    Console.log("$tag PRE-START")
+
+    onWorker {
+
+        Console.log("$tag START")
+
+        try {
+
+            var step = 0L
+            val now = System.currentTimeMillis()
+
+            while (System.currentTimeMillis() - now <= KEEP_ALIVE_DURATION.get()) {
+
+                if (!KEEPING_ALIVE.get()) {
+
+                    KEEPING_ALIVE.set(true)
+                }
+
+                yieldWhile(timeoutInMilliseconds = 5000) { true }
+
+                with?.let {
+
+                    val hash = it.hashCode()
+
+                    Console.log("$tag Step=$step, Hash=$hash")
+                }
+
+                if (with == null) {
+
+                    Console.log("$tag Step=$step")
+                }
+
+                step++
+            }
+
+            KEEPING_ALIVE.set(false)
+
+            Console.log("$tag END")
+
+        } catch (e: Throwable) {
+
+            Console.error("$tag END :: Error='${e.message ?: e::class.simpleName}'")
+        }
+    }
+}
+
+private fun isInputStreamOpen(inputStream: InputStream?): Boolean {
+    try {
+        if (inputStream != null) {
+            if (inputStream.markSupported()) {
+                inputStream.mark(1)
+
+                val byteRead = inputStream.read()
+
+                if (byteRead != -1) {
+                    inputStream.reset()
+                }
+            } else {
+                inputStream.available()
+            }
+
+            return true
+        }
+    } catch (e: IOException) {
+        return false
+    } catch (e: NullPointerException) {
+        return false
+    }
+
+    return false
 }
