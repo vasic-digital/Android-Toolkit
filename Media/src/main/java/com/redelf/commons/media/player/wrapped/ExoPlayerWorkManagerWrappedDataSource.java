@@ -364,21 +364,27 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     @UnstableApi
     @Override
     public void setRequestProperty(@NonNull String name, @NonNull String value) {
+
         checkNotNull(name);
         checkNotNull(value);
+
+        requestProperties.set(name, value);
         requestProperties.set(name, value);
     }
 
     @UnstableApi
     @Override
     public void clearRequestProperty(@NonNull String name) {
+
         checkNotNull(name);
+
         requestProperties.remove(name);
     }
 
     @UnstableApi
     @Override
     public void clearAllRequestProperties() {
+
         requestProperties.clear();
     }
 
