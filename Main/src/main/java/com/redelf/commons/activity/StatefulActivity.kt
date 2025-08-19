@@ -1,7 +1,6 @@
 package com.redelf.commons.activity
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.extensions.fitInsideSystemBoundaries

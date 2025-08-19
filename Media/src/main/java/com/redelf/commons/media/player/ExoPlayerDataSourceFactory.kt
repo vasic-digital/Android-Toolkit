@@ -8,17 +8,11 @@ import androidx.media3.datasource.TransferListener
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.doze.DozeModeIOException
-import com.redelf.commons.extensions.keepAlive
-import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isDeviceInDozeMode
-import com.redelf.commons.extensions.syncOnWorkerJava
 import com.redelf.commons.logging.Console
-import com.redelf.commons.net.retrofit.RetryInterceptor
-import com.redelf.commons.obtain.Obtain
 import okhttp3.ConnectionPool
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import java.io.IOException
 import java.util.concurrent.TimeUnit

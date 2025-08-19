@@ -8,8 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
 import android.provider.Settings
-import com.redelf.commons.extensions.toast
 import androidx.core.net.toUri
+import com.redelf.commons.extensions.toast
 
 object BatteryOptimizationHelper {
 

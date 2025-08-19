@@ -4,12 +4,12 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.redelf.commons.extensions.getAnimationResource
-import com.redelf.commons.logging.Console
-import java.lang.annotation.Inherited
 import androidx.core.graphics.drawable.toDrawable
 import com.redelf.commons.R
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.getAnimationResource
+import com.redelf.commons.logging.Console
+import java.lang.annotation.Inherited
 
 abstract class TransitionEffectsActivity : AppCompatActivity() {
 
