@@ -72,7 +72,8 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
 fun executeWithWakeLock(
 
     enabled: Boolean = BaseApplication.takeContext().canWakeLock(),
-    duration: Long = 30000L,
+    delay: Long = 0,
+    duration: Long = 30_000,
     dismiss: Boolean = true,
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
@@ -115,6 +116,8 @@ fun executeWithWakeLock(
 
     try {
 
+        yieldWhile(timeoutInMilliseconds = delay) { true }
+
         block()
 
     } finally {
@@ -135,6 +138,7 @@ fun executeWithWakeLock(
 
 fun executeWithWorkManager(
 
+    force: Boolean = false,
     enabled: Boolean = BaseApplication.takeContext().canWorkManager(),
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
@@ -150,6 +154,16 @@ fun executeWithWorkManager(
             return
         }
 
+        val ctx = BaseApplication.takeContext()
+        val pm = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager?
+
+        if (pm?.isInteractive == true && !force) {
+
+            block()
+
+            return
+        }
+
         BackgroundTaskWorker.setTask(block)
 
         val constraints = Constraints.Builder()
@@ -158,12 +172,9 @@ fun executeWithWorkManager(
 
         val workRequest = OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .setConstraints(constraints)
             .setInitialDelay(0, TimeUnit.MILLISECONDS)
-            .setInputData(workDataOf("priority" to 1))
+            .setConstraints(constraints)
             .build()
-
-        val ctx = BaseApplication.takeContext()
 
         WorkManager.getInstance(ctx).enqueue(workRequest)
 
@@ -198,26 +209,34 @@ suspend fun <T> syncOnWorker(
 
     suspendCoroutine { continuation ->
 
-        executeWithWakeLock {
+        executeWithWakeLock(
 
-            executeWithWorkManager(
+            delay = 500,
+            dismiss = false
 
-                onError = { e ->
+        ) {
 
-                    continuation.resumeWithException(e)
-                }
+            BaseApplication.takeContext().wakeUpScreen {
 
-            ) {
+                executeWithWorkManager(
 
-                try {
+                    onError = { e ->
 
-                    val result = obtainable.obtain()
+                        continuation.resumeWithException(e)
+                    }
 
-                    continuation.resume(result)
+                ) {
 
-                } catch (e: Throwable) {
+                    try {
 
-                    continuation.resumeWithException(e)
+                        val result = obtainable.obtain()
+
+                        continuation.resume(result)
+
+                    } catch (e: Throwable) {
+
+                        continuation.resumeWithException(e)
+                    }
                 }
             }
         }
