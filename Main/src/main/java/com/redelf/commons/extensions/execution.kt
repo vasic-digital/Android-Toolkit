@@ -90,11 +90,10 @@ fun Context.executeWithWakeLock(
             return
         }
 
-        val tag = "WakeLockExecute.${block.hashCode()}"
+        val tag = "WakeLockExecute::$duration"
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager?
-        val flags = FULL_WAKE_LOCK or ACQUIRE_CAUSES_WAKEUP or ON_AFTER_RELEASE
 
-        wakeLock = pm?.newWakeLock(flags, tag)?.apply {
+        wakeLock = pm?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)?.apply {
 
             setWorkSource(WorkSource())
 
