@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -273,6 +274,8 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     private static final int MAX_REDIRECTS = 20; // Same limit as okhttp.
     private static final int HTTP_STATUS_TEMPORARY_REDIRECT = 307;
     private static final int HTTP_STATUS_PERMANENT_REDIRECT = 308;
+
+    private static final AtomicBoolean KEEPING_ALIVE = new AtomicBoolean(false);
 
     private final boolean allowCrossProtocolRedirects;
     private final boolean crossProtocolRedirectsForceOriginal;
@@ -941,7 +944,12 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     /** @noinspection StatementWithEmptyBody*/
     private void keepAlive() {
 
+        KEEPING_ALIVE.set(true);
+
         com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
+
+            final String TAG =
+                    ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() + " ::";
 
             Console.debug("%s Connection ON", TAG);
 
@@ -951,16 +959,13 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
                 Console.debug("%s Connection OFF", TAG);
 
+                KEEPING_ALIVE.set(false);
+
                 Console.log("%s Connection COOLING DOWN", TAG);
 
                 long now = System.currentTimeMillis();
 
-                while (
-
-                        System.currentTimeMillis() - now <= (3.5 * 60_000) &&
-                                (connection == null || connection.getInputStream() == null)
-
-                ) {}
+                while (System.currentTimeMillis() - now <= (8.5 * 60_000) && !KEEPING_ALIVE.get()) {}
 
                 Console.debug("%s Connection COOLED DOWN", TAG);
 

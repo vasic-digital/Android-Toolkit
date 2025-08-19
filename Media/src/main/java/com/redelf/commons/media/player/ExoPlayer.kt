@@ -802,13 +802,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
 
-                30_000,                  // MIN_BUFFER_MS (30s for stable start)
-                300_000,                // MAX_BUFFER_MS (5min for Doze tolerance)
-                5_000,            // BUFFER_FOR_PLAYBACK_MS
-                10_000   // BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
+                DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 2,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
             )
-            .setPrioritizeTimeOverSizeThresholds(true)
-            .setBackBuffer(30_000, true)
             .build()
 
         val httpDataSourceFactory = ExoPlayerWorkManagerDataSourceFactory()
