@@ -2,7 +2,6 @@ package com.redelf.commons.media.player
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
@@ -29,7 +28,6 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.player.base.PlayerAbstraction
 import com.redelf.commons.media.player.base.PlayerConnectivityMonitor
-import com.redelf.commons.media.player.wrapped.ExoPlayerWorkManagerDataSourceFactory
 import com.redelf.commons.obtain.Obtain
 import java.util.UUID
 
@@ -809,7 +807,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             )
             .build()
 
-        val httpDataSourceFactory = ExoPlayerWorkManagerDataSourceFactory()
+        val httpDataSourceFactory = ExoPlayerDataSourceFactory()
 
         val exoPlayer = ExoPlayer.Builder(context)
             .setAudioAttributes(audioAttributes, true)

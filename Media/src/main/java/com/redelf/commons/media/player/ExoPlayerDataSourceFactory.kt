@@ -1,4 +1,4 @@
-package com.redelf.commons.media.player.wrapped
+package com.redelf.commons.media.player
 
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
@@ -14,7 +14,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
 @UnstableApi
-class ExoPlayerWorkManagerDataSourceFactory : DataSource.Factory {
+class ExoPlayerDataSourceFactory : DataSource.Factory {
 
     override fun createDataSource(): DataSource {
 
@@ -55,7 +55,7 @@ class ExoPlayerWorkManagerDataSourceFactory : DataSource.Factory {
             .addInterceptor(RetryInterceptor())
             .addNetworkInterceptor { chain ->
 
-                val tag = "Exo :: Work manager wrapped data :: Interceptor ::"
+                val tag = "Exo :: Work manager wrapped :: Interceptor ::"
 
                 Console.log("$tag START")
 
