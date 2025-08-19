@@ -181,7 +181,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     private fun execute(what: Media, startFrom: Int): Boolean {
 
-        val logTag = "Player :: Play :: Execution :: ${what.getIdentifier()} ::"
+        val logTag = "Play :: Execution :: ${what.getIdentifier()} ::"
 
         Console.log("$playerTag $logTag Start :: From = $startFrom")
 
