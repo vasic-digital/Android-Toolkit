@@ -275,8 +275,6 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     private static final int HTTP_STATUS_TEMPORARY_REDIRECT = 307;
     private static final int HTTP_STATUS_PERMANENT_REDIRECT = 308;
 
-    private static final AtomicBoolean KEEPING_ALIVE = new AtomicBoolean(false);
-
     private final boolean allowCrossProtocolRedirects;
     private final boolean crossProtocolRedirectsForceOriginal;
     private final int connectTimeoutMillis;
@@ -946,39 +944,23 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
         final String TAG = ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() + " ::";
 
-        if (KEEPING_ALIVE.get()) {
-
-            Console.warning("%s Connection KEEPING ALIVE :: SKIPPED", TAG);
-            return;
-        }
-
         com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
 
             Console.debug("%s Connection ON", TAG);
 
             try {
 
-                while (connection != null && connection.getInputStream() != null) {
-
-                    if (!KEEPING_ALIVE.get()) {
-
-                        Console.log("%s Connection KEEPING ALIVE", TAG);
-                    }
-
-                    KEEPING_ALIVE.set(true);
-                }
+                while (connection != null && connection.getInputStream() != null) {}
 
                 Console.debug("%s Connection OFF", TAG);
 
-                KEEPING_ALIVE.set(false);
+                Console.log("%s Connection COOLING DOWN", TAG);
 
-                //                Console.log("%s Connection COOLING DOWN", TAG);
-                //
-                //                long now = System.currentTimeMillis();
-                //
-                //                while (System.currentTimeMillis() - now <= (8.5 * 60_000) && !KEEPING_ALIVE.get()) {}
-                //
-                //                Console.debug("%s Connection COOLED DOWN", TAG);
+                long now = System.currentTimeMillis();
+
+                while (System.currentTimeMillis() - now <= (8.5 * 60_000)) {}
+
+                Console.debug("%s Connection COOLED DOWN", TAG);
 
             } catch (Throwable e) {
 
