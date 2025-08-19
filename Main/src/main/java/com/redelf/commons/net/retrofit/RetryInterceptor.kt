@@ -65,7 +65,7 @@ class RetryInterceptor(
 
                 } else {
 
-                    fail(msg1)
+                    fail("$msg1 (attempt=$attempt), request=${chain.request().url}")
                 }
             }
 
@@ -80,7 +80,7 @@ class RetryInterceptor(
 
         fail(msg2)
 
-        throw IOException(msg2)
+        throw IOException("$msg2 (request=${chain.request().url}")
     }
 
     private fun fail(msg: String) = exec {

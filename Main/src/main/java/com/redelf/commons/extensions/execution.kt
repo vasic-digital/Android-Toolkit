@@ -69,7 +69,7 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
 
 @Suppress("DEPRECATION")
 @SuppressLint("Wakelock")
-fun Context.executeWithWakeLock(
+fun executeWithWakeLock(
 
     enabled: Boolean = BaseApplication.takeContext().canWakeLock(),
     duration: Long = 30000L,
@@ -91,7 +91,8 @@ fun Context.executeWithWakeLock(
         }
 
         val tag = "WakeLockExecute::$duration"
-        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager?
+        val ctx = BaseApplication.takeContext()
+        val pm = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager?
 
         wakeLock = pm?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)?.apply {
 
@@ -125,7 +126,7 @@ fun Context.executeWithWakeLock(
     }
 }
 
-fun Context.executeWithWorkManager(
+fun executeWithWorkManager(
 
     enabled: Boolean = BaseApplication.takeContext().canWorkManager(),
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
@@ -167,9 +168,7 @@ fun Context.executeWithWorkManager(
 
 fun onWorker(runnable: Runnable) {
 
-    val ctx = BaseApplication.takeContext()
-
-    ctx.executeWithWorkManager {
+    executeWithWorkManager {
 
         runnable.run()
     }
@@ -190,11 +189,9 @@ suspend fun <T> syncOnWorker(
 
 ): T? = withContext(context) {
 
-    val ctx = BaseApplication.takeContext()
-
     suspendCoroutine { continuation ->
 
-        ctx.executeWithWorkManager {
+        executeWithWorkManager {
 
             try {
 

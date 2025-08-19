@@ -18,6 +18,7 @@ package com.redelf.commons.media.player.wrapped;
 import static androidx.media3.common.util.Assertions.checkNotNull;
 import static androidx.media3.common.util.Util.castNonNull;
 import static androidx.media3.datasource.HttpUtil.buildRangeRequestHeader;
+import static com.redelf.commons.extensions.ExecutionKt.onWorker;
 import static java.lang.Math.min;
 
 import android.net.Uri;
@@ -557,7 +558,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
             Console.log("%s END", oTag);
 
-            keepAlive(false);
+            keepAlive();
 
             return bytesToRead;
 
@@ -997,25 +998,23 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         }
     }
 
-    /** @noinspection StatementWithEmptyBody*/
-    private void keepAlive(boolean cooldown) {
+    /**
+     * @noinspection StatementWithEmptyBody
+     */
+    private void keepAlive() {
 
         final String TAG = ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() + " ::";
 
-        com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
+        onWorker(() -> {
 
             Console.debug("%s Connection ON", TAG);
 
             try {
 
-                while (connection != null && isInputStreamOpen(connection.getInputStream())) {}
+                while (connection != null && isInputStreamOpen(connection.getInputStream())) {
+                }
 
                 Console.debug("%s Connection OFF", TAG);
-
-                if (cooldown) {
-
-                    cooldown();
-                }
 
             } catch (Throwable e) {
 
@@ -1028,12 +1027,14 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         });
     }
 
-    /** @noinspection StatementWithEmptyBody*/
+    /**
+     * @noinspection StatementWithEmptyBody
+     */
     private void cooldown() {
 
         final String TAG = ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() + " ::";
 
-        com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
+        onWorker(() -> {
 
             try {
 
@@ -1046,7 +1047,8 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
                         System.currentTimeMillis() - now <= (10 * 60_000) &&
                                 !(connection != null && isInputStreamOpen(connection.getInputStream()))
 
-                ) {}
+                ) {
+                }
 
                 Console.debug("%s Connection COOLED DOWN", TAG);
 
