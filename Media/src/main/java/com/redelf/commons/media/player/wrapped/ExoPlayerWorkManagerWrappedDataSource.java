@@ -944,30 +944,41 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
     /** @noinspection StatementWithEmptyBody*/
     private void keepAlive() {
 
-        KEEPING_ALIVE.set(true);
+        final String TAG = ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() + " ::";
+
+        if (KEEPING_ALIVE.get()) {
+
+            Console.warning("%s Connection KEEPING ALIVE :: SKIPPED", TAG);
+            return;
+        }
 
         com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
-
-            final String TAG =
-                    ExoPlayerWorkManagerWrappedDataSource.TAG + " " + this.hashCode() + " ::";
 
             Console.debug("%s Connection ON", TAG);
 
             try {
 
-                while (connection != null && connection.getInputStream() != null) {}
+                while (connection != null && connection.getInputStream() != null) {
+
+                    if (!KEEPING_ALIVE.get()) {
+
+                        Console.log("%s Connection KEEPING ALIVE", TAG);
+                    }
+
+                    KEEPING_ALIVE.set(true);
+                }
 
                 Console.debug("%s Connection OFF", TAG);
 
                 KEEPING_ALIVE.set(false);
 
-                Console.log("%s Connection COOLING DOWN", TAG);
-
-                long now = System.currentTimeMillis();
-
-                while (System.currentTimeMillis() - now <= (8.5 * 60_000) && !KEEPING_ALIVE.get()) {}
-
-                Console.debug("%s Connection COOLED DOWN", TAG);
+                //                Console.log("%s Connection COOLING DOWN", TAG);
+                //
+                //                long now = System.currentTimeMillis();
+                //
+                //                while (System.currentTimeMillis() - now <= (8.5 * 60_000) && !KEEPING_ALIVE.get()) {}
+                //
+                //                Console.debug("%s Connection COOLED DOWN", TAG);
 
             } catch (Throwable e) {
 

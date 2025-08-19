@@ -13,6 +13,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.BackgroundTaskWorker
 import com.redelf.commons.logging.Console
@@ -151,6 +152,7 @@ fun Context.executeWithWorkManager(
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .setConstraints(constraints)
                 .setInitialDelay(0, TimeUnit.MILLISECONDS)
+                .setInputData(workDataOf("priority" to 1))
                 .build()
 
         val ctx = BaseApplication.takeContext()

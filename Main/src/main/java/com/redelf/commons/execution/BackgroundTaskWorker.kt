@@ -27,6 +27,7 @@ class BackgroundTaskWorker(
         return try {
 
             executeCustomTask()
+
             Result.success()
 
         } catch (e: Throwable) {

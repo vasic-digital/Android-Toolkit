@@ -267,6 +267,10 @@ abstract class BaseApplication :
 
     open fun canWorkManager() = true
 
+    open fun isLegacyDevice() =  Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU
+
+    fun isNotLegacyDevice() = !isLegacyDevice()
+
     abstract fun isProduction(): Boolean
 
     protected abstract fun takeSalt(): String
