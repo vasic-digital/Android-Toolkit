@@ -263,7 +263,7 @@ abstract class BaseApplication :
 
     open fun canRecordApplicationLogs() = false
 
-    open fun canWakeLock() = true
+    open fun canWakeLock() = false
 
     open fun canWorkManager() = true
 
