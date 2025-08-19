@@ -816,16 +816,8 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setHandleAudioBecomingNoisy(true)
             .setLoadControl(loadControl)
             .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
-            .setWakeMode(C.WAKE_MODE_NETWORK)                           // Keep network alive
+            .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-            // Use Media3's built-in Doze compatibility
-            exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
-                .buildUpon()
-                .build()
-        }
 
         exoPlayer.addAnalyticsListener(object : AnalyticsListener {
 
