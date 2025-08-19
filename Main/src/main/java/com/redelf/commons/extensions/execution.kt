@@ -2,10 +2,12 @@ package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.os.PowerManager
 import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
 import android.os.PowerManager.FULL_WAKE_LOCK
 import android.os.PowerManager.ON_AFTER_RELEASE
+import android.os.WorkSource
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -16,6 +18,7 @@ import com.redelf.commons.execution.BackgroundTaskWorker
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
@@ -63,7 +66,6 @@ fun ThreadPoolExecutor.exec(label: String, what: Runnable) {
     }
 }
 
-@Suppress("DEPRECATION")
 @SuppressLint("Wakelock")
 fun Context.executeWithWakeLock(
 
@@ -87,11 +89,13 @@ fun Context.executeWithWakeLock(
         }
 
         val tag = "WakeLockExecute.${block.hashCode()}"
+        val flags = PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager?
-        val flags = FULL_WAKE_LOCK or ACQUIRE_CAUSES_WAKEUP or ON_AFTER_RELEASE
 
         wakeLock = pm?.newWakeLock(flags, tag)?.apply {
 
+            // For Android 9+ (API 28+), we can make it work in Doze mode
+            setWorkSource(WorkSource()) // <-- Needed for Doze mode
             acquire(duration)
         }
 
@@ -156,6 +160,24 @@ fun Context.executeWithWorkManager(
     } catch (e: Throwable) {
 
         onError(e)
+    }
+}
+
+fun onWorker(runnable: Runnable) {
+
+    val ctx = BaseApplication.takeContext()
+
+    ctx.executeWithWorkManager {
+
+        runnable.run()
+    }
+}
+
+fun <T> syncOnWorkerJava(obtainable: Obtain<T?>): T? {
+
+    return runBlocking {
+
+        syncOnWorker(obtainable)
     }
 }
 

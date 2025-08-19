@@ -1,16 +1,11 @@
 package com.redelf.commons.media.player.wrapped
 
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.executeWithWorkManager
-import com.redelf.commons.extensions.recordException
 import com.redelf.commons.obtain.Obtain
-import com.redelf.commons.obtain.OnObtain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException

@@ -522,38 +522,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
 
         final Long result = com.redelf.commons.media.player.wrapped.Util.syncOnWorkerJava(obtainable);
 
-        com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
-
-            Console.debug("%s Connection ON", TAG);
-
-            try {
-
-                while (connection != null && connection.getInputStream() != null) {}
-
-                Console.debug("%s Connection OFF", TAG);
-
-                Console.log("%s Connection COOLING DOWN", TAG);
-
-                long now = System.currentTimeMillis();
-
-                while (
-
-                        System.currentTimeMillis() - now <= 30_000 &&
-                                (connection == null || connection.getInputStream() == null)
-
-                ) {}
-
-                Console.debug("%s Connection COOLED DOWN", TAG);
-
-            } catch (Throwable e) {
-
-                Console.error(
-
-                        "%s Connection ERROR :: Error='%s'",
-                        TAG, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
-                );
-            }
-        });
+        keepAlive();
 
         return result != null ? result : 0L;
     }
@@ -886,31 +855,22 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
      */
     private void closeConnectionQuietly() {
 
-        final Obtain<Boolean> obtainer = () -> {
+        if (connection != null) {
 
-            if (connection != null) {
+            try {
 
-                try {
+                connection.disconnect();
 
-                    connection.disconnect();
+            } catch (Throwable e) {
 
-                    return true;
+                Console.error(
 
-                } catch (Exception e) {
+                        "%s Unexpected error while disconnecting :: Error='%s'",
+                        TAG, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
 
-                    Console.error(
-
-                            "%s Unexpected error while disconnecting :: Error='%s'",
-                            TAG, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
-
-                    );
-                }
+                );
             }
-
-            return false;
-        };
-
-        com.redelf.commons.media.player.wrapped.Util.syncOnWorkerJava(obtainer);
+        }
     }
 
     private static boolean isCompressed(HttpURLConnection connection) {
@@ -976,5 +936,42 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
         public int hashCode() {
             return super.standardHashCode();
         }
+    }
+
+    /** @noinspection StatementWithEmptyBody*/
+    private void keepAlive() {
+
+        com.redelf.commons.media.player.wrapped.Util.onWorker(() -> {
+
+            Console.debug("%s Connection ON", TAG);
+
+            try {
+
+                while (connection != null && connection.getInputStream() != null) {}
+
+                Console.debug("%s Connection OFF", TAG);
+
+                Console.log("%s Connection COOLING DOWN", TAG);
+
+                long now = System.currentTimeMillis();
+
+                while (
+
+                        System.currentTimeMillis() - now <= 30_000 &&
+                                (connection == null || connection.getInputStream() == null)
+
+                ) {}
+
+                Console.debug("%s Connection COOLED DOWN", TAG);
+
+            } catch (Throwable e) {
+
+                Console.error(
+
+                        "%s Connection ERROR :: Error='%s'",
+                        TAG, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()
+                );
+            }
+        });
     }
 }
