@@ -94,6 +94,13 @@ fun executeWithWakeLock(
         val ctx = BaseApplication.takeContext()
         val pm = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager?
 
+        if (pm?.isInteractive == true) {
+
+            block()
+
+            return
+        }
+
         wakeLock = pm?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)?.apply {
 
             setWorkSource(WorkSource())
@@ -150,11 +157,11 @@ fun executeWithWorkManager(
             .build()
 
         val workRequest = OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .setConstraints(constraints)
-                .setInitialDelay(0, TimeUnit.MILLISECONDS)
-                .setInputData(workDataOf("priority" to 1))
-                .build()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setConstraints(constraints)
+            .setInitialDelay(0, TimeUnit.MILLISECONDS)
+            .setInputData(workDataOf("priority" to 1))
+            .build()
 
         val ctx = BaseApplication.takeContext()
 
@@ -191,17 +198,27 @@ suspend fun <T> syncOnWorker(
 
     suspendCoroutine { continuation ->
 
-        executeWithWorkManager {
+        executeWithWakeLock {
 
-            try {
+            executeWithWorkManager(
 
-                val result = obtainable.obtain()
+                onError = { e ->
 
-                continuation.resume(result)
+                    continuation.resumeWithException(e)
+                }
 
-            } catch (e: Throwable) {
+            ) {
 
-                continuation.resumeWithException(e)
+                try {
+
+                    val result = obtainable.obtain()
+
+                    continuation.resume(result)
+
+                } catch (e: Throwable) {
+
+                    continuation.resumeWithException(e)
+                }
             }
         }
     }
