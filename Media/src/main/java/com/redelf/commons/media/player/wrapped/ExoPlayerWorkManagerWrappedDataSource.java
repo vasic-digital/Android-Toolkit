@@ -59,6 +59,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
@@ -104,6 +105,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
             readTimeoutMs = DEFAULT_READ_TIMEOUT_MILLIS;
         }
 
+        @NonNull
         @CanIgnoreReturnValue
         @UnstableApi
         @Override
@@ -941,6 +943,7 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
             this.headers = headers;
         }
 
+        @NonNull
         @Override
         protected Map<String, List<String>> delegate() {
             return headers;
@@ -957,11 +960,13 @@ public class ExoPlayerWorkManagerWrappedDataSource extends BaseDataSource implem
             return key == null ? null : super.get(key);
         }
 
+        @NonNull
         @Override
         public Set<String> keySet() {
-            return Sets.filter(super.keySet(), key -> key != null);
+            return Sets.filter(super.keySet(), Objects::nonNull);
         }
 
+        @NonNull
         @Override
         public Set<Entry<String, List<String>>> entrySet() {
             return Sets.filter(super.entrySet(), entry -> entry.getKey() != null);
