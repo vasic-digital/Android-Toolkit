@@ -269,7 +269,11 @@ abstract class BaseApplication :
 
     open fun isLegacyDevice() =  Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU
 
+    open fun isVeryOldDevice() =  Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+
     fun isNotLegacyDevice() = !isLegacyDevice()
+
+    fun isNotVeryOldDevice() = !isVeryOldDevice()
 
     abstract fun isProduction(): Boolean
 

@@ -114,7 +114,6 @@ fun executeWithWakeLock(
 
 fun executeWithWorkManager(
 
-    force: Boolean = false,
     enabled: Boolean = BaseApplication.takeContext().canWorkManager(),
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
@@ -131,6 +130,13 @@ fun executeWithWorkManager(
         }
 
         val ctx = BaseApplication.takeContext()
+
+        if (ctx.isVeryOldDevice()) {
+
+            block()
+
+            return
+        }
 
         BackgroundTaskWorker.setTask(block)
 
