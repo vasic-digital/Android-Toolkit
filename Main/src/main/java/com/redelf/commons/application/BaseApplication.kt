@@ -15,6 +15,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.os.StrictMode
 import android.provider.Settings
 import android.telecom.TelecomManager
@@ -274,6 +275,23 @@ abstract class BaseApplication :
     fun isNotLegacyDevice() = !isLegacyDevice()
 
     fun isNotVeryOldDevice() = !isVeryOldDevice()
+
+    open fun isInteractive(): Boolean {
+
+        try {
+
+            val powerManager = getSystemService(POWER_SERVICE) as PowerManager?
+            return powerManager?.isInteractive == true
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return false
+    }
+
+    fun isNotInteractive() = !isInteractive()
 
     abstract fun isProduction(): Boolean
 
