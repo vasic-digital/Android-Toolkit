@@ -133,6 +133,30 @@
             android:screenOrientation="portrait"
             android:name=".activity.fragment.FragmentWrapperActivity" />
 
+        <provider
+
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:enabled="false"
+            android:exported="false">
+
+            <meta-data
+
+                android:name="com.example.LoggerInitializer"
+                android:value="androidx.startup" />
+
+        </provider>
+
+        <activity
+
+            android:screenOrientation="portrait"
+            android:name=".activity.transition.BackgroundActivity" />
+
+        <activity
+
+            android:screenOrientation="portrait"
+            android:name=".activity.fragment.FragmentWrapperActivity" />
+
     </application>
 
 </manifest>
