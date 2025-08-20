@@ -1540,7 +1540,7 @@ abstract class BaseActivity :
 
     protected fun getActivityContext(): Context = this
 
-    protected fun doRegisterReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
+    fun doRegisterReceiver(receiver: BroadcastReceiver?, filter: IntentFilter?): Intent? {
 
         receiver?.let { r ->
             filter?.let { f ->
