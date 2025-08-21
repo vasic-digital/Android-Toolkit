@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if adb shell input keyevent KEYCODE_SLEEP; then
+
+  echo "Screen sleep"
+
+else
+
+  echo "ERROR: Screen sleep"
+fi

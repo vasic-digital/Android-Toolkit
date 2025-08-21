@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if adb shell dumpsys battery unplug && \
+   adb shell dumpsys deviceidle force-idle && \
+   adb shell dumpsys deviceidle; then
+
+  echo "Doze ON"
+
+else
+
+  echo "ERROR: Failed doze ON"
+fi

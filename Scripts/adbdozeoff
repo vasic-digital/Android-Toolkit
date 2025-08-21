@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if adb shell dumpsys deviceidle unforce; then
+
+  echo "Doze OFF"
+
+else
+
+  echo "ERROR: Failed doze OFF"
+fi
