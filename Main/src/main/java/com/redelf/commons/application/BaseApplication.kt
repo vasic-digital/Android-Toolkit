@@ -1455,7 +1455,7 @@ abstract class BaseApplication :
 
         if (isProduction()) {
 
-            recordException(error)
+            Console.error(error)
 
         } else {
 
