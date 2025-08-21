@@ -322,7 +322,7 @@ fun acquireWakeLock(duration: Long = 10 * 60 * 1000L) { // 10 minutes
 
     try {
 
-        WAKE_LOCK?.release()
+        releaseWakeLock()
 
         val powerManager = BaseApplication.takeContext().getSystemService(POWER_SERVICE) as PowerManager?
 
@@ -333,6 +333,26 @@ fun acquireWakeLock(duration: Long = 10 * 60 * 1000L) { // 10 minutes
         )
 
         WAKE_LOCK?.acquire(duration)
+
+    } catch (e: Throwable) {
+
+        recordException(e)
+    }
+}
+
+fun releaseWakeLock(wLock: PowerManager.WakeLock? = WAKE_LOCK) {
+
+    try {
+
+        if (wLock?.isHeld == true) {
+
+            wLock.release()
+        }
+
+        if (wLock == WAKE_LOCK) {
+
+            WAKE_LOCK = null
+        }
 
     } catch (e: Throwable) {
 
