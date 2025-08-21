@@ -68,7 +68,7 @@ class ExoPlayerDataSourceFactory : DataSource.Factory {
 
     private fun createTransferListener(): TransferListener {
 
-        val tag = "$tag :: Transfer Listener ::"
+        val tag = "$tag Transfer Listener ::"
 
         return object : TransferListener {
 
