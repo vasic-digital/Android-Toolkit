@@ -4,9 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.POWER_SERVICE
 import android.os.PowerManager
+import androidx.core.content.ContextCompat
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.Operation
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import com.redelf.commons.application.BaseApplication
@@ -113,6 +116,7 @@ fun executeWithWakeLock(
 
 fun executeWithWorkManager(
 
+    delay: Long = 0,
     enabled: Boolean = BaseApplication.takeContext().canWorkManager(),
     onError: (e: Throwable) -> Unit = { e -> recordException(e) },
     block: () -> Unit
@@ -149,10 +153,18 @@ fun executeWithWorkManager(
         val workRequest = OneTimeWorkRequestBuilder<BackgroundTaskWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setConstraints(constraints)
-            .setInitialDelay(0, TimeUnit.MILLISECONDS)
+            .setBackoffCriteria(
+
+                BackoffPolicy.EXPONENTIAL,      // Exponential backoff
+                3,
+                TimeUnit.SECONDS                // Initial backoff delay
+            )
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .build()
 
-        WorkManager.getInstance(ctx).enqueue(workRequest)
+        val operation = WorkManager.getInstance(ctx).enqueue(workRequest)
+
+        onWorkManagerOperation(operation, ctx, block)
 
     } catch (e: Throwable) {
 
@@ -160,9 +172,83 @@ fun executeWithWorkManager(
     }
 }
 
+fun onWorkManagerOperation(
+
+    operation: Operation,
+    ctx: Context = BaseApplication.takeContext(),
+    block: () -> Unit
+
+) {
+
+    operation.result.addListener(
+
+        {
+
+            try {
+
+                val result = operation.result.get()
+
+                if (result is Operation.State.SUCCESS) {
+
+                    Console.log("Work manager operation succeeded")
+
+                } else {
+
+                    val e = Throwable("Work manager operation failed")
+                    recordException(e)
+
+                    executeWithWakeLock(
+
+                        onError = { e ->
+
+                            recordException(e)
+
+                            block()
+                        }
+
+                    ) {
+
+                        block()
+                    }
+                }
+
+            } catch (e: Exception) {
+
+                recordException(e)
+
+                executeWithWakeLock(
+
+                    onError = { e ->
+
+                        recordException(e)
+
+                        block()
+                    }
+
+                ) {
+
+                    block()
+                }
+            }
+        },
+
+        ContextCompat.getMainExecutor(ctx)
+    )
+}
+
 fun onWorker(runnable: Runnable) {
 
-    executeWithWorkManager {
+    executeWithWorkManager(
+
+        onError = {
+
+                e ->
+            recordException(e)
+
+            runnable.run()
+        }
+
+    ) {
 
         runnable.run()
     }
@@ -324,7 +410,8 @@ fun acquireWakeLock(duration: Long = 10 * 60 * 1000L) { // 10 minutes
 
         releaseWakeLock()
 
-        val powerManager = BaseApplication.takeContext().getSystemService(POWER_SERVICE) as PowerManager?
+        val powerManager =
+            BaseApplication.takeContext().getSystemService(POWER_SERVICE) as PowerManager?
 
         WAKE_LOCK = powerManager?.newWakeLock(
 

@@ -14,3 +14,5 @@ fun Context.isInForeground(): Boolean {
                 process.processName == packageName
     }
 }
+
+fun Context.isInBackground(): Boolean = !isInForeground()
