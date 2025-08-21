@@ -155,8 +155,8 @@ fun executeWithWorkManager(
             .setConstraints(constraints)
             .setBackoffCriteria(
 
-                BackoffPolicy.EXPONENTIAL,      // Exponential backoff
-                3,
+                BackoffPolicy.LINEAR,      // Exponential backoff
+                2,
                 TimeUnit.SECONDS                // Initial backoff delay
             )
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
