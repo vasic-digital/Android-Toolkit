@@ -13,7 +13,7 @@ import java.io.IOException
 import java.net.InetAddress
 import java.net.UnknownHostException
 
-class Connectivity(
+open class Connectivity(
 
     private val endpoint: String = "",
     private val alwaysRequire: Boolean = false,
