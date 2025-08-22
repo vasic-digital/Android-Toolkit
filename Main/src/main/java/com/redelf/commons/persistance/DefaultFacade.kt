@@ -18,6 +18,7 @@ import com.redelf.commons.registration.Registration
 import com.redelf.commons.security.encryption.EncryptionListener
 import java.io.IOException
 import java.lang.reflect.Type
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 /*
@@ -32,6 +33,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
     private var storage: Storage<String>? = null
     private const val TAG = "Facade :: DEFAULT ::"
     private var encryption: Encryption<String>? = null
+    private val getting = ConcurrentHashMap<String, Callbacks<OnObtain<*>>>()
     private val listeners = Callbacks<EncryptionListener<String, String>>("enc_listeners")
 
     fun initialize(builder: PersistenceBuilder): Facade {
@@ -313,51 +315,133 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
         val tag = "$TAG Get (w.def) :: Key='$key' ::"
 
-        if (DEBUG.get()) {
+        if (isEmpty(key)) {
 
-            Console.log("$tag START")
+            val e = IllegalArgumentException("Empty key")
+            Console.error("$tag FAILED :: Error='$e'")
+            callback.onFailure(e)
+            return
         }
 
-        exec(
+        key?.let {
 
-            onRejected = { e ->
+            var inProgress = false
+            var callbacks = getting[key]
 
-                Console.error("$tag REJECTED")
+            fun register(callbacks: Callbacks<OnObtain<*>>): Boolean {
 
-                callback.onFailure(e)
+                if (callbacks.isRegistered(callback)) {
+
+                    if (DEBUG.get()) {
+
+                        Console.warning("$tag Already registered}")
+                    }
+
+                    return true
+                }
+
+                callbacks.register(callback)
+
+                return false
             }
 
-        ) {
+            if (callbacks == null) {
+
+                callbacks = Callbacks("getting.$key")
+                getting[key] = callbacks
+
+            } else {
+
+                inProgress = true
+            }
+
+            register(callbacks)
+
+            if (inProgress) {
+
+                Console.warning("$tag Already getting :: Key='$key'")
+
+                return
+            }
 
             if (DEBUG.get()) {
 
-                Console.log("$tag STARTED")
+                Console.log("$tag START")
             }
 
-            get<T>(
+            fun notifyGetterCallback(data: T? = null, error: Throwable? = null) {
 
-                key,
+                callbacks.doOnAll(object : CallbackOperation<OnObtain<*>> {
 
-                object : OnObtain<T?> {
+                    override fun perform(callback: OnObtain<*>) {
 
-                    override fun onCompleted(data: T?) {
+                        error?.let {
 
-                        if (DEBUG.get()) {
+                            callback.onFailure(it)
 
-                            Console.log("$tag END :: On completed")
+                        } ?: kotlin.run {
+
+                            if (data == null) {
+
+                                val e = IllegalStateException("Data is null")
+                                callback.onFailure(e)
+
+                            } else {
+
+                                // FIXME: [IN_PROGRESS]
+                                callback.onCompleted(a)
+                            }
                         }
 
-                        callback.onCompleted(data ?: defaultValue)
+                        callbacks.unregister(callback)
                     }
 
-                    override fun onFailure(error: Throwable) {
+                }, operationName = "getting.$key")
 
-                        Console.error("$tag END :: onFailure :: Error='${error.message}'")
+                getting.remove(key)
+            }
 
-                        callback.onFailure(error)
-                    }
+            exec(
+
+                onRejected = { e ->
+
+                    Console.error("$tag REJECTED")
+
+                    notifyGetterCallback(error = e)
                 }
-            )
+
+            ) {
+
+                if (DEBUG.get()) {
+
+                    Console.log("$tag STARTED")
+                }
+
+                get<T>(
+
+                    key,
+
+                    object : OnObtain<T?> {
+
+                        override fun onCompleted(data: T?) {
+
+                            if (DEBUG.get()) {
+
+                                Console.log("$tag END :: On completed")
+                            }
+
+                            notifyGetterCallback(data = data ?: defaultValue)
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            Console.error("$tag END :: onFailure :: Error='${error.message}'")
+
+                            notifyGetterCallback(error = error)
+                        }
+                    }
+                )
+            }
         }
     }
 
