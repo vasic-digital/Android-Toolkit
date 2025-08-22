@@ -147,39 +147,56 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             val action = "init"
             val from = action
-            val items = getCollection(from)
 
-            replaceAllAndFilter(items, from) { modified, count ->
+            getCollection(
 
-                initialized.set(true)
+                from,
 
-                if (modified) {
+                object : OnObtain<Collection<T?>?> {
 
-                    if (DEBUG.get()) {
+                    override fun onCompleted(data: Collection<T?>?) {
 
-                        Console.log(
+                        val items = data
 
-                            "$tag Init :: " +
-                                    "Changes :: Detected :: Count=$count" +
-                                    ", getCollection().count=${items?.size}"
-                        )
+                        replaceAllAndFilter(items, from) { modified, count ->
+
+                            initialized.set(true)
+
+                            if (modified) {
+
+                                if (DEBUG.get()) {
+
+                                    Console.log(
+
+                                        "$tag Init :: " +
+                                                "Changes :: Detected :: Count=$count" +
+                                                ", getCollection().count=${items?.size}"
+                                    )
+                                }
+
+                                notifyChanged(action = action)
+
+                            } else {
+
+                                if (DEBUG.get()) {
+
+                                    Console.log(
+
+                                        "$tag Init :: " +
+                                                "Changes :: None detected :: Count=$count" +
+                                                ", getCollection().count=${items?.size}"
+                                    )
+                                }
+                            }
+                        }
                     }
 
-                    notifyChanged(action = action)
+                    override fun onFailure(error: Throwable) {
 
-                } else {
-
-                    if (DEBUG.get()) {
-
-                        Console.log(
-
-                            "$tag Init :: " +
-                                    "Changes :: None detected :: Count=$count" +
-                                    ", getCollection().count=${items?.size}"
-                        )
+                        recordException(error)
                     }
                 }
-            }
+            )
         }
     }
 
@@ -1276,58 +1293,74 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
     }
 
-    protected open fun getCollection(from: String): Collection<T?>? {
+    protected open fun getCollection(from: String, callback: OnObtain<Collection<T?>?>) {
 
-        if (isOnMainThread()) {
+        com.redelf.commons.extensions.exec(
 
-            val e = IllegalStateException("Shall not obtain collection from the main thread")
-            recordException(e)
-        }
+            onRejected = { e -> callback.onFailure(e) }
 
-        try {
+        ) {
 
-            val manager = getManager()
+            try {
 
-            if (manager == null) {
+                val manager = getManager()
 
-                Console.error(
+                if (manager == null) {
 
-                    "$tag getCollection(from='$from') :: Manager is null"
+                    Console.error(
+
+                        "$tag getCollection(from='$from') :: Manager is null"
+                    )
+
+                    val e = IllegalArgumentException("Manager is null")
+                    callback.onFailure(e)
+                    return@exec
+                }
+
+                yieldWhile(
+
+                    timeoutInMilliseconds = 5000
+
+                ) {
+
+                    manager.isBusy() || manager.isReading() || manager.isWriting()
+                }
+
+                if (manager.isBusy() || manager.isReading() || manager.isWriting()) {
+
+                    val e = IllegalStateException("Manager is not ready")
+                    callback.onFailure(e)
+                    return@exec
+                }
+
+                val coll = dataAccess?.obtain()
+
+                if (DEBUG.get()) {
+
+                    Console.log(
+                        "$tag Get collection :: From='$from', " +
+                                "getCollection().count=${coll?.size ?: 0}"
+                    )
+                }
+
+                callback.onCompleted(coll)
+
+                return@exec
+
+            } catch (e: Throwable) {
+
+                if (DEBUG.get()) Console.log(
+
+                    "$tag Fet collection :: " +
+                            "From='$from', getCollection().count=0, " +
+                            "Error=${e.message ?: e::class.simpleName}"
                 )
 
-                return null
+                recordException(e)
             }
 
-            yieldWhile {
-
-                manager.isBusy() || manager.isReading() || manager.isWriting()
-            }
-
-            val coll = dataAccess?.obtain()
-
-            if (DEBUG.get()) {
-
-                Console.log(
-                    "$tag Get collection :: From='$from', " +
-                            "getCollection().count=${coll?.size ?: 0}"
-                )
-            }
-
-            return coll
-
-        } catch (e: Throwable) {
-
-            if (DEBUG.get()) Console.log(
-
-                "$tag Fet collection :: " +
-                        "From='$from', getCollection().count=0, " +
-                        "Error=${e.message ?: e::class.simpleName}"
-            )
-
-            recordException(e)
+            callback.onCompleted(null)
         }
-
-        return null
     }
 
     fun refresh(
@@ -1343,26 +1376,46 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             if (DEBUG.get()) Console.log("$tag Refresh :: From='$from'")
 
             val from = "refresh(from='$from')"
-            val items = getCollection(from)
 
-            replaceAllAndFilter(
+            getCollection(
 
-                from = from,
-                what = items,
-                filters = filters
+                from,
 
-            ) { modified, count ->
+                object : OnObtain<Collection<T?>?> {
 
-                if (modified) {
+                    override fun onCompleted(data: Collection<T?>?) {
 
-                    notifyChanged(action = from)
+                        replaceAllAndFilter(
+
+                            from = from,
+                            what = data,
+                            filters = filters
+
+                        ) { modified, count ->
+
+                            if (modified) {
+
+                                notifyChanged(action = from)
+                            }
+
+                            callback?.let {
+
+                                it(modified, count)
+                            }
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback?.let {
+
+                            recordException(error)
+
+                            it(false, 0)
+                        }
+                    }
                 }
-
-                callback?.let {
-
-                    it(modified, count)
-                }
-            }
+            )
         }
     }
 
@@ -1373,45 +1426,64 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             Console.log("On data pushed :: $pushContext :: Push from = '${data.pushFrom}'")
         }
 
-        val items = getCollection("$pushContext(pushFrom='${data.pushFrom}')")
-        val from = "$pushContext(pushFrom='${data.pushFrom}',size=${items?.size ?: 0})"
+        val dataPushResult = data
 
-        onDataPushed?.onCompleted(data)
+        getCollection(
 
-        replaceAllAndFilter(
+            "$pushContext(pushFrom='${data.pushFrom}')",
 
-            from = from,
-            what = items,
-            filters = defaultFilters
+            object : OnObtain<Collection<T?>?> {
 
-        ) { modified, count ->
+                override fun onCompleted(data: Collection<T?>?) {
 
-            if (modified) {
+                    val items = data ?: emptyList()
+                    val from =
+                        "$pushContext(pushFrom='${dataPushResult.pushFrom}',size=${items.size})"
 
-                if (DEBUG.get()) {
+                    onDataPushed?.onCompleted(dataPushResult)
 
-                    Console.log(
+                    replaceAllAndFilter(
 
-                        "$tag $pushContext :: " +
-                                "Changes :: Detected :: Count=$count" +
-                                ", getCollection().count=${items?.size ?: 0}"
-                    )
+                        from = from,
+                        what = items,
+                        filters = defaultFilters
+
+                    ) { modified, count ->
+
+                        if (modified) {
+
+                            if (DEBUG.get()) {
+
+                                Console.log(
+
+                                    "$tag $pushContext :: " +
+                                            "Changes :: Detected :: Count=$count" +
+                                            ", getCollection().count=${items.size}"
+                                )
+                            }
+
+                            notifyChanged(action = "$pushContext.dataPushed")
+
+                        } else {
+
+                            if (DEBUG.get()) {
+
+                                Console.log(
+
+                                    "$tag $pushContext :: " +
+                                            "Changes :: None detected :: Count=$count" +
+                                            ", getCollection().count=${items.size}"
+                                )
+                            }
+                        }
+                    }
                 }
 
-                notifyChanged(action = "$pushContext.dataPushed")
+                override fun onFailure(error: Throwable) {
 
-            } else {
-
-                if (DEBUG.get()) {
-
-                    Console.log(
-
-                        "$tag $pushContext :: " +
-                                "Changes :: None detected :: Count=$count" +
-                                ", getCollection().count=${items?.size ?: 0}"
-                    )
+                    recordException(error)
                 }
             }
-        }
+        )
     }
 }
