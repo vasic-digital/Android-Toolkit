@@ -106,6 +106,14 @@ class Connectivity(
                     val msg = "$tag NO INTERNET CONNECTION :: Waiting timeout"
                     val e = IOException(msg)
                     recordException(e)
+
+                } else {
+
+                    Console.warning(
+
+                        ("$tag NO INTERNET CONNECTION :: " +
+                                "Connection has been recovered with SUCCESS").trim()
+                    )
                 }
             }
 
