@@ -1,20 +1,25 @@
 package com.redelf.commons.net.connectivity
 
 import android.content.Context
+import android.net.ConnectivityManager
 import android.os.NetworkOnMainThreadException
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.logging.Console
+import java.io.IOException
 import java.net.InetAddress
 import java.net.UnknownHostException
 
-class Connectivity(private val endpoint: String = CHECK_ENDPOINT) : ConnectivityCheck {
+class Connectivity(
 
-    companion object {
+    private val endpoint: String = "",
+    private val alwaysRequire: Boolean = false,
+    private val tag: String = "Connectivity ::"
 
-        var CHECK_ENDPOINT = "www.google.com"
-    }
+) : ConnectivityCheck {
 
     private val defaultStrategy = object : ConnectivityCheck {
 
@@ -23,15 +28,35 @@ class Connectivity(private val endpoint: String = CHECK_ENDPOINT) : Connectivity
 
             val tag = "Network connectivity ::"
 
+            if (endpoint.isEmpty()) {
+
+                val name = Context.CONNECTIVITY_SERVICE
+
+                val connectivityManager = ctx.getSystemService(name) as ConnectivityManager?
+
+                connectivityManager?.let {
+
+                    val activeNetworkInfo = it.activeNetworkInfo
+                    return activeNetworkInfo != null && activeNetworkInfo.isConnected
+                }
+
+                return false
+            }
+
             try {
 
                 if (isOnMainThread()) {
 
-                    Console.error("$tag Network check on main thread not allowed")
                     val e = NetworkOnMainThreadException()
-                    recordException(e)
 
-                    return false
+                    if (BaseApplication.takeContext().isProduction()) {
+
+                        recordException(e)
+
+                    } else {
+
+                        Console.error(e.message ?: e::class.java.simpleName)
+                    }
                 }
 
                 val address = InetAddress.getByName(endpoint)
@@ -61,11 +86,65 @@ class Connectivity(private val endpoint: String = CHECK_ENDPOINT) : Connectivity
                 return false
             }
         }
+
+        override fun requireNetworkAvailable(ctx: Context): Boolean {
+
+            fun notConnected(): Boolean {
+
+                return !isNetworkAvailable(ctx)
+            }
+
+            if (notConnected()) {
+
+                Console.warning(
+
+                    "$tag NO INTERNET CONNECTION :: Waiting for it".trim()
+                )
+
+                yieldWhile(
+
+                    timeoutInMilliseconds = 60 * 1000L
+
+                ) {
+
+                    notConnected()
+                }
+
+                if (notConnected()) {
+
+                    val msg = "$tag NO INTERNET CONNECTION :: Waiting timeout"
+                    val e = IOException(msg)
+                    recordException(e)
+
+                } else {
+
+                    Console.warning(
+
+                        ("$tag NO INTERNET CONNECTION :: " +
+                                "Connection has been recovered with SUCCESS").trim()
+                    )
+                }
+            }
+
+            return isNetworkAvailable(ctx)
+        }
     }
 
     private var checkStrategy: ConnectivityCheck = defaultStrategy
 
-    override fun isNetworkAvailable(ctx: Context) = checkStrategy.isNetworkAvailable(ctx)
+    override fun requireNetworkAvailable(ctx: Context) = checkStrategy.requireNetworkAvailable(ctx)
+
+    override fun isNetworkAvailable(ctx: Context): Boolean {
+
+        if (alwaysRequire) {
+
+            return requireNetworkAvailable(ctx)
+        }
+
+        return checkStrategy.isNetworkAvailable(ctx)
+    }
+
+    fun isNetworkUnavailable(ctx: Context) = !isNetworkAvailable(ctx)
 
     fun setConnectivityCheckStrategy(strategy: ConnectivityCheck) {
 
