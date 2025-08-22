@@ -15,6 +15,7 @@ import java.net.UnknownHostException
 class Connectivity(
 
     private val endpoint: String = "",
+    private val alwaysRequire: Boolean = false,
     private val tag: String = "Connectivity ::"
 
 ) : ConnectivityCheck {
@@ -114,9 +115,17 @@ class Connectivity(
 
     private var checkStrategy: ConnectivityCheck = defaultStrategy
 
-    override fun isNetworkAvailable(ctx: Context) = checkStrategy.isNetworkAvailable(ctx)
-
     override fun requireNetworkAvailable(ctx: Context) = checkStrategy.requireNetworkAvailable(ctx)
+
+    override fun isNetworkAvailable(ctx: Context): Boolean {
+
+        if (alwaysRequire) {
+
+            return requireNetworkAvailable(ctx)
+        }
+
+        return checkStrategy.isNetworkAvailable(ctx)
+    }
 
     fun isNetworkUnavailable(ctx: Context) = !isNetworkAvailable(ctx)
 
