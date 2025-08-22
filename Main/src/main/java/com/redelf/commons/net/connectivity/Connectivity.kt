@@ -76,45 +76,47 @@ class Connectivity(
                 return false
             }
         }
+
+        override fun requireNetworkAvailable(ctx: Context): Boolean {
+
+            fun notConnected(): Boolean {
+
+                return !isNetworkAvailable(ctx)
+            }
+
+            if (notConnected()) {
+
+                Console.warning(
+
+                    "$tag NO INTERNET CONNECTION :: Waiting for it".trim()
+                )
+
+                yieldWhile(
+
+                    timeoutInMilliseconds = 60 * 1000L
+
+                ) {
+
+                    notConnected()
+                }
+
+                if (notConnected()) {
+
+                    val msg = "$tag NO INTERNET CONNECTION :: Waiting timeout"
+                    val e = IOException(msg)
+                    recordException(e)
+                }
+            }
+
+            return isNetworkAvailable(ctx)
+        }
     }
 
     private var checkStrategy: ConnectivityCheck = defaultStrategy
 
     override fun isNetworkAvailable(ctx: Context) = checkStrategy.isNetworkAvailable(ctx)
 
-    override fun requireNetworkAvailable(ctx: Context): Boolean {
-
-        fun notConnected(): Boolean {
-
-            return isNetworkUnavailable(ctx)
-        }
-
-        if (notConnected()) {
-
-            Console.warning(
-
-                "$tag NO INTERNET CONNECTION :: Waiting for it".trim()
-            )
-
-            yieldWhile(
-
-                timeoutInMilliseconds = 60 * 1000L
-
-            ) {
-
-                notConnected()
-            }
-
-            if (notConnected()) {
-
-                val msg = "$tag NO INTERNET CONNECTION :: Waiting timeout"
-                val e = IOException(msg)
-                recordException(e)
-            }
-        }
-
-        return checkStrategy.isNetworkAvailable(ctx)
-    }
+    override fun requireNetworkAvailable(ctx: Context) = checkStrategy.requireNetworkAvailable(ctx)
 
     fun isNetworkUnavailable(ctx: Context) = !isNetworkAvailable(ctx)
 
