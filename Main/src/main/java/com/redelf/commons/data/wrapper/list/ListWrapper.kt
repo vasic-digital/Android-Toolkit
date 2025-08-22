@@ -977,7 +977,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                         }
                     }
 
-                    doFilter("doAddAllAndFilter(from='$from')", filters) {
+                    doFilter(from, filters) {
 
                         if (!skipNotifying) {
 
