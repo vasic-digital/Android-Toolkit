@@ -27,11 +27,8 @@ class Connectivity(private val endpoint: String = CHECK_ENDPOINT) : Connectivity
 
                 if (isOnMainThread()) {
 
-                    Console.error("$tag Network check on main thread not allowed")
                     val e = NetworkOnMainThreadException()
                     recordException(e)
-
-                    return false
                 }
 
                 val address = InetAddress.getByName(endpoint)
