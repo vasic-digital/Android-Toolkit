@@ -3,6 +3,7 @@ package com.redelf.commons.net.connectivity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.NetworkOnMainThreadException
+import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
@@ -47,7 +48,15 @@ class Connectivity(
                 if (isOnMainThread()) {
 
                     val e = NetworkOnMainThreadException()
-                    recordException(e)
+
+                    if (BaseApplication.takeContext().isProduction()) {
+
+                        recordException(e)
+
+                    } else {
+
+                        Console.error(e.message ?: e::class.java.simpleName)
+                    }
                 }
 
                 val address = InetAddress.getByName(endpoint)
