@@ -977,7 +977,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                         }
                     }
 
-                    doFilter(filters) {
+                    doFilter("doAddAllAndFilter(from='$from')", filters) {
 
                         if (!skipNotifying) {
 
@@ -1029,6 +1029,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     private fun doFilter(
 
+        from: String,
         filters: List<FilterAsync<T>> = defaultFilters,
         callback: () -> Unit
 
@@ -1057,6 +1058,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                         val result = sync<Boolean?>("") { callback ->
 
                             filter.filter(
+
+                                "doFilter(from='$from')",
 
                                 filteredList,
 
