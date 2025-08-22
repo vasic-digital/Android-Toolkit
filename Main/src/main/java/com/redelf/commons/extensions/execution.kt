@@ -443,6 +443,6 @@ fun releaseWakeLock(wLock: PowerManager.WakeLock? = WAKE_LOCK) {
 
     } catch (e: Throwable) {
 
-        recordException(e)
+        Console.error(e)
     }
 }
