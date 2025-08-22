@@ -1,6 +1,7 @@
 package com.redelf.commons.net.connectivity
 
 import android.content.Context
+import android.net.ConnectivityManager
 import android.os.NetworkOnMainThreadException
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.isOnMainThread
@@ -9,12 +10,7 @@ import com.redelf.commons.logging.Console
 import java.net.InetAddress
 import java.net.UnknownHostException
 
-class Connectivity(private val endpoint: String = CHECK_ENDPOINT) : ConnectivityCheck {
-
-    companion object {
-
-        var CHECK_ENDPOINT = "www.google.com"
-    }
+class Connectivity(private val endpoint: String = "") : ConnectivityCheck {
 
     private val defaultStrategy = object : ConnectivityCheck {
 
@@ -22,6 +18,21 @@ class Connectivity(private val endpoint: String = CHECK_ENDPOINT) : Connectivity
         override fun isNetworkAvailable(ctx: Context): Boolean {
 
             val tag = "Network connectivity ::"
+
+            if (endpoint.isEmpty()) {
+
+                val name = Context.CONNECTIVITY_SERVICE
+
+                val connectivityManager = ctx.getSystemService(name) as ConnectivityManager?
+
+                connectivityManager?.let {
+
+                    val activeNetworkInfo = it.activeNetworkInfo
+                    return activeNetworkInfo != null && activeNetworkInfo.isConnected
+                }
+
+                return false
+            }
 
             try {
 
