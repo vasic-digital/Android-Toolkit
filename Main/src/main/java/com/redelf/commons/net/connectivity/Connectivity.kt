@@ -6,11 +6,18 @@ import android.os.NetworkOnMainThreadException
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.logging.Console
+import java.io.IOException
 import java.net.InetAddress
 import java.net.UnknownHostException
 
-class Connectivity(private val endpoint: String = "") : ConnectivityCheck {
+class Connectivity(
+
+    private val endpoint: String = "",
+    private val tag: String = "Connectivity ::"
+
+) : ConnectivityCheck {
 
     private val defaultStrategy = object : ConnectivityCheck {
 
@@ -74,6 +81,40 @@ class Connectivity(private val endpoint: String = "") : ConnectivityCheck {
     private var checkStrategy: ConnectivityCheck = defaultStrategy
 
     override fun isNetworkAvailable(ctx: Context) = checkStrategy.isNetworkAvailable(ctx)
+
+    override fun requireNetworkAvailable(ctx: Context): Boolean {
+
+        fun notConnected(): Boolean {
+
+            return isNetworkUnavailable(ctx)
+        }
+
+        if (notConnected()) {
+
+            Console.warning(
+
+                "$tag NO INTERNET CONNECTION :: Waiting for it".trim()
+            )
+
+            yieldWhile(
+
+                timeoutInMilliseconds = 60 * 1000L
+
+            ) {
+
+                notConnected()
+            }
+
+            if (notConnected()) {
+
+                val msg = "$tag NO INTERNET CONNECTION :: Waiting timeout"
+                val e = IOException(msg)
+                recordException(e)
+            }
+        }
+
+        return checkStrategy.isNetworkAvailable(ctx)
+    }
 
     fun isNetworkUnavailable(ctx: Context) = !isNetworkAvailable(ctx)
 
