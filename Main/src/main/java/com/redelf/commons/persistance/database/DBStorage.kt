@@ -7,6 +7,8 @@ import android.database.Cursor
 import android.provider.BaseColumns
 import androidx.core.text.isDigitsOnly
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.callback.CallbackOperation
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
@@ -55,10 +57,9 @@ object DBStorage : Storage<String> {
     private var table = TABLE_
     private var columnKey = COLUMN_KEY_
     private var columnValue = COLUMN_VALUE_
-
     private val executor = Executor.MAIN
-
     private var enc: Encryption<String> = NoEncryption()
+    private val getting = ConcurrentHashMap<String, Callbacks<OnObtain<String?>>>()
 
     private fun table() = table
 
@@ -862,107 +863,174 @@ object DBStorage : Storage<String> {
         }
     }
 
-    private fun doGetAsync(key: String?, callback: OnObtain<String?>) {
+    @Synchronized
+    private fun doGetAsync(key: String?, getterCallback: OnObtain<String?>) {
 
         val tag = "$TAG Do get async :: Key='$key' ::"
 
-        if (DEBUG.get()) {
+        if (isEmpty(key)) {
 
-            Console.log("$tag START")
+            val e = IllegalArgumentException("Empty key")
+            Console.error("$tag FAILED :: Error='$e'")
+            getterCallback.onFailure(e)
+            return
         }
 
-        exec(
+        key?.let {
 
-            onRejected = { e ->
+            var inProgress = false
+            var callbacks = getting[key]
 
-                Console.error("$tag REJECTED")
-                callback.onFailure(e)
-            }
+            fun register(callbacks: Callbacks<OnObtain<String?>>): Boolean {
 
-        ) {
+                if (callbacks.isRegistered(getterCallback)) {
 
-            if (isEmpty(key)) {
+                    if (DEBUG.get()) {
 
-                val e = IllegalArgumentException("Empty key")
-                Console.error("$tag FAILED :: Error='$e'")
-                callback.onFailure(e)
-                return@exec
-            }
+                        Console.warning("$tag Already registered}")
+                    }
 
-            if (DEBUG.get()) Console.log("$tag STARTED")
-
-            withDb(tag) { db ->
-
-                if (DEBUG.get()) Console.log("$tag Got DB")
-
-                var result = ""
-                val selection = "$columnKey = ?"
-                val selectionArgs = arrayOf(key)
-                val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
-
-                if (db?.isOpen == false) {
-
-                    val e = IOException("DB is not open")
-                    Console.error("$tag FAILED :: Error='${e.message}'")
-                    callback.onFailure(e)
-                    return@withDb
+                    return true
                 }
 
-                var cursor: Cursor? = null
+                callbacks.register(getterCallback)
 
-                try {
+                return false
+            }
 
-                    cursor = db?.query(
+            if (callbacks == null) {
 
-                        table,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        null
-                    )
+                callbacks = Callbacks("getting.$key")
+                getting[key] = callbacks
 
-                    cursor?.let {
+            } else {
 
-                        with(it) {
+                inProgress = true
+            }
 
-                            while (moveToNext() && isEmpty(result)) {
+            register(callbacks)
 
-                                try {
+            if (inProgress) {
 
-                                    val idx = getColumnIndexOrThrow(columnValue)
-                                    result = getString(idx)
+                Console.warning("$tag Already getting :: Key='$key'")
 
-                                } catch (e: Throwable) {
+                return
+            }
 
-                                    callback.onFailure(e)
-                                    result = e.message ?: "error"
+            if (DEBUG.get()) {
+
+                Console.log("$tag START")
+            }
+
+            fun notifyGetterCallback(data: String? = null, error: Throwable? = null) {
+
+                callbacks.doOnAll(object : CallbackOperation<OnObtain<String?>> {
+
+                    override fun perform(callback: OnObtain<String?>) {
+
+                        error?.let {
+
+                            callback.onFailure(it)
+
+                        } ?: kotlin.run {
+
+                            callback.onCompleted(data)
+                        }
+
+                        callbacks.unregister(callback)
+                    }
+
+                }, operationName = "getting.$key")
+
+                getting.remove(key)
+            }
+
+            exec(
+
+                onRejected = { e ->
+
+                    Console.error("$tag REJECTED")
+
+                    notifyGetterCallback(error = e)
+                }
+
+            ) {
+
+                if (DEBUG.get()) Console.log("$tag STARTED")
+
+                withDb(tag) { db ->
+
+                    if (DEBUG.get()) Console.log("$tag Got DB")
+
+                    var result = ""
+                    val selection = "$columnKey = ?"
+                    val selectionArgs = arrayOf(key)
+                    val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
+
+                    if (db?.isOpen == false) {
+
+                        val e = IOException("DB is not open")
+                        Console.error("$tag FAILED :: Error='${e.message}'")
+                        notifyGetterCallback(error = e)
+                        return@withDb
+                    }
+
+                    var cursor: Cursor? = null
+
+                    try {
+
+                        cursor = db?.query(
+
+                            table,
+                            projection,
+                            selection,
+                            selectionArgs,
+                            null,
+                            null,
+                            null
+                        )
+
+                        cursor?.let {
+
+                            with(it) {
+
+                                while (moveToNext() && isEmpty(result)) {
+
+                                    try {
+
+                                        val idx = getColumnIndexOrThrow(columnValue)
+                                        result = getString(idx)
+
+                                    } catch (e: Throwable) {
+
+                                        notifyGetterCallback(error = e)
+                                        result = e.message ?: "error"
+                                    }
                                 }
                             }
                         }
-                    }
-
-                    cursor?.close()
-
-                } catch (e: Throwable) {
-
-                    callback.onFailure(e)
-                    return@withDb
-
-                } finally {
-
-                    try {
 
                         cursor?.close()
 
                     } catch (e: Throwable) {
 
-                        recordException(e)
-                    }
-                }
+                        notifyGetterCallback(error = e)
+                        return@withDb
 
-                callback.onCompleted(result)
+                    } finally {
+
+                        try {
+
+                            cursor?.close()
+
+                        } catch (e: Throwable) {
+
+                            recordException(e)
+                        }
+                    }
+
+                    notifyGetterCallback(data = result)
+                }
             }
         }
     }
