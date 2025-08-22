@@ -25,14 +25,23 @@ fun <T> Call<T>.executeConnected(
 
     if (notConnected()) {
 
+        val tOut = if (ctx.isInBackground()) {
+
+            5 * 1000L
+
+        } else {
+
+            60 * 1000L
+        }
+
         Console.warning(
 
-            "$tag NO INTERNET CONNECTION :: Waiting for it".trim()
+            "$tag NO INTERNET CONNECTION :: Waiting for it (timeout=${tOut}ms)".trim()
         )
 
         yieldWhile(
 
-            timeoutInMilliseconds = 60 * 1000L
+            timeoutInMilliseconds = tOut
 
         ) {
 
@@ -41,9 +50,16 @@ fun <T> Call<T>.executeConnected(
 
         if (notConnected()) {
 
-            val msg = "$tag NO INTERNET CONNECTION :: Waiting timeout"
+            val msg = "$tag NO INTERNET CONNECTION :: Waiting timed-out (timeout=${tOut}ms)"
             val e = IOException(msg)
             recordException(e)
+
+        } else {
+
+            val msg = "$tag INTERNET CONNECTION AVAILABLE :: " +
+                    "Waiting was not timed-out (timeout=${tOut}ms)"
+
+            Console.debug(msg)
         }
     }
 

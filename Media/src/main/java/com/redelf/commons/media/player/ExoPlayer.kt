@@ -311,42 +311,62 @@ abstract class ExoPlayer(private val ctx: Context) : PlayerAbstraction<EPlayer>(
 
                         Console.log("$playerTag $logTag START :: Duration = $duration")
 
-                        val currentProgress: Float = if (startFrom < 0) {
+                        fun onCurrProgress(currentProgress: Float) {
 
-                            obtainCurrentProgress(what)
+                            onUiThread {
 
-                        } else {
+                                currentProgress.let { progress ->
 
-                            startFrom.toFloat()
+                                    Console.log("$playerTag $logTag Progress obtained: $currentProgress")
+
+                                    if (currentProgress >= duration * 0.95) {
+
+                                        seekTo(0)
+
+                                    } else {
+
+                                        seekTo(progress.toInt())
+                                    }
+
+                                    Console.log("$playerTag $logTag Seek")
+                                }
+
+                                Console.log(
+
+                                    "$playerTag $logTag Preparing :: Player hash = ${ep.hashCode()}"
+                                )
+
+                                ep.prepare()
+                                ep.playWhenReady = true
+
+                                startPublishingProgress()
+
+                                Console.log("$playerTag $logTag On started")
+                            }
                         }
 
-                        currentProgress.let { progress ->
+                        exec(
 
-                            Console.log("$playerTag $logTag Progress obtained: $currentProgress")
+                            onRejected = { e ->
 
-                            if (currentProgress >= duration * 0.95) {
+                                recordException(e)
 
-                                seekTo(0)
+                                onCurrProgress(0f)
+                            }
+
+                        ) {
+
+                            val currentProgress: Float = if (startFrom < 0) {
+
+                                obtainCurrentProgress(what)
 
                             } else {
 
-                                seekTo(progress.toInt())
+                                startFrom.toFloat()
                             }
 
-                            Console.log("$playerTag $logTag Seek")
+                            onCurrProgress(currentProgress)
                         }
-
-                        Console.log(
-
-                            "$playerTag $logTag Preparing :: Player hash = ${ep.hashCode()}"
-                        )
-
-                        ep.prepare()
-                        ep.playWhenReady = true
-
-                        startPublishingProgress()
-
-                        Console.log("$playerTag $logTag On started")
                     }
 
                 } catch (e: Exception) {
