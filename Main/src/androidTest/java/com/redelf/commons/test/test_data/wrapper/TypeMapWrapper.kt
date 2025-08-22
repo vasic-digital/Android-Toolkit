@@ -15,7 +15,7 @@ abstract class TypeMapWrapper<K, T>(map: ConcurrentHashMap<K, T>) :
 
     constructor() : this(ConcurrentHashMap())
 
-    override fun isPartitioningEnabled() = false
+    override fun isPartitioningEnabled() = true
 
     override fun isPartitioningParallelized() = true
 

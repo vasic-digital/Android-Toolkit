@@ -17,7 +17,7 @@ abstract class TypeListWrapper<T>(list: CopyOnWriteArrayList<T>) :
 
     constructor() : this(CopyOnWriteArrayList())
 
-    override fun isPartitioningEnabled() = false
+    override fun isPartitioningEnabled() = true
 
     override fun isPartitioningParallelized() = true
 
