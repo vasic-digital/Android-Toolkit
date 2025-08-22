@@ -14,7 +14,7 @@ abstract class TypeWrapper<T>(wrapped: T?) :
 
     constructor() : this(null)
 
-    override fun isPartitioningEnabled() = true
+    override fun isPartitioningEnabled() = false
 
     override fun isPartitioningParallelized() = true
 

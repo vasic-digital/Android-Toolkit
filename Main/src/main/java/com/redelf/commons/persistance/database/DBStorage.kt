@@ -44,9 +44,9 @@ object DBStorage : Storage<String> {
     private const val KEY_CHUNK = "chunk"
     private const val TAG = "DbStorage ::"
     private const val KEY_CHUNKS = "chunks"
-    private const val MAX_CHUNK_SIZE = 500
     private const val DATABASE_VERSION = 1
     private const val DATABASE_NAME = "sdb"
+    private const val MAX_CHUNK_SIZE = 5000
 
     private const val TABLE_ = "dt"
     private const val COLUMN_KEY_ = "ky"
