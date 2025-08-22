@@ -12,6 +12,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.Operation
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.execution.BackgroundTaskWorker
 import com.redelf.commons.logging.Console
@@ -155,9 +156,9 @@ fun executeWithWorkManager(
             .setConstraints(constraints)
             .setBackoffCriteria(
 
-                BackoffPolicy.LINEAR,      // Exponential backoff
-                2,
-                TimeUnit.SECONDS                // Initial backoff delay
+                BackoffPolicy.LINEAR,
+                WorkRequest.MIN_BACKOFF_MILLIS,
+                TimeUnit.SECONDS
             )
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .build()
