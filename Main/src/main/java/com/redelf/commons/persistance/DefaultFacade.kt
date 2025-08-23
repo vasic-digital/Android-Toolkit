@@ -326,7 +326,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
         key?.let {
 
             var inProgress = false
-            var callbacks = getting[key]
+            var callbacks = getting[key] // TODO: Incorporate callbacks mechanism using 'getting' to all methods and all persistence layer classes to prevent multiple calls
 
             fun register(callbacks: Callbacks<OnObtain<*>>): Boolean {
 
