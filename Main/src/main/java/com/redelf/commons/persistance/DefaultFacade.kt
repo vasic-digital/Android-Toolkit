@@ -381,16 +381,8 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                         } ?: kotlin.run {
 
-                            if (data == null) {
-
-                                val e = IllegalStateException("Data is null")
-                                callback.onFailure(e)
-
-                            } else {
-
-                                @Suppress("UNCHECKED_CAST")
-                                (callback as OnObtain<T?>).onCompleted(data)
-                            }
+                            @Suppress("UNCHECKED_CAST")
+                            (callback as OnObtain<T?>).onCompleted(data)
                         }
 
                         callbacks.unregister(callback)
