@@ -388,8 +388,8 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                             } else {
 
-                                // FIXME: [IN_PROGRESS]
-                                callback.onCompleted(a)
+                                @Suppress("UNCHECKED_CAST")
+                                (callback as OnObtain<T?>).onCompleted(data)
                             }
                         }
 
