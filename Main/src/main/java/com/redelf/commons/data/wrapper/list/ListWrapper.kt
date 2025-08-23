@@ -1317,18 +1317,21 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                     return@exec
                 }
 
-                yieldWhile(
+                val busyMsg = "Manager is not ready"
 
-                    timeoutInMilliseconds = 5000
+                if (manager.isBusy() || manager.isReading() || manager.isWriting()) {
 
-                ) {
+                    Console.warning(busyMsg)
+                }
+
+                yieldWhile {
 
                     manager.isBusy() || manager.isReading() || manager.isWriting()
                 }
 
                 if (manager.isBusy() || manager.isReading() || manager.isWriting()) {
 
-                    val e = IllegalStateException("Manager is not ready")
+                    val e = IllegalStateException(busyMsg)
                     callback.onFailure(e)
                     return@exec
                 }
