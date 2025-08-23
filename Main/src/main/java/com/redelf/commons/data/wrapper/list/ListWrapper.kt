@@ -1,11 +1,12 @@
 package com.redelf.commons.data.wrapper.list
 
+import com.redelf.commons.callback.CallbackOperation
+import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
 import com.redelf.commons.extensions.addAt
 import com.redelf.commons.extensions.getAtIndex
-import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.removeAt
@@ -55,6 +56,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
+    private val collectionCallbacks = Callbacks<OnObtain<Collection<T?>?>>("gettingCollection")
 
     private val dataPushListener: OnObtain<DataPushResult?>? = if (dataAccess != null) {
 
@@ -1293,13 +1295,61 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
     }
 
-    protected open fun getCollection(from: String, callback: OnObtain<Collection<T?>?>) {
+    protected open fun getCollection(from: String, collectionCallback: OnObtain<Collection<T?>?>) {
+
+        val tag = "$tag Get collection :: From='$from' ::"
 
         com.redelf.commons.extensions.exec(
 
-            onRejected = { e -> callback.onFailure(e) }
+            onRejected = { e -> collectionCallback.onFailure(e) }
 
         ) {
+
+            fun notifyGetterCallback(data: Collection<T?>? = null, error: Throwable? = null) {
+
+                collectionCallbacks.doOnAll(object : CallbackOperation<OnObtain<Collection<T?>?>> {
+
+                    override fun perform(callback: OnObtain<Collection<T?>?>) {
+
+                        error?.let {
+
+                            callback.onFailure(it)
+
+                        } ?: kotlin.run {
+
+                            callback.onCompleted(data)
+                        }
+
+                        collectionCallbacks.unregister(callback)
+                    }
+
+                }, operationName = "gettingCollection")
+            }
+
+            fun register(): Boolean {
+
+                if (collectionCallbacks.isRegistered(collectionCallback)) {
+
+                    if (DEBUG.get()) {
+
+                        Console.warning("$tag Already registered}")
+                    }
+
+                    return true
+                }
+
+                collectionCallbacks.register(collectionCallback)
+
+                return false
+            }
+
+            val inProgress = register()
+
+            if (inProgress) {
+
+                Console.warning("$tag Already obtaining")
+                return@exec
+            }
 
             try {
 
@@ -1313,7 +1363,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                     )
 
                     val e = IllegalArgumentException("Manager is null")
-                    callback.onFailure(e)
+                    notifyGetterCallback(error = e)
                     return@exec
                 }
 
@@ -1324,7 +1374,11 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                     Console.warning(busyMsg)
                 }
 
-                yieldWhile {
+                yieldWhile(
+
+                    timeoutInMilliseconds = 60 * 1000
+
+                ) {
 
                     manager.isBusy() || manager.isReading() || manager.isWriting()
                 }
@@ -1332,7 +1386,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 if (manager.isBusy() || manager.isReading() || manager.isWriting()) {
 
                     val e = IllegalStateException(busyMsg)
-                    callback.onFailure(e)
+                    notifyGetterCallback(error = e)
                     return@exec
                 }
 
@@ -1346,7 +1400,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                     )
                 }
 
-                callback.onCompleted(coll)
+                notifyGetterCallback(data = coll)
 
                 return@exec
 
@@ -1362,7 +1416,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 recordException(e)
             }
 
-            callback.onCompleted(null)
+            notifyGetterCallback(data = null)
         }
     }
 
