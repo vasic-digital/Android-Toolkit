@@ -661,7 +661,7 @@ fun Context.toast(msg: String, short: Boolean = false) {
 
 /** @noinspection deprecation
  */
-fun Context.wakeUpScreen() {
+fun Context.wakeUpScreen(after: (() -> Unit)? = null) {
 
     val tag = "Wake up screen ::"
 
@@ -679,25 +679,47 @@ fun Context.wakeUpScreen() {
 
                 Console.log("$tag END :: Screen is on")
 
+                after?.let { a ->
+
+                    a()
+                }
+
             } else {
 
-                val tag = "Sekur:WakeLock:1"
+                try {
 
-                val wl = it.newWakeLock(
+                    val tag = "Screen:WakeLock"
 
-                    PowerManager.FULL_WAKE_LOCK or
-                            PowerManager.ACQUIRE_CAUSES_WAKEUP or
-                            PowerManager.ON_AFTER_RELEASE,
-                    tag
-                )
+                    val wl = it.newWakeLock(
 
-                wl.acquire(2000)
+                        PowerManager.FULL_WAKE_LOCK or
+                                PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                                PowerManager.ON_AFTER_RELEASE,
+                        tag
+                    )
 
-                val wlCpu = it.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)
+                    wl.acquire(2000)
 
-                wlCpu.acquire(2000)
+                    val wlCpu = it.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)
 
-                Console.log("$tag END")
+                    wlCpu.acquire(2000)
+
+                    after?.let { a ->
+
+                        a()
+                    }
+
+                    Console.log("$tag END")
+
+                } catch (e: Throwable) {
+
+                    recordException(e)
+
+                    after?.let { a ->
+
+                        a()
+                    }
+                }
             }
         }
 

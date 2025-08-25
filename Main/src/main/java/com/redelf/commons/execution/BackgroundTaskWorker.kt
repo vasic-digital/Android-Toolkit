@@ -3,6 +3,7 @@ package com.redelf.commons.execution
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.redelf.commons.extensions.acquireWakeLock
 import com.redelf.commons.extensions.recordException
 
 class BackgroundTaskWorker(
@@ -14,7 +15,7 @@ class BackgroundTaskWorker(
 
     companion object {
 
-        var customCodeBlock: (suspend () -> Unit)? = null
+        private var customCodeBlock: (suspend () -> Unit)? = null
 
         fun setTask(what: suspend () -> Unit) {
 
@@ -24,9 +25,12 @@ class BackgroundTaskWorker(
 
     override suspend fun doWork(): Result {
 
+        acquireWakeLock()
+
         return try {
 
             executeCustomTask()
+
             Result.success()
 
         } catch (e: Throwable) {

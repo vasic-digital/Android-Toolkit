@@ -1,0 +1,38 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+
+  echo "Usage: $0 <package> [<destination>] [<tag>]"
+  exit 1
+
+else
+
+  PACKAGE="$1"
+fi
+
+if [ -z "$2" ]; then
+
+  echo "Usage: $0 <package> [<destination>] [<tag>]"
+  exit 1
+
+else
+
+  DEST="$2"
+fi
+
+if [ -z "$3" ]; then
+
+  TAG=""
+
+else
+
+  TAG="$3"
+fi
+
+START_MSG="ADB Logcat recording started ..."
+
+echo "$START_MSG" && \
+  echo "$START_MSG" >> "$DEST"
+
+PID=$(adb shell pidof -s "$PACKAGE")
+adb logcat -v brief --pid="$PID" | stdbuf -oL grep "$TAG" >> "$DEST"

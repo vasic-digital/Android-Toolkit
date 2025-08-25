@@ -2,6 +2,7 @@ package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.net.Uri
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Base64
@@ -15,6 +16,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import androidx.core.net.toUri
 
 fun String.deobfuscate(deobfuscator: Obfuscation = DefaultObfuscator): String {
 
@@ -412,4 +414,7 @@ fun StringBuilder.append(
     return this.append(key ?: "").append(separator).append(value ?: defaultValue)
 }
 
+fun String.hostname(): String {
 
+    return this.toUri().host ?: ""
+}

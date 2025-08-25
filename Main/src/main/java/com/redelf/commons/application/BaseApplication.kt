@@ -15,6 +15,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.os.StrictMode
 import android.provider.Settings
 import android.telecom.TelecomManager
@@ -46,6 +47,7 @@ import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.detectAllExpect
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isInForeground
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toast
@@ -265,6 +267,35 @@ abstract class BaseApplication :
     private val registeredForAudioFocusDetection = AtomicBoolean()
 
     open fun canRecordApplicationLogs() = false
+
+    open fun canWakeLock() = false
+
+    open fun canWorkManager() = true
+
+    open fun isLegacyDevice() =  Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU
+
+    open fun isVeryOldDevice() =  Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+
+    fun isNotLegacyDevice() = !isLegacyDevice()
+
+    fun isNotVeryOldDevice() = !isVeryOldDevice()
+
+    open fun isInteractive(): Boolean {
+
+        try {
+
+            val powerManager = getSystemService(POWER_SERVICE) as PowerManager?
+            return powerManager?.isInteractive == true
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return false
+    }
+
+    fun isNotInteractive() = !isInteractive()
 
     abstract fun isProduction(): Boolean
 
@@ -665,14 +696,17 @@ abstract class BaseApplication :
                 return
             }
 
-            Console.log("$tag STARTING")
+            if (isInForeground()) {
 
-            val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
-            startService(intent)
+                Console.log("$tag STARTING")
 
-            Console.log("$tag END")
+                val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
+                startService(intent)
 
-        } catch (e: Exception) {
+                Console.log("$tag END")
+            }
+
+        } catch (e: Throwable) {
 
             Console.error("$tag ERROR: ${e.message}")
 
@@ -1427,7 +1461,15 @@ abstract class BaseApplication :
                 "identifier = $identifier"
 
         val error = IllegalStateException(msg)
-        recordException(error)
+
+        if (isProduction()) {
+
+            Console.error(error)
+
+        } else {
+
+            Console.warning(msg)
+        }
     }
 
     override fun onUpdated(identifier: Long) {
