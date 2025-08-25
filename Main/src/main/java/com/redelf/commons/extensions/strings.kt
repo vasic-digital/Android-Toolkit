@@ -2,11 +2,11 @@ package com.redelf.commons.extensions
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.net.Uri
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Base64
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.security.obfuscation.DefaultObfuscator
@@ -16,7 +16,6 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
-import androidx.core.net.toUri
 
 fun String.deobfuscate(deobfuscator: Obfuscation = DefaultObfuscator): String {
 

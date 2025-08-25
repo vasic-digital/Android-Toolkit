@@ -4,9 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.POWER_SERVICE
 import android.os.PowerManager
-import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
-import android.os.PowerManager.FULL_WAKE_LOCK
-import android.os.PowerManager.ON_AFTER_RELEASE
 import androidx.core.content.ContextCompat
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
