@@ -1,8 +1,9 @@
 plugins {
 
-    id 'com.android.library'
-    id 'kotlin-android'
-    id 'kotlin-parcelize'
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.plugin.compose"
+    id "kotlin-parcelize"
     id("com.google.devtools.ksp") version "2.2.0-2.0.2"
 }
 
@@ -154,6 +155,16 @@ android {
         jvmTarget = '1.8'
     }
 
+    buildFeatures {
+
+        compose true
+    }
+
+    composeOptions {
+
+        kotlinCompilerExtensionVersion '1.5.1'
+    }
+
     buildTypes {
 
         release {
@@ -220,13 +231,13 @@ dependencies {
     testApi project("$toolkit_obfuscator_project")
     androidTestApi project("$toolkit_obfuscator_project")
 
-    // TODO: Refactor / move:
-    //    api 'androidx.activity:activity-compose:1.10.0'
-    //    api 'androidx.compose.ui:ui'
-    //    api 'androidx.compose.ui:ui-graphics'
-    //    api 'androidx.compose.material3:material3'
-    //    api 'androidx.compose.foundation:foundation'
-    //    api 'androidx.compose.ui:ui-tooling-preview'
+    api "androidx.compose.ui:ui:1.5.4"
+    api "androidx.compose.material:material:1.5.4"
+    api "androidx.compose.ui:ui-tooling-preview:1.5.4"
+    api "androidx.activity:activity-compose:1.8.0"
+    api "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
+    api "androidx.compose.runtime:runtime-livedata:1.5.4"
+    api "androidx.compose.foundation:foundation:1.5.4"
 
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
