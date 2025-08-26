@@ -63,11 +63,11 @@ import kotlin.reflect.KClass
 abstract class BaseActivity :
 
     ProgressActivity,
-    StatefulActivity()
-
-{
+    StatefulActivity() {
 
     companion object {
+
+        const val KEY_PROCESS_RESTARTED = "process_restarted"
 
         val RESOURCE_OVERRIDE_READY = AtomicBoolean()
         val DEBUG_RESOURCES_OVERRIDES = AtomicBoolean(false)
@@ -144,6 +144,13 @@ abstract class BaseActivity :
 
         super.onCreate(savedInstanceState)
 
+        val wasProcessKilled = getProcessRestarted(savedInstanceState)
+
+        if (wasProcessKilled) {
+
+            onProcessRestored()
+        }
+
         WebView(this).apply {
 
             settings.textZoom = 100
@@ -197,6 +204,22 @@ abstract class BaseActivity :
         fitInsideSystemBoundaries()
 
         created = true
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putBoolean(KEY_PROCESS_RESTARTED, false)
+    }
+
+    protected open fun getProcessRestarted(savedInstanceState: Bundle?): Boolean {
+
+        return savedInstanceState?.getBoolean(KEY_PROCESS_RESTARTED, false) ?: true
+    }
+
+    protected open fun onProcessRestored() {
+
+        Console.debug("Process restored")
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -416,7 +439,8 @@ abstract class BaseActivity :
 
         if (DEBUG_RESOURCES_OVERRIDES.get()) {
 
-            val tag = "Override ready :: GET :: From = '${this::class.simpleName}.${this.hashCode()}' ::"
+            val tag =
+                "Override ready :: GET :: From = '${this::class.simpleName}.${this.hashCode()}' ::"
             val msg = "$tag Value = $ready"
 
             if (ready) {
