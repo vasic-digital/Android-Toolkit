@@ -209,12 +209,12 @@ abstract class BaseActivity :
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putBoolean(KEY_PROCESS_RESTARTED, false)
+        outState.putBoolean(KEY_PROCESS_RESTARTED, true)
     }
 
     protected open fun getProcessRestarted(savedInstanceState: Bundle?): Boolean {
 
-        return savedInstanceState?.getBoolean(KEY_PROCESS_RESTARTED, false) ?: true
+        return savedInstanceState?.getBoolean(KEY_PROCESS_RESTARTED, false) ?: false
     }
 
     protected open fun onProcessRestored() {
