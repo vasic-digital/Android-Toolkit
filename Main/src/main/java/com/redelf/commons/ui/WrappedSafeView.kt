@@ -25,21 +25,21 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.CopyOnWriteArrayList
 
-class WrappedSafeView @JvmOverloads constructor(
+class WrappedSafeView<T> @JvmOverloads constructor(
 
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 
-) : FrameLayout(context, attrs, defStyleAttr) {
+) : FrameLayout(context, attrs, defStyleAttr) where T : RecyclerView.ViewHolder {
 
     // Extension for safe bindViewHolder call
-    private fun <T> RecyclerView.Adapter<T>.bindViewHolderSafe(
+    private fun RecyclerView.Adapter<T>.bindViewHolderSafe(
 
         holder: RecyclerView.ViewHolder,
         position: Int
 
-    ) where T : RecyclerView.ViewHolder {
+    ) {
 
         try {
 
@@ -54,7 +54,7 @@ class WrappedSafeView @JvmOverloads constructor(
     }
 
     private val composeView = ComposeView(context)
-    private var adapter: RecyclerView.Adapter<*>? = null
+    private var adapter: RecyclerView.Adapter<T>? = null
     private val dataSetMutex = Mutex()
     private val coroutineScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
     private val currentDataSet = CopyOnWriteArrayList<AdapterItem>()
@@ -70,7 +70,7 @@ class WrappedSafeView @JvmOverloads constructor(
         }
     }
 
-    fun setAdapter(adapter: RecyclerView.Adapter<*>) {
+    fun setAdapter(adapter: RecyclerView.Adapter<T>) {
 
         synchronized(this) {
 
@@ -84,9 +84,9 @@ class WrappedSafeView @JvmOverloads constructor(
         }
     }
 
-    fun getAdapter(): RecyclerView.Adapter<*>? = synchronized(this) { adapter }
+    fun getAdapter(): RecyclerView.Adapter<T>? = synchronized(this) { adapter }
 
-    fun swapAdapter(newAdapter: RecyclerView.Adapter<*>?, removeAndRecycleExistingViews: Boolean) {
+    fun swapAdapter(newAdapter: RecyclerView.Adapter<T>?, removeAndRecycleExistingViews: Boolean) {
 
         synchronized(this) {
 
@@ -302,7 +302,7 @@ class WrappedSafeView @JvmOverloads constructor(
 }
 
 // Extension for safe item count access
-private fun RecyclerView.Adapter<*>.safeGetItemCount(): Int {
+private fun <T> RecyclerView.Adapter<T>.safeGetItemCount(): Int where T : RecyclerView.ViewHolder {
 
     return try {
 
@@ -317,7 +317,7 @@ private fun RecyclerView.Adapter<*>.safeGetItemCount(): Int {
 }
 
 // Extension for safe view type access
-private fun RecyclerView.Adapter<*>.safeGetItemViewType(position: Int): Int {
+private fun <T> RecyclerView.Adapter<T>.safeGetItemViewType(position: Int): Int where T : RecyclerView.ViewHolder {
 
     return try {
 
