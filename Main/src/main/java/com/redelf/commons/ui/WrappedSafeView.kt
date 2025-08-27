@@ -31,7 +31,7 @@ class WrappedSafeView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 
-) : FrameLayout(context, attrs, defStyleAttr) {
+) : FrameLayout(context, attrs, defStyleAttr) { // FIXME: Pass the container through the constructor and use it [IN_PROGRESS]
 
     // Extension for safe bindViewHolder call
     private fun <T> RecyclerView.Adapter<T>.bindViewHolderSafe(
