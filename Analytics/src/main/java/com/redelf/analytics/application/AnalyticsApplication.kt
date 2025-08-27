@@ -19,7 +19,7 @@ abstract class AnalyticsApplication : BaseApplication() {
 
         Console.log("Analytics :: Init :: END")
 
-        if (DEBUG.get() && facebookAnalyticsEnabled) {
+        if (facebookEnabled && DEBUG.get() && facebookAnalyticsEnabled) {
 
             FacebookSdk.setIsDebugEnabled(true)
             FacebookSdk.addLoggingBehavior(LoggingBehavior.APP_EVENTS)
