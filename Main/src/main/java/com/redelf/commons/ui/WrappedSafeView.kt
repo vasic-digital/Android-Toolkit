@@ -25,21 +25,21 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.CopyOnWriteArrayList
 
-class WrappedSafeView<T> @JvmOverloads constructor(
+class WrappedSafeView @JvmOverloads constructor(
 
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 
-) : FrameLayout(context, attrs, defStyleAttr) where T : RecyclerView.ViewHolder {
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     // Extension for safe bindViewHolder call
-    private fun RecyclerView.Adapter<T>.bindViewHolderSafe(
+    private fun <T> RecyclerView.Adapter<T>.bindViewHolderSafe(
 
         holder: RecyclerView.ViewHolder,
         position: Int
 
-    ) {
+    ) where T : RecyclerView.ViewHolder {
 
         try {
 
@@ -53,12 +53,12 @@ class WrappedSafeView<T> @JvmOverloads constructor(
         }
     }
 
-    private val composeView = ComposeView(context)
-    private var adapter: RecyclerView.Adapter<T>? = null
     private val dataSetMutex = Mutex()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
+    private val composeView = ComposeView(context)
     private val currentDataSet = CopyOnWriteArrayList<AdapterItem>()
     private val viewHolderCache = mutableMapOf<Int, RecyclerView.ViewHolder>()
+    private var adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>? = null
+    private val coroutineScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
 
     init {
 
@@ -70,7 +70,7 @@ class WrappedSafeView<T> @JvmOverloads constructor(
         }
     }
 
-    fun setAdapter(adapter: RecyclerView.Adapter<T>) {
+    fun setAdapter(adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>) {
 
         synchronized(this) {
 
@@ -84,9 +84,13 @@ class WrappedSafeView<T> @JvmOverloads constructor(
         }
     }
 
-    fun getAdapter(): RecyclerView.Adapter<T>? = synchronized(this) { adapter }
+    fun <T> getAdapter(): RecyclerView.Adapter<out RecyclerView.ViewHolder>? where T : RecyclerView.ViewHolder =
+        synchronized(this) { adapter }
 
-    fun swapAdapter(newAdapter: RecyclerView.Adapter<T>?, removeAndRecycleExistingViews: Boolean) {
+    fun <T> swapAdapter(
+        newAdapter: RecyclerView.Adapter<T>?,
+        removeAndRecycleExistingViews: Boolean
+    ) where T : RecyclerView.ViewHolder {
 
         synchronized(this) {
 
