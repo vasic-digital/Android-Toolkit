@@ -33,6 +33,26 @@ class WrappedSafeView @JvmOverloads constructor(
 
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
+    // Extension for safe bindViewHolder call
+    private fun <T> RecyclerView.Adapter<T>.bindViewHolderSafe(
+
+        holder: RecyclerView.ViewHolder,
+        position: Int
+
+    ) where T : RecyclerView.ViewHolder {
+
+        try {
+
+            // This uses reflection-like approach but is actually type-safe due to how RecyclerView works
+            @Suppress("UNCHECKED_CAST")
+            (this as RecyclerView.Adapter<RecyclerView.ViewHolder>).bindViewHolder(holder, position)
+
+        } catch (e: Throwable) {
+
+            Console.error(e)
+        }
+    }
+
     private val composeView = ComposeView(context)
     private var adapter: RecyclerView.Adapter<*>? = null
     private val dataSetMutex = Mutex()
@@ -308,25 +328,5 @@ private fun RecyclerView.Adapter<*>.safeGetItemViewType(position: Int): Int {
         Console.error(e)
 
         0
-    }
-}
-
-// Extension for safe bindViewHolder call
-private fun RecyclerView.Adapter<*>.bindViewHolderSafe(
-
-    holder: RecyclerView.ViewHolder,
-    position: Int
-
-) {
-
-    try {
-
-        // This uses reflection-like approach but is actually type-safe due to how RecyclerView works
-        @Suppress("UNCHECKED_CAST")
-        (this as RecyclerView.Adapter<RecyclerView.ViewHolder>).bindViewHolder(holder, position)
-
-    } catch (e: Throwable) {
-
-        Console.error(e)
     }
 }
