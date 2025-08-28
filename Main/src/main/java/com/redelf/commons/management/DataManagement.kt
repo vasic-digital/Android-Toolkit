@@ -344,10 +344,7 @@ abstract class DataManagement<T> :
 
                 pulled?.let { pld ->
 
-                    if (!overwriteData(pld)) {
-
-                        Console.error("$dataObjTag Overwrite failed")
-                    }
+                    overwriteData(pld)
                 }
 
                 if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
