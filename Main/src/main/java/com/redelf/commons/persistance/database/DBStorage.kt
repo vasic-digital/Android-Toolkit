@@ -258,7 +258,7 @@ object DBStorage : Storage<String> {
         }
     }
 
-    override fun get(key: String?, getCallback: OnObtain<String?>) {
+    override fun get(key: String?, callback: OnObtain<String?>) {
 
         val tag = "$TAG Get :: Key='$key' ::"
 
@@ -266,7 +266,7 @@ object DBStorage : Storage<String> {
 
             val e = IllegalArgumentException("Empty key")
             Console.error("$tag FAILED :: Error='$e'")
-            getCallback.onFailure(e)
+            callback.onFailure(e)
             return
         }
 
@@ -282,7 +282,7 @@ object DBStorage : Storage<String> {
 
             fun register(callbacks: Callbacks<OnObtain<String?>>): Boolean {
 
-                if (callbacks.isRegistered(getCallback)) {
+                if (callbacks.isRegistered(callback)) {
 
                     if (DEBUG.get()) {
 
@@ -292,7 +292,7 @@ object DBStorage : Storage<String> {
                     return true
                 }
 
-                callbacks.register(getCallback)
+                callbacks.register(callback)
 
                 return false
             }
@@ -353,8 +353,6 @@ object DBStorage : Storage<String> {
                 }
 
             ) {
-
-
 
                 if (DEBUG.get()) {
 
