@@ -25,6 +25,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.CopyOnWriteArrayList
 
+@Deprecated("Not completed, not in use")
 class WrappedSafeView @JvmOverloads constructor(
 
     context: Context,

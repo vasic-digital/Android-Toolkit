@@ -377,14 +377,7 @@ object DBStorage : Storage<String> {
                     Console.log("$tag Calling do get")
                 }
 
-                val got = doGet("${key}_$KEY_CHUNKS")
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag Did get")
-                }
-
-                doGetCallback.onCompleted(got)
+                doGetAsync("${key}_$KEY_CHUNKS", doGetCallback)
 
                 if (DEBUG.get()) {
 
