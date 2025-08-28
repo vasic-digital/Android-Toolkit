@@ -1204,7 +1204,6 @@ fun <X> sync(
     if (mainThreadForbidden && isOnMainThread()) {
 
         val e = IllegalStateException("$context executed sync on main thread")
-        Console.error("$tag ${e.message}")
         recordException(e)
     }
 
@@ -1232,14 +1231,15 @@ fun <X> sync(
                     override fun onCompleted(data: X?) {
 
                         result = data
+
                         if (DEBUG_SYNC.get() || debug) Console.log("$tag FINISHED")
+
                         latch.countDown()
                     }
 
                     override fun onFailure(error: Throwable) {
 
                         recordException(error)
-                        Console.error("$tag FINISHED WITH ERROR :: Error='${error.message}'")
                         latch.countDown()
                     }
                 }
@@ -1292,9 +1292,7 @@ fun <X> sync(
 
             waitingFlag?.set(false)
 
-            val endTime = System.currentTimeMillis() - startTime
             val e = TimeoutException("$context latch expired")
-            Console.error("$tag FAILED :: Timed out after $endTime ms")
             recordException(e)
         }
 
@@ -1302,8 +1300,8 @@ fun <X> sync(
 
         waitingFlag?.set(false)
 
-        val endTime = System.currentTimeMillis() - startTime
-        Console.error("$tag FAILED :: Error='${e.message}' after $endTime ms")
+        latch.countDown()
+
         recordException(e)
     }
 

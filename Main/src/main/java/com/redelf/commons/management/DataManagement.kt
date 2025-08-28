@@ -268,6 +268,7 @@ abstract class DataManagement<T> :
 
     fun getData(): T? = obtain()
 
+    @Synchronized
     fun obtain(): T? {
 
         return sync("${getWho()}.obtain") { callback ->
