@@ -4,8 +4,10 @@ package com.redelf.commons.application
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -49,6 +51,7 @@ import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isInForeground
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toast
 import com.redelf.commons.intention.Intentional
@@ -75,6 +78,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.reflect.KClass
+import kotlin.system.exitProcess
 
 abstract class BaseApplication :
 
@@ -85,9 +89,7 @@ abstract class BaseApplication :
     LifecycleObserver,
     Configuration.Provider,
     ActivityLifecycleCallbacks,
-    ContextAvailability<BaseApplication>
-
-{
+    ContextAvailability<BaseApplication> {
 
     companion object :
 
@@ -131,12 +133,22 @@ abstract class BaseApplication :
 
         fun restart(context: Context) {
 
-            val packageManager = context.packageManager
-            val intent = packageManager.getLaunchIntentForPackage(context.packageName)
-            val componentName = intent?.component
-            val mainIntent = Intent.makeRestartActivityTask(componentName)
-            context.startActivity(mainIntent)
-            Runtime.getRuntime().exit(0)
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            val pendingIntentId = randomInteger(666, 111)
+
+            val pendingIntent = PendingIntent.getActivity(
+
+                context,
+                pendingIntentId,
+                intent,
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+            alarmManager?.set(AlarmManager.RTC, System.currentTimeMillis() + 500, pendingIntent)
+
+            android.os.Process.killProcess(android.os.Process.myPid())
+            exitProcess(0)
         }
 
         override fun getName(): String {
@@ -272,9 +284,9 @@ abstract class BaseApplication :
 
     open fun canWorkManager() = true
 
-    open fun isLegacyDevice() =  Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU
+    open fun isLegacyDevice() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU
 
-    open fun isVeryOldDevice() =  Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+    open fun isVeryOldDevice() = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 
     fun isNotLegacyDevice() = !isLegacyDevice()
 
