@@ -13,7 +13,7 @@ open class BasicConnectivityHandler(
 
     private val blockConnection = AtomicBoolean(defaultConnectionBlockState.value)
 
-    override fun isNetworkAvailable(ctx: Context): Boolean {
+    override fun isNetworkAvailable(ctx: Context, from: String): Boolean {
 
         val tag = "Network connectivity :: Handler :: ${this.javaClass.simpleName} :: " +
                 "Hash  = '${hashCode()}' ::"
@@ -29,7 +29,7 @@ open class BasicConnectivityHandler(
 
         Console.log("$tag Checking")
 
-        val online = Connectivity().isNetworkAvailable(ctx)
+        val online = Connectivity().isNetworkAvailable(ctx, from)
 
         Console.log("$tag Checked")
 
@@ -45,14 +45,14 @@ open class BasicConnectivityHandler(
         return online
     }
 
-    override fun requireNetworkAvailable(ctx: Context): Boolean {
+    override fun requireNetworkAvailable(ctx: Context, from: String): Boolean {
 
         if (blockConnection.get()) {
 
             return false
         }
 
-        return Connectivity().requireNetworkAvailable(ctx)
+        return Connectivity().requireNetworkAvailable(ctx, from)
     }
 
     override fun toggleConnection() {

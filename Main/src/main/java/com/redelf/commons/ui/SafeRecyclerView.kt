@@ -6,7 +6,7 @@ import android.util.AttributeSet
 import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.logging.Console
 
-class SafeRecyclerView @JvmOverloads constructor(
+class SafeRecyclerView @JvmOverloads constructor( // FIXME: [IN_PROGRESS]
 
     context: Context,
     attrs: AttributeSet? = null,

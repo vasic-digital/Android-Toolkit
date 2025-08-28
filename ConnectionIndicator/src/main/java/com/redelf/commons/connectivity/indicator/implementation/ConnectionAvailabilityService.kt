@@ -29,9 +29,7 @@ abstract class ConnectionAvailabilityService(
 ) :
 
     ContextAvailability<Context>,
-    ConnectionAvailableService()
-
-{
+    ConnectionAvailableService() {
 
     private val chained: CopyOnWriteArraySet<AvailableStatefulService> = CopyOnWriteArraySet()
 
@@ -70,7 +68,11 @@ abstract class ConnectionAvailabilityService(
 
             withConnectionHandler {
 
-                if (it.isNetworkAvailable(takeContext())) {
+                if (it.isNetworkAvailable(
+                        takeContext(),
+                        "ConnectionAvailabilityService.getState"
+                    )
+                ) {
 
                     state = ConnectionState.Connected
 
@@ -189,7 +191,11 @@ abstract class ConnectionAvailabilityService(
 
         withConnectionHandler {
 
-            if (it.isNetworkAvailable(takeContext())) {
+            if (it.isNetworkAvailable(
+                    takeContext(),
+                    "ConnectionAvailabilityService.onStateChanged"
+                )
+            ) {
 
                 val chainedOk = getChainedResult()
 
@@ -233,7 +239,7 @@ abstract class ConnectionAvailabilityService(
 
         cHandler?.let {
 
-            if (it.isNetworkAvailable(takeContext())) {
+            if (it.isNetworkAvailable(takeContext(), "ConnectionAvailabilityService.getState.2")) {
 
                 val chainedOk = getChainedResult()
 
@@ -263,7 +269,14 @@ abstract class ConnectionAvailabilityService(
 
                 cHandler = handlerObtain.obtain()
 
-                val state = if (cHandler?.isNetworkAvailable(takeContext()) == true) {
+                val condition = cHandler?.isNetworkAvailable(
+
+                    takeContext(),
+                    "ConnectionAvailabilityService.withConnectionHandler"
+
+                ) == true
+
+                val state = if (condition) {
 
                     ConnectionState.Connected
 
@@ -301,7 +314,7 @@ abstract class ConnectionAvailabilityService(
             Console.error(
 
                 "${tag()} Terminate handler :: ERROR: " +
-                    "Unsupported type ${handler::class.simpleName}"
+                        "Unsupported type ${handler::class.simpleName}"
             )
         }
     }

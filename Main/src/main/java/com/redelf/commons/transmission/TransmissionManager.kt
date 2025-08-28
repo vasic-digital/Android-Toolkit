@@ -103,7 +103,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
         override fun onStateChanged(whoseState: Class<*>?) {
 
-            if (connectionHandler.isNetworkAvailable(takeContext())) {
+            if (connectionHandler.isNetworkAvailable(takeContext(), "TransmissionManager")) {
 
                 send(executedFrom = "onConnectivityStateChanged")
             }
@@ -116,7 +116,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
         override fun getState(): State<Int> {
 
-            if (connectionHandler.isNetworkAvailable(takeContext())) {
+            if (connectionHandler.isNetworkAvailable(takeContext(), "TransmissionManager")) {
 
                 return ConnectionState.Connected
             }

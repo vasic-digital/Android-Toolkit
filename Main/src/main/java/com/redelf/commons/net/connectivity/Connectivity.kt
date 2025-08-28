@@ -24,7 +24,7 @@ open class Connectivity(
     private val defaultStrategy = object : ConnectivityCheck {
 
         @Suppress("DEPRECATION")
-        override fun isNetworkAvailable(ctx: Context): Boolean {
+        override fun isNetworkAvailable(ctx: Context, from: String): Boolean {
 
             val tag = "Network connectivity ::"
 
@@ -47,7 +47,10 @@ open class Connectivity(
 
                 if (isOnMainThread()) {
 
-                    val e = NetworkOnMainThreadException()
+                    val e = IllegalStateException(
+
+                        "Must not check connectivity from the main thread, from='$from'"
+                    )
 
                     if (BaseApplication.takeContext().isProduction()) {
 
@@ -87,11 +90,11 @@ open class Connectivity(
             }
         }
 
-        override fun requireNetworkAvailable(ctx: Context): Boolean {
+        override fun requireNetworkAvailable(ctx: Context, from: String): Boolean {
 
             fun notConnected(): Boolean {
 
-                return !isNetworkAvailable(ctx)
+                return !isNetworkAvailable(ctx, from)
             }
 
             if (notConnected()) {
@@ -126,25 +129,25 @@ open class Connectivity(
                 }
             }
 
-            return isNetworkAvailable(ctx)
+            return isNetworkAvailable(ctx, from)
         }
     }
 
     private var checkStrategy: ConnectivityCheck = defaultStrategy
 
-    override fun requireNetworkAvailable(ctx: Context) = checkStrategy.requireNetworkAvailable(ctx)
+    override fun requireNetworkAvailable(ctx: Context, from: String) = checkStrategy.requireNetworkAvailable(ctx, from)
 
-    override fun isNetworkAvailable(ctx: Context): Boolean {
+    override fun isNetworkAvailable(ctx: Context, from: String): Boolean {
 
         if (alwaysRequire) {
 
-            return requireNetworkAvailable(ctx)
+            return requireNetworkAvailable(ctx, from)
         }
 
-        return checkStrategy.isNetworkAvailable(ctx)
+        return checkStrategy.isNetworkAvailable(ctx, from)
     }
 
-    fun isNetworkUnavailable(ctx: Context) = !isNetworkAvailable(ctx)
+    fun isNetworkUnavailable(ctx: Context, from: String) = !isNetworkAvailable(ctx, from)
 
     fun setConnectivityCheckStrategy(strategy: ConnectivityCheck) {
 

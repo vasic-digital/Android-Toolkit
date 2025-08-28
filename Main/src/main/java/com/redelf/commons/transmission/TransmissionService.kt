@@ -42,7 +42,7 @@ class TransmissionService : BaseService() {
             context?.let {
 
                 val connectivity = Connectivity()
-                val connected = connectivity.isNetworkAvailable(it)
+                val connected = connectivity.isNetworkAvailable(it, "TransmissionService")
 
                 if (connected && !connectivityListenerState.get()) {
 
@@ -137,7 +137,7 @@ class TransmissionService : BaseService() {
         Console.log(
 
             "BROADCAST_ACTION_SEND on transmission service send(...)" +
-                " executedFrom='$executedFrom'"
+                    " executedFrom='$executedFrom'"
         )
     }
 

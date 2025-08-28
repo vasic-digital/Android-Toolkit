@@ -118,7 +118,7 @@ abstract class LazyDataManagement<T> :
 
                 val conn = Connectivity()
 
-                if (!conn.isNetworkAvailable(it)) {
+                if (!conn.isNetworkAvailable(it, getWho() ?: "lazy.data.management")) {
 
                     onBackground("Offline")
                 }
