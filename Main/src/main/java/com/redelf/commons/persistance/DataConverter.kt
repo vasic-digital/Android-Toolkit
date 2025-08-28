@@ -222,7 +222,7 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
         } catch (e: Throwable) {
 
-            Console.error(e)
+            recordException(e)
 
             return null
         }
