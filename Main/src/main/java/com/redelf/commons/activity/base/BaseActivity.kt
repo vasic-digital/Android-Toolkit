@@ -172,7 +172,8 @@ abstract class BaseActivity :
             val data = intent.data // if it was opened via a deep link, etc.
             val action = intent.action // like ACTION_VIEW, etc.
             val sourcePackage = intent.getStringExtra("source_package")
-            val from = intent.getStringExtra(Broadcast.EXTRA_ACTIVITY_START_FROM)// if passed explicitly
+            val from =
+                intent.getStringExtra(Broadcast.EXTRA_ACTIVITY_START_FROM)// if passed explicitly
             val caller = callingPackage
 
             Console.log(
