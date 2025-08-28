@@ -203,19 +203,28 @@ internal class DataConverter(private val parser: Obtain<Parser>) : Converter {
 
         val p = parser.obtain()
 
-        val map = p.fromJson<Map<K, V>>(json, object : TypeToken<Map<K, V>?>() {}.type) ?: return resultMap as T
+        try {
 
-        for ((key, value) in map) {
+            val map = p.fromJson<Map<K, V>>(json, object : TypeToken<Map<K, V>?>() {}.type) ?: return resultMap as T
 
-            val keyJson = p.toJson(key)
-            val k = p.fromJson<K>(keyJson, keyType)
+            for ((key, value) in map) {
 
-            val valueJson = p.toJson(value)
-            val v = p.fromJson<V>(valueJson, valueType)
+                val keyJson = p.toJson(key)
+                val k = p.fromJson<K>(keyJson, keyType)
 
-            resultMap[k] = v
+                val valueJson = p.toJson(value)
+                val v = p.fromJson<V>(valueJson, valueType)
+
+                resultMap[k] = v
+            }
+
+            return resultMap as T
+
+        } catch (e: Throwable) {
+
+            recordException(e)
         }
 
-        return resultMap as T
+        return null
     }
 }
