@@ -35,6 +35,7 @@ import com.redelf.commons.transaction.Transaction
 import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -278,25 +279,95 @@ abstract class DataManagement<T> :
         }
     }
 
+    private val getting = ConcurrentHashMap<String, Callbacks<OnObtain<*>>>()
+
     @Throws(InitializingException::class, NotInitializedException::class)
     override fun obtain(callback: OnObtain<T?>) {
+
+        val key = "obtain"
+        var inProgress = false
+        var callbacks = getting[key]
+        val tag = "${getLogTag()} OBTAIN ::"
+
+        fun register(callbacks: Callbacks<OnObtain<*>>): Boolean {
+
+            if (callbacks.isRegistered(callback)) {
+
+                if (DEBUG.get()) {
+
+                    Console.warning("$tag Already registered}")
+                }
+
+                return true
+            }
+
+            callbacks.register(callback)
+
+            return false
+        }
+
+        if (callbacks == null) {
+
+            callbacks = Callbacks("getting.$key")
+            getting[key] = callbacks
+
+        } else {
+
+            inProgress = true
+        }
+
+        register(callbacks)
+
+        if (inProgress) {
+
+            Console.warning("$tag Already getting :: Key='$key'")
+
+            return
+        }
+
+        if (DEBUG.get()) {
+
+            Console.log("$tag START")
+        }
+
+        fun notifyGetterCallback(data: T? = null, error: Throwable? = null) {
+
+            callbacks.doOnAll(object : CallbackOperation<OnObtain<*>> {
+
+                @Suppress("UNCHECKED_CAST")
+                override fun perform(callback: OnObtain<*>) {
+
+                    error?.let {
+
+                        callback.onFailure(it)
+
+                    } ?: kotlin.run {
+
+                        (callback as OnObtain<T?>).onCompleted(data)
+                    }
+
+                    callbacks.unregister(callback)
+                }
+
+            }, operationName = "getting.$key")
+
+            getting.remove(key)
+        }
 
         exec(
 
             onRejected = { e ->
 
-                callback.onFailure(e)
+                notifyGetterCallback(error = e)
             }
 
         ) {
 
             if (!isEnabled()) {
 
-                callback.onCompleted(null)
+                notifyGetterCallback(data = null)
                 return@exec
             }
-
-            val tag = "${getLogTag()} OBTAIN ::"
 
             if (canLog()) Console.log("$tag START")
 
@@ -304,7 +375,7 @@ abstract class DataManagement<T> :
 
                 Console.warning("$tag Locked")
 
-                callback.onCompleted(null)
+                notifyGetterCallback(data = null)
 
                 return@exec
             }
@@ -313,7 +384,7 @@ abstract class DataManagement<T> :
 
                 if (canLog()) Console.log("$tag END: OK")
 
-                callback.onCompleted(data)
+                notifyGetterCallback(data = data)
 
                 return@exec
             }
@@ -380,7 +451,7 @@ abstract class DataManagement<T> :
 
                 reading.set(false)
 
-                callback.onCompleted(data)
+                notifyGetterCallback(data = data)
             }
 
             if (data == null && persist) {
@@ -400,7 +471,7 @@ abstract class DataManagement<T> :
 
                         override fun onFailure(error: Throwable) {
 
-                            callback.onFailure(error)
+                            notifyGetterCallback(error = error)
                         }
                     }
                 )
