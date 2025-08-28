@@ -342,9 +342,9 @@ abstract class DataManagement<T> :
                     if (canLog()) Console.log("$dataObjTag Pulled :: Null = ${data == null}")
                 }
 
-                pulled?.let {
+                pulled?.let { pld ->
 
-                    if (!overwriteData(pulled)) {
+                    if (!overwriteData(pld)) {
 
                         Console.error("$dataObjTag Overwrite failed")
                     }

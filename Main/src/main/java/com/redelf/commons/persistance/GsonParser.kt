@@ -233,8 +233,8 @@ class GsonParser private constructor(
                 "int" -> return content?.toInt() as T?
                 "java.lang.Integer" -> return content?.toInt() as T?
                 Long::class.java.canonicalName?.forClassName() -> return content?.toLong() as T?
-                "long" -> return content?.toLong() as T?
-                "java.lang.Long" -> return content?.toLong() as T?
+                "long" -> return content?.replace("\"", "")?.toLong() as T?
+                "java.lang.Long" -> return content?.replace("\"", "")?.toLong() as T?
                 String::class.java.canonicalName?.forClassName() -> return content as T?
                 "string" -> return content as T?
                 "java.lang.String" -> return content as T?
