@@ -60,6 +60,7 @@ object DBStorage : Storage<String> {
     private val executor = Executor.MAIN
     private var enc: Encryption<String> = NoEncryption()
     private val getting = ConcurrentHashMap<String, Callbacks<OnObtain<String?>>>()
+    private val gettingFirst = ConcurrentHashMap<String, Callbacks<OnObtain<String?>>>()
 
     private fun table() = table
 
@@ -257,137 +258,218 @@ object DBStorage : Storage<String> {
         }
     }
 
-    override fun get(key: String?, callback: OnObtain<String?>) {
+    override fun get(key: String?, getCallback: OnObtain<String?>) {
 
         val tag = "$TAG Get :: Key='$key' ::"
 
-        if (DEBUG.get()) {
+        if (isEmpty(key)) {
 
-            Console.log("$tag START")
+            val e = IllegalArgumentException("Empty key")
+            Console.error("$tag FAILED :: Error='$e'")
+            getCallback.onFailure(e)
+            return
         }
 
-        exec(
+        key?.let {
 
-            onRejected = { e ->
+            if (DEBUG.get()) {
 
-                Console.error("$tag REJECTED")
-                callback.onFailure(e)
+                Console.log("$tag START")
             }
 
-        ) {
+            var inProgress = false
+            var callbacks = gettingFirst[key]
 
-            if (isEmpty(key)) {
+            fun register(callbacks: Callbacks<OnObtain<String?>>): Boolean {
 
-                val e = IllegalArgumentException("Empty key")
-                Console.error("$tag FAILED :: Error='$e'")
-                callback.onFailure(e)
-                return@exec
+                if (callbacks.isRegistered(getCallback)) {
+
+                    if (DEBUG.get()) {
+
+                        Console.warning("$tag Already registered}")
+                    }
+
+                    return true
+                }
+
+                callbacks.register(getCallback)
+
+                return false
+            }
+
+            if (callbacks == null) {
+
+                callbacks = Callbacks("getting.$key")
+                gettingFirst[key] = callbacks
+
+            } else {
+
+                inProgress = true
+            }
+
+            register(callbacks)
+
+            if (inProgress) {
+
+                Console.warning("$tag Already getting :: Key='$key'")
+
+                return
             }
 
             if (DEBUG.get()) {
 
-                Console.log("$tag STARTED")
+                Console.log("$tag START")
             }
 
-            try {
+            fun notifyGetterCallback(data: String? = null, error: Throwable? = null) {
+
+                callbacks.doOnAll(object : CallbackOperation<OnObtain<String?>> {
+
+                    override fun perform(callback: OnObtain<String?>) {
+
+                        error?.let {
+
+                            callback.onFailure(it)
+
+                        } ?: kotlin.run {
+
+                            callback.onCompleted(data)
+                        }
+
+                        callbacks.unregister(callback)
+                    }
+
+                }, operationName = "getting.$key")
+
+                gettingFirst.remove(key)
+            }
+
+            exec(
+
+                onRejected = { e ->
+
+                    Console.error("$tag REJECTED")
+                    notifyGetterCallback(error = e)
+                }
+
+            ) {
+
+
 
                 if (DEBUG.get()) {
 
-                    Console.log("$tag Going to call do get")
+                    Console.log("$tag STARTED")
                 }
 
-                val doGetCallback = object : OnObtain<String?> {
+                try {
 
-                    override fun onCompleted(data: String?) {
+                    if (DEBUG.get()) {
 
-                        var chunks = 1
-                        val chunksRawValue = data
-                        val condition =
-                            chunksRawValue?.isNotEmpty() == true && chunksRawValue.isDigitsOnly()
+                        Console.log("$tag Going to call do get")
+                    }
 
-                        if (condition) {
+                    val doGetCallback = object : OnObtain<String?> {
 
-                            chunks = chunksRawValue.toInt()
-                        }
+                        override fun onCompleted(data: String?) {
 
-                        if (chunks < 1) {
+                            var chunks = 1
+                            val chunksRawValue = data
+                            val condition =
+                                chunksRawValue?.isNotEmpty() == true && chunksRawValue.isDigitsOnly()
 
-                            callback.onCompleted("")
+                            if (condition) {
 
-                        } else if (chunks == 1) {
-
-                            if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
-
-                            val got = doGet("${key}_${KEY_CHUNK}_0")
-
-                            callback.onCompleted(got)
-
-                        } else {
-
-                            if (DEBUG.get()) {
-
-                                Console.log("$tag START :: Chunk :: Chunks count = $chunks")
+                                chunks = chunksRawValue.toInt()
                             }
 
-                            val result = StringBuilder()
-                            val pieces = ConcurrentHashMap<Int, String?>()
+                            if (chunks < 1) {
 
-                            for (i in 0..chunks - 1) {
+                                notifyGetterCallback(data = "")
 
-                                pieces[i] = doGet("${key}_${KEY_CHUNK}_$i")
+                            } else if (chunks == 1) {
 
-                                if (pieces.size == chunks) {
+                                if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
 
-                                    pieces.keys.toMutableList().sorted()
-                                        .forEach { index ->
+                                val got = doGet("${key}_${KEY_CHUNK}_0")
 
-                                            val part = pieces[index]
+                                notifyGetterCallback(data = got)
 
-                                            if (part?.isNotEmpty() == true) {
+                            } else {
 
-                                                result.append(part)
+                                if (DEBUG.get()) {
 
-                                                if (DEBUG.get()) {
+                                    Console.log("$tag START :: Chunk :: Chunks count = $chunks")
+                                }
 
-                                                    Console.log(
+                                val result = StringBuilder()
+                                val pieces = ConcurrentHashMap<Int, String?>()
 
-                                                        "$tag Chunk :: " +
-                                                                "Loaded chunk = " +
-                                                                "${index + 1} / $chunks"
-                                                    )
+                                for (i in 0..chunks - 1) {
+
+                                    pieces[i] = doGet("${key}_${KEY_CHUNK}_$i")
+
+                                    if (pieces.size == chunks) {
+
+                                        pieces.keys.toMutableList().sorted()
+                                            .forEach { index ->
+
+                                                val part = pieces[index]
+
+                                                if (part?.isNotEmpty() == true) {
+
+                                                    result.append(part)
+
+                                                    if (DEBUG.get()) {
+
+                                                        Console.log(
+
+                                                            "$tag Chunk :: " +
+                                                                    "Loaded chunk = " +
+                                                                    "${index + 1} / $chunks"
+                                                        )
+                                                    }
                                                 }
                                             }
-                                        }
+                                    }
                                 }
-                            }
 
-                            callback.onCompleted(result.toString())
+                                notifyGetterCallback(data = result.toString())
+                            }
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            Console.error("$tag FAILED :: Error='$error'")
+
+                            notifyGetterCallback(error = error)
                         }
                     }
 
-                    override fun onFailure(error: Throwable) {
+                    if (DEBUG.get()) {
 
-                        Console.error("$tag FAILED :: Error='$error'")
-                        callback.onFailure(error)
+                        Console.log("$tag Calling do get")
                     }
+
+                    val got = doGet("${key}_$KEY_CHUNKS")
+
+                    if (DEBUG.get()) {
+
+                        Console.log("$tag Did get")
+                    }
+
+                    doGetCallback.onCompleted(got)
+
+                    if (DEBUG.get()) {
+
+                        Console.log("$tag Called do get, waiting for result")
+                    }
+
+                } catch (e: Throwable) {
+
+                    Console.error("$tag FAILED :: Error='$e'")
+
+                    notifyGetterCallback(error = e)
                 }
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag Calling do get")
-                }
-
-                doGetAsync("${key}_$KEY_CHUNKS", doGetCallback)
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag Called do get, waiting for result")
-                }
-
-            } catch (e: Throwable) {
-
-                Console.error("$tag FAILED :: Error='$e'")
-                callback.onFailure(e)
             }
         }
     }
