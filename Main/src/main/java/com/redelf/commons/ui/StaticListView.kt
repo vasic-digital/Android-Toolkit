@@ -41,7 +41,7 @@ class StaticListView<T>(
         }
     }
 
-    fun getView(position: Int): View {
+    private fun getView(position: Int): View {
 
         val viewType = adapter.getItemViewType(position)
         var viewHolder = views[position]
