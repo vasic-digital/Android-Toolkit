@@ -2,7 +2,7 @@ package com.redelf.commons.ui
 
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.ListView
+import android.widget.LinearLayout
 import androidx.core.view.contains
 import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.data.wrapper.list.ListWrapper
@@ -13,7 +13,7 @@ import androidx.core.view.size
 
 class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
 
-    private val container: ListView,
+    private val container: LinearLayout,
     private var adapter: RecyclerView.Adapter<HOLDER>,
     private val dataObtain: Obtain<ListWrapper<T, I, M>?>
 
