@@ -15,7 +15,7 @@ class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
 
     private val container: ListView,
     private var adapter: RecyclerView.Adapter<HOLDER>,
-    private val dataObtain: Obtain<ListWrapper<T, I, M>>
+    private val dataObtain: Obtain<ListWrapper<T, I, M>?>
 
 ) where HOLDER : RecyclerView.ViewHolder {
 
@@ -44,7 +44,7 @@ class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
         container.post {
 
             val data = dataObtain.obtain()
-            val items = data.getList()
+            val items = data?.getList() ?: emptyList()
             val size = items.size
 
             if (container.size != size) {
@@ -56,12 +56,16 @@ class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
             for (i in 0 until size) {
 
                 val item = items[i]
-                val identifier = data.getIdentifier(item)
-                val v = getView(i, identifier)
+                val identifier = data?.getIdentifier(item)
 
-                if (!container.contains(v)) {
+                identifier?.let {
 
-                    container.addView(v)
+                    val v = getView(i, it)
+
+                    if (!container.contains(v)) {
+
+                        container.addView(v)
+                    }
                 }
             }
         }
