@@ -100,6 +100,7 @@ abstract class DataManagement<T> :
     private var enabled = AtomicBoolean(true)
     private val lastDataVersion = AtomicLong(-1)
     private var session = Session(name = javaClass.simpleName)
+    private val obtaining = Callbacks<OnObtain<T?>>("obtaining")
     private val pushCallbacks = Callbacks<OnObtain<DataPushResult?>>("on_push")
 
     protected abstract fun getLogTag(): String
@@ -298,13 +299,60 @@ abstract class DataManagement<T> :
 
             val tag = "${getLogTag()} OBTAIN ::"
 
+            val inProgress = obtaining.getSubscribersCount() > 0
+
+            if (obtaining.isRegistered(callback)) {
+
+                if (DEBUG.get()) {
+
+                    Console.warning("$tag Already registered}")
+                }
+
+            } else {
+
+                obtaining.register(callback)
+            }
+
+            if (inProgress) {
+
+                Console.warning("$tag Already obtaining")
+
+                return@exec
+            }
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag START")
+            }
+
+            fun notifyGetterCallback(data: T? = null, error: Throwable? = null) {
+
+                obtaining.doOnAll(object : CallbackOperation<OnObtain<T?>> {
+
+                    override fun perform(callback: OnObtain<T?>) {
+
+                        error?.let {
+
+                            callback.onFailure(it)
+
+                        } ?: kotlin.run {
+
+                            callback.onCompleted(data)
+                        }
+
+                        obtaining.unregister(callback)
+                    }
+
+                }, operationName = "obtaining")
+            }
+
             if (canLog()) Console.log("$tag START")
 
             if (isLocked()) {
 
                 Console.warning("$tag Locked")
 
-                callback.onCompleted(null)
+                notifyGetterCallback(data = null)
 
                 return@exec
             }
@@ -313,7 +361,7 @@ abstract class DataManagement<T> :
 
                 if (canLog()) Console.log("$tag END: OK")
 
-                callback.onCompleted(data)
+                notifyGetterCallback(data = data)
 
                 return@exec
             }
@@ -377,7 +425,7 @@ abstract class DataManagement<T> :
 
                 reading.set(false)
 
-                callback.onCompleted(data)
+                notifyGetterCallback(data = data)
             }
 
             if (data == null && persist) {
@@ -397,7 +445,7 @@ abstract class DataManagement<T> :
 
                         override fun onFailure(error: Throwable) {
 
-                            callback.onFailure(error)
+                            notifyGetterCallback(error = error)
                         }
                     }
                 )
