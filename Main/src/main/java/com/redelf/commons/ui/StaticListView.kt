@@ -1,26 +1,29 @@
 package com.redelf.commons.ui
 
+import android.view.View
+import android.widget.FrameLayout
 import android.widget.ListView
 import androidx.recyclerview.widget.RecyclerView
+import java.util.concurrent.ConcurrentHashMap
 
-class StaticListView(
+class StaticListView<T>(
 
-    private val container: ListView
+    private val container: ListView,
+    private var adapter: RecyclerView.Adapter<T>
 
-) {
+) where T : RecyclerView.ViewHolder {
 
-    private var adapter: RecyclerView.Adapter<*>? = null
+    private val views = ConcurrentHashMap<Int, T>()
+    private val parent = FrameLayout(container.context)
 
-    fun setAdapter(adapter: RecyclerView.Adapter<*>) {
-
-        this.adapter = adapter
+    init {
 
         populate()
     }
 
-    fun removeAdapter() {
+    fun setAdapter(adapter: RecyclerView.Adapter<T>) {
 
-        this.adapter = null
+        this.adapter = adapter
 
         populate()
     }
@@ -34,15 +37,23 @@ class StaticListView(
 
         container.post {
 
-            adapter?.let {
-
-                // TODO: [IN_PROGRESS]
-            }
-
-            if (adapter == null) {
-
-                container.removeAllViews()
-            }
+            // TODO: [IN_PROGRESS]
         }
+    }
+
+    fun getView(position: Int): View {
+
+        val viewType = adapter.getItemViewType(position)
+        var viewHolder = views[position]
+
+        if (viewHolder == null) {
+
+            viewHolder = adapter.onCreateViewHolder(parent, viewType)
+            views[position] = viewHolder
+        }
+
+        adapter.onBindViewHolder(viewHolder, position)
+
+        return viewHolder.itemView
     }
 }
