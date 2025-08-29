@@ -9,6 +9,7 @@ import com.redelf.commons.data.wrapper.list.ListWrapper
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.ConcurrentHashMap
+import androidx.core.view.size
 
 class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
 
@@ -45,6 +46,12 @@ class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
             val data = dataObtain.obtain()
             val items = data.getList()
             val size = items.size
+
+            if (container.size != size) {
+
+                views.clear()
+                container.removeAllViews()
+            }
 
             for (i in 0 until size) {
 
