@@ -325,7 +325,6 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
         key?.let {
 
-            var inProgress = false
             var callbacks = getting[key] // TODO: Incorporate callbacks mechanism using 'getting' to all methods and all persistence layer classes to prevent multiple calls
 
             fun register(callbacks: Callbacks<OnObtain<*>>): Boolean {
@@ -349,11 +348,9 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                 callbacks = Callbacks("getting.$key")
                 getting[key] = callbacks
-
-            } else {
-
-                inProgress = true
             }
+
+            val inProgress = callbacks.getSubscribersCount() > 0
 
             register(callbacks)
 

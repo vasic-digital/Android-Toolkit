@@ -1345,7 +1345,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 return false
             }
 
-            val inProgress = register()
+            val inProgress = collectionCallbacks.getSubscribersCount() > 0
+
+            register()
 
             if (inProgress) {
 

@@ -878,7 +878,6 @@ object DBStorage : Storage<String> {
 
         key?.let {
 
-            var inProgress = false
             var callbacks = getting[key]
 
             fun register(callbacks: Callbacks<OnObtain<String?>>): Boolean {
@@ -902,11 +901,9 @@ object DBStorage : Storage<String> {
 
                 callbacks = Callbacks("getting.$key")
                 getting[key] = callbacks
-
-            } else {
-
-                inProgress = true
             }
+
+            val inProgress = callbacks.getSubscribersCount() > 0
 
             register(callbacks)
 
