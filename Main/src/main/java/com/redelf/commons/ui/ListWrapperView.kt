@@ -3,17 +3,22 @@ package com.redelf.commons.ui
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ListView
+import androidx.core.view.contains
 import androidx.recyclerview.widget.RecyclerView
+import com.redelf.commons.data.wrapper.list.ListWrapper
+import com.redelf.commons.management.DataManagement
+import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.ConcurrentHashMap
 
-class StaticListView<T>(
+class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
 
     private val container: ListView,
-    private var adapter: RecyclerView.Adapter<T>
+    private var adapter: RecyclerView.Adapter<HOLDER>,
+    private val dataObtain: Obtain<ListWrapper<T, I, M>>
 
-) where T : RecyclerView.ViewHolder {
+) where HOLDER : RecyclerView.ViewHolder {
 
-    private val views = ConcurrentHashMap<Int, T>()
+    private val views = ConcurrentHashMap<Int, HOLDER>()
     private val parent = FrameLayout(container.context)
 
     init {
@@ -21,7 +26,7 @@ class StaticListView<T>(
         populate()
     }
 
-    fun setAdapter(adapter: RecyclerView.Adapter<T>) {
+    fun setAdapter(adapter: RecyclerView.Adapter<HOLDER>) {
 
         this.adapter = adapter
 
@@ -37,7 +42,21 @@ class StaticListView<T>(
 
         container.post {
 
-            // TODO: [IN_PROGRESS]
+            val data = dataObtain.obtain()
+            val items = data.getList()
+            val size = items.size
+
+            for (i in 0 until size) {
+
+                val item = items[i]
+                val v = getView(i)
+                val identifier = data.getIdentifier(item)
+
+                if (!container.contains(v)) {
+
+                    container.addView(v)
+                }
+            }
         }
     }
 

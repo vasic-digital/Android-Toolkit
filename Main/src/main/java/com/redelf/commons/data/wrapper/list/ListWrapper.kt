@@ -283,6 +283,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         return isEmpty("isEmpty")
     }
 
+    fun getIdentifier(what: T): I = identifierObtainer.obtain(what)
+
     protected fun registerLinkedManagersDataPushListener() {
 
         linkedManagersDataPushListener?.let {
