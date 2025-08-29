@@ -76,7 +76,7 @@ class SettingsManager private constructor() :
             recordException(e)
         }
 
-        return sync("settings.get.$key") { callback ->
+        return sync("settings.get.$key", "${getWho()}.getWithDefault") { callback ->
 
             get(key, defaultValue, callback)
 

@@ -38,7 +38,13 @@ public class EntityIdProvider implements EntityIdProvide {
 
                 lastIdVal = new AtomicLong();
 
-                lastIdVal.set(Storage.INSTANCE.get(idKey, 0L));
+                lastIdVal.set(
+
+                        Storage.INSTANCE.get(
+
+                                idKey, 0L, "EntityIdProvider.constructor"
+                        )
+                );
 
                 lastId.put(idKey, lastIdVal);
             }

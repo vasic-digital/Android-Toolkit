@@ -21,7 +21,7 @@ object Storage {
         return DataManagement.STORAGE.push(key, value)
     }
 
-    fun <T> get(key: String): T? {
+    fun <T> get(key: String, from: String): T? {
 
         val tag = "Storage :: Get :: Key='$key' ::"
 
@@ -30,7 +30,14 @@ object Storage {
             Console.log("$tag START")
         }
 
-        val result: T? = sync("Storage.get.$key") { callback ->
+        val ctx = "Storage.get.$key"
+
+        val result: T? = sync(
+
+            ctx,
+            "$ctx.(from='$from')"
+
+        ) { callback ->
 
             DataManagement.STORAGE.pull(
 
@@ -44,7 +51,7 @@ object Storage {
         return result
     }
 
-    fun <T> get(key: String, defaultValue: T): T {
+    fun <T> get(key: String, defaultValue: T, from: String): T {
 
         val tag = "Storage :: Get (w.def) :: Key='$key' ::"
 
@@ -53,7 +60,14 @@ object Storage {
             Console.log("$tag START")
         }
 
-        val result = sync("Storage.get.$key") { callback ->
+        val ctx = "Storage.get.$key"
+
+        val result = sync(
+
+            ctx,
+            "$ctx.(from='$from')"
+
+        ) { callback ->
 
             DataManagement.STORAGE.pull(key, callback)
 
@@ -115,9 +129,16 @@ object Storage {
         return DataManagement.STORAGE.erase()
     }
 
-    fun contains(key: String): Boolean {
+    fun contains(key: String, from: String): Boolean {
 
-        return sync("Storage.contains.$key") { callback ->
+        val ctx = "Storage.contains.$key"
+
+        return sync(
+
+            ctx,
+            "$ctx.(from='$from')"
+
+        ) { callback ->
 
             DataManagement.STORAGE.contains(
 

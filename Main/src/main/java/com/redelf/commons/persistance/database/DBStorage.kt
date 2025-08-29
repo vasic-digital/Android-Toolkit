@@ -318,9 +318,7 @@ object DBStorage : Storage<String> {
 
                             if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
 
-                            val got = doGet("${key}_${KEY_CHUNK}_0")
-
-                            callback.onCompleted(got)
+                            doGetAsync("${key}_${KEY_CHUNK}_0", callback)
 
                         } else {
 
@@ -377,19 +375,7 @@ object DBStorage : Storage<String> {
                     Console.log("$tag Calling do get")
                 }
 
-                val got = doGet("${key}_$KEY_CHUNKS")
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag Did get")
-                }
-
-                doGetCallback.onCompleted(got)
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag Called do get, waiting for result")
-                }
+                doGetAsync("${key}_$KEY_CHUNKS", doGetCallback)
 
             } catch (e: Throwable) {
 
@@ -857,7 +843,7 @@ object DBStorage : Storage<String> {
             recordException(e)
         }
 
-        return sync("DBStorage.doGet.$key") { callback ->
+        return sync("DBStorage.doGet.$key", "") { callback ->
 
             doGetAsync(key, callback)
         }
@@ -933,11 +919,11 @@ object DBStorage : Storage<String> {
 
                             callback.onCompleted(data)
                         }
-
-                        callbacks.unregister(callback)
                     }
 
                 }, operationName = "getting.$key")
+
+                callbacks.clear()
 
                 getting.remove(key)
             }

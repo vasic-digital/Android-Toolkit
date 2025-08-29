@@ -381,11 +381,11 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
                             @Suppress("UNCHECKED_CAST")
                             (callback as OnObtain<T?>).onCompleted(data)
                         }
-
-                        callbacks.unregister(callback)
                     }
 
                 }, operationName = "getting.$key")
+
+                callbacks.clear()
 
                 getting.remove(key)
             }

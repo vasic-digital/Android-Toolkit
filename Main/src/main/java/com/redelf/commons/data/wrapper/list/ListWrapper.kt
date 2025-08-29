@@ -1076,7 +1076,12 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                     try {
 
-                        val result = sync<Boolean?>("") { callback ->
+                        val result = sync<Boolean?>(
+
+                            "ListWrapper.doFilter",
+                            from,
+
+                        ) { callback ->
 
                             filter.filter(
 
@@ -1321,11 +1326,11 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                             callback.onCompleted(data)
                         }
-
-                        collectionCallbacks.unregister(callback)
                     }
 
                 }, operationName = "gettingCollection")
+
+                collectionCallbacks.clear()
             }
 
             fun register(): Boolean {

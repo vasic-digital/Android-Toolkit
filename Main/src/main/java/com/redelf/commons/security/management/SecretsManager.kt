@@ -31,9 +31,8 @@ class SecretsManager private constructor(storageKeyToSet: String) :
         }
     }
 
-    override val lazySaving = true
+    override val lazySaving = false
     override val instantiateDataObject = true
-
     override val storageKey = storageKeyToSet
 
     override fun getLogTag() = "SecretsManager :: ${hashCode()} ::"

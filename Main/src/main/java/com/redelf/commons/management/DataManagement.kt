@@ -270,7 +270,12 @@ abstract class DataManagement<T> :
 
     fun obtain(): T? {
 
-        return sync("${getWho()}.obtain") { callback ->
+        return sync(
+
+            "${getWho()}.obtain",
+            "",
+
+        ) { callback ->
 
             obtain(
 
@@ -297,7 +302,7 @@ abstract class DataManagement<T> :
                 return@exec
             }
 
-            val tag = "${getLogTag()} OBTAIN ::"
+            val tag = "${getLogTag()} OBTAIN :: ${obtaining.hashCode()}.${obtaining.size()} ::"
 
             val inProgress = obtaining.getSubscribersCount() > 0
 
@@ -305,7 +310,7 @@ abstract class DataManagement<T> :
 
                 if (DEBUG.get()) {
 
-                    Console.warning("$tag Already registered}")
+                    Console.warning("$tag Already registered")
                 }
 
             } else {
@@ -339,11 +344,11 @@ abstract class DataManagement<T> :
 
                             callback.onCompleted(data)
                         }
-
-                        obtaining.unregister(callback)
                     }
 
                 }, operationName = "obtaining")
+
+                obtaining.clear()
             }
 
             if (canLog()) Console.log("$tag START")
@@ -489,9 +494,12 @@ abstract class DataManagement<T> :
             recordException(e)
         }
 
-        val from = "pushData(from='$from').withData"
+        return sync(
 
-        return sync("${getWho()}.$from") { callback ->
+            "${getWho()}.pushData",
+            from
+
+        ) { callback ->
 
             pushData(data, from, notify, callback)
 
@@ -761,11 +769,16 @@ abstract class DataManagement<T> :
             recordException(e)
         }
 
-        val from = "reset(from='$arg')"
+        val ctx = "${getWho()}.reset"
 
-        return sync("${getWho()}.$from") { callback ->
+        return sync(
 
-            reset(from, callback)
+            ctx, ""
+
+
+        ) { callback ->
+
+            reset(ctx, callback)
 
         } == true
     }
@@ -1061,7 +1074,11 @@ abstract class DataManagement<T> :
 
         override fun end(notify: Boolean): Boolean {
 
-            return sync("Transaction.end.$name") { callback ->
+            return sync(
+
+                "Transaction.end.$name", ""
+
+            ) { callback ->
 
                 end(notify, callback)
 

@@ -1183,6 +1183,7 @@ fun yield(context: String, check: Obtain<Boolean>) {
 fun <X> sync(
 
     context: String,
+    from: String,
     timeout: Long = 60,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     mainThreadForbidden: Boolean = true,
@@ -1194,7 +1195,7 @@ fun <X> sync(
 
     // TODO: Coroutines support
 
-    val tag = "SYNC :: $context ::"
+    val tag = "SYNC :: $context :: from '$from' ::"
 
     if (DEBUG_SYNC.get() || debug) Console.debug("$tag START")
 
@@ -1312,7 +1313,7 @@ fun <X> sync(
 
 private val UI_IN_SYNC = AtomicBoolean()
 
-fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
+fun syncUI(context: String, from: String, what: kotlinx.coroutines.Runnable): Boolean {
 
     fun doExecute(what: kotlinx.coroutines.Runnable, callback: OnObtain<Boolean?>) {
 
@@ -1338,9 +1339,12 @@ fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
         }
     }
 
+    val from = "syncUi(from='$from')"
+
     val result = sync(
 
         context,
+        from,
 
         mainThreadForbidden = false,
         waitingFlag = UI_IN_SYNC,
