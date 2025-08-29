@@ -49,8 +49,8 @@ class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
             for (i in 0 until size) {
 
                 val item = items[i]
-                val v = getView(i)
                 val identifier = data.getIdentifier(item)
+                val v = getView(i, identifier)
 
                 if (!container.contains(v)) {
 
@@ -60,7 +60,7 @@ class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
         }
     }
 
-    private fun getView(position: Int): View {
+    private fun getView(position: Int, identifier: I): View {
 
         val viewType = adapter.getItemViewType(position)
         var viewHolder = views[position]
@@ -71,8 +71,12 @@ class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
             views[position] = viewHolder
         }
 
+        val v = viewHolder.itemView
+
         adapter.onBindViewHolder(viewHolder, position)
 
-        return viewHolder.itemView
+        v.tag = identifier
+
+        return v
     }
 }
