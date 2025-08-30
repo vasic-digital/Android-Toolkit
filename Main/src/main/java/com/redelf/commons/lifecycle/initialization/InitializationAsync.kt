@@ -5,7 +5,6 @@ import com.redelf.commons.lifecycle.LifecycleCallback
 import com.redelf.commons.lifecycle.exception.NotInitializedException
 import com.redelf.commons.logging.Console
 import java.util.concurrent.Callable
-import java.util.concurrent.TimeUnit
 
 interface InitializationAsync<T> : InitializationCondition {
 

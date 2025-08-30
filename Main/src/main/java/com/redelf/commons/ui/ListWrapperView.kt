@@ -4,12 +4,12 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.view.contains
+import androidx.core.view.size
 import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.data.wrapper.list.ListWrapper
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.obtain.Obtain
 import java.util.concurrent.ConcurrentHashMap
-import androidx.core.view.size
 
 class ListWrapperView<T, I, M : DataManagement<*>, HOLDER>(
 

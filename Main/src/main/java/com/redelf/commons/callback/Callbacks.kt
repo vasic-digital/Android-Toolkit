@@ -3,7 +3,6 @@ package com.redelf.commons.callback
 import com.redelf.commons.Debuggable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
