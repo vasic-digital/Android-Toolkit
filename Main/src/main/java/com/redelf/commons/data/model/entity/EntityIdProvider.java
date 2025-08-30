@@ -2,7 +2,7 @@ package com.redelf.commons.data.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
-import com.redelf.commons.data.Storage;
+import com.redelf.commons.data.MemoryStorage;
 import com.redelf.commons.execution.Executor;
 import com.redelf.commons.obtain.Obtain;
 
@@ -40,10 +40,7 @@ public class EntityIdProvider implements EntityIdProvide {
 
                 lastIdVal.set(
 
-                        Storage.INSTANCE.get(
-
-                                idKey, 0L, "EntityIdProvider.constructor"
-                        )
+                        MemoryStorage.INSTANCE.get(idKey, 0L)
                 );
 
                 lastId.put(idKey, lastIdVal);
@@ -69,7 +66,7 @@ public class EntityIdProvider implements EntityIdProvide {
             newId.set(id.decrementAndGet());
         }
 
-        Storage.INSTANCE.put(idKey, newId.get());
+        MemoryStorage.INSTANCE.put(idKey, newId.get());
 
         return newId.get();
     }

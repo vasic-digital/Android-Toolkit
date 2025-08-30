@@ -34,7 +34,6 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
     private var storage: Storage<String>? = null
     private const val TAG = "Facade :: DEFAULT ::"
     private var encryption: Encryption<String>? = null
-    private val getting = ConcurrentHashMap<String, Callbacks<OnObtain<*>>>()
     private val listeners = Callbacks<EncryptionListener<String, String>>("enc_listeners")
 
     fun initialize(builder: PersistenceBuilder): Facade {
@@ -326,95 +325,9 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
         key?.let {
 
-            var callbacks = getting[key] // TODO: Incorporate callbacks mechanism using 'getting' to all methods and all persistence layer classes to prevent multiple calls
-
-            fun register(callbacks: Callbacks<OnObtain<*>>): Boolean {
-
-                if (callbacks.isRegistered(callback)) {
-
-                    if (DEBUG.get()) {
-
-                        Console.warning("$tag Already registered}")
-                    }
-
-                    return true
-                }
-
-                callbacks.register(callback)
-
-                return false
-            }
-
-            if (callbacks == null) {
-
-                callbacks = Callbacks("getting.$key")
-                getting[key] = callbacks
-            }
-
-            val inProgress = callbacks.getSubscribersCount() > 0
-
-            register(callbacks)
-
-            if (inProgress) {
-
-                // FIXME: [IN_PROGRESS]
-                Console.log(
-
-                    "$tag Already getting :: Key='$key' :: Subscribers count = ${callbacks.size()}"
-                )
-
-                return
-            }
-
             if (DEBUG.get()) {
 
                 Console.log("$tag START")
-            }
-
-            fun notifyGetterCallback(data: T? = null, error: Throwable? = null) {
-
-                if (DEBUG.get()) Console.log(
-
-                    "$tag Notify subscribers :: Count=${callbacks.size()}"
-                )
-
-                callbacks.doOnAll(object : CallbackOperation<OnObtain<*>> {
-
-                    override fun perform(callback: OnObtain<*>) {
-
-                        error?.let {
-
-                            callback.onFailure(it)
-                        }
-
-                        if (error == null) {
-
-                            @Suppress("UNCHECKED_CAST")
-                            (callback as OnObtain<T?>).onCompleted(data)
-                        }
-                    }
-
-                }, operationName = "getting.$key")
-
-                callbacks.clear()
-
-                getting[key] = callbacks
-                getting.remove(key)
-
-                if (callbacks.size() == 0) {
-
-                    if (DEBUG.get()) Console.log(
-
-                        "$tag Notify subscribers after cleanup :: Count=${callbacks.size()}"
-                    )
-
-                } else {
-
-                    Console.warning(
-
-                        "$tag Notify subscribers after cleanup :: Count=${callbacks.size()}"
-                    )
-                }
             }
 
             exec(
@@ -423,7 +336,7 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                     Console.error("$tag REJECTED")
 
-                    notifyGetterCallback(error = e)
+                    callback.onFailure(error = e)
                 }
 
             ) {
@@ -446,14 +359,14 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
                                 Console.log("$tag END :: On completed")
                             }
 
-                            notifyGetterCallback(data = data ?: defaultValue)
+                            callback.onCompleted(data = data ?: defaultValue)
                         }
 
                         override fun onFailure(error: Throwable) {
 
                             Console.error("$tag END :: onFailure :: Error='${error.message}'")
 
-                            notifyGetterCallback(error = error)
+                            callback.onFailure(error = error)
                         }
                     }
                 )
