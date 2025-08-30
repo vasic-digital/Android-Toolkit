@@ -26,6 +26,7 @@ import android.util.Base64OutputStream
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.paging.DEBUG
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -1281,13 +1282,16 @@ fun <X> sync(
 
                 waitingFlag?.set(false)
 
-                if (endTime > 1500 && endTime < 3000) {
+                if (DEBUG_SYNC.get()) {
 
-                    Console.warning("$tag WAITED for $endTime ms")
+                    if (endTime > 1500 && endTime < 3000) {
 
-                } else if (endTime >= 3000) {
+                        Console.warning("$tag WAITED for $endTime ms")
 
-                    Console.warning("$tag WAITED for $endTime ms")
+                    } else if (endTime >= 3000) {
+
+                        Console.warning("$tag WAITED for $endTime ms")
+                    }
                 }
 
                 if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")

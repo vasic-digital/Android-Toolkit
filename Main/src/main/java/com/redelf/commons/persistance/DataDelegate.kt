@@ -852,13 +852,16 @@ class DataDelegate private constructor(private val facade: Facade) :
         val obtained = obtain.obtain()
         val endTime = System.currentTimeMillis() - startTime
 
-        if (endTime > 1500 && endTime < 3000) {
+        if (DEBUG.get()) {
 
-            Console.warning("$tag WAITED for $endTime ms")
+            if (endTime > 1500 && endTime < 3000) {
 
-        } else if (endTime >= 3000) {
+                Console.warning("$tag WAITED for $endTime ms")
 
-            Console.warning("$tag WAITED for $endTime ms")
+            } else if (endTime >= 3000) {
+
+                Console.warning("$tag WAITED for $endTime ms")
+            }
         }
 
         putActions.remove(key)
