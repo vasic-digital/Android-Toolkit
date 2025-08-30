@@ -6,6 +6,7 @@ import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
 import com.redelf.commons.data.Empty
+import com.redelf.commons.data.wrapper.list.ListWrapper
 import com.redelf.commons.destruction.reset.ResettableAsyncParametrized
 import com.redelf.commons.destruction.reset.ResettableParametrized
 import com.redelf.commons.enable.Enabling
@@ -321,7 +322,11 @@ abstract class DataManagement<T> :
 
             if (inProgress) {
 
-                Console.warning("$tag Already obtaining")
+                // FIXME: [IN_PROGRESS]
+                Console.log(
+
+                    "$tag Already obtaining :: Subscribers count = ${obtaining.size()}"
+                )
 
                 return@exec
             }
@@ -356,6 +361,21 @@ abstract class DataManagement<T> :
                 }, operationName = "obtaining")
 
                 obtaining.clear()
+
+                if (obtaining.size() == 0) {
+
+                    if (canLog()) Console.log(
+
+                        "$tag Notify subscribers after cleanup :: Count=${obtaining.size()}"
+                    )
+
+                } else {
+
+                    Console.warning(
+
+                        "$tag Notify subscribers after cleanup :: Count=${obtaining.size()}"
+                    )
+                }
             }
 
             if (canLog()) Console.log("$tag START")
@@ -629,14 +649,14 @@ abstract class DataManagement<T> :
 
                 if (retry <= 5) {
 
-                    Console.warning(
+                    Console.log(
 
                         "${getLogTag()} BUSY :: Rescheduling data push :: Retry = $retry"
                     )
 
                     exec(
 
-                        delayInMilliseconds = 10 * 1000
+                        delayInMilliseconds = 1000
 
                     ) {
 

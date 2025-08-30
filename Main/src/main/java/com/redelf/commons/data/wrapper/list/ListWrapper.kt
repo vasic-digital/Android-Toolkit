@@ -1314,6 +1314,11 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             fun notifyGetterCallback(data: Collection<T?>? = null, error: Throwable? = null) {
 
+                if (DEBUG.get()) Console.log(
+
+                    "$tag Notify subscribers :: Count=${collectionCallbacks.size()}"
+                )
+
                 collectionCallbacks.doOnAll(object : CallbackOperation<OnObtain<Collection<T?>?>> {
 
                     override fun perform(callback: OnObtain<Collection<T?>?>) {
@@ -1333,6 +1338,21 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 }, operationName = "gettingCollection")
 
                 collectionCallbacks.clear()
+
+                if (collectionCallbacks.size() == 0) {
+
+                    if (DEBUG.get()) Console.log(
+
+                        "$tag Notify subscribers after cleanup :: Count=${collectionCallbacks.size()}"
+                    )
+
+                } else {
+
+                    Console.warning(
+
+                        "$tag Notify subscribers after cleanup :: Count=${collectionCallbacks.size()}"
+                    )
+                }
             }
 
             fun register(): Boolean {
@@ -1358,7 +1378,13 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             if (inProgress) {
 
-                Console.warning("$tag Already obtaining")
+                // FIXME: [IN_PROGRESS]
+                Console.log(
+
+                    "$tag Already obtaining :: " +
+                            "Subscribers count = ${collectionCallbacks.getSubscribersCount()}"
+                )
+
                 return@exec
             }
 

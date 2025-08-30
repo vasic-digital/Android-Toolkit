@@ -10,6 +10,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.ContextAvailability
+import com.redelf.commons.data.wrapper.list.ListWrapper
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
@@ -895,7 +896,12 @@ object DBStorage : Storage<String> {
 
             if (inProgress) {
 
-                Console.warning("$tag Already getting :: Key='$key'")
+                // FIXME: [IN_PROGRESS]
+
+                Console.warning(
+
+                    "$tag Already getting :: Key='$key' :: Subscribers count = ${callbacks.getSubscribersCount()}"
+                )
 
                 return
             }
@@ -932,7 +938,23 @@ object DBStorage : Storage<String> {
 
                 callbacks.clear()
 
+                getting[key] = callbacks
                 getting.remove(key)
+
+                if (callbacks.size() == 0) {
+
+                    if (DEBUG.get()) Console.log(
+
+                        "$tag Notify subscribers after cleanup :: Count=${callbacks.size()}"
+                    )
+
+                } else {
+
+                    Console.warning(
+
+                        "$tag Notify subscribers after cleanup :: Count=${callbacks.size()}"
+                    )
+                }
             }
 
             exec(

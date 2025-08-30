@@ -3,6 +3,7 @@ package com.redelf.commons.persistance
 import android.content.Context
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
+import com.redelf.commons.data.wrapper.list.ListWrapper
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
@@ -356,7 +357,11 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
             if (inProgress) {
 
-                Console.warning("$tag Already getting :: Key='$key'")
+                // FIXME: [IN_PROGRESS]
+                Console.log(
+
+                    "$tag Already getting :: Key='$key' :: Subscribers count = ${callbacks.size()}"
+                )
 
                 return
             }
@@ -367,6 +372,11 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
             }
 
             fun notifyGetterCallback(data: T? = null, error: Throwable? = null) {
+
+                if (DEBUG.get()) Console.log(
+
+                    "$tag Notify subscribers :: Count=${callbacks.size()}"
+                )
 
                 callbacks.doOnAll(object : CallbackOperation<OnObtain<*>> {
 
@@ -388,7 +398,23 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
                 callbacks.clear()
 
+                getting[key] = callbacks
                 getting.remove(key)
+
+                if (callbacks.size() == 0) {
+
+                    if (DEBUG.get()) Console.log(
+
+                        "$tag Notify subscribers after cleanup :: Count=${callbacks.size()}"
+                    )
+
+                } else {
+
+                    Console.warning(
+
+                        "$tag Notify subscribers after cleanup :: Count=${callbacks.size()}"
+                    )
+                }
             }
 
             exec(
