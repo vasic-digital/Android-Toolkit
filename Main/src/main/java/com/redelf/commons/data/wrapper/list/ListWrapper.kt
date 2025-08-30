@@ -1322,7 +1322,9 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                             callback.onFailure(it)
 
-                        } ?: kotlin.run {
+                        }
+
+                        if (error == null) {
 
                             callback.onCompleted(data)
                         }

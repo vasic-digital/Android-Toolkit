@@ -375,8 +375,9 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
                         error?.let {
 
                             callback.onFailure(it)
+                        }
 
-                        } ?: kotlin.run {
+                        if (error == null) {
 
                             @Suppress("UNCHECKED_CAST")
                             (callback as OnObtain<T?>).onCompleted(data)

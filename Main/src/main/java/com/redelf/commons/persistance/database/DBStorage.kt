@@ -907,6 +907,11 @@ object DBStorage : Storage<String> {
 
             fun notifyGetterCallback(data: String? = null, error: Throwable? = null) {
 
+                if (DEBUG.get()) {
+
+                    Console.log("$tag Notify getter callbacks :: Count=${callbacks.size()}")
+                }
+
                 callbacks.doOnAll(object : CallbackOperation<OnObtain<String?>> {
 
                     override fun perform(callback: OnObtain<String?>) {
@@ -915,7 +920,9 @@ object DBStorage : Storage<String> {
 
                             callback.onFailure(it)
 
-                        } ?: kotlin.run {
+                        }
+
+                        if (error == null) {
 
                             callback.onCompleted(data)
                         }
