@@ -1312,9 +1312,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
     }
 
+    @Synchronized
     protected open fun getCollection(from: String, collectionCallback: OnObtain<Collection<T?>?>) {
-
-        val tag = "$tag Get collection :: From='$from' ::"
 
         com.redelf.commons.extensions.exec(
 
@@ -1324,47 +1323,14 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             try {
 
-                val manager = getManager()
-
-                if (manager == null) {
-
-                    Console.error(
-
-                        "$tag getCollection(from='$from') :: Manager is null"
-                    )
-
-                    val e = IllegalArgumentException("Manager is null")
-                    collectionCallback.onFailure(e)
-                    return@exec
-                }
-
                 val coll = dataAccess?.obtain()
-
-                if (DEBUG.get()) {
-
-                    Console.log(
-                        "$tag Get collection :: From='$from', " +
-                                "getCollection().count=${coll?.size ?: 0}"
-                    )
-                }
 
                 collectionCallback.onCompleted(coll)
 
-                return@exec
-
             } catch (e: Throwable) {
 
-                if (DEBUG.get()) Console.log(
-
-                    "$tag Fet collection :: " +
-                            "From='$from', getCollection().count=0, " +
-                            "Error=${e.message ?: e::class.simpleName}"
-                )
-
-                recordException(e)
+                collectionCallback.onFailure(e)
             }
-
-            collectionCallback.onCompleted(null)
         }
     }
 
