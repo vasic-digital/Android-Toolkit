@@ -272,7 +272,7 @@ abstract class DataManagement<T> :
 
     fun obtain(): T? {
 
-        return sync(
+        return data ?: sync(
 
             "${getWho()}.obtain",
             "",
