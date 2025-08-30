@@ -58,8 +58,6 @@ interface InitializationAsync<T> : InitializationCondition {
             exec(
 
                 callable = callable,
-                timeout = timeoutInSeconds,
-                timeUnit = TimeUnit.SECONDS,
                 logTag = initLogTag
             )
 

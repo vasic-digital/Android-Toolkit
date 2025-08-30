@@ -1001,8 +1001,6 @@ fun single(what: Runnable) {
 fun exec(
 
     callable: Callable<Boolean>,
-    timeout: Long = 60L,
-    timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Bool exec ::",
     executor: Execution? = null,
     debug: Boolean = false
@@ -1012,8 +1010,6 @@ fun exec(
     val result = doExec(
 
         callable = callable,
-        timeout = timeout,
-        timeUnit = timeUnit,
         logTag = logTag,
         executor = executor,
         debug = debug
@@ -1030,8 +1026,6 @@ fun exec(
 fun <T> doExec(
 
     callable: Callable<T>,
-    timeout: Long = 60L,
-    timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Do exec ::",
     executor: Execution? = null,
     debug: Boolean = false
@@ -1039,7 +1033,7 @@ fun <T> doExec(
 ): T? {
 
     var success: T? = null
-    var future: Future<T>? = null
+    val future: Future<T>? = null
 
     try {
 
@@ -1199,9 +1193,6 @@ fun <X> sync(
 
     if (DEBUG_SYNC.get() || debug) Console.debug("$tag START")
 
-    var result: X? = null
-    val latch = CountDownLatch(1)
-
     if (mainThreadForbidden && isOnMainThread()) {
 
         val e = IllegalStateException("$context executed sync on main thread")
@@ -1209,106 +1200,114 @@ fun <X> sync(
         recordException(e)
     }
 
-    exec(
+    val callable = Callable {
 
-        onRejected = { e ->
+        var result: X? = null
+        val latch = CountDownLatch(1)
 
-            recordException(e)
+        exec(
 
-            latch.countDown()
+            onRejected = { e ->
+
+                recordException(e)
+
+                latch.countDown()
+            }
+
+        ) {
+
+            if (DEBUG_SYNC.get() || debug) Console.log("$tag EXECUTING")
+
+            try {
+
+                if (DEBUG_SYNC.get() || debug) Console.log("$tag CALLING")
+
+                what(
+
+                    object : OnObtain<X?> {
+
+                        override fun onCompleted(data: X?) {
+
+                            result = data
+                            if (DEBUG_SYNC.get() || debug) Console.log("$tag FINISHED")
+                            latch.countDown()
+                        }
+
+                        override fun onFailure(error: Throwable) {
+
+                            recordException(error)
+                            Console.error("$tag FINISHED WITH ERROR :: Error='${error.message}'")
+                            latch.countDown()
+                        }
+                    }
+                )
+
+                if (DEBUG_SYNC.get() || debug) Console.log("$tag WAITING")
+
+            } catch (e: Throwable) {
+
+                Console.error("$tag FAILED :: Error='${e.message}'")
+                recordException(e)
+                latch.countDown()
+            }
         }
 
-    ) {
-
-        if (DEBUG_SYNC.get() || debug) Console.log("$tag EXECUTING")
+        val startTime = System.currentTimeMillis()
 
         try {
 
-            if (DEBUG_SYNC.get() || debug) Console.log("$tag CALLING")
+            if (waitingFlag?.get() == true) {
 
-            what(
+                Console.warning("$tag Already waiting")
 
-                object : OnObtain<X?> {
+                yieldWhile {
 
-                    override fun onCompleted(data: X?) {
-
-                        result = data
-                        if (DEBUG_SYNC.get() || debug) Console.log("$tag FINISHED")
-                        latch.countDown()
-                    }
-
-                    override fun onFailure(error: Throwable) {
-
-                        recordException(error)
-                        Console.error("$tag FINISHED WITH ERROR :: Error='${error.message}'")
-                        latch.countDown()
-                    }
+                    waitingFlag.get()
                 }
-            )
+            }
 
-            if (DEBUG_SYNC.get() || debug) Console.log("$tag WAITING")
+            waitingFlag?.set(true)
+
+            if (latch.await(timeout, timeUnit)) {
+
+                val endTime = System.currentTimeMillis() - startTime
+
+                waitingFlag?.set(false)
+
+                if (endTime > 1500 && endTime < 3000) {
+
+                    Console.warning("$tag WAITED for $endTime ms")
+
+                } else if (endTime >= 3000) {
+
+                    Console.error("$tag WAITED for $endTime ms")
+                }
+
+                if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")
+
+            } else {
+
+                waitingFlag?.set(false)
+
+                val endTime = System.currentTimeMillis() - startTime
+                val e = TimeoutException("$context latch expired")
+                Console.error("$tag FAILED :: Timed out after $endTime ms")
+                recordException(e)
+            }
 
         } catch (e: Throwable) {
 
-            Console.error("$tag FAILED :: Error='${e.message}'")
-            recordException(e)
-            latch.countDown()
-        }
-    }
-
-    val startTime = System.currentTimeMillis()
-
-    try {
-
-        if (waitingFlag?.get() == true) {
-
-            Console.warning("$tag Already waiting")
-
-            yieldWhile {
-
-                waitingFlag.get()
-            }
-        }
-
-        waitingFlag?.set(true)
-
-        if (latch.await(timeout, timeUnit)) {
-
-            val endTime = System.currentTimeMillis() - startTime
-
-            waitingFlag?.set(false)
-
-            if (endTime > 1500 && endTime < 3000) {
-
-                Console.warning("$tag WAITED for $endTime ms")
-
-            } else if (endTime >= 3000) {
-
-                Console.error("$tag WAITED for $endTime ms")
-            }
-
-            if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")
-
-        } else {
-
             waitingFlag?.set(false)
 
             val endTime = System.currentTimeMillis() - startTime
-            val e = TimeoutException("$context latch expired")
-            Console.error("$tag FAILED :: Timed out after $endTime ms")
+            Console.error("$tag FAILED :: Error='${e.message}' after $endTime ms")
             recordException(e)
         }
 
-    } catch (e: Throwable) {
-
-        waitingFlag?.set(false)
-
-        val endTime = System.currentTimeMillis() - startTime
-        Console.error("$tag FAILED :: Error='${e.message}' after $endTime ms")
-        recordException(e)
+        result
     }
 
-    return result
+    return doExec(callable)
 }
 
 private val UI_IN_SYNC = AtomicBoolean()
