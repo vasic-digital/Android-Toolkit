@@ -57,7 +57,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val list: LinkedBlockingQueue<T> = LinkedBlockingQueue()
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
-    private val collectionCallbacks = Callbacks<OnObtain<Collection<T?>?>>("gettingCollection")
 
     private val dataPushListener: OnObtain<DataPushResult?>? = if (dataAccess != null) {
 
@@ -1087,7 +1086,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                             "ListWrapper.doFilter",
                             from,
 
-                        ) { callback ->
+                            ) { callback ->
 
                             filter.filter(
 
@@ -1323,81 +1322,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         ) {
 
-            fun notifyGetterCallback(data: Collection<T?>? = null, error: Throwable? = null) {
-
-                if (DEBUG.get()) Console.log(
-
-                    "$tag Notify subscribers :: Count=${collectionCallbacks.size()}"
-                )
-
-                collectionCallbacks.doOnAll(object : CallbackOperation<OnObtain<Collection<T?>?>> {
-
-                    override fun perform(callback: OnObtain<Collection<T?>?>) {
-
-                        error?.let {
-
-                            callback.onFailure(it)
-
-                        }
-
-                        if (error == null) {
-
-                            callback.onCompleted(data)
-                        }
-                    }
-
-                }, operationName = "gettingCollection")
-
-                collectionCallbacks.clear()
-
-                if (collectionCallbacks.size() == 0) {
-
-                    if (DEBUG.get()) Console.log(
-
-                        "$tag Notify subscribers after cleanup :: Count=${collectionCallbacks.size()}"
-                    )
-
-                } else {
-
-                    Console.warning(
-
-                        "$tag Notify subscribers after cleanup :: Count=${collectionCallbacks.size()}"
-                    )
-                }
-            }
-
-            fun register(): Boolean {
-
-                if (collectionCallbacks.isRegistered(collectionCallback)) {
-
-                    if (DEBUG.get()) {
-
-                        Console.warning("$tag Already registered}")
-                    }
-
-                    return true
-                }
-
-                collectionCallbacks.register(collectionCallback)
-
-                return false
-            }
-
-            val inProgress = collectionCallbacks.getSubscribersCount() > 0
-
-            register()
-
-            if (inProgress) {
-
-                Console.log(
-
-                    "$tag Already obtaining :: " +
-                            "Subscribers count = ${collectionCallbacks.getSubscribersCount()}"
-                )
-
-                return@exec
-            }
-
             try {
 
                 val manager = getManager()
@@ -1410,30 +1334,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                     )
 
                     val e = IllegalArgumentException("Manager is null")
-                    notifyGetterCallback(error = e)
-                    return@exec
-                }
-
-                val busyMsg = "Manager is not ready"
-
-                if (manager.isBusy() || manager.isReading() || manager.isWriting()) {
-
-                    Console.warning(busyMsg)
-                }
-
-                yieldWhile(
-
-                    timeoutInMilliseconds = 60 * 1000
-
-                ) {
-
-                    manager.isBusy() || manager.isReading() || manager.isWriting()
-                }
-
-                if (manager.isBusy() || manager.isReading() || manager.isWriting()) {
-
-                    val e = IllegalStateException(busyMsg)
-                    notifyGetterCallback(error = e)
+                    collectionCallback.onFailure(e)
                     return@exec
                 }
 
@@ -1447,7 +1348,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                     )
                 }
 
-                notifyGetterCallback(data = coll)
+                collectionCallback.onCompleted(coll)
 
                 return@exec
 
@@ -1463,7 +1364,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                 recordException(e)
             }
 
-            notifyGetterCallback(data = null)
+            collectionCallback.onCompleted(null)
         }
     }
 
