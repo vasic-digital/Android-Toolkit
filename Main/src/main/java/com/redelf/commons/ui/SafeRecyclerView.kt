@@ -2,6 +2,7 @@ package com.redelf.commons.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Canvas
 import android.util.AttributeSet
 import androidx.recyclerview.widget.RecyclerView
 import com.redelf.commons.logging.Console
@@ -24,11 +25,18 @@ class SafeRecyclerView @JvmOverloads constructor(
         } catch (e: Throwable) {
 
             Console.error("SafeRecyclerView :: Error='${e.message}'")
+        }
+    }
 
-            post {
+    override fun onDraw(c: Canvas) {
 
-                adapter?.notifyDataSetChanged()
-            }
+        try {
+
+            super.onDraw(c)
+
+        } catch (e: Throwable) {
+
+            Console.error("SafeRecyclerView :: Error='${e.message}'")
         }
     }
 }
