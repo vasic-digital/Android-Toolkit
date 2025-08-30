@@ -91,6 +91,7 @@ abstract class DataManagement<T> :
 
     protected abstract val storageKey: String
     protected open val persist: Boolean = true
+    protected open val checkDataVersionOnSaving = false // TODO: Make sure that data versioning is used by default when polished
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
@@ -327,10 +328,15 @@ abstract class DataManagement<T> :
 
             if (DEBUG.get()) {
 
-                Console.log("$tag START")
+                Console.log("$tag PRE-START")
             }
 
             fun notifyGetterCallback(data: T? = null, error: Throwable? = null) {
+
+                if (canLog()) Console.log(
+
+                    "$tag Notify subscribers :: Count=${obtaining.size()}"
+                )
 
                 obtaining.doOnAll(object : CallbackOperation<OnObtain<T?>> {
 
@@ -339,8 +345,9 @@ abstract class DataManagement<T> :
                         error?.let {
 
                             callback.onFailure(it)
+                        }
 
-                        } ?: kotlin.run {
+                        if (error == null) {
 
                             callback.onCompleted(data)
                         }
@@ -945,7 +952,7 @@ abstract class DataManagement<T> :
 
         // FIXME: Polish and add environment into the account
         //  when it is changed (to reset version to 0)
-        if (data.getVersion() >= (this.data?.getVersion() ?: 0)) {
+        if (!checkDataVersionOnSaving || (data.getVersion() >= (this.data?.getVersion() ?: 0))) {
 
             Console.log(
                 "${getLogTag()} Data :: Overwrite :: " +
@@ -953,20 +960,13 @@ abstract class DataManagement<T> :
                         "To version = ${data.getVersion()}"
             )
 
-            if (this.data != data) {
+            this.data = data
 
-                this.data = data
-
-                return true
-
-            } else {
-
-                Console.log("${getLogTag()} Data :: Overwrite :: SKIPPED (1)")
-            }
+            return true
 
         } else {
 
-            Console.log("${getLogTag()} Data :: Overwrite :: SKIPPED (2)")
+            Console.log("${getLogTag()} Data :: Overwrite :: SKIPPED")
         }
 
         return false
