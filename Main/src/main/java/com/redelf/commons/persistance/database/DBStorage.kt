@@ -59,7 +59,6 @@ object DBStorage : Storage<String> {
     private var columnValue = COLUMN_VALUE_
     private val executor = Executor.MAIN
     private var enc: Encryption<String> = NoEncryption()
-    private val getting = ConcurrentHashMap<String, Callbacks<OnObtain<String?>>>()
 
     private fun table() = table
 
@@ -864,96 +863,9 @@ object DBStorage : Storage<String> {
 
         key?.let {
 
-            var callbacks = getting[key]
-
-            fun register(callbacks: Callbacks<OnObtain<String?>>): Boolean {
-
-                if (callbacks.isRegistered(getterCallback)) {
-
-                    if (DEBUG.get()) {
-
-                        Console.warning("$tag Already registered}")
-                    }
-
-                    return true
-                }
-
-                callbacks.register(getterCallback)
-
-                return false
-            }
-
-            if (callbacks == null) {
-
-                callbacks = Callbacks("getting.$key")
-                getting[key] = callbacks
-            }
-
-            val inProgress = callbacks.getSubscribersCount() > 0
-
-            register(callbacks)
-
-            if (inProgress) {
-
-                // FIXME: [IN_PROGRESS]
-
-                Console.warning(
-
-                    "$tag Already getting :: Key='$key' :: Subscribers count = ${callbacks.getSubscribersCount()}"
-                )
-
-                return
-            }
-
             if (DEBUG.get()) {
 
                 Console.log("$tag START")
-            }
-
-            fun notifyGetterCallback(data: String? = null, error: Throwable? = null) {
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag Notify getter callbacks :: Count=${callbacks.size()}")
-                }
-
-                callbacks.doOnAll(object : CallbackOperation<OnObtain<String?>> {
-
-                    override fun perform(callback: OnObtain<String?>) {
-
-                        error?.let {
-
-                            callback.onFailure(it)
-
-                        }
-
-                        if (error == null) {
-
-                            callback.onCompleted(data)
-                        }
-                    }
-
-                }, operationName = "getting.$key")
-
-                callbacks.clear()
-
-                getting[key] = callbacks
-                getting.remove(key)
-
-                if (callbacks.size() == 0) {
-
-                    if (DEBUG.get()) Console.log(
-
-                        "$tag Notify subscribers after cleanup :: Count=${callbacks.size()}"
-                    )
-
-                } else {
-
-                    Console.warning(
-
-                        "$tag Notify subscribers after cleanup :: Count=${callbacks.size()}"
-                    )
-                }
             }
 
             exec(
@@ -962,7 +874,7 @@ object DBStorage : Storage<String> {
 
                     Console.error("$tag REJECTED")
 
-                    notifyGetterCallback(error = e)
+                    getterCallback.onFailure(e)
                 }
 
             ) {
@@ -982,7 +894,7 @@ object DBStorage : Storage<String> {
 
                         val e = IOException("DB is not open")
                         Console.error("$tag FAILED :: Error='${e.message}'")
-                        notifyGetterCallback(error = e)
+                        getterCallback.onFailure(e)
                         return@withDb
                     }
 
@@ -1014,7 +926,7 @@ object DBStorage : Storage<String> {
 
                                     } catch (e: Throwable) {
 
-                                        notifyGetterCallback(error = e)
+                                        getterCallback.onFailure(e)
                                         result = e.message ?: "error"
                                     }
                                 }
@@ -1025,7 +937,7 @@ object DBStorage : Storage<String> {
 
                     } catch (e: Throwable) {
 
-                        notifyGetterCallback(error = e)
+                        getterCallback.onFailure(e)
                         return@withDb
 
                     } finally {
@@ -1040,7 +952,7 @@ object DBStorage : Storage<String> {
                         }
                     }
 
-                    notifyGetterCallback(data = result)
+                    getterCallback.onCompleted(result)
                 }
             }
         }
