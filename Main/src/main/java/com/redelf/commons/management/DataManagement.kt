@@ -143,7 +143,7 @@ abstract class DataManagement<T> :
 
     override fun isBusy(): Boolean {
 
-        // TODO: [IN_PROGRESS] We shall incorporate this properly at some point
+        // TODO: We shall incorporate this properly at some point
         return false
     }
 
@@ -322,7 +322,6 @@ abstract class DataManagement<T> :
 
             if (inProgress) {
 
-                // FIXME: [IN_PROGRESS]
                 Console.log(
 
                     "$tag Already obtaining :: Subscribers count = ${obtaining.size()}"

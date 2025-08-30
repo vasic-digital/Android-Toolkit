@@ -1287,7 +1287,7 @@ fun <X> sync(
 
                 } else if (endTime >= 3000) {
 
-                    Console.error("$tag WAITED for $endTime ms")
+                    Console.warning("$tag WAITED for $endTime ms")
                 }
 
                 if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")

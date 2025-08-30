@@ -858,7 +858,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         } else if (endTime >= 3000) {
 
-            Console.error("$tag WAITED for $endTime ms")
+            Console.warning("$tag WAITED for $endTime ms")
         }
 
         putActions.remove(key)

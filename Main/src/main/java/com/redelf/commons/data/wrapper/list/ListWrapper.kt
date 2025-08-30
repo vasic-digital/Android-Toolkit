@@ -1389,7 +1389,6 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             if (inProgress) {
 
-                // FIXME: [IN_PROGRESS]
                 Console.log(
 
                     "$tag Already obtaining :: " +
