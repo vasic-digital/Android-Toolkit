@@ -27,6 +27,7 @@ import java.util.LinkedList
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -53,7 +54,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val busy = AtomicBoolean()
     private val operationMutex = Any()
     private val version = AtomicLong(0)
-    private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
+    private val list: LinkedBlockingQueue<T> = LinkedBlockingQueue()
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
     private val collectionCallbacks = Callbacks<OnObtain<Collection<T?>?>>("gettingCollection")
@@ -329,7 +330,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             if (list.size > index) {
 
-                return list.getAtIndex(index)
+                return list.toList()[index]
             }
         }
 
@@ -688,11 +689,16 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 list.apply {
 
-                    if (list.size > where && list.removeAt(where) != null) {
+                    val modifiable = list.toMutableList()
 
-                        list.addAt(where, what)
+                    if (modifiable.size > where && modifiable.removeAt(where) != null) {
 
-                        if (list.elementAt(where) == what) {
+                        modifiable.add(where, what)
+
+                        if (modifiable.elementAt(where) == what) {
+
+                            list.clear()
+                            list.addAll(modifiable)
 
                             if (!skipNotifying) {
 
@@ -1252,15 +1258,20 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        list.removeAt(index)?.let {
+        list.apply {
 
-            if (!skipNotifying) {
+            val toRemove = list.toList().get(index)
 
-                notifyChanged(onChange, "remove.$index")
+            list.remove(toRemove).let {
+
+                if (!skipNotifying) {
+
+                    notifyChanged(onChange, "remove.$index")
+                }
             }
-        }
 
-        notifyCallback(callback)
+            notifyCallback(callback)
+        }
     }
 
     @Synchronized
