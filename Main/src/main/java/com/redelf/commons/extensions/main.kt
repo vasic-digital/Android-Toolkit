@@ -1177,7 +1177,7 @@ fun yield(context: String, check: Obtain<Boolean>) {
 fun <X> sync(
 
     context: String,
-    from: String,
+    from: String = "",
     timeout: Long = 60,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     mainThreadForbidden: Boolean = true,
@@ -1189,7 +1189,14 @@ fun <X> sync(
 
     // TODO: Coroutines support
 
-    val tag = "SYNC :: $context :: from '$from' ::"
+    val tag = if (from.isEmpty()) {
+
+        "SYNC :: $context ::"
+
+    } else {
+
+        "SYNC :: $context :: from '$from' ::"
+    }
 
     if (DEBUG_SYNC.get() || debug) Console.debug("$tag START")
 

@@ -143,7 +143,8 @@ abstract class DataManagement<T> :
 
     override fun isBusy(): Boolean {
 
-        return isReading() || isWriting()
+        // TODO: [IN_PROGRESS] We shall incorporate this properly at some point
+        return false
     }
 
     override fun registerDataPushListener(subscriber: OnObtain<DataPushResult?>) {
