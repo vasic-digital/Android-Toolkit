@@ -1198,6 +1198,15 @@ fun <X> sync(
         "SYNC :: $context :: from '$from' ::"
     }
 
+    val ctx = if (from.isEmpty()) {
+
+        "SYNC.$context"
+
+    } else {
+
+        "SYNC.$context(from='$from')"
+    }
+
     if (DEBUG_SYNC.get() || debug) Console.debug("$tag START")
 
     if (mainThreadForbidden && isOnMainThread()) {
@@ -1208,7 +1217,7 @@ fun <X> sync(
     }
 
     var result: X? = null
-    val latch = CountDownLatch(1, context = tag)
+    val latch = CountDownLatch(1, context = ctx)
 
     exec(
 

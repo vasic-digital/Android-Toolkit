@@ -3,8 +3,9 @@ package com.redelf.commons.atomic
 import com.redelf.commons.logging.Console
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
-open class Countdown(
+open class CountDown(
 
     context: String,
     private val count: Int,
@@ -18,13 +19,15 @@ open class Countdown(
         val DEBUG = AtomicBoolean(false)
     }
 
+    private val counted: AtomicInteger = AtomicInteger()
+
     private val tag = if (context.isEmpty()) {
 
-        "Count down :: ${hashCode()} ::"
+        "Count down :: ${hashCode()} :: Count=$count ::"
 
     } else {
 
-        "Count down :: ${hashCode()} :: Context='$context' ::"
+        "Count down :: ${hashCode()} :: Context='$context' :: Count=$count ::"
     }
 
     fun await(): Boolean {
@@ -35,6 +38,13 @@ open class Countdown(
     fun await(howMuch: Long, unit: java.util.concurrent.TimeUnit): Boolean {
 
         log("Await :: START")
+
+        if (counted.get() > 0) {
+
+            error("Await :: ALREADY COUNTED")
+
+            return false
+        }
 
         try {
 
@@ -63,7 +73,9 @@ open class Countdown(
 
         latch.countDown()
 
-        log("Count down $latch")
+        val c = counted.incrementAndGet()
+
+        log("Count down :: Counted = $c")
     }
 
     private fun log(message: String) {

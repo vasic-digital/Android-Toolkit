@@ -1,6 +1,6 @@
 package com.redelf.commons.extensions
 
-import com.redelf.commons.atomic.Countdown
+import com.redelf.commons.atomic.CountDown
 import java.util.concurrent.CountDownLatch
 
 class CountDownLatch(
@@ -10,7 +10,7 @@ class CountDownLatch(
     timeoutInSeconds: Long = 60,
     latch: CountDownLatch = CountDownLatch(count)
 
-) : Countdown(
+) : CountDown(
 
     context,
     count,
@@ -22,9 +22,9 @@ class CountDownLatch(
     companion object {
 
         @JvmStatic
-        fun instantiate(count: Int): com.redelf.commons.extensions.CountDownLatch {
+        fun instantiate(count: Int, context: String): com.redelf.commons.extensions.CountDownLatch {
 
-            return com.redelf.commons.extensions.CountDownLatch(count)
+            return CountDownLatch(count, context)
         }
     }
 }
