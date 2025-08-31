@@ -759,6 +759,14 @@ object DBStorage : Storage<String> {
 
             processing.set(true)
 
+            if (schedule.isEmpty()) {
+
+                if (DEBUG.get()) {
+
+                    Console.log("Schedule is empty, nothing to process")
+                }
+            }
+
             try {
 
                 schedule.forEach { (key, value) ->
@@ -769,7 +777,18 @@ object DBStorage : Storage<String> {
 
                     } else {
 
-                        Console.error("Put :: Failed :: Key='$key'")
+                        if (DEBUG.get()) {
+
+                            Console.warning("Put :: Failed :: Key='$key' :: Rescheduled")
+                        }
+                    }
+                }
+
+                if (schedule.isEmpty()) {
+
+                    if (DEBUG.get()) {
+
+                        Console.log("Schedule is empty, everything is processed")
                     }
                 }
 
