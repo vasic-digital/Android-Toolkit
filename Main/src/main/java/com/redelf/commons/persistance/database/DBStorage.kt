@@ -742,7 +742,7 @@ object DBStorage : Storage<String> {
         }
 
         val result = AtomicBoolean()
-        val latch = CountDownLatch(1, "DBStorage.doPut(key='$key')")
+        val cDown = CountDownLatch(1, "DBStorage.doPut(key='$key')")
 
         withDb { db ->
 
@@ -750,7 +750,7 @@ object DBStorage : Storage<String> {
 
                 Console.warning("DB is not open")
 
-                latch.countDown()
+                cDown.countDown()
 
                 return@withDb
             }
@@ -789,6 +789,8 @@ object DBStorage : Storage<String> {
                                             "length = ${value.length}"
                                 )
 
+                                cDown.countDown()
+
                                 return true
                             }
 
@@ -801,6 +803,8 @@ object DBStorage : Storage<String> {
                                     "$tag END: rowsInserted = $rowsInserted, " +
                                             "length = ${value.length}"
                                 )
+
+                                cDown.countDown()
 
                                 return true
                             }
@@ -818,6 +822,8 @@ object DBStorage : Storage<String> {
                                     "length = ${value.length}"
                         )
 
+                        cDown.countDown()
+
                         return false
                     }
                 }
@@ -825,11 +831,9 @@ object DBStorage : Storage<String> {
             ) ?: false
 
             result.set(res)
-
-            latch.countDown()
         }
 
-        latch.await()
+        cDown.await()
 
         return result.get()
     }

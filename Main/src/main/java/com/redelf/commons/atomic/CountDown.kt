@@ -41,9 +41,7 @@ open class CountDown(
 
         if (counted.get() > 0) {
 
-            error("Await :: ALREADY COUNTED")
-
-            return false
+            error("Await :: ALREADY COUNTED DOWN :: Counted = ${counted.get()}")
         }
 
         try {
@@ -84,6 +82,11 @@ open class CountDown(
 
             Console.log("$tag $message")
         }
+    }
+
+    private fun warning(message: String) {
+
+        Console.warning("$tag $message")
     }
 
     private fun error(message: String) {
