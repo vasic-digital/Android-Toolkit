@@ -22,9 +22,9 @@ class CountDownLatch(
     companion object {
 
         @JvmStatic
-        fun instantiate(count: Int): Countdown {
+        fun instantiate(count: Int): com.redelf.commons.extensions.CountDownLatch {
 
-            return Countdown("", count)
+            return com.redelf.commons.extensions.CountDownLatch(count)
         }
     }
 }
