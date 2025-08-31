@@ -23,11 +23,11 @@ open class CountDown(
 
     private val tag = if (context.isEmpty()) {
 
-        "Count down :: ${hashCode()} :: Count=$count ::"
+        "Count down :: ${hashCode()} :: Count = $count ::"
 
     } else {
 
-        "Count down :: ${hashCode()} :: Context='$context' :: Count=$count ::"
+        "Count down :: ${hashCode()} :: Context='$context' :: Count  =$count ::"
     }
 
     fun await(): Boolean {
@@ -41,7 +41,7 @@ open class CountDown(
 
         if (counted.get() > 0) {
 
-            error("Await :: ALREADY COUNTED DOWN :: Counted = ${counted.get()}")
+            warning("Await :: ALREADY COUNTED DOWN :: Counted = ${counted.get()} of $count")
         }
 
         try {
@@ -73,7 +73,7 @@ open class CountDown(
 
         val c = counted.incrementAndGet()
 
-        log("Count down :: Counted = $c")
+        log("Count down :: Counted = $c of $count")
     }
 
     private fun log(message: String) {
