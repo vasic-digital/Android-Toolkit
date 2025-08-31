@@ -20,11 +20,11 @@ open class Countdown(
 
     private val tag = if (context.isEmpty()) {
 
-        "Countdown :: ${hashCode()} ::"
+        "Count down :: ${hashCode()} ::"
 
     } else {
 
-        "Countdown :: ${hashCode()} :: Context='$context' ::"
+        "Count down :: ${hashCode()} :: Context='$context' ::"
     }
 
     fun await(): Boolean {
