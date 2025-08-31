@@ -42,8 +42,8 @@ abstract class ManagersDependentTest : BaseTest() {
 
         val registered = AtomicInteger()
         val setupSuccess = AtomicBoolean()
-        val mainLatch = CountDownLatch(1)
-        val latch = CountDownLatch(managers.size)
+        val mainLatch = CountDownLatch(1, "test")
+        val latch = CountDownLatch(managers.size, "test")
 
         val managersInitializerCallback = object : ManagersInitializer.InitializationCallback {
 
