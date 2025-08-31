@@ -84,7 +84,7 @@ object Storage {
     fun delete(key: String): Boolean {
 
         var result = false
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "Storage.delete")
 
         DataManagement.STORAGE.delete(
 

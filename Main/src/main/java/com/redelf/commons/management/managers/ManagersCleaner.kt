@@ -22,7 +22,7 @@ class ManagersCleaner {
 
     fun cleanupManagers(managers: List<Management>): Boolean {
 
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "ManagersCleaner.cleanupManagers")
         val result = AtomicBoolean(true)
 
         val callback = object : CleanupCallback {
@@ -76,7 +76,7 @@ class ManagersCleaner {
         Console.log("$tag START: $managersListLog$")
 
         val success = AtomicBoolean(true)
-        val latch = CountDownLatch(managers.size)
+        val latch = CountDownLatch(managers.size, "ManagersCleaner.cleanupManagers.2")
 
         exec(
 

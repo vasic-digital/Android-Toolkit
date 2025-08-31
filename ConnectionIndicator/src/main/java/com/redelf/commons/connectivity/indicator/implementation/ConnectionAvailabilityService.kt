@@ -65,7 +65,7 @@ abstract class ConnectionAvailabilityService(
                 throw IllegalArgumentException("Cannot get state from main thread")
             }
 
-            val latch = CountDownLatch(1)
+            val latch = CountDownLatch(1, "ConnectionAvailabilityService.getState")
             var state = ConnectionState.Disconnected
 
             withConnectionHandler {

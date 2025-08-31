@@ -165,7 +165,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                         val success = AtomicBoolean(true)
                         val parallelized = value.isPartitioningParallelized()
                         val latchCount = if (parallelized) partitionsCount else 0
-                        val partitioningLatch = CountDownLatch(latchCount)
+                        val partitioningLatch = CountDownLatch(latchCount, "DataDelegate.put(key='$key')")
 
                         for (i in 0..<partitionsCount) {
 

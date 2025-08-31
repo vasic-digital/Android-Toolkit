@@ -75,7 +75,7 @@ object FirebaseConfigurationManager :
 
         Console.log("$LOG_TAG Config params fetching")
 
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "FirebaseConfigurationManager.load")
 
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->

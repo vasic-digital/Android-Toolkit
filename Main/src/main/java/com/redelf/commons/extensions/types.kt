@@ -6,7 +6,7 @@ import java.util.concurrent.CountDownLatch
 class CountDownLatch(
 
     count: Int,
-    context: String = "",
+    context: String,
     timeoutInSeconds: Long = 60,
     latch: CountDownLatch = CountDownLatch(count)
 

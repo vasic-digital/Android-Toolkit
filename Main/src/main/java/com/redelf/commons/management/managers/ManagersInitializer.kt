@@ -28,7 +28,7 @@ class ManagersInitializer {
 
     ): Boolean {
 
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "ManagersInitializer.initializeManagers")
         val result = AtomicBoolean(true)
 
         val callback = object : InitializationCallback {

@@ -118,7 +118,7 @@ object DBStorage : Storage<String> {
 
         fun closeDatabase() {
 
-            val latch = CountDownLatch(1)
+            val latch = CountDownLatch(1, "DbStorage.DbHelper.closeDatabase")
 
             withDb { db ->
 
@@ -398,7 +398,7 @@ object DBStorage : Storage<String> {
         if (DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "DbStorage.delete(key='$key')")
 
         withDb { db ->
 
@@ -465,7 +465,7 @@ object DBStorage : Storage<String> {
         if (DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "DbStorage.DeleteAll")
 
         withDb { db ->
 
@@ -590,7 +590,7 @@ object DBStorage : Storage<String> {
     override fun count(): Long {
 
         val result = AtomicLong()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "DbStorage.count")
 
         withDb { db ->
 
@@ -742,7 +742,7 @@ object DBStorage : Storage<String> {
         }
 
         val result = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "DBStorage.doPut(key='$key')")
 
         withDb { db ->
 
