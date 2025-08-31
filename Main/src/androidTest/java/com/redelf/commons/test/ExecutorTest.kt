@@ -4,7 +4,7 @@ import com.redelf.commons.execution.Executor
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.Callable
-import java.util.concurrent.CountDownLatch
+import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 

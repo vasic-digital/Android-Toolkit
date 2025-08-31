@@ -58,7 +58,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.Random
 import java.util.concurrent.Callable
-import java.util.concurrent.CountDownLatch
+import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException

@@ -8,7 +8,7 @@ import com.redelf.commons.extensions.sync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.CountDownLatch
+import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 

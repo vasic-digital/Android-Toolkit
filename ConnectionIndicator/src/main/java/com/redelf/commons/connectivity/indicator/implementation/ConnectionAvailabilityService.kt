@@ -18,7 +18,7 @@ import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.stateful.State
 import java.util.concurrent.CopyOnWriteArraySet
-import java.util.concurrent.CountDownLatch
+import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 abstract class ConnectionAvailabilityService(

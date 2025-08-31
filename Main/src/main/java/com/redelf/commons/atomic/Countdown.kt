@@ -4,7 +4,7 @@ import com.redelf.commons.logging.Console
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Countdown(
+open class Countdown(
 
     context: String,
     private val count: Int,
@@ -18,15 +18,27 @@ class Countdown(
         val DEBUG = AtomicBoolean(false)
     }
 
-    private val tag = "Countdown :: ${hashCode()} :: Context='$context' ::"
+    private val tag = if (context.isEmpty()) {
+
+        "Countdown :: ${hashCode()} ::"
+
+    } else {
+
+        "Countdown :: ${hashCode()} :: Context='$context' ::"
+    }
 
     fun await(): Boolean {
+
+        return await(timeoutInSeconds, java.util.concurrent.TimeUnit.SECONDS)
+    }
+
+    fun await(howMuch: Long, unit: java.util.concurrent.TimeUnit): Boolean {
 
         log("Await :: START")
 
         try {
 
-            val success = latch.await(timeoutInSeconds, java.util.concurrent.TimeUnit.SECONDS)
+            val success = latch.await(howMuch, unit)
 
             if (success) {
 

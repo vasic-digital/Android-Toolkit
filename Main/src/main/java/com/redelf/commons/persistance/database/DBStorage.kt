@@ -26,7 +26,7 @@ import net.zetetic.database.sqlcipher.SQLiteOpenHelper
 import okio.IOException
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
+import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
