@@ -285,13 +285,13 @@ class GsonParser private constructor(
 
                     } catch (e: Throwable) {
 
-                        Console.error(
-
-                            "$tag ERROR / 1 :: Content length = ${content?.length}, " +
-                                    "Class = '${clazz.simpleName}', Error = '${e.message}'"
-                        )
-
                         if (DEBUG.get()) {
+
+                            Console.error(
+
+                                "$tag ERROR / 1 :: Content length = ${content?.length}, " +
+                                        "Class = '${clazz.simpleName}', Error = '${e.message}'"
+                            )
 
                             Console.error(
 
@@ -310,11 +310,14 @@ class GsonParser private constructor(
 
         } catch (e: Throwable) {
 
-            Console.error(
+            if (DEBUG.get()) {
 
-                "$tag ERROR / 2 :: Class = ${clazz.canonicalName?.forClassName()}, " +
-                        "Content = $content, Error = '${e.message}'"
-            )
+                Console.error(
+
+                    "$tag ERROR / 2 :: Class = ${clazz.canonicalName?.forClassName()}, " +
+                            "Content = $content, Error = '${e.message}'"
+                )
+            }
 
             recordException(e)
         }
