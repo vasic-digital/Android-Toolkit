@@ -42,6 +42,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private var onChange: OnChangeCompleted? = null,
     private val onDataPushed: OnObtain<DataPushResult?>? = null,
     private val defaultFilters: List<FilterAsync<T>> = emptyList(),
+    private val filteringTimeout: Long = 5000L,
 
     ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
@@ -53,6 +54,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val filterMutex = Any()
     private val busy = AtomicBoolean()
     private val operationMutex = Any()
+    private val filtering = AtomicBoolean()
     private val version = AtomicLong(0)
     private val list: LinkedBlockingQueue<T> = LinkedBlockingQueue()
     private val initialized = AtomicBoolean(dataAccess == null)
@@ -1061,6 +1063,13 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
+        if (filtering.get()) {
+
+            callback()
+
+            return
+        }
+
         synchronized(filterMutex) {
 
             if (filters.isEmpty()) {
@@ -1069,6 +1078,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 return@synchronized
             }
+
+            filtering.set(true)
 
             var success = false
             val filteredList = CopyOnWriteArraySet<T>()
@@ -1083,10 +1094,11 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                         val result = sync<Boolean?>(
 
-                            "ListWrapper.doFilter",
-                            from,
+                            from = from,
+                            timeout = filteringTimeout,
+                            context = "ListWrapper.doFilter"
 
-                            ) { callback ->
+                        ) { callback ->
 
                             filter.filter(
 
@@ -1124,6 +1136,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             }
 
             callback()
+
+            filtering.set(false)
         }
     }
 
