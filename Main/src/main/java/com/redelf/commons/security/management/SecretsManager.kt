@@ -80,7 +80,7 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
                                 result.updateValue(newSalt)
 
-                                transaction.end(
+                                transaction?.end(
 
                                     true,
 

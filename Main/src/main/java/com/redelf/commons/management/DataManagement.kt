@@ -91,6 +91,7 @@ abstract class DataManagement<T> :
 
     protected abstract val storageKey: String
     protected open val persist: Boolean = true
+    protected open val useTransactions = false // TODO: Make sure that transactions are used by default when polished
     protected open val checkDataVersionOnSaving = false // TODO: Make sure that data versioning is used by default when polished
     protected open val instantiateDataObject: Boolean = false
 
@@ -211,29 +212,35 @@ abstract class DataManagement<T> :
         return false
     }
 
-    fun transaction(name: String, action: Obtain<Boolean>) {
+    // TODO: Make sure that transactions are used by default when polished
+    //
+    //    fun transaction(name: String, action: Obtain<Boolean>) {
+    //
+    //        if (!isEnabled()) {
+    //
+    //            return
+    //        }
+    //
+    //        execute(
+    //
+    //            DataTransaction(
+    //
+    //                name = name,
+    //                parent = this,
+    //
+    //                operation = object : TransactionOperation {
+    //
+    //                    override fun perform() = action.obtain()
+    //                }
+    //            )
+    //        )
+    //    }
 
-        if (!isEnabled()) {
+    fun transaction(name: String): Transaction? = if (useTransactions) {
 
-            return
-        }
+        DataTransaction(name, this)
 
-        execute(
-
-            DataTransaction(
-
-                name = name,
-                parent = this,
-
-                operation = object : TransactionOperation {
-
-                    override fun perform() = action.obtain()
-                }
-            )
-        )
-    }
-
-    fun transaction(name: String): Transaction = DataTransaction(name, this)
+    } else null
 
     override fun lock() {
 
