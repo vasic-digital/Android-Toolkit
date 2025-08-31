@@ -58,7 +58,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.Random
 import java.util.concurrent.Callable
-import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
@@ -1209,7 +1208,7 @@ fun <X> sync(
     }
 
     var result: X? = null
-    val latch = CountDownLatch(1)
+    val latch = CountDownLatch(1, context = tag)
 
     exec(
 
