@@ -856,22 +856,13 @@ abstract class DataManagement<T> :
 
                     fun completeReset(success: Boolean?) {
 
-                        if (success == true) {
+                        if (DEBUG.get()) Console.log("$tag Completing reset :: $success")
 
-                            if (DEBUG.get()) Console.log("$tag Completing reset")
+                        eraseData()
 
-                            eraseData()
+                        Console.log("$tag END")
 
-                            Console.log("$tag END")
-
-                            callback.onCompleted(true)
-
-                        } else {
-
-                            Console.error("$tag Complete reset failed")
-
-                            callback.onCompleted(success)
-                        }
+                        callback.onCompleted(true)
                     }
 
                     val s = takeStorage()
