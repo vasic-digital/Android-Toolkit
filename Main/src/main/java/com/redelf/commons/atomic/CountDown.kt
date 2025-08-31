@@ -27,7 +27,7 @@ open class CountDown(
 
     } else {
 
-        "Count down :: ${hashCode()} :: Context='$context' :: Count  =$count ::"
+        "Count down :: ${hashCode()} :: Context='$context' :: Count = $count ::"
     }
 
     fun await(): Boolean {
