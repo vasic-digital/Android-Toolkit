@@ -9,6 +9,8 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.application.OnClearFromRecentService
 import com.redelf.commons.data.Empty
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isInBackground
+import com.redelf.commons.extensions.isInForeground
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.Connectivity
@@ -20,9 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class LazyDataManagement<T> :
 
     DataManagement<T>(),
-    Registration<Context> where T : Versionable
-
-{
+    Registration<Context> where T : Versionable {
 
     protected open val lazySaving = false
     protected open val savingOnTermination = false
@@ -310,6 +310,11 @@ abstract class LazyDataManagement<T> :
         }
 
         if (!lazySaving) {
+
+            return
+        }
+
+        if (BaseApplication.takeContext().isInForeground()) {
 
             return
         }
