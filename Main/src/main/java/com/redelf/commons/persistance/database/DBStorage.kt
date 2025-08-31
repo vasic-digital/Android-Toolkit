@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap
 import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 /*
@@ -758,18 +759,13 @@ object DBStorage : Storage<String> {
 
             processing.set(true)
 
-            val iterator = schedule.keys.iterator()
+            try {
 
-            while (iterator.hasNext()) {
-
-                val key = iterator.next()
-                val value = schedule[key]
-
-                value?.let {
+                schedule.forEach { (key, value) ->
 
                     if (doPut(key, value)) {
 
-                        iterator.remove()
+                        schedule.remove(key, value)
 
                     } else {
 
@@ -777,13 +773,10 @@ object DBStorage : Storage<String> {
                     }
                 }
 
-                if (value == null) {
+            } finally {
 
-                    iterator.remove()
-                }
+                processing.set(false)
             }
-
-            processing.set(false)
 
             doProcess()
         }
