@@ -27,6 +27,7 @@ import okio.IOException
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentHashMap
 import com.redelf.commons.extensions.CountDownLatch
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -56,9 +57,11 @@ object DBStorage : Storage<String> {
 
     private var table = TABLE_
     private var columnKey = COLUMN_KEY_
-    private var columnValue = COLUMN_VALUE_
     private val executor = Executor.MAIN
+    private var columnValue = COLUMN_VALUE_
+    private val processing = AtomicBoolean()
     private var enc: Encryption<String> = NoEncryption()
+    private val schedule = ConcurrentHashMap<String, String>()
 
     private fun table() = table
 
@@ -215,7 +218,7 @@ object DBStorage : Storage<String> {
 
         val chunksCount = chunks.size
 
-        doPut("${key}_$KEY_CHUNKS", chunksCount.toString())
+        doSchedule("${key}_$KEY_CHUNKS", chunksCount.toString())
 
         if (chunksCount > 1) {
 
@@ -228,7 +231,7 @@ object DBStorage : Storage<String> {
 
                 if (success) {
 
-                    if (doPut("${key}_${KEY_CHUNK}_$index", chunk)) {
+                    if (doSchedule("${key}_${KEY_CHUNK}_$index", chunk)) {
 
                         if (DEBUG.get()) {
 
@@ -252,7 +255,7 @@ object DBStorage : Storage<String> {
 
             if (DEBUG.get()) Console.log("$tag START Chunk :: No chunks")
 
-            return doPut("${key}_${KEY_CHUNK}_0", chunks[0])
+            return doSchedule("${key}_${KEY_CHUNK}_0", chunks[0])
         }
     }
 
@@ -723,6 +726,69 @@ object DBStorage : Storage<String> {
         }
     }
 
+    private fun doSchedule(key: String?, value: String): Boolean {
+
+        try {
+
+            key?.let {
+
+                schedule[key] = value
+            }
+
+            doProcess()
+
+            return true
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return false
+    }
+
+    private fun doProcess() {
+
+        exec {
+
+            if (processing.get()) {
+
+                return@exec
+            }
+
+            processing.set(true)
+
+            val iterator = schedule.keys.iterator()
+
+            while (iterator.hasNext()) {
+
+                val key = iterator.next()
+                val value = schedule[key]
+
+                value?.let {
+
+                    if (doPut(key, value)) {
+
+                        iterator.remove()
+
+                    } else {
+
+                        Console.error("Put :: Failed :: Key='$key'")
+                    }
+                }
+
+                if (value == null) {
+
+                    iterator.remove()
+                }
+            }
+
+            processing.set(false)
+
+            doProcess()
+        }
+    }
+
     private fun doPut(key: String?, value: String): Boolean {
 
         if (isEmpty(key)) {
@@ -734,12 +800,6 @@ object DBStorage : Storage<String> {
             "$TAG Put :: DO :: $key :: column_key = $columnValue :: column_value = $columnValue ::"
 
         if (DEBUG.get()) Console.log("$tag START")
-
-        if (isOnMainThread()) {
-
-            val e = IllegalArgumentException("Do put from the main thread")
-            Console.error(e)
-        }
 
         val result = AtomicBoolean()
         val cDown = CountDownLatch(1, "DBStorage.doPut(key='$key')")
