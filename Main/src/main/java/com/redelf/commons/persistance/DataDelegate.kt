@@ -2,6 +2,7 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import com.redelf.commons.data.type.PairDataInfo
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
@@ -23,7 +24,6 @@ import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 

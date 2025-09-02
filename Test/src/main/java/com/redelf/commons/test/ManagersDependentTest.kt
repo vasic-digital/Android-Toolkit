@@ -2,12 +2,12 @@ package com.redelf.commons.test
 
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.authentification.Credentials
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer
 import org.junit.Assert
 import org.junit.Before
-import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 

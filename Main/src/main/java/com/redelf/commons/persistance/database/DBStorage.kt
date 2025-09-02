@@ -7,10 +7,9 @@ import android.database.Cursor
 import android.provider.BaseColumns
 import androidx.core.text.isDigitsOnly
 import com.redelf.commons.application.BaseApplication
-import com.redelf.commons.callback.CallbackOperation
-import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isOnMainThread
@@ -26,10 +25,7 @@ import net.zetetic.database.sqlcipher.SQLiteOpenHelper
 import okio.IOException
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentHashMap
-import com.redelf.commons.extensions.CountDownLatch
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 /*

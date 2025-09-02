@@ -1,10 +1,10 @@
 package com.redelf.commons.test
 
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.CountDownLatch
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.Callable
-import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 

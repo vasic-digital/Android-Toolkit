@@ -5,12 +5,12 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean

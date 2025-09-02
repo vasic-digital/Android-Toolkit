@@ -1,7 +1,5 @@
 package com.redelf.commons.applying
 
-import com.redelf.commons.obtain.OnObtain
-
 interface Apply<T, R> :
 
     ApplyAndNotify,

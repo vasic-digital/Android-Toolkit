@@ -3,12 +3,12 @@
 package com.redelf.commons.data
 
 import androidx.room.concurrent.AtomicBoolean
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.sync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.obtain.OnObtain
-import com.redelf.commons.extensions.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
