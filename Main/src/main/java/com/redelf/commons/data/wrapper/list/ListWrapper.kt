@@ -1339,6 +1339,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 val coll = dataAccess?.obtain()
 
+                Console.log("$tag Get collection :: From='$from' :: Count=${coll?.size ?: 0}")
+
                 collectionCallback.onCompleted(coll)
 
             } catch (e: Throwable) {
