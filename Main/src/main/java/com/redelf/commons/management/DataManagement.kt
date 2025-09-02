@@ -2,6 +2,7 @@ package com.redelf.commons.management
 
 import android.content.Context
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.applying.Apply
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
@@ -51,6 +52,7 @@ abstract class DataManagement<T> :
     WritingCheck,
     ObtainAsync<T?>,
     DataPushListening,
+    Apply<T, DataPushResult>,
     Contextual<BaseApplication>,
     ResettableParametrized<String>,
     ResettableAsyncParametrized<String>,
@@ -91,8 +93,10 @@ abstract class DataManagement<T> :
 
     protected abstract val storageKey: String
     protected open val persist: Boolean = true
-    protected open val useTransactions = false // TODO: Make sure that transactions are used by default when polished
-    protected open val checkDataVersionOnSaving = false // TODO: Make sure that data versioning is used by default when polished
+    protected open val useTransactions =
+        false // TODO: Make sure that transactions are used by default when polished
+    protected open val checkDataVersionOnSaving =
+        false // TODO: Make sure that data versioning is used by default when polished
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
@@ -284,7 +288,7 @@ abstract class DataManagement<T> :
             "${getWho()}.obtain",
             "",
 
-        ) { callback ->
+            ) { callback ->
 
             obtain(
 
@@ -511,14 +515,19 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
-    fun pushData(from: String, notify: Boolean): Boolean {
+    override fun apply(from: String): Boolean {
+
+        return apply(from, false)
+    }
+
+    override fun apply(from: String, notify: Boolean): Boolean {
 
         val data = obtain()
 
-        return pushData("pushData(from='$from')", data, notify)
+        return apply("apply(from='$from')", data, notify)
     }
 
-    fun pushData(from: String, data: T?, notify: Boolean): Boolean {
+    override fun apply(from: String, data: T?, notify: Boolean): Boolean {
 
         if (isOnMainThread()) {
 
@@ -529,17 +538,17 @@ abstract class DataManagement<T> :
 
         return sync(
 
-            "${getWho()}.pushData",
+            "${getWho()}.apply",
             from
 
         ) { callback ->
 
-            pushData(data, from, notify, callback)
+            apply(data, from, notify, callback)
 
         }?.success == true
     }
 
-    open fun pushData(
+    override fun apply(
 
         data: T?,
         from: String,
@@ -548,7 +557,7 @@ abstract class DataManagement<T> :
 
     ) {
 
-        val from = "pushData(from='$from').withData.withCallback"
+        val from = "apply(from='$from').withData.withCallback"
 
         if (!isEnabled()) {
 
@@ -562,7 +571,7 @@ abstract class DataManagement<T> :
 
         data?.let {
 
-            doPushData(
+            doApply(
 
                 it,
                 from,
@@ -578,7 +587,7 @@ abstract class DataManagement<T> :
 
             dObject?.let {
 
-                doPushData(
+                doApply(
 
                     it,
                     "$from.dataObjCreated",
@@ -599,7 +608,7 @@ abstract class DataManagement<T> :
         }
     }
 
-    protected fun doPushData(
+    protected fun doApply(
 
         data: T,
         from: String,
@@ -609,7 +618,7 @@ abstract class DataManagement<T> :
 
     ) {
 
-        val from = "doPushData(from='$from')"
+        val from = "doApply(from='$from')"
 
         val callbackWrapper = object : OnObtain<DataPushResult?> {
 
@@ -666,7 +675,7 @@ abstract class DataManagement<T> :
 
                     ) {
 
-                        doPushData(
+                        doApply(
 
                             data,
                             from = "$from.retry.$retry",
@@ -875,7 +884,7 @@ abstract class DataManagement<T> :
 
                             data?.let {
 
-                                doPushData(
+                                doApply(
 
                                     data = it,
 
@@ -1127,7 +1136,7 @@ abstract class DataManagement<T> :
 
                                 data?.let {
 
-                                    parent.pushData(
+                                    parent.apply(
 
                                         it,
 

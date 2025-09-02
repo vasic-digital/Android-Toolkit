@@ -101,7 +101,7 @@ object FirebaseConfigurationManager :
                     val newMap = FirebaseConfiguration()
                     newMap.putAll(all)
 
-                    pushData(
+                    apply(
 
                         newMap,
 

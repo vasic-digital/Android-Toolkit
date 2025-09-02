@@ -148,7 +148,7 @@ class ListWrapperTest : BaseTest() {
 
                                 Assert.assertTrue(added == true)
 
-                                val pushed = manager?.pushData("test", vWrapper, true) == true
+                                val pushed = manager?.apply("test", vWrapper, true) == true
 
                                 Assert.assertTrue(pushed)
 

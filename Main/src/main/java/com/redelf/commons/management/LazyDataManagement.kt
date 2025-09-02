@@ -9,7 +9,6 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.application.OnClearFromRecentService
 import com.redelf.commons.data.Empty
 import com.redelf.commons.extensions.exec
-import com.redelf.commons.extensions.isInBackground
 import com.redelf.commons.extensions.isInForeground
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
@@ -241,7 +240,7 @@ abstract class LazyDataManagement<T> :
 
     override fun isRegistered(subscriber: Context) = registered.get() && terminationRegistered.get()
 
-    override fun pushData(
+    override fun apply(
 
         data: T?,
         from: String,
@@ -250,7 +249,7 @@ abstract class LazyDataManagement<T> :
 
     ) {
 
-        val from = "lazy.pushData(from='$from').withData.withCallback"
+        val from = "lazy.apply(from='$from').withData.withCallback"
 
         if (!isEnabled()) {
 
@@ -274,7 +273,7 @@ abstract class LazyDataManagement<T> :
 
         } else {
 
-            super.pushData(data, from, notify, callback)
+            super.apply(data, from, notify, callback)
         }
     }
 
@@ -363,7 +362,7 @@ abstract class LazyDataManagement<T> :
 
                             overwriteData(it)
 
-                            doPushData(
+                            doApply(
 
                                 it,
                                 "onBackground(from='$from')",

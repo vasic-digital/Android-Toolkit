@@ -152,7 +152,7 @@ class SettingsManager private constructor() :
 
                             it.flags?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 
@@ -208,7 +208,7 @@ class SettingsManager private constructor() :
 
                             it.values?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 
@@ -373,7 +373,7 @@ class SettingsManager private constructor() :
 
                             it.numbers?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 
