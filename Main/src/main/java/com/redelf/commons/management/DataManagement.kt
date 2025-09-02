@@ -3,6 +3,7 @@ package com.redelf.commons.management
 import android.content.Context
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.applying.Apply
+import com.redelf.commons.applying.CommitAsync
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
@@ -54,6 +55,7 @@ abstract class DataManagement<T> :
     DataPushListening,
     Apply<T, DataPushResult>,
     Contextual<BaseApplication>,
+    CommitAsync<DataPushResult>,
     ResettableParametrized<String>,
     ResettableAsyncParametrized<String>,
     ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
@@ -518,6 +520,22 @@ abstract class DataManagement<T> :
     override fun apply(from: String): Boolean {
 
         return apply(from, false)
+    }
+
+    override fun commit(from: String, callback: OnObtain<DataPushResult?>) {
+
+        val toCommit = data
+
+        toCommit?.let {
+
+            doApply(it, "commit(from='$from')", false, 0, callback)
+        }
+
+        if (toCommit == null) {
+
+            val e = IllegalStateException("Data object is null")
+            callback.onFailure(e)
+        }
     }
 
     override fun apply(from: String, notify: Boolean): Boolean {
