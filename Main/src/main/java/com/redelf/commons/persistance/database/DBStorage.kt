@@ -796,8 +796,6 @@ object DBStorage : Storage<String> {
 
                 processing.set(false)
             }
-
-            doProcess()
         }
     }
 

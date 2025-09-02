@@ -453,7 +453,7 @@ abstract class DataManagement<T> :
 
                         current?.let {
 
-                            data = current
+                            assignData(it)
                         }
 
                         if (current == null) {
@@ -982,9 +982,14 @@ abstract class DataManagement<T> :
 
         Console.log("${getLogTag()} Data :: Erase :: START")
 
-        this.data = null
+        assignData(null)
 
         Console.log("${getLogTag()} Data :: Erase :: END")
+    }
+
+    protected open fun assignData(assign: T?) {
+
+        data = assign
     }
 
     protected fun overwriteData(data: T): Boolean {
@@ -1004,7 +1009,7 @@ abstract class DataManagement<T> :
                         "To version = ${data.getVersion()}"
             )
 
-            this.data = data
+            assignData(data)
 
             return true
 
