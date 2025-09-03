@@ -35,7 +35,9 @@ object Storage {
         val result: T? = sync(
 
             ctx,
-            "$ctx.(from='$from')"
+            "$ctx.(from='$from')",
+
+            timeout = 7
 
         ) { callback ->
 
