@@ -222,10 +222,16 @@ open class ComposeRecyclerView @JvmOverloads constructor(
                 items(
                     count = itemCountState,
                     key = { index -> 
-                        // Use stable IDs if adapter supports it
+                        // Use stable IDs if adapter supports it, but ensure uniqueness
                         try {
                             if (adapter.hasStableIds()) {
-                                adapter.getItemId(index)
+                                val itemId = adapter.getItemId(index)
+                                // If item ID is invalid or default (-1), fall back to index
+                                if (itemId != RecyclerView.NO_ID && itemId >= 0) {
+                                    itemId
+                                } else {
+                                    index
+                                }
                             } else {
                                 index
                             }
