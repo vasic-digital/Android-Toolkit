@@ -258,12 +258,17 @@ class CollectionView @JvmOverloads constructor(
             super.onLayout(changed, l, t, r, b)
         } catch (e: IndexOutOfBoundsException) {
             Console.error("SafeRecyclerView :: IndexOutOfBounds in onLayout: ${e.message}")
-            // Attempt recovery by clearing adapter temporarily
+            // Handle GapWorker-related crashes specifically
+            if (e.message?.contains("Invalid view holder adapter position") == true ||
+                e.message?.contains("Inconsistency detected") == true) {
+                // Disable any ongoing prefetch operations
+                layoutManager?.isItemPrefetchEnabled = false
+            }
             recoverFromInconsistentState()
         } catch (e: IllegalStateException) {
             Console.error("SafeRecyclerView :: IllegalState in onLayout: ${e.message}")
-            // Handle inconsistent state
-            if (e.message?.contains("inconsistent state") == true) {
+            if (e.message?.contains("inconsistent state") == true || 
+                e.message?.contains("Invalid view holder adapter position") == true) {
                 recoverFromInconsistentState()
             }
         } catch (e: Throwable) {
@@ -284,6 +289,7 @@ class CollectionView @JvmOverloads constructor(
             Console.error("SafeRecyclerView :: Unexpected error in onDraw: ${e.message}")
         }
     }
+
 
     override fun onTouchEvent(e: MotionEvent?): Boolean {
         if (isDestroyed.get() || e == null) return false
@@ -353,11 +359,16 @@ class CollectionView @JvmOverloads constructor(
             if (destroyed) return
         
             super.setLayoutManager(layout)
+            
+            // Disable prefetching on all layout managers to prevent GapWorker crashes
+            layout?.isItemPrefetchEnabled = false
         } catch (e: Exception) {
             Console.error("SafeRecyclerView :: Set layout manager error: ${e.message}")
             // Fallback to LinearLayoutManager
             try {
-                super.setLayoutManager(LinearLayoutManager(context))
+                val fallbackLM = LinearLayoutManager(context)
+                fallbackLM.isItemPrefetchEnabled = false
+                super.setLayoutManager(fallbackLM)
             } catch (fallbackEx: Exception) {
                 Console.error("SafeRecyclerView :: Fallback layout manager failed: ${fallbackEx.message}")
             }
@@ -407,6 +418,53 @@ class CollectionView @JvmOverloads constructor(
             super.stopScroll()
         } catch (e: Exception) {
             Console.error("SafeRecyclerView :: Stop scroll error: ${e.message}")
+        }
+    }
+
+    override fun scrollBy(x: Int, y: Int) {
+        if (isDestroyed.get()) return
+        
+        try {
+            // Validate adapter state before scrolling
+            val adapter = this.adapter
+            if (adapter == null || adapter.itemCount == 0) {
+                return
+            }
+            
+            super.scrollBy(x, y)
+        } catch (e: IndexOutOfBoundsException) {
+            Console.error("SafeRecyclerView :: ScrollBy IndexOutOfBounds: ${e.message}")
+            // Try to stop any ongoing scroll to recover
+            try {
+                super.stopScroll()
+            } catch (ignored: Exception) {}
+        } catch (e: IllegalStateException) {
+            Console.error("SafeRecyclerView :: ScrollBy IllegalState: ${e.message}")
+            try {
+                super.stopScroll()
+            } catch (ignored: Exception) {}
+        } catch (e: Exception) {
+            Console.error("SafeRecyclerView :: ScrollBy unexpected error: ${e.message}")
+        }
+    }
+
+    override fun smoothScrollBy(dx: Int, dy: Int) {
+        if (isDestroyed.get()) return
+        
+        try {
+            // Validate adapter state before scrolling
+            val adapter = this.adapter
+            if (adapter == null || adapter.itemCount == 0) {
+                return
+            }
+            
+            super.smoothScrollBy(dx, dy)
+        } catch (e: IndexOutOfBoundsException) {
+            Console.error("SafeRecyclerView :: SmoothScrollBy IndexOutOfBounds: ${e.message}")
+        } catch (e: IllegalStateException) {
+            Console.error("SafeRecyclerView :: SmoothScrollBy IllegalState: ${e.message}")
+        } catch (e: Exception) {
+            Console.error("SafeRecyclerView :: SmoothScrollBy unexpected error: ${e.message}")
         }
     }
 
