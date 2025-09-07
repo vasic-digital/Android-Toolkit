@@ -37,6 +37,7 @@ class SafeRecyclerView @JvmOverloads constructor(
     private val isProcessingUpdates = AtomicBoolean(false)
     private val pendingNotifyDataSetChanged = AtomicBoolean(false)
     private var lastKnownItemCount = AtomicInteger(0)
+    private val isObserverRegistered = AtomicBoolean(false)
     
     // Initialize handler and queue after atomic fields
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -144,8 +145,9 @@ class SafeRecyclerView @JvmOverloads constructor(
         }
         
         private fun isValidRange(position: Int, count: Int): Boolean {
-            val adapter = this@SafeRecyclerView.adapter
-            return adapter != null && position >= 0 && count > 0 && position < adapter.itemCount
+            val adapter = this@SafeRecyclerView.adapter ?: return false
+            val itemCount = try { adapter.itemCount } catch (e: Exception) { return false }
+            return position >= 0 && count > 0 && position < itemCount && (position + count) <= itemCount
         }
         
         private fun fallbackToFullUpdate() {
@@ -220,7 +222,7 @@ class SafeRecyclerView @JvmOverloads constructor(
                     // Process all queued updates in one frame to prevent flickering
                     val updates = mutableListOf<() -> Unit>()
                     var update = updateQueue.poll()
-                    while (update != null && updates.size < 50) { // Limit batch size
+                    while (update != null && updates.size < 100) { // Increased batch size for better performance
                         updates.add(update)
                         update = updateQueue.poll()
                     }
@@ -238,7 +240,9 @@ class SafeRecyclerView @JvmOverloads constructor(
                 isProcessingUpdates.set(false)
                 // Check if there are more updates to process
                 if (!updateQueue.isEmpty() && !isDestroyed.get()) {
-                    mainHandler.postDelayed({ processUpdateQueue() }, 16) // Next frame
+                    mainHandler.postDelayed({ 
+                        if (!isDestroyed.get()) processUpdateQueue() 
+                    }, 16) // Next frame
                 }
             }
         }
@@ -323,12 +327,16 @@ class SafeRecyclerView @JvmOverloads constructor(
             if (destroyed) return
         
             // Unregister old adapter observer
-            this.adapter?.unregisterAdapterDataObserver(safeDataObserver)
+            if (isObserverRegistered.getAndSet(false)) {
+                this.adapter?.unregisterAdapterDataObserver(safeDataObserver)
+            }
             
             super.setAdapter(adapter)
             
             // Register new adapter observer
-            adapter?.registerAdapterDataObserver(safeDataObserver)
+            if (adapter != null && isObserverRegistered.compareAndSet(false, true)) {
+                adapter.registerAdapterDataObserver(safeDataObserver)
+            }
             
         } catch (e: Exception) {
             Console.error("SafeRecyclerView :: Set adapter error: ${e.message}")
@@ -478,7 +486,8 @@ class SafeRecyclerView @JvmOverloads constructor(
                     super.setAdapter(currentAdapter)
                     
                     // Restore scroll position if valid
-                    if (scrollPosition >= 0 && scrollPosition < (currentAdapter.itemCount)) {
+                    val itemCount = try { currentAdapter.itemCount } catch (e: Exception) { 0 }
+                    if (scrollPosition >= 0 && scrollPosition < itemCount) {
                         try {
                             scrollToPosition(scrollPosition)
                         } catch (e: Exception) {
@@ -561,7 +570,9 @@ class SafeRecyclerView @JvmOverloads constructor(
             pendingNotifyDataSetChanged.set(false)
             
             // Unregister adapter observer safely
-            adapter?.unregisterAdapterDataObserver(safeDataObserver)
+            if (isObserverRegistered.getAndSet(false)) {
+                adapter?.unregisterAdapterDataObserver(safeDataObserver)
+            }
             
             // Clear animations and layout state
             clearAnimation()
@@ -584,11 +595,14 @@ class SafeRecyclerView @JvmOverloads constructor(
         try {
             super.onAttachedToWindow()
             
-            // Re-register adapter observer if adapter exists
-            adapter?.registerAdapterDataObserver(safeDataObserver)
+            // Re-register adapter observer if adapter exists and not already registered
+            val currentAdapter = adapter
+            if (currentAdapter != null && isObserverRegistered.compareAndSet(false, true)) {
+                currentAdapter.registerAdapterDataObserver(safeDataObserver)
+            }
             
             // Update last known item count
-            lastKnownItemCount.set(adapter?.itemCount ?: 0)
+            lastKnownItemCount.set(currentAdapter?.itemCount ?: 0)
             
         } catch (e: Exception) {
             Console.error("SafeRecyclerView :: Attach to window error: ${e.message}")
@@ -606,7 +620,9 @@ class SafeRecyclerView @JvmOverloads constructor(
             pendingNotifyDataSetChanged.set(false)
             isLayoutFrozen.set(false)
             mainHandler.removeCallbacksAndMessages(null)
-            adapter?.unregisterAdapterDataObserver(safeDataObserver)
+            if (isObserverRegistered.getAndSet(false)) {
+                adapter?.unregisterAdapterDataObserver(safeDataObserver)
+            }
         } catch (e: Exception) {
             Console.error("SafeRecyclerView :: Cleanup error: ${e.message}")
         }
