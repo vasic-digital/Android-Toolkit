@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
 >
 
-    <com.redelf.commons.ui.SafeRecyclerView
+    <com.redelf.commons.ui.CollectionView
 
         android:id="@+id/services"
         android:layout_width="match_parent"

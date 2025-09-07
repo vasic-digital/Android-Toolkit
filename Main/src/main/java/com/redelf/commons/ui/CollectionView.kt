@@ -14,9 +14,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * SafeRecyclerView - A crash-resistant RecyclerView that handles all common failure scenarios
+ * A crash-resistant RecyclerView that handles all common failure scenarios
  * 
  * Features:
+ *
  * - No crashes when invalid state occurs
  * - Thread-safe adapter operations
  * - Automatic error recovery
@@ -24,8 +25,9 @@ import java.util.concurrent.atomic.AtomicInteger
  * - IndexOutOfBounds protection
  * - Inconsistent state handling
  * - Memory leak prevention
+ *
  */
-class SafeRecyclerView @JvmOverloads constructor(
+class CollectionView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -145,7 +147,7 @@ class SafeRecyclerView @JvmOverloads constructor(
         }
         
         private fun isValidRange(position: Int, count: Int): Boolean {
-            val adapter = this@SafeRecyclerView.adapter ?: return false
+            val adapter = this@CollectionView.adapter ?: return false
             val itemCount = try { adapter.itemCount } catch (e: Exception) { return false }
             return position >= 0 && count > 0 && position < itemCount && (position + count) <= itemCount
         }

@@ -17,24 +17,24 @@ import org.junit.Assert.*
 class SafeRecyclerViewTest {
 
     private lateinit var context: Context
-    private lateinit var safeRecyclerView: SafeRecyclerView
+    private lateinit var collectionView: CollectionView
     
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        safeRecyclerView = SafeRecyclerView(context)
+        collectionView = CollectionView(context)
     }
 
     @Test
     fun testSafeRecyclerViewInitialization() {
-        assertNotNull("SafeRecyclerView should be initialized", safeRecyclerView)
-        assertTrue("Initial item count should be 0", safeRecyclerView.getSafeItemCount() == 0)
+        assertNotNull("SafeRecyclerView should be initialized", collectionView)
+        assertTrue("Initial item count should be 0", collectionView.getSafeItemCount() == 0)
     }
 
     @Test
     fun testSafeItemCount() {
         // Test with null adapter
-        assertEquals("Safe item count should be 0 with null adapter", 0, safeRecyclerView.getSafeItemCount())
+        assertEquals("Safe item count should be 0 with null adapter", 0, collectionView.getSafeItemCount())
         
         // Test with mock adapter
         val mockAdapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -48,14 +48,14 @@ class SafeRecyclerViewTest {
             override fun getItemCount(): Int = itemCount
         }
         
-        safeRecyclerView.adapter = mockAdapter
-        assertEquals("Safe item count should match adapter item count", 5, safeRecyclerView.getSafeItemCount())
+        collectionView.adapter = mockAdapter
+        assertEquals("Safe item count should match adapter item count", 5, collectionView.getSafeItemCount())
     }
 
     @Test
     fun testIsValidPosition() {
         // Test with null adapter
-        assertFalse("Position should be invalid with null adapter", safeRecyclerView.isValidPosition(0))
+        assertFalse("Position should be invalid with null adapter", collectionView.isValidPosition(0))
         
         // Test with mock adapter
         val mockAdapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -67,23 +67,23 @@ class SafeRecyclerViewTest {
             override fun getItemCount(): Int = 3
         }
         
-        safeRecyclerView.adapter = mockAdapter
+        collectionView.adapter = mockAdapter
         
-        assertTrue("Position 0 should be valid", safeRecyclerView.isValidPosition(0))
-        assertTrue("Position 1 should be valid", safeRecyclerView.isValidPosition(1))
-        assertTrue("Position 2 should be valid", safeRecyclerView.isValidPosition(2))
-        assertFalse("Position 3 should be invalid", safeRecyclerView.isValidPosition(3))
-        assertFalse("Negative position should be invalid", safeRecyclerView.isValidPosition(-1))
+        assertTrue("Position 0 should be valid", collectionView.isValidPosition(0))
+        assertTrue("Position 1 should be valid", collectionView.isValidPosition(1))
+        assertTrue("Position 2 should be valid", collectionView.isValidPosition(2))
+        assertFalse("Position 3 should be invalid", collectionView.isValidPosition(3))
+        assertFalse("Negative position should be invalid", collectionView.isValidPosition(-1))
     }
 
     @Test
     fun testSafeLayoutManager() {
         // Test setting layout manager doesn't crash
-        safeRecyclerView.layoutManager = LinearLayoutManager(context)
-        assertNotNull("Layout manager should be set", safeRecyclerView.layoutManager)
+        collectionView.layoutManager = LinearLayoutManager(context)
+        assertNotNull("Layout manager should be set", collectionView.layoutManager)
         
         // Test setting null layout manager
-        safeRecyclerView.layoutManager = null
+        collectionView.layoutManager = null
         // Should not crash
     }
 
@@ -98,14 +98,14 @@ class SafeRecyclerViewTest {
             override fun getItemCount(): Int = 10
         }
         
-        safeRecyclerView.layoutManager = LinearLayoutManager(context)
-        safeRecyclerView.adapter = mockAdapter
+        collectionView.layoutManager = LinearLayoutManager(context)
+        collectionView.adapter = mockAdapter
         
         // Test safe scroll operations - should not crash
-        safeRecyclerView.scrollToPosition(5)
-        safeRecyclerView.smoothScrollToPosition(3)
-        safeRecyclerView.scrollToPosition(-1) // Invalid position - should not crash
-        safeRecyclerView.scrollToPosition(100) // Out of bounds - should not crash
+        collectionView.scrollToPosition(5)
+        collectionView.smoothScrollToPosition(3)
+        collectionView.scrollToPosition(-1) // Invalid position - should not crash
+        collectionView.scrollToPosition(100) // Out of bounds - should not crash
     }
 
     @Test
@@ -119,12 +119,12 @@ class SafeRecyclerViewTest {
             override fun getItemCount(): Int = 5
         }
         
-        safeRecyclerView.adapter = mockAdapter
+        collectionView.adapter = mockAdapter
         
         // Test safe refresh operations - should not crash
-        safeRecyclerView.safeRefresh()
-        safeRecyclerView.safeNotifyDataSetChanged()
-        safeRecyclerView.safeForcedLayout()
+        collectionView.safeRefresh()
+        collectionView.safeNotifyDataSetChanged()
+        collectionView.safeForcedLayout()
     }
 
     @Test
@@ -138,13 +138,13 @@ class SafeRecyclerViewTest {
             override fun getItemCount(): Int = 5
         }
         
-        safeRecyclerView.adapter = mockAdapter
+        collectionView.adapter = mockAdapter
         
         // Test cleanup doesn't crash
-        safeRecyclerView.cleanup()
+        collectionView.cleanup()
         
         // After cleanup, operations should be safe
-        assertEquals("Item count should be 0 after cleanup", 0, safeRecyclerView.getSafeItemCount())
-        assertFalse("Position should be invalid after cleanup", safeRecyclerView.isValidPosition(0))
+        assertEquals("Item count should be 0 after cleanup", 0, collectionView.getSafeItemCount())
+        assertFalse("Position should be invalid after cleanup", collectionView.isValidPosition(0))
     }
 }
