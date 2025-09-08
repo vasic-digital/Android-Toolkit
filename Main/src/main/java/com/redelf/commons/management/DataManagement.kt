@@ -289,7 +289,7 @@ abstract class DataManagement<T> :
 
             "${getWho()}.obtain",
             "",
-            timeout = 7
+            timeout = 3
 
             ) { callback ->
 

@@ -1,6 +1,5 @@
 package com.redelf.commons.extensions
 
-import android.animation.Animator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.text.Html
@@ -8,7 +7,6 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.view.ViewTreeObserver
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.bitmapTransform
@@ -19,6 +17,11 @@ import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.logging.Console
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import java.util.concurrent.ConcurrentHashMap
+
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.widget.TextView
+
 
 data class ColoredWord @JsonCreator constructor(
 
@@ -225,7 +228,7 @@ fun RecyclerView.notifyDatasetChangedWithFade(
     duration: Long = 200L,
     hasItemChanged: (position: Int) -> Boolean,
 
-) {
+    ) {
 
     val thisOne = hashCode()
 
@@ -326,4 +329,132 @@ fun RecyclerView.notifyDatasetChangedWithFade(
         refreshingRecyclerViews[thisOne] = false
 
     }, duration)
+}
+
+fun TextView.setTextWithFadeEffect(
+
+    newText: String,
+    duration: Long = 100L,
+    onAnimationComplete: (() -> Unit)? = null
+
+) {
+
+    if (text.toString() == newText) {
+
+        animate()
+            .alpha(1f)
+            .setDuration(0)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    text = newText
+                    animate()
+                        .alpha(1f)
+                        .setDuration(0)
+                        .setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                onAnimationComplete?.invoke()
+                            }
+                        })
+                        .start()
+                }
+            })
+            .start()
+
+        postDelayed({
+
+            text = newText
+
+        }, 50)
+
+        return
+    }
+
+    animate()
+        .alpha(0f)
+        .setDuration(duration / 2)
+        .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                text = newText
+                animate()
+                    .alpha(1f)
+                    .setDuration(duration / 2)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationComplete?.invoke()
+                        }
+                    })
+                    .start()
+            }
+        })
+        .start()
+
+    postDelayed({
+
+        text = newText
+
+    }, duration + 50)
+}
+
+fun TextView.setTextWithFadeEffect(
+
+    newText: CharSequence,
+    duration: Long = 100L,
+    onAnimationComplete: (() -> Unit)? = null
+
+) {
+
+    if (text.toString() == newText.toString()) {
+
+        animate()
+            .alpha(1f)
+            .setDuration(0)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    text = newText
+                    animate()
+                        .alpha(1f)
+                        .setDuration(0)
+                        .setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                onAnimationComplete?.invoke()
+                            }
+                        })
+                        .start()
+                }
+            })
+            .start()
+
+        postDelayed({
+
+            text = newText
+
+        }, 50)
+
+        return
+    }
+
+    animate()
+        .alpha(0f)
+        .setDuration(duration / 2)
+        .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                text = newText
+                animate()
+                    .alpha(1f)
+                    .setDuration(duration / 2)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationComplete?.invoke()
+                        }
+                    })
+                    .start()
+            }
+        })
+        .start()
+
+    postDelayed({
+
+        text = newText
+
+    }, duration + 50)
 }
