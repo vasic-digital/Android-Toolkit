@@ -385,6 +385,7 @@ fun TextView.setTextWithFadeEffect(
     onAnimationComplete: (() -> Unit)? = null
 
 ) {
+
     // Cancel any existing animations to prevent stacking
     animate().cancel()
     
