@@ -334,23 +334,26 @@ fun RecyclerView.notifyDatasetChangedWithFade(
 
 fun TextView.setTextWithFadeEffect(
 
-    newText: String,
+    new: String?,
     duration: Long = 150L,
     onAnimationComplete: (() -> Unit)? = null
 
 ) {
+
     // Cancel any existing animations to prevent stacking
     animate().cancel()
     
     // Ensure alpha is 1f to prevent invisible text
     if (alpha == 0f) {
+
         alpha = 1f
     }
 
-    if (text.toString() == newText) {
+    if (text.toString() == (new ?: "")) {
+
         // Text is the same, just ensure visibility and call completion
         alpha = 1f
-        text = newText
+        text = new ?: ""
         onAnimationComplete?.invoke()
         return
     }
@@ -360,7 +363,7 @@ fun TextView.setTextWithFadeEffect(
         .setDuration(duration / 2)
         .setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                text = newText
+                text = new ?: ""
                 animate()
                     .alpha(1f)
                     .setDuration(duration / 2)
@@ -377,7 +380,7 @@ fun TextView.setTextWithFadeEffect(
 
 fun TextView.setTextWithFadeEffect(
 
-    newText: CharSequence,
+    new: CharSequence?,
     duration: Long = 150L,
     onAnimationComplete: (() -> Unit)? = null
 
@@ -387,13 +390,15 @@ fun TextView.setTextWithFadeEffect(
     
     // Ensure alpha is 1f to prevent invisible text
     if (alpha == 0f) {
+
         alpha = 1f
     }
 
-    if (text.toString() == newText.toString()) {
+    if (text.toString() == (new ?: "").toString()) {
+
         // Text is the same, just ensure visibility and call completion
         alpha = 1f
-        text = newText
+        text = new ?: ""
         onAnimationComplete?.invoke()
         return
     }
@@ -403,7 +408,7 @@ fun TextView.setTextWithFadeEffect(
         .setDuration(duration / 2)
         .setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                text = newText
+                text = new ?: ""
                 animate()
                     .alpha(1f)
                     .setDuration(duration / 2)
