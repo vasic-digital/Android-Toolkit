@@ -334,38 +334,23 @@ fun RecyclerView.notifyDatasetChangedWithFade(
 fun TextView.setTextWithFadeEffect(
 
     newText: String,
-    duration: Long = 100L,
+    duration: Long = 150L,
     onAnimationComplete: (() -> Unit)? = null
 
 ) {
+    // Cancel any existing animations to prevent stacking
+    animate().cancel()
+    
+    // Ensure alpha is 1f to prevent invisible text
+    if (alpha == 0f) {
+        alpha = 1f
+    }
 
     if (text.toString() == newText) {
-
-        animate()
-            .alpha(1f)
-            .setDuration(0)
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    text = newText
-                    animate()
-                        .alpha(1f)
-                        .setDuration(0)
-                        .setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationEnd(animation: Animator) {
-                                onAnimationComplete?.invoke()
-                            }
-                        })
-                        .start()
-                }
-            })
-            .start()
-
-        postDelayed({
-
-            text = newText
-
-        }, 50)
-
+        // Text is the same, just ensure visibility and call completion
+        alpha = 1f
+        text = newText
+        onAnimationComplete?.invoke()
         return
     }
 
@@ -387,49 +372,28 @@ fun TextView.setTextWithFadeEffect(
             }
         })
         .start()
-
-    postDelayed({
-
-        text = newText
-
-    }, duration + 50)
 }
 
 fun TextView.setTextWithFadeEffect(
 
     newText: CharSequence,
-    duration: Long = 100L,
+    duration: Long = 150L,
     onAnimationComplete: (() -> Unit)? = null
 
 ) {
+    // Cancel any existing animations to prevent stacking
+    animate().cancel()
+    
+    // Ensure alpha is 1f to prevent invisible text
+    if (alpha == 0f) {
+        alpha = 1f
+    }
 
     if (text.toString() == newText.toString()) {
-
-        animate()
-            .alpha(1f)
-            .setDuration(0)
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    text = newText
-                    animate()
-                        .alpha(1f)
-                        .setDuration(0)
-                        .setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationEnd(animation: Animator) {
-                                onAnimationComplete?.invoke()
-                            }
-                        })
-                        .start()
-                }
-            })
-            .start()
-
-        postDelayed({
-
-            text = newText
-
-        }, 50)
-
+        // Text is the same, just ensure visibility and call completion
+        alpha = 1f
+        text = newText
+        onAnimationComplete?.invoke()
         return
     }
 
@@ -451,10 +415,4 @@ fun TextView.setTextWithFadeEffect(
             }
         })
         .start()
-
-    postDelayed({
-
-        text = newText
-
-    }, duration + 50)
 }
