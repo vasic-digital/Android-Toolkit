@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.widget.TextView
+import android.view.View
 
 
 data class ColoredWord @JsonCreator constructor(
@@ -403,6 +404,43 @@ fun TextView.setTextWithFadeEffect(
         .setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 text = newText
+                animate()
+                    .alpha(1f)
+                    .setDuration(duration / 2)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationComplete?.invoke()
+                        }
+                    })
+                    .start()
+            }
+        })
+        .start()
+}
+
+fun View.setViewWithFadeEffect(
+    
+    onDataChange: () -> Unit,
+    duration: Long = 150L,
+    onAnimationComplete: (() -> Unit)? = null
+
+) {
+
+    // Cancel any existing animations to prevent stacking
+    animate().cancel()
+    
+    // Ensure alpha is 1f to prevent invisible view
+    if (alpha == 0f) {
+
+        alpha = 1f
+    }
+
+    animate()
+        .alpha(0f)
+        .setDuration(duration / 2)
+        .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                onDataChange()
                 animate()
                     .alpha(1f)
                     .setDuration(duration / 2)
