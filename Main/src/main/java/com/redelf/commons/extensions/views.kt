@@ -422,6 +422,7 @@ fun View.setViewWithFadeEffect(
     
     onDataChange: () -> Unit,
     duration: Long = 150L,
+    zeroAlpha: Float = 0f,
     onAnimationComplete: (() -> Unit)? = null
 
 ) {
@@ -430,13 +431,13 @@ fun View.setViewWithFadeEffect(
     animate().cancel()
     
     // Ensure alpha is 1f to prevent invisible view
-    if (alpha == 0f) {
+    if (alpha == zeroAlpha || alpha == 0f) {
 
         alpha = 1f
     }
 
     animate()
-        .alpha(0f)
+        .alpha(zeroAlpha)
         .setDuration(duration / 2)
         .setListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
