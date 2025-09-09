@@ -622,7 +622,8 @@ abstract class DataManagement<T> :
 
                 Console.error("${getLogTag()} Push data :: $msg")
 
-                callback?.onFailure(IllegalStateException(msg))
+                val result = DataPushResult("$from.dataObjCreationFailed", false)
+                callback?.onCompleted(result)
             }
         }
     }
@@ -708,6 +709,9 @@ abstract class DataManagement<T> :
 
                     val e = IllegalArgumentException("Data push failed, manager is busy")
                     recordException(e)
+                    
+                    onDataPushed(err = e)
+                    callbackWrapper.onFailure(e)
                 }
 
                 return@exec
@@ -931,7 +935,7 @@ abstract class DataManagement<T> :
                             if (data == null) {
 
                                 Console.error("$tag Data object creation failed")
-                                completeReset(false)
+                                callback.onFailure(IllegalStateException("Data object creation failed during reset"))
                                 return@exec
                             }
                         }
