@@ -934,30 +934,51 @@ abstract class DataManagement<T> :
 
                             if (data == null) {
 
-                                Console.error("$tag Data object creation failed")
-                                callback.onFailure(IllegalStateException("Data object creation failed during reset"))
+                                Console.warning("$tag Data object creation failed, proceeding with storage deletion only")
+                                
+                                if (s != null) {
+                                    s.delete(storageKey, object : OnObtain<Boolean?> {
+                                        override fun onCompleted(data: Boolean?) {
+                                            completeReset(true)
+                                        }
+                                        override fun onFailure(error: Throwable) {
+                                            callback.onFailure(error)
+                                        }
+                                    })
+                                } else {
+                                    Console.warning("$tag No storage available, completing reset with limited success")
+                                    completeReset(false)
+                                }
                                 return@exec
                             }
                         }
 
                     } else {
 
-                        s?.delete(
+                        if (s != null) {
 
-                            storageKey,
+                            s.delete(
 
-                            object : OnObtain<Boolean?> {
+                                storageKey,
 
-                                override fun onCompleted(data: Boolean?) {
+                                object : OnObtain<Boolean?> {
 
-                                    completeReset(true)
-                                }
+                                    override fun onCompleted(data: Boolean?) {
 
-                                override fun onFailure(error: Throwable) {
+                                        completeReset(true)
+                                    }
 
-                                    callback.onFailure(error)
-                                }
-                            })
+                                    override fun onFailure(error: Throwable) {
+
+                                        callback.onFailure(error)
+                                    }
+                                })
+
+                        } else {
+
+                            Console.warning("$tag No storage available, completing reset anyway")
+                            completeReset(true)
+                        }
                     }
 
                 } else {
