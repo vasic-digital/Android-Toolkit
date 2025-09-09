@@ -334,11 +334,19 @@ fun RecyclerView.notifyDatasetChangedWithFade(
 
 fun TextView.setTextWithFadeEffect(
 
+    enabled: Boolean,
     new: String?,
     duration: Long = 150L,
     onAnimationComplete: (() -> Unit)? = null
 
 ) {
+
+    if (!enabled) {
+
+        text = new ?: ""
+        onAnimationComplete?.invoke()
+        return
+    }
 
     // Cancel any existing animations to prevent stacking
     animate().cancel()
@@ -380,11 +388,19 @@ fun TextView.setTextWithFadeEffect(
 
 fun TextView.setTextWithFadeEffect(
 
+    enabled: Boolean,
     new: CharSequence?,
     duration: Long = 150L,
     onAnimationComplete: (() -> Unit)? = null
 
 ) {
+
+    if (!enabled) {
+
+        text = new ?: ""
+        onAnimationComplete?.invoke()
+        return
+    }
 
     // Cancel any existing animations to prevent stacking
     animate().cancel()
@@ -425,13 +441,25 @@ fun TextView.setTextWithFadeEffect(
 }
 
 fun View.setViewWithFadeEffect(
-    
+
+    enabled: Boolean,
     onDataChange: () -> Unit,
     duration: Long = 150L,
     zeroAlpha: Float = 0f,
     onAnimationComplete: (() -> Unit)? = null
 
 ) {
+
+    if (!enabled) {
+
+        onDataChange()
+
+        if (onAnimationComplete != null) {
+
+            onAnimationComplete()
+        }
+        return
+    }
 
     // Cancel any existing animations to prevent stacking
     animate().cancel()
