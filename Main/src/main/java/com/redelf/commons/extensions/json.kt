@@ -1,23 +1,23 @@
 package com.redelf.commons.extensions
 
-import com.google.gson.Gson
 import com.redelf.commons.logging.Console
+import com.redelf.commons.persistance.StreamingJsonParser
 
-// FIXME: Shall use GsonParser with custom serialization support
-private val gson = Gson()
+// High-performance streaming JSON parser - replaced unsafe Gson
+private val streamingParser = StreamingJsonParser.instantiate(
+    "json-extensions",
+    null,
+    false
+)
 
 fun json(what: Any): String {
-
-    try {
-
-        return gson.toJson(what)
-
+    return try {
+        streamingParser.toJson(what) ?: ""
     } catch (e: Throwable) {
-
+        Console.error("JSON serialization failed: ${e.message}")
         Console.error(e)
+        ""
     }
-
-    return ""
 }
 
 fun Any.toJson(): String {

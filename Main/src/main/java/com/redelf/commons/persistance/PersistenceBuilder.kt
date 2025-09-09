@@ -3,6 +3,7 @@ package com.redelf.commons.persistance
 import android.content.Context
 import android.text.TextUtils
 import com.google.gson.GsonBuilder
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
@@ -61,32 +62,36 @@ class PersistenceBuilder(
     }
 
     private val pCallback = object : Obtain<GsonBuilder> {
-
         override fun obtain(): GsonBuilder {
-
-            /*
-                TODO: Bring the Jackson support
-            */
             return GsonBuilder()
+        }
+    }
+    
+    private val streamingCallback = object : Obtain<ObjectMapper> {
+        override fun obtain(): ObjectMapper {
+            // High-performance Jackson configuration
+            return ObjectMapper().apply {
+                configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+                configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
+            }
         }
     }
 
     private var parser: Obtain<Parser> = object : Obtain<Parser> {
-
-        override fun obtain() = GsonParser.instantiate(
-
+        override fun obtain() = StreamingJsonParser.instantiate(
             storageTag,
             encryption,
             true,
-            pCallback
+            streamingCallback
         )
     }
 
     var doLog: Boolean = false
-    var storage: Storage<String> = DBStorage
+    var storage: Storage<String> = DBStorage.getInstance(context)
     var encryption: Encryption<String>? = null
-    var converter: Converter? = DataConverter(parser)
-    var serializer: Serializer? = DataSerializer(parser)
+    var converter: Converter? = SecureDataConverter(parser)
+    var serializer: Serializer? = SecureDataSerializer(parser)
 
     fun setDoLog(doLog: Boolean): PersistenceBuilder {
 

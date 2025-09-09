@@ -21,6 +21,31 @@ import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * @deprecated This enum has critical security vulnerabilities:
+ * - Memory leaks from static executors never being shut down
+ * - GlobalScope usage causing memory leaks and uncontrolled coroutines
+ * - Race conditions in capacity checking (TOCTOU issues)
+ * - No timeout protections on blocking operations like runBlocking
+ * - Silent task dropping when executor is full
+ * - Thread.sleep() blocking thread pool threads inefficiently
+ * - No proper resource cleanup or lifecycle management
+ * 
+ * Use SecureExecutor instead which provides:
+ * - Proper executor shutdown and resource management
+ * - Bounded coroutine scopes instead of GlobalScope
+ * - Timeout protections on all operations
+ * - Thread-safe capacity checking
+ * - Comprehensive error handling and logging
+ * - Automatic resource cleanup
+ * 
+ * @see SecureExecutor
+ */
+@Deprecated(
+    message = "Critical security vulnerabilities: memory leaks, GlobalScope usage, race conditions, no timeouts. Use SecureExecutor instead.",
+    replaceWith = ReplaceWith("SecureExecutor.MAIN", "com.redelf.commons.execution.SecureExecutor"),
+    level = DeprecationLevel.WARNING
+)
 enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
     MAIN {

@@ -1,9 +1,9 @@
 package com.redelf.commons.interprocess
 
 import android.content.Intent
-import com.google.gson.Gson
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.logging.Console
+import com.redelf.commons.persistance.StreamingJsonParser
 import com.redelf.commons.processing.Process
 
 abstract class InterprocessProcessor : Process<Intent> {
@@ -20,8 +20,13 @@ abstract class InterprocessProcessor : Process<Intent> {
 
         try {
 
-            // FIXME: Shall use GsonParser with custom serialization support
-            val ipcData: InterprocessData? = Gson().fromJson(data, InterprocessData::class.java)
+            // Using high-performance StreamingJsonParser for safe deserialization
+            val streamingParser = StreamingJsonParser.instantiate(
+                "interprocess-processor",
+                null,
+                false
+            )
+            val ipcData: InterprocessData? = streamingParser.fromJson(data, InterprocessData::class.java)
 
             if (ipcData == null) {
 

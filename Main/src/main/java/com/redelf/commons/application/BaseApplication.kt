@@ -1222,8 +1222,13 @@ abstract class BaseApplication :
 
         val intent = Intent()
         val data = InterprocessData(function, content)
-        // FIXME: Shall use GsonParser with custom serialization support
-        val json = Gson().toJson(data)
+        // Using high-performance StreamingJsonParser for safe serialization
+        val streamingParser = com.redelf.commons.persistance.StreamingJsonParser.instantiate(
+            "interprocess-data",
+            null,
+            false
+        )
+        val json = streamingParser.toJson(data) ?: "{}"
 
         intent.setAction(action)
 

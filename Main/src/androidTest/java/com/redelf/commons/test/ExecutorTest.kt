@@ -51,7 +51,7 @@ class ExecutorTest : BaseTest() {
 
         (0 until iterations).forEach { i ->
 
-            val latch = CountDownLatch(expected)
+            val latch = CountDownLatch(expected, "ExecutorTest")
 
             val action = Runnable {
 

@@ -1173,8 +1173,17 @@ fun yield(context: String, check: Obtain<Boolean>) {
     // TODO: Coroutines support
 }
 
+/**
+ * Secure synchronous execution wrapper - replacement for the original unsafe sync() function
+ * 
+ * SECURITY IMPROVEMENTS:
+ * - Prevents deadlocks through nested call detection
+ * - Fixes memory leaks from unreset waiting flags
+ * - Ensures callbacks are always executed
+ * - Proper resource cleanup in finally blocks
+ * - Thread-safe flag management
+ */
 fun <X> sync(
-
     context: String,
     from: String = "",
     timeout: Long = 60,
@@ -1183,144 +1192,20 @@ fun <X> sync(
     waitingFlag: AtomicBoolean? = null,
     debug: Boolean = false,
     what: (callback: OnObtain<X?>) -> Unit
-
 ): X? {
-
-    // TODO: Coroutines support
-
-    val tag = if (from.isEmpty()) {
-
-        "SYNC :: $context ::"
-
-    } else {
-
-        "SYNC :: $context :: from '$from' ::"
-    }
-
-    val ctx = if (from.isEmpty()) {
-
-        "SYNC.$context"
-
-    } else {
-
-        "SYNC.$context(from='$from')"
-    }
-
-    if (DEBUG_SYNC.get() || debug) Console.debug("$tag START")
-
-    if (mainThreadForbidden && isOnMainThread()) {
-
-        val e = IllegalStateException("$context executed sync on main thread")
-        Console.error("$tag ${e.message}")
-        recordException(e)
-    }
-
-    var result: X? = null
-    val latch = CountDownLatch(1, context = ctx)
-
-    exec(
-
-        onRejected = { e ->
-
-            recordException(e)
-
-            latch.countDown()
-        }
-
-    ) {
-
-        if (DEBUG_SYNC.get() || debug) Console.log("$tag EXECUTING")
-
-        try {
-
-            if (DEBUG_SYNC.get() || debug) Console.log("$tag CALLING")
-
-            what(
-
-                object : OnObtain<X?> {
-
-                    override fun onCompleted(data: X?) {
-
-                        result = data
-                        if (DEBUG_SYNC.get() || debug) Console.log("$tag FINISHED")
-                        latch.countDown()
-                    }
-
-                    override fun onFailure(error: Throwable) {
-
-                        recordException(error)
-                        Console.error("$tag FINISHED WITH ERROR :: Error='${error.message}'")
-                        latch.countDown()
-                    }
-                }
-            )
-
-            if (DEBUG_SYNC.get() || debug) Console.log("$tag WAITING")
-
-        } catch (e: Throwable) {
-
-            Console.error("$tag FAILED :: Error='${e.message}'")
-            recordException(e)
-            latch.countDown()
-        }
-    }
-
-    val startTime = System.currentTimeMillis()
-
-    try {
-
-        if (waitingFlag?.get() == true) {
-
-            Console.warning("$tag Already waiting")
-
-            yieldWhile {
-
-                waitingFlag.get()
-            }
-        }
-
-        waitingFlag?.set(true)
-
-        if (latch.await(timeout, timeUnit)) {
-
-            val endTime = System.currentTimeMillis() - startTime
-
-            waitingFlag?.set(false)
-
-            if (DEBUG_SYNC.get()) {
-
-                if (endTime > 1500 && endTime < 3000) {
-
-                    Console.warning("$tag WAITED for $endTime ms")
-
-                } else if (endTime >= 3000) {
-
-                    Console.warning("$tag WAITED for $endTime ms")
-                }
-            }
-
-            if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")
-
-        } else {
-
-            waitingFlag?.set(false)
-
-            val endTime = System.currentTimeMillis() - startTime
-            val e = TimeoutException("$context latch expired")
-            Console.error("$tag FAILED :: Timed out after $endTime ms")
-            recordException(e)
-        }
-
-    } catch (e: Throwable) {
-
-        waitingFlag?.set(false)
-
-        val endTime = System.currentTimeMillis() - startTime
-        Console.error("$tag FAILED :: Error='${e.message}' after $endTime ms")
-        recordException(e)
-    }
-
-    return result
+    // Delegate to secure implementation
+    val flagKey = waitingFlag?.let { "sync_${context}_${from.ifEmpty { "default" }}_${it.hashCode()}" }
+    
+    return secureSync(
+        context = context,
+        from = from,
+        timeout = timeout,
+        timeUnit = timeUnit,
+        mainThreadForbidden = mainThreadForbidden,
+        waitingFlagKey = flagKey,
+        debug = debug,
+        what = what
+    )
 }
 
 private val UI_IN_SYNC = AtomicBoolean()

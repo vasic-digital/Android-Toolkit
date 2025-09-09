@@ -22,7 +22,7 @@ class EncryptedPersistenceTest : BaseTest() {
 
         val testTag = "test.${System.currentTimeMillis()}"
 
-        DBStorage.initialize(ctx = applicationContext)
+        DBStorage.getInstance(applicationContext).initialize(applicationContext)
 
         try {
 

@@ -20,7 +20,7 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Parser
-import com.redelf.commons.persistance.serialization.ByteArraySerializer
+import com.redelf.commons.persistance.serialization.SecureBinarySerializer
 import com.redelf.commons.persistance.serialization.CustomSerializable
 import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
 import com.redelf.commons.persistance.serialization.Serializer
@@ -112,7 +112,7 @@ class GsonParser private constructor(
     private val ctx: Context = BaseApplication.takeContext()
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}' ::"
 
-    private val byteArraySerializer = ByteArraySerializer(
+    private val byteArraySerializer = SecureBinarySerializer(
 
         ctx,
         "Parser.GSON.$parserKey",

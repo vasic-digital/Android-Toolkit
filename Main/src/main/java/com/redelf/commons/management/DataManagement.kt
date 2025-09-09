@@ -82,7 +82,7 @@ abstract class DataManagement<T> :
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
         fun initialize(ctx: Context) {
 
-            DBStorage.initialize(ctx = ctx)
+            DBStorage.getInstance(ctx).initialize(ctx)
 
             STORAGE = EncryptedPersistence(
 
