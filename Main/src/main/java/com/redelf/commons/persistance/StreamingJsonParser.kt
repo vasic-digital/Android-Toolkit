@@ -468,7 +468,24 @@ class StreamingJsonParser private constructor(
                 }
             }
         } catch (e: Throwable) {
-            Console.error("$tag Streaming deserialization error: ${e.message}")
+            when (e) {
+                is com.fasterxml.jackson.core.JsonParseException -> {
+                    Console.error("$tag JSON Parse Error at position ${e.location?.charOffset ?: "unknown"}: ${e.message}")
+                    if (content.length > 1000) {
+                        val errorPos = (e.location?.charOffset ?: 0).toInt()
+                        val contextStart = maxOf(0, errorPos - 50)
+                        val contextEnd = minOf(content.length, errorPos + 50)
+                        val contextSnippet = content.substring(contextStart, contextEnd)
+                        Console.error("$tag JSON context around error: '${contextSnippet.replace("\n", "\\n")}'")
+                    }
+                }
+                is com.fasterxml.jackson.databind.JsonMappingException -> {
+                    Console.error("$tag JSON Mapping Error: ${e.message}")
+                }
+                else -> {
+                    Console.error("$tag Streaming deserialization error: ${e.message}")
+                }
+            }
             recordException(e)
             null
         }
