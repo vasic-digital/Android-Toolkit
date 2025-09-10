@@ -76,9 +76,7 @@ class MapWrapper<T> (
         return destination
     }
 
-    fun getDataCopy(from: String):  ConcurrentHashMap<Long, T> {
-
-        Console.debug("$tag getDataCopy() from '$from'")
+    fun getDataCopy():  ConcurrentHashMap<Long, T> {
 
         val data = ConcurrentHashMap<Long, T>()
 
