@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the comprehensive security improvements and hardening measures implemented across the persistence layer of the SekurMessenger Toolkit. The changes focus on preventing DoS attacks, eliminating memory leaks, preventing race conditions, and ensuring high-volume attack resistance.
+This document outlines the comprehensive security improvements and hardening measures implemented across the persistence layer of the Toolkit. The changes focus on preventing DoS attacks, eliminating memory leaks, preventing race conditions, and ensuring high-volume attack resistance.
 
 ## Summary of Changes
 

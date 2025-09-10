@@ -41,13 +41,43 @@ class SecureExecutor private constructor(
         
         // Pre-configured secure executors
         @JvmStatic
-        val MAIN = SecureExecutor("MAIN", 4, 20, 1000)
+        public val MAIN: SecureExecutor = SecureExecutor("MAIN", 4, 20, 1000)
         
         @JvmStatic
-        val SINGLE = SecureExecutor("SINGLE", 1, 1, 100)
+        public val SINGLE: SecureExecutor = SecureExecutor("SINGLE", 1, 1, 100)
         
         @JvmStatic
-        val IO = SecureExecutor("IO", 8, 50, 2000)
+        public val IO: SecureExecutor = SecureExecutor("IO", 8, 50, 2000)
+        
+        /**
+         * Public static getter methods for Java compatibility
+         */
+        @JvmStatic
+        public fun getMainExecutor(): SecureExecutor = MAIN
+        
+        @JvmStatic
+        public fun getSingleExecutor(): SecureExecutor = SINGLE
+        
+        @JvmStatic
+        public fun getIoExecutor(): SecureExecutor = IO
+        
+        /**
+         * Java-friendly execute method that accepts Runnable lambda expressions
+         */
+        @JvmStatic
+        public fun executeMain(runnable: Runnable) {
+            MAIN.execute(runnable)
+        }
+        
+        @JvmStatic
+        public fun executeSingle(runnable: Runnable) {
+            SINGLE.execute(runnable)
+        }
+        
+        @JvmStatic
+        public fun executeIO(runnable: Runnable) {
+            IO.execute(runnable)
+        }
         
         /**
          * Create a custom secure executor
