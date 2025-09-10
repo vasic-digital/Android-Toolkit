@@ -31,8 +31,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.execution.Execution
-import com.redelf.commons.execution.Executor
-import com.redelf.commons.execution.Executor.UI
+import com.redelf.commons.execution.SecureExecutor
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
@@ -387,7 +386,7 @@ fun onUiThread(doWhat: () -> Unit) {
 
     try {
 
-        UI.execute { doWhat() }
+        SecureExecutor.getMainExecutor().execute(Runnable { doWhat() })
 
     } catch (e: RejectedExecutionException) {
 
@@ -916,7 +915,7 @@ fun exec(
 
         if (debug) Console.log("$tag Sending to main executor")
 
-        Executor.MAIN.execute(what)
+        SecureExecutor.getMainExecutor().execute(what)
 
         if (debug) Console.log("$tag Sent to main executor")
 
@@ -943,7 +942,7 @@ fun exec(what: Runnable, delayInMilliseconds: Long) {
 
     try {
 
-        Executor.MAIN.execute(what, delayInMilliseconds)
+        SecureExecutor.getMainExecutor().execute(what, delayInMilliseconds, 30000L)
 
     } catch (e: Throwable) {
 
@@ -955,7 +954,7 @@ fun exec(delayInMilliseconds: Long, what: Runnable) {
 
     try {
 
-        Executor.MAIN.execute(what, delayInMilliseconds)
+        SecureExecutor.getMainExecutor().execute(what, delayInMilliseconds, 30000L)
 
     } catch (e: Throwable) {
 
@@ -967,10 +966,7 @@ fun exec(what: Runnable) {
 
     try {
 
-        if (!Executor.MAIN.execute(what)) {
-
-            throw IllegalStateException("Not executed")
-        }
+        SecureExecutor.getMainExecutor().execute(what)
 
     } catch (e: Throwable) {
 
@@ -984,7 +980,7 @@ fun exec(what: Runnable) {
 )
 fun ui(what: Runnable) {
 
-    Executor.UI.execute(what)
+    SecureExecutor.getMainExecutor().execute(what)
 }
 
 @Throws(
@@ -994,7 +990,7 @@ fun ui(what: Runnable) {
 )
 fun single(what: Runnable) {
 
-    Executor.SINGLE.execute(what)
+    SecureExecutor.getMainExecutor().execute(what)
 }
 
 fun exec(
@@ -1043,7 +1039,7 @@ fun <T> doExec(
 
         if (executor == null) {
 
-            success = Executor.MAIN.execute(callable)
+            success = SecureExecutor.getMainExecutor().execute(callable)
         }
 
         if (debug) {
@@ -1222,14 +1218,16 @@ fun syncUI(context: String, from: String, what: kotlinx.coroutines.Runnable): Bo
 
         } else {
 
-            val submitted = UI.execute {
+            try {
 
-                what.run()
+                SecureExecutor.getMainExecutor().execute(Runnable {
 
-                callback.onCompleted(true)
-            }
+                    what.run()
 
-            if (!submitted) {
+                    callback.onCompleted(true)
+                })
+
+            } catch (e: RejectedExecutionException) {
 
                 callback.onCompleted(false)
             }
