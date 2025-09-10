@@ -82,8 +82,6 @@ abstract class DataManagement<T> :
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
         fun initialize(ctx: Context) {
 
-            DBStorage.initialize(ctx = ctx)
-
             STORAGE = EncryptedPersistence(
 
                 ctx = ctx,
