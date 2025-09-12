@@ -671,6 +671,7 @@ abstract class BaseApplication :
         DataManagement.initialize(applicationContext)
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
         registerActivityLifecycleCallbacks(this)
 
         managers.addAll(populateManagers())
@@ -1064,6 +1065,8 @@ abstract class BaseApplication :
         }
 
         foregroundActivityCounter().incrementAndGet()
+
+        onActivity(activity)
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -1393,6 +1396,8 @@ abstract class BaseApplication :
             LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(it)
         }
     }
+
+    protected  open fun onActivity(activity: Activity) = Unit
 
     protected open fun getUpdatesCodes() = setOf<Long>()
 
