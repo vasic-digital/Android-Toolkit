@@ -43,7 +43,7 @@ class DBStorage private constructor(context: Context) : Storage<String> {
         private const val KEY_CHUNKS = "chunks"
         private const val DATABASE_VERSION = 1
         private const val DATABASE_NAME = "sdb"
-        private const val MAX_CHUNK_SIZE = 5000
+        private const val MAX_CHUNK_SIZE = 500000 // 500KB chunks to handle large JSON safely
         private const val MAX_SCHEDULE_SIZE = 10000
         private const val MAX_CHUNKS_PER_KEY = 1000
         private const val DB_OPERATION_TIMEOUT_MS = 30000L
