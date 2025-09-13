@@ -2,12 +2,12 @@ package com.redelf.commons.test
 
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.authentification.Credentials
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.Management
 import com.redelf.commons.management.managers.ManagersInitializer
 import org.junit.Assert
 import org.junit.Before
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -42,8 +42,8 @@ abstract class ManagersDependentTest : BaseTest() {
 
         val registered = AtomicInteger()
         val setupSuccess = AtomicBoolean()
-        val mainLatch = CountDownLatch(1)
-        val latch = CountDownLatch(managers.size)
+        val mainLatch = CountDownLatch(1, "test")
+        val latch = CountDownLatch(managers.size, "test")
 
         val managersInitializerCallback = object : ManagersInitializer.InitializationCallback {
 

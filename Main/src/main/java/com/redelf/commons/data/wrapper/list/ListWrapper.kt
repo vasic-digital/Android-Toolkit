@@ -3,14 +3,9 @@ package com.redelf.commons.data.wrapper.list
 import com.redelf.commons.data.access.DataAccess
 import com.redelf.commons.data.model.identifiable.Identifiable
 import com.redelf.commons.destruction.delete.DeletionCheck
-import com.redelf.commons.extensions.addAt
-import com.redelf.commons.extensions.getAtIndex
-import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.onUiThread
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.extensions.removeAt
 import com.redelf.commons.extensions.sync
-import com.redelf.commons.extensions.yieldWhile
 import com.redelf.commons.filtering.FilterAsync
 import com.redelf.commons.lifecycle.initialization.InitializedCheck
 import com.redelf.commons.lifecycle.termination.TerminationSynchronized
@@ -26,6 +21,7 @@ import java.util.LinkedList
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -40,6 +36,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private var onChange: OnChangeCompleted? = null,
     private val onDataPushed: OnObtain<DataPushResult?>? = null,
     private val defaultFilters: List<FilterAsync<T>> = emptyList(),
+    private val filteringTimeout: Long = 5000L,
 
     ) : BusyCheck, InitializedCheck, TerminationSynchronized {
 
@@ -51,10 +48,12 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val filterMutex = Any()
     private val busy = AtomicBoolean()
     private val operationMutex = Any()
+    private val filtering = AtomicBoolean()
     private val version = AtomicLong(0)
-    private val list: CopyOnWriteArraySet<T> = CopyOnWriteArraySet()
+    private val list: LinkedBlockingQueue<T> = LinkedBlockingQueue()
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
+    private var lastDataPushTime = 0L
 
     private val dataPushListener: OnObtain<DataPushResult?>? = if (dataAccess != null) {
 
@@ -147,39 +146,56 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             val action = "init"
             val from = action
-            val items = getCollection(from)
 
-            replaceAllAndFilter(items, from) { modified, count ->
+            getCollection(
 
-                initialized.set(true)
+                from,
 
-                if (modified) {
+                object : OnObtain<Collection<T?>?> {
 
-                    if (DEBUG.get()) {
+                    override fun onCompleted(data: Collection<T?>?) {
 
-                        Console.log(
+                        val items = data
 
-                            "$tag Init :: " +
-                                    "Changes :: Detected :: Count=$count" +
-                                    ", getCollection().count=${items?.size}"
-                        )
+                        replaceAllAndFilter(items, from) { modified, count ->
+
+                            initialized.set(true)
+
+                            if (modified) {
+
+                                if (DEBUG.get()) {
+
+                                    Console.log(
+
+                                        "$tag Init :: " +
+                                                "Changes :: Detected :: Count=$count" +
+                                                ", getCollection().count=${items?.size}"
+                                    )
+                                }
+
+                                notifyChanged(action = action)
+
+                            } else {
+
+                                if (DEBUG.get()) {
+
+                                    Console.log(
+
+                                        "$tag Init :: " +
+                                                "Changes :: None detected :: Count=$count" +
+                                                ", getCollection().count=${items?.size}"
+                                    )
+                                }
+                            }
+                        }
                     }
 
-                    notifyChanged(action = action)
+                    override fun onFailure(error: Throwable) {
 
-                } else {
-
-                    if (DEBUG.get()) {
-
-                        Console.log(
-
-                            "$tag Init :: " +
-                                    "Changes :: None detected :: Count=$count" +
-                                    ", getCollection().count=${items?.size}"
-                        )
+                        recordException(error)
                     }
                 }
-            }
+            )
         }
     }
 
@@ -264,6 +280,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         return isEmpty("isEmpty")
     }
 
+    fun getIdentifier(what: T): I = identifierObtainer.obtain(what)
+
     protected fun registerLinkedManagersDataPushListener() {
 
         linkedManagersDataPushListener?.let {
@@ -308,7 +326,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
             if (list.size > index) {
 
-                return list.getAtIndex(index)
+                return list.toList()[index]
             }
         }
 
@@ -453,7 +471,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
         what: Collection<T?>?,
         from: String,
-        removeDeleted: Boolean = true,
+        removeDeleted: Boolean = false,
         skipNotifying: Boolean = false,
         filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
@@ -505,7 +523,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         what: Collection<T?>?,
         from: String,
         replace: Boolean = false,
-        removeDeleted: Boolean = true,
+        removeDeleted: Boolean = false,
         skipNotifying: Boolean = false,
         filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
@@ -667,11 +685,18 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 list.apply {
 
-                    if (list.size > where && list.removeAt(where) != null) {
+                    val modifiable = list.toMutableList()
 
-                        list.addAt(where, what)
+                    if (modifiable.size > where && modifiable.removeAt(where) != null) {
 
-                        if (list.elementAt(where) == what) {
+                        modifiable.add(where, what)
+
+                        if (modifiable.elementAt(where) == what) {
+
+                            // Atomic replacement to prevent temporary empty state
+                            val tempList = LinkedList(modifiable)
+                            list.clear()
+                            list.addAll(tempList)
 
                             if (!skipNotifying) {
 
@@ -799,7 +824,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         what: Collection<T?>?,
         from: String,
         replace: Boolean = false,
-        removeDeleted: Boolean = true,
+        removeDeleted: Boolean = false,
         skipNotifying: Boolean = false,
         filters: List<FilterAsync<T>> = defaultFilters,
         onChange: OnChangeCompleted? = null,
@@ -977,7 +1002,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
                         }
                     }
 
-                    doFilter(filters) {
+                    doFilter(from, filters) {
 
                         if (!skipNotifying) {
 
@@ -1029,10 +1054,18 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     private fun doFilter(
 
+        from: String,
         filters: List<FilterAsync<T>> = defaultFilters,
         callback: () -> Unit
 
     ) {
+
+        if (filtering.get()) {
+
+            callback()
+
+            return
+        }
 
         synchronized(filterMutex) {
 
@@ -1042,6 +1075,8 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                 return@synchronized
             }
+
+            filtering.set(true)
 
             var success = false
             val filteredList = CopyOnWriteArraySet<T>()
@@ -1054,9 +1089,17 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                     try {
 
-                        val result = sync<Boolean?>("") { callback ->
+                        val result = sync<Boolean?>(
+
+                            from = from,
+                            timeout = filteringTimeout,
+                            context = "ListWrapper.doFilter"
+
+                        ) { callback ->
 
                             filter.filter(
+
+                                "doFilter(from='$from')",
 
                                 filteredList,
 
@@ -1083,13 +1126,18 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                     list.apply {
 
+                        // Atomic replacement to prevent temporary empty state
+                        val tempList = LinkedBlockingQueue<T>()
+                        tempList.addAll(filteredList)
                         list.clear()
-                        list.addAll(filteredList)
+                        list.addAll(tempList)
                     }
                 }
             }
 
             callback()
+
+            filtering.set(false)
         }
     }
 
@@ -1223,15 +1271,20 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
     ) {
 
-        list.removeAt(index)?.let {
+        list.apply {
 
-            if (!skipNotifying) {
+            val toRemove = list.toList().get(index)
 
-                notifyChanged(onChange, "remove.$index")
+            list.remove(toRemove).let {
+
+                if (!skipNotifying) {
+
+                    notifyChanged(onChange, "remove.$index")
+                }
             }
-        }
 
-        notifyCallback(callback)
+            notifyCallback(callback)
+        }
     }
 
     @Synchronized
@@ -1273,58 +1326,28 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         }
     }
 
-    protected open fun getCollection(from: String): Collection<T?>? {
+    @Synchronized
+    protected open fun getCollection(from: String, collectionCallback: OnObtain<Collection<T?>?>) {
 
-        if (isOnMainThread()) {
+        com.redelf.commons.extensions.exec(
 
-            val e = IllegalStateException("Shall not obtain collection from the main thread")
-            recordException(e)
+            onRejected = { e -> collectionCallback.onFailure(e) }
+
+        ) {
+
+            try {
+
+                val coll = dataAccess?.obtain()
+
+                Console.log("$tag Get collection :: From='$from' :: Count=${coll?.size ?: 0}")
+
+                collectionCallback.onCompleted(coll)
+
+            } catch (e: Throwable) {
+
+                collectionCallback.onFailure(e)
+            }
         }
-
-        try {
-
-            val manager = getManager()
-
-            if (manager == null) {
-
-                Console.error(
-
-                    "$tag getCollection(from='$from') :: Manager is null"
-                )
-
-                return null
-            }
-
-            yieldWhile {
-
-                manager.isBusy() || manager.isReading() || manager.isWriting()
-            }
-
-            val coll = dataAccess?.obtain()
-
-            if (DEBUG.get()) {
-
-                Console.log(
-                    "$tag Get collection :: From='$from', " +
-                            "getCollection().count=${coll?.size ?: 0}"
-                )
-            }
-
-            return coll
-
-        } catch (e: Throwable) {
-
-            if (DEBUG.get()) Console.log(
-
-                "$tag Fet collection :: " +
-                        "From='$from', getCollection().count=0, " +
-                        "Error=${e.message ?: e::class.simpleName}"
-            )
-
-            recordException(e)
-        }
-
-        return null
     }
 
     fun refresh(
@@ -1340,26 +1363,46 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             if (DEBUG.get()) Console.log("$tag Refresh :: From='$from'")
 
             val from = "refresh(from='$from')"
-            val items = getCollection(from)
 
-            replaceAllAndFilter(
+            getCollection(
 
-                from = from,
-                what = items,
-                filters = filters
+                from,
 
-            ) { modified, count ->
+                object : OnObtain<Collection<T?>?> {
 
-                if (modified) {
+                    override fun onCompleted(data: Collection<T?>?) {
 
-                    notifyChanged(action = from)
+                        replaceAllAndFilter(
+
+                            from = from,
+                            what = data,
+                            filters = filters
+
+                        ) { modified, count ->
+
+                            if (modified) {
+
+                                notifyChanged(action = from)
+                            }
+
+                            callback?.let {
+
+                                it(modified, count)
+                            }
+                        }
+                    }
+
+                    override fun onFailure(error: Throwable) {
+
+                        callback?.let {
+
+                            recordException(error)
+
+                            it(false, 0)
+                        }
+                    }
                 }
-
-                callback?.let {
-
-                    it(modified, count)
-                }
-            }
+            )
         }
     }
 
@@ -1370,45 +1413,68 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
             Console.log("On data pushed :: $pushContext :: Push from = '${data.pushFrom}'")
         }
 
-        val items = getCollection("$pushContext(pushFrom='${data.pushFrom}')")
-        val from = "$pushContext(pushFrom='${data.pushFrom}',size=${items?.size ?: 0})"
+        if (DEBUG.get()) {
+            Console.log("Processing data push: ${data.pushFrom}")
+        }
 
-        onDataPushed?.onCompleted(data)
+        val dataPushResult = data
 
-        replaceAllAndFilter(
+        getCollection(
 
-            from = from,
-            what = items,
-            filters = defaultFilters
+            "$pushContext(pushFrom='${data.pushFrom}')",
 
-        ) { modified, count ->
+            object : OnObtain<Collection<T?>?> {
 
-            if (modified) {
+                override fun onCompleted(data: Collection<T?>?) {
 
-                if (DEBUG.get()) {
+                    val items = data ?: emptyList()
+                    val from =
+                        "$pushContext(pushFrom='${dataPushResult.pushFrom}',size=${items.size})"
 
-                    Console.log(
+                    onDataPushed?.onCompleted(dataPushResult)
 
-                        "$tag $pushContext :: " +
-                                "Changes :: Detected :: Count=$count" +
-                                ", getCollection().count=${items?.size ?: 0}"
-                    )
+                    replaceAllAndFilter(
+
+                        from = from,
+                        what = items,
+                        filters = defaultFilters
+
+                    ) { modified, count ->
+
+                        if (modified) {
+
+                            if (DEBUG.get()) {
+
+                                Console.log(
+
+                                    "$tag $pushContext :: " +
+                                            "Changes :: Detected :: Count=$count" +
+                                            ", getCollection().count=${items.size}"
+                                )
+                            }
+
+                            notifyChanged(action = "$pushContext.dataPushed")
+
+                        } else {
+
+                            if (DEBUG.get()) {
+
+                                Console.log(
+
+                                    "$tag $pushContext :: " +
+                                            "Changes :: None detected :: Count=$count" +
+                                            ", getCollection().count=${items.size}"
+                                )
+                            }
+                        }
+                    }
                 }
 
-                notifyChanged(action = "$pushContext.dataPushed")
+                override fun onFailure(error: Throwable) {
 
-            } else {
-
-                if (DEBUG.get()) {
-
-                    Console.log(
-
-                        "$tag $pushContext :: " +
-                                "Changes :: None detected :: Count=$count" +
-                                ", getCollection().count=${items?.size ?: 0}"
-                    )
+                    recordException(error)
                 }
             }
-        }
+        )
     }
 }

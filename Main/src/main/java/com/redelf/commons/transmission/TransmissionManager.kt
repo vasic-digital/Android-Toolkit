@@ -541,7 +541,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
             managedData?.let { data ->
 
-                dataManager.obtain().pushData(
+                dataManager.obtain().apply(
 
 
                     data,

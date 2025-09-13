@@ -3,12 +3,12 @@
 package com.redelf.commons.data
 
 import androidx.room.concurrent.AtomicBoolean
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.sync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -21,7 +21,7 @@ object Storage {
         return DataManagement.STORAGE.push(key, value)
     }
 
-    fun <T> get(key: String): T? {
+    fun <T> get(key: String, from: String): T? {
 
         val tag = "Storage :: Get :: Key='$key' ::"
 
@@ -30,7 +30,16 @@ object Storage {
             Console.log("$tag START")
         }
 
-        val result: T? = sync("Storage.get.$key") { callback ->
+        val ctx = "Storage.get.$key"
+
+        val result: T? = sync(
+
+            ctx,
+            "$ctx.(from='$from')",
+
+            timeout = 7
+
+        ) { callback ->
 
             DataManagement.STORAGE.pull(
 
@@ -44,7 +53,7 @@ object Storage {
         return result
     }
 
-    fun <T> get(key: String, defaultValue: T): T {
+    fun <T> get(key: String, defaultValue: T, from: String): T {
 
         val tag = "Storage :: Get (w.def) :: Key='$key' ::"
 
@@ -53,7 +62,14 @@ object Storage {
             Console.log("$tag START")
         }
 
-        val result = sync("Storage.get.$key") { callback ->
+        val ctx = "Storage.get.$key"
+
+        val result = sync(
+
+            ctx,
+            "$ctx.(from='$from')"
+
+        ) { callback ->
 
             DataManagement.STORAGE.pull(key, callback)
 
@@ -70,7 +86,7 @@ object Storage {
     fun delete(key: String): Boolean {
 
         var result = false
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "Storage.delete")
 
         DataManagement.STORAGE.delete(
 
@@ -115,9 +131,16 @@ object Storage {
         return DataManagement.STORAGE.erase()
     }
 
-    fun contains(key: String): Boolean {
+    fun contains(key: String, from: String): Boolean {
 
-        return sync("Storage.contains.$key") { callback ->
+        val ctx = "Storage.contains.$key"
+
+        return sync(
+
+            ctx,
+            "$ctx.(from='$from')"
+
+        ) { callback ->
 
             DataManagement.STORAGE.contains(
 

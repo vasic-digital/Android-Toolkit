@@ -385,6 +385,19 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
             try {
 
+                val active = executor.getActiveCount()
+
+                val isExecutorFull = (active >= executor.maximumPoolSize) &&
+                        (executor.queue.remainingCapacity() == 0)
+
+                if (isExecutorFull) {
+
+                    val e = RuntimeException("Executor is full")
+                    recordException(e)
+
+                    return
+                }
+
                 executor.execute(action)
 
                 // TODO: Make sure we can use this idea
@@ -399,6 +412,10 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
 
             } catch (e: Throwable) {
+
+                val error = e.message ?: e::class.simpleName
+
+                Console.error("Executor :: Execute :: Error='$error'")
 
                 recordException(e)
             }

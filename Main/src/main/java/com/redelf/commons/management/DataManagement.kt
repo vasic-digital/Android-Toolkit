@@ -2,6 +2,8 @@ package com.redelf.commons.management
 
 import android.content.Context
 import com.redelf.commons.application.BaseApplication
+import com.redelf.commons.applying.Apply
+import com.redelf.commons.applying.CommitAsync
 import com.redelf.commons.callback.CallbackOperation
 import com.redelf.commons.callback.Callbacks
 import com.redelf.commons.context.Contextual
@@ -51,7 +53,9 @@ abstract class DataManagement<T> :
     WritingCheck,
     ObtainAsync<T?>,
     DataPushListening,
+    Apply<T, DataPushResult>,
     Contextual<BaseApplication>,
+    CommitAsync<DataPushResult>,
     ResettableParametrized<String>,
     ResettableAsyncParametrized<String>,
     ExecuteWithResult<DataManagement.DataTransaction<T>> where T : Versionable {
@@ -78,8 +82,6 @@ abstract class DataManagement<T> :
         @Throws(IllegalArgumentException::class, IllegalStateException::class)
         fun initialize(ctx: Context) {
 
-            DBStorage.initialize(ctx = ctx)
-
             STORAGE = EncryptedPersistence(
 
                 ctx = ctx,
@@ -91,6 +93,10 @@ abstract class DataManagement<T> :
 
     protected abstract val storageKey: String
     protected open val persist: Boolean = true
+    protected open val useTransactions =
+        false // TODO: Make sure that transactions are used by default when polished
+    protected open val checkDataVersionOnSaving =
+        false // TODO: Make sure that data versioning is used by default when polished
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
@@ -100,6 +106,7 @@ abstract class DataManagement<T> :
     private var enabled = AtomicBoolean(true)
     private val lastDataVersion = AtomicLong(-1)
     private var session = Session(name = javaClass.simpleName)
+    private val obtaining = Callbacks<OnObtain<T?>>("obtaining")
     private val pushCallbacks = Callbacks<OnObtain<DataPushResult?>>("on_push")
 
     protected abstract fun getLogTag(): String
@@ -141,7 +148,8 @@ abstract class DataManagement<T> :
 
     override fun isBusy(): Boolean {
 
-        return isReading() || isWriting()
+        // TODO: We shall incorporate this properly at some point
+        return false
     }
 
     override fun registerDataPushListener(subscriber: OnObtain<DataPushResult?>) {
@@ -208,29 +216,35 @@ abstract class DataManagement<T> :
         return false
     }
 
-    fun transaction(name: String, action: Obtain<Boolean>) {
+    // TODO: Make sure that transactions are used by default when polished
+    //
+    //    fun transaction(name: String, action: Obtain<Boolean>) {
+    //
+    //        if (!isEnabled()) {
+    //
+    //            return
+    //        }
+    //
+    //        execute(
+    //
+    //            DataTransaction(
+    //
+    //                name = name,
+    //                parent = this,
+    //
+    //                operation = object : TransactionOperation {
+    //
+    //                    override fun perform() = action.obtain()
+    //                }
+    //            )
+    //        )
+    //    }
 
-        if (!isEnabled()) {
+    fun transaction(name: String): Transaction? = if (useTransactions) {
 
-            return
-        }
+        DataTransaction(name, this)
 
-        execute(
-
-            DataTransaction(
-
-                name = name,
-                parent = this,
-
-                operation = object : TransactionOperation {
-
-                    override fun perform() = action.obtain()
-                }
-            )
-        )
-    }
-
-    fun transaction(name: String): Transaction = DataTransaction(name, this)
+    } else null
 
     override fun lock() {
 
@@ -269,7 +283,13 @@ abstract class DataManagement<T> :
 
     fun obtain(): T? {
 
-        return sync("${getWho()}.obtain") { callback ->
+        return data ?: sync(
+
+            "${getWho()}.obtain",
+            "",
+            timeout = 3
+
+            ) { callback ->
 
             obtain(
 
@@ -296,7 +316,78 @@ abstract class DataManagement<T> :
                 return@exec
             }
 
-            val tag = "${getLogTag()} OBTAIN ::"
+            val tag = "${getLogTag()} OBTAIN :: ${obtaining.hashCode()}.${obtaining.size()} ::"
+
+            val inProgress = obtaining.getSubscribersCount() > 0
+
+            if (obtaining.isRegistered(callback)) {
+
+                if (DEBUG.get()) {
+
+                    Console.warning("$tag Already registered")
+                }
+
+            } else {
+
+                obtaining.register(callback)
+            }
+
+            if (inProgress) {
+
+                Console.log(
+
+                    "$tag Already obtaining :: Subscribers count = ${obtaining.size()}"
+                )
+
+                return@exec
+            }
+
+            if (DEBUG.get()) {
+
+                Console.log("$tag PRE-START")
+            }
+
+            fun notifyGetterCallback(data: T? = null, error: Throwable? = null) {
+
+                if (canLog()) Console.log(
+
+                    "$tag Notify subscribers :: Count=${obtaining.size()}"
+                )
+
+                obtaining.doOnAll(object : CallbackOperation<OnObtain<T?>> {
+
+                    override fun perform(callback: OnObtain<T?>) {
+
+                        error?.let {
+
+                            callback.onFailure(it)
+                        }
+
+                        if (error == null) {
+
+                            callback.onCompleted(data)
+                        }
+                    }
+
+                }, operationName = "obtaining")
+
+                obtaining.clear()
+
+                if (obtaining.size() == 0) {
+
+                    if (canLog()) Console.log(
+
+                        "$tag Notify subscribers after cleanup :: Count=${obtaining.size()}"
+                    )
+
+                } else {
+
+                    Console.warning(
+
+                        "$tag Notify subscribers after cleanup :: Count=${obtaining.size()}"
+                    )
+                }
+            }
 
             if (canLog()) Console.log("$tag START")
 
@@ -304,7 +395,7 @@ abstract class DataManagement<T> :
 
                 Console.warning("$tag Locked")
 
-                callback.onCompleted(null)
+                notifyGetterCallback(data = null)
 
                 return@exec
             }
@@ -313,7 +404,7 @@ abstract class DataManagement<T> :
 
                 if (canLog()) Console.log("$tag END: OK")
 
-                callback.onCompleted(data)
+                notifyGetterCallback(data = data)
 
                 return@exec
             }
@@ -342,12 +433,9 @@ abstract class DataManagement<T> :
                     if (canLog()) Console.log("$dataObjTag Pulled :: Null = ${data == null}")
                 }
 
-                pulled?.let {
+                pulled?.let { pld ->
 
-                    if (!overwriteData(pulled)) {
-
-                        Console.error("$dataObjTag Overwrite failed")
-                    }
+                    overwriteData(pld)
                 }
 
                 if (canLog()) Console.debug("$dataObjTag Obtained from storage: $data")
@@ -364,7 +452,7 @@ abstract class DataManagement<T> :
 
                         current?.let {
 
-                            data = current
+                            assignData(it)
                         }
 
                         if (current == null) {
@@ -380,7 +468,7 @@ abstract class DataManagement<T> :
 
                 reading.set(false)
 
-                callback.onCompleted(data)
+                notifyGetterCallback(data = data)
             }
 
             if (data == null && persist) {
@@ -400,7 +488,7 @@ abstract class DataManagement<T> :
 
                         override fun onFailure(error: Throwable) {
 
-                            callback.onFailure(error)
+                            notifyGetterCallback(error = error)
                         }
                     }
                 )
@@ -428,14 +516,35 @@ abstract class DataManagement<T> :
         return STORAGE
     }
 
-    fun pushData(from: String, notify: Boolean): Boolean {
+    override fun apply(from: String): Boolean {
+
+        return apply(from, false)
+    }
+
+    override fun commit(from: String, callback: OnObtain<DataPushResult?>) {
+
+        val toCommit = data
+
+        toCommit?.let {
+
+            doApply(it, "commit(from='$from')", false, 0, callback)
+        }
+
+        if (toCommit == null) {
+
+            val e = IllegalStateException("Data object is null")
+            callback.onFailure(e)
+        }
+    }
+
+    override fun apply(from: String, notify: Boolean): Boolean {
 
         val data = obtain()
 
-        return pushData("pushData(from='$from')", data, notify)
+        return apply("apply(from='$from')", data, notify)
     }
 
-    fun pushData(from: String, data: T?, notify: Boolean): Boolean {
+    override fun apply(from: String, data: T?, notify: Boolean): Boolean {
 
         if (isOnMainThread()) {
 
@@ -444,16 +553,19 @@ abstract class DataManagement<T> :
             recordException(e)
         }
 
-        val from = "pushData(from='$from').withData"
+        return sync(
 
-        return sync("${getWho()}.$from") { callback ->
+            "${getWho()}.apply",
+            from
 
-            pushData(data, from, notify, callback)
+        ) { callback ->
+
+            apply(data, from, notify, callback)
 
         }?.success == true
     }
 
-    open fun pushData(
+    override fun apply(
 
         data: T?,
         from: String,
@@ -462,7 +574,7 @@ abstract class DataManagement<T> :
 
     ) {
 
-        val from = "pushData(from='$from').withData.withCallback"
+        val from = "apply(from='$from').withData.withCallback"
 
         if (!isEnabled()) {
 
@@ -476,7 +588,7 @@ abstract class DataManagement<T> :
 
         data?.let {
 
-            doPushData(
+            doApply(
 
                 it,
                 from,
@@ -492,7 +604,7 @@ abstract class DataManagement<T> :
 
             dObject?.let {
 
-                doPushData(
+                doApply(
 
                     it,
                     "$from.dataObjCreated",
@@ -508,12 +620,13 @@ abstract class DataManagement<T> :
 
                 Console.error("${getLogTag()} Push data :: $msg")
 
-                callback?.onFailure(IllegalStateException(msg))
+                val result = DataPushResult("$from.dataObjCreationFailed", false)
+                callback?.onCompleted(result)
             }
         }
     }
 
-    protected fun doPushData(
+    protected fun doApply(
 
         data: T,
         from: String,
@@ -523,7 +636,7 @@ abstract class DataManagement<T> :
 
     ) {
 
-        val from = "doPushData(from='$from')"
+        val from = "doApply(from='$from')"
 
         val callbackWrapper = object : OnObtain<DataPushResult?> {
 
@@ -569,18 +682,18 @@ abstract class DataManagement<T> :
 
                 if (retry <= 5) {
 
-                    Console.warning(
+                    Console.log(
 
                         "${getLogTag()} BUSY :: Rescheduling data push :: Retry = $retry"
                     )
 
                     exec(
 
-                        delayInMilliseconds = 10 * 1000
+                        delayInMilliseconds = 1000
 
                     ) {
 
-                        doPushData(
+                        doApply(
 
                             data,
                             from = "$from.retry.$retry",
@@ -594,6 +707,9 @@ abstract class DataManagement<T> :
 
                     val e = IllegalArgumentException("Data push failed, manager is busy")
                     recordException(e)
+                    
+                    onDataPushed(err = e)
+                    callbackWrapper.onFailure(e)
                 }
 
                 return@exec
@@ -716,11 +832,16 @@ abstract class DataManagement<T> :
             recordException(e)
         }
 
-        val from = "reset(from='$arg')"
+        val ctx = "${getWho()}.reset"
 
-        return sync("${getWho()}.$from") { callback ->
+        return sync(
 
-            reset(from, callback)
+            ctx, ""
+
+
+        ) { callback ->
+
+            reset(ctx, callback)
 
         } == true
     }
@@ -765,22 +886,13 @@ abstract class DataManagement<T> :
 
                     fun completeReset(success: Boolean?) {
 
-                        if (success == true) {
+                        if (DEBUG.get()) Console.log("$tag Completing reset :: $success")
 
-                            if (DEBUG.get()) Console.log("$tag Completing reset")
+                        eraseData()
 
-                            eraseData()
+                        Console.log("$tag END")
 
-                            Console.log("$tag END")
-
-                            callback.onCompleted(true)
-
-                        } else {
-
-                            Console.error("$tag Complete reset failed")
-
-                            callback.onCompleted(success)
-                        }
+                        callback.onCompleted(true)
                     }
 
                     val s = takeStorage()
@@ -793,7 +905,7 @@ abstract class DataManagement<T> :
 
                             data?.let {
 
-                                doPushData(
+                                doApply(
 
                                     data = it,
 
@@ -820,30 +932,51 @@ abstract class DataManagement<T> :
 
                             if (data == null) {
 
-                                Console.error("$tag Data object creation failed")
-                                completeReset(false)
+                                Console.warning("$tag Data object creation failed, proceeding with storage deletion only")
+                                
+                                if (s != null) {
+                                    s.delete(storageKey, object : OnObtain<Boolean?> {
+                                        override fun onCompleted(data: Boolean?) {
+                                            completeReset(true)
+                                        }
+                                        override fun onFailure(error: Throwable) {
+                                            callback.onFailure(error)
+                                        }
+                                    })
+                                } else {
+                                    Console.warning("$tag No storage available, completing reset with limited success")
+                                    completeReset(false)
+                                }
                                 return@exec
                             }
                         }
 
                     } else {
 
-                        s?.delete(
+                        if (s != null) {
 
-                            storageKey,
+                            s.delete(
 
-                            object : OnObtain<Boolean?> {
+                                storageKey,
 
-                                override fun onCompleted(data: Boolean?) {
+                                object : OnObtain<Boolean?> {
 
-                                    completeReset(true)
-                                }
+                                    override fun onCompleted(data: Boolean?) {
 
-                                override fun onFailure(error: Throwable) {
+                                        completeReset(true)
+                                    }
 
-                                    callback.onFailure(error)
-                                }
-                            })
+                                    override fun onFailure(error: Throwable) {
+
+                                        callback.onFailure(error)
+                                    }
+                                })
+
+                        } else {
+
+                            Console.warning("$tag No storage available, completing reset anyway")
+                            completeReset(true)
+                        }
                     }
 
                 } else {
@@ -873,9 +1006,14 @@ abstract class DataManagement<T> :
 
         Console.log("${getLogTag()} Data :: Erase :: START")
 
-        this.data = null
+        assignData(null)
 
         Console.log("${getLogTag()} Data :: Erase :: END")
+    }
+
+    protected open fun assignData(assign: T?) {
+
+        data = assign
     }
 
     protected fun overwriteData(data: T): Boolean {
@@ -887,7 +1025,7 @@ abstract class DataManagement<T> :
 
         // FIXME: Polish and add environment into the account
         //  when it is changed (to reset version to 0)
-        if (data.getVersion() >= (this.data?.getVersion() ?: 0)) {
+        if (!checkDataVersionOnSaving || (data.getVersion() >= (this.data?.getVersion() ?: 0))) {
 
             Console.log(
                 "${getLogTag()} Data :: Overwrite :: " +
@@ -895,20 +1033,13 @@ abstract class DataManagement<T> :
                         "To version = ${data.getVersion()}"
             )
 
-            if (this.data != data) {
+            assignData(data)
 
-                this.data = data
-
-                return true
-
-            } else {
-
-                Console.log("${getLogTag()} Data :: Overwrite :: SKIPPED (1)")
-            }
+            return true
 
         } else {
 
-            Console.log("${getLogTag()} Data :: Overwrite :: SKIPPED (2)")
+            Console.log("${getLogTag()} Data :: Overwrite :: SKIPPED")
         }
 
         return false
@@ -1016,7 +1147,11 @@ abstract class DataManagement<T> :
 
         override fun end(notify: Boolean): Boolean {
 
-            return sync("Transaction.end.$name") { callback ->
+            return sync(
+
+                "Transaction.end.$name", ""
+
+            ) { callback ->
 
                 end(notify, callback)
 
@@ -1048,7 +1183,7 @@ abstract class DataManagement<T> :
 
                                 data?.let {
 
-                                    parent.pushData(
+                                    parent.apply(
 
                                         it,
 

@@ -1,6 +1,5 @@
 package com.redelf.commons.persistance.database
 
-import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
@@ -9,6 +8,7 @@ import androidx.core.text.isDigitsOnly
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isOnMainThread
@@ -24,41 +24,63 @@ import net.zetetic.database.sqlcipher.SQLiteOpenHelper
 import okio.IOException
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
-/*
-    TODO: Make sure that this is not static object
-*/
-@SuppressLint("StaticFieldLeak")
-object DBStorage : Storage<String> {
+class DBStorage private constructor(context: Context) : Storage<String> {
 
-    /*
-        TODO: Make possible for data managers to have multiple databases - each manager its own
-    */
+    companion object {
+        @Volatile
+        private var INSTANCE: DBStorage? = null
+
+        private const val KEY_CHUNK = "chunk"
+        private const val TAG = "DbStorage ::"
+        private const val KEY_CHUNKS = "chunks"
+        private const val DATABASE_VERSION = 1
+        private const val DATABASE_NAME = "sdb"
+        private const val MAX_CHUNK_SIZE = 500000 // 500KB chunks to handle large JSON safely
+        private const val MAX_SCHEDULE_SIZE = 10000
+        private const val MAX_CHUNKS_PER_KEY = 1000
+        private const val DB_OPERATION_TIMEOUT_MS = 30000L
+        private const val TABLE_ = "dt"
+        private const val COLUMN_KEY_ = "ky"
+        private const val COLUMN_VALUE_ = "ct"
+
+        fun getInstance(context: Context): DBStorage {
+
+            return INSTANCE ?: synchronized(this) {
+
+                INSTANCE ?: DBStorage(context.applicationContext).also { INSTANCE = it }
+            }
+        }
+
+        fun resetInstance() {
+
+            synchronized(this) {
+
+                INSTANCE?.shutdown()
+                INSTANCE = null
+            }
+        }
+    }
 
     val DEBUG = AtomicBoolean()
 
-
-    private const val KEY_CHUNK = "chunk"
-    private const val TAG = "DbStorage ::"
-    private const val KEY_CHUNKS = "chunks"
-    private const val MAX_CHUNK_SIZE = 500
-    private const val DATABASE_VERSION = 1
-    private const val DATABASE_NAME = "sdb"
-
-    private const val TABLE_ = "dt"
-    private const val COLUMN_KEY_ = "ky"
-    private const val COLUMN_VALUE_ = "ct"
-
     private var table = TABLE_
     private var columnKey = COLUMN_KEY_
-    private var columnValue = COLUMN_VALUE_
-
     private val executor = Executor.MAIN
-
+    private var columnValue = COLUMN_VALUE_
+    private val processing = AtomicBoolean()
     private var enc: Encryption<String> = NoEncryption()
+    private val schedule = ConcurrentHashMap<String, String>()
+    private val scheduleAccessLock = ReentrantReadWriteLock()
+    private val dbAccessSemaphore = Semaphore(50)
+    private val appContext = context
 
     private fun table() = table
 
@@ -71,10 +93,11 @@ object DBStorage : Storage<String> {
             "$columnKey TEXT," +
             "$columnValue TEXT)"
 
+
     // Note: Not used at the moment
     // private fun sqlDelete() = "DROP TABLE IF EXISTS $table"
 
-    private class DbHelper(context: Context, dbName: String) :
+    private inner class DbHelper(context: Context, dbName: String) :
 
         SQLiteOpenHelper(
 
@@ -84,7 +107,11 @@ object DBStorage : Storage<String> {
             DATABASE_VERSION
         ),
 
-        ContextAvailability<BaseApplication> {
+        ContextAvailability<BaseApplication>
+
+    {
+
+        private val helperContext = context
 
         override fun onCreate(db: SQLiteDatabase) {
 
@@ -113,12 +140,12 @@ object DBStorage : Storage<String> {
 
         override fun takeContext(): BaseApplication {
 
-            return BaseApplication.takeContext()
+            return helperContext as BaseApplication
         }
 
         fun closeDatabase() {
 
-            val latch = CountDownLatch(1)
+            val latch = CountDownLatch(1, "DbStorage.DbHelper.closeDatabase")
 
             withDb { db ->
 
@@ -132,12 +159,25 @@ object DBStorage : Storage<String> {
                 } catch (e: Throwable) {
 
                     Console.error(e)
-                }
 
-                latch.countDown()
+                } finally {
+
+                    latch.countDown()
+                }
             }
 
-            latch.await()
+            try {
+
+                if (!latch.await(DB_OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+
+                    Console.error("Database close operation timed out")
+                }
+
+            } catch (e: InterruptedException) {
+
+                Thread.currentThread().interrupt()
+                Console.error("Database close operation interrupted", e)
+            }
         }
     }
 
@@ -149,7 +189,7 @@ object DBStorage : Storage<String> {
 
     private fun dbName() = "$DATABASE_NAME.$DATABASE_VERSION"
 
-    private val dbHelper: DbHelper = DbHelper(BaseApplication.takeContext(), dbName())
+    private val dbHelper: DbHelper = DbHelper(appContext, dbName())
 
     override fun initialize(ctx: Context) {
 
@@ -174,7 +214,6 @@ object DBStorage : Storage<String> {
         } catch (e: SQLException) {
 
             Console.error(tag, e.message ?: "Unknown error")
-
             Console.error(e)
         }
     }
@@ -215,7 +254,16 @@ object DBStorage : Storage<String> {
 
         val chunksCount = chunks.size
 
-        doPut("${key}_$KEY_CHUNKS", chunksCount.toString())
+        if (chunksCount > MAX_CHUNKS_PER_KEY) {
+
+            Console.error("$tag Chunk count exceeds maximum allowed: $chunksCount > $MAX_CHUNKS_PER_KEY")
+            return false
+        }
+
+        if (!doSchedule("${key}_$KEY_CHUNKS", chunksCount.toString())) {
+
+            return false
+        }
 
         if (chunksCount > 1) {
 
@@ -224,26 +272,24 @@ object DBStorage : Storage<String> {
             var index = 0
             var success = true
 
-            chunks.forEach { chunk ->
+            for (chunk in chunks) {
 
-                if (success) {
+                if (!success) break
 
-                    if (doPut("${key}_${KEY_CHUNK}_$index", chunk)) {
+                if (doSchedule("${key}_${KEY_CHUNK}_$index", chunk)) {
 
-                        if (DEBUG.get()) {
+                    if (DEBUG.get()) {
 
-                            Console.log("$tag Chunk :: Written chunk = ${index + 1} / $chunksCount")
-                        }
-
-                    } else {
-
-                        Console.error("$tag Chunk :: Not written chunk = ${index + 1} / $chunksCount")
-
-                        success = false
+                        Console.log("$tag Chunk :: Written chunk = ${index + 1} / $chunksCount")
                     }
 
-                    index++
+                } else {
+
+                    Console.error("$tag Chunk :: Not written chunk = ${index + 1} / $chunksCount")
+                    success = false
                 }
+
+                index++
             }
 
             return success
@@ -252,7 +298,7 @@ object DBStorage : Storage<String> {
 
             if (DEBUG.get()) Console.log("$tag START Chunk :: No chunks")
 
-            return doPut("${key}_${KEY_CHUNK}_0", chunks[0])
+            return doSchedule("${key}_${KEY_CHUNK}_0", chunks[0])
         }
     }
 
@@ -301,6 +347,7 @@ object DBStorage : Storage<String> {
 
                         var chunks = 1
                         val chunksRawValue = data
+
                         val condition =
                             chunksRawValue?.isNotEmpty() == true && chunksRawValue.isDigitsOnly()
 
@@ -317,9 +364,7 @@ object DBStorage : Storage<String> {
 
                             if (DEBUG.get()) Console.log("$tag START :: Chunk :: No chunks")
 
-                            val got = doGet("${key}_${KEY_CHUNK}_0")
-
-                            callback.onCompleted(got)
+                            doGetAsync("${key}_${KEY_CHUNK}_0", callback)
 
                         } else {
 
@@ -329,34 +374,27 @@ object DBStorage : Storage<String> {
                             }
 
                             val result = StringBuilder()
-                            val pieces = ConcurrentHashMap<Int, String?>()
+                            val pieces = Array<String?>(chunks) { null }
 
-                            for (i in 0..chunks - 1) {
+                            for (i in 0 until chunks) {
 
                                 pieces[i] = doGet("${key}_${KEY_CHUNK}_$i")
+                            }
 
-                                if (pieces.size == chunks) {
+                            for (i in 0 until chunks) {
 
-                                    pieces.keys.toMutableList().sorted()
-                                        .forEach { index ->
+                                val part = pieces[i]
 
-                                            val part = pieces[index]
+                                if (part?.isNotEmpty() == true) {
 
-                                            if (part?.isNotEmpty() == true) {
+                                    result.append(part)
 
-                                                result.append(part)
+                                    if (DEBUG.get()) {
 
-                                                if (DEBUG.get()) {
-
-                                                    Console.log(
-
-                                                        "$tag Chunk :: " +
-                                                                "Loaded chunk = " +
-                                                                "${index + 1} / $chunks"
-                                                    )
-                                                }
-                                            }
-                                        }
+                                        Console.log(
+                                            "$tag Chunk :: Loaded chunk = ${i + 1} / $chunks"
+                                        )
+                                    }
                                 }
                             }
 
@@ -376,19 +414,7 @@ object DBStorage : Storage<String> {
                     Console.log("$tag Calling do get")
                 }
 
-                val got = doGet("${key}_$KEY_CHUNKS")
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag Did get")
-                }
-
-                doGetCallback.onCompleted(got)
-
-                if (DEBUG.get()) {
-
-                    Console.log("$tag Called do get, waiting for result")
-                }
+                doGetAsync("${key}_$KEY_CHUNKS", doGetCallback)
 
             } catch (e: Throwable) {
 
@@ -412,7 +438,7 @@ object DBStorage : Storage<String> {
         if (DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "DbStorage.delete(key='$key')")
 
         withDb { db ->
 
@@ -467,7 +493,18 @@ object DBStorage : Storage<String> {
             latch.countDown()
         }
 
-        latch.await()
+        try {
+
+            if (!latch.await(DB_OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+
+                Console.error("Database operation timed out")
+            }
+
+        } catch (e: InterruptedException) {
+
+            Thread.currentThread().interrupt()
+            Console.error("Database operation interrupted", e)
+        }
 
         return result.get()
     }
@@ -479,7 +516,7 @@ object DBStorage : Storage<String> {
         if (DEBUG.get()) Console.log("$tag START")
 
         val result = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "DbStorage.DeleteAll")
 
         withDb { db ->
 
@@ -535,7 +572,18 @@ object DBStorage : Storage<String> {
             latch.countDown()
         }
 
-        latch.await()
+        try {
+
+            if (!latch.await(DB_OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+
+                Console.error("Database operation timed out")
+            }
+
+        } catch (e: InterruptedException) {
+
+            Thread.currentThread().interrupt()
+            Console.error("Database operation interrupted", e)
+        }
 
         return result.get()
     }
@@ -549,8 +597,8 @@ object DBStorage : Storage<String> {
         try {
 
             val dbName = dbHelper.databaseName
-            val context = dbHelper.takeContext()
-            val result = context.deleteDatabase(dbName)
+            val contextRef = dbHelper.takeContext()
+            val result = contextRef.deleteDatabase(dbName)
 
             if (result) {
 
@@ -604,7 +652,7 @@ object DBStorage : Storage<String> {
     override fun count(): Long {
 
         val result = AtomicLong()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "DbStorage.count")
 
         withDb { db ->
 
@@ -621,21 +669,28 @@ object DBStorage : Storage<String> {
 
                 val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
 
-                val cursor = db?.query(
+                var cursor: Cursor? = null
 
-                    table,
-                    projection,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                )
+                try {
 
-                val res = cursor?.count?.toLong() ?: 0
-                result.set(res)
+                    cursor = db?.query(
 
-                cursor?.close()
+                        table,
+                        projection,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                    )
+
+                    val res = cursor?.count?.toLong() ?: 0
+                    result.set(res)
+
+                } finally {
+
+                    cursor?.close()
+                }
 
             } catch (e: Throwable) {
 
@@ -645,7 +700,18 @@ object DBStorage : Storage<String> {
             latch.countDown()
         }
 
-        latch.await()
+        try {
+
+            if (!latch.await(DB_OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+
+                Console.error("Database operation timed out")
+            }
+
+        } catch (e: InterruptedException) {
+
+            Thread.currentThread().interrupt()
+            Console.error("Database operation interrupted", e)
+        }
 
         return result.get()
     }
@@ -699,40 +765,165 @@ object DBStorage : Storage<String> {
 
         ) {
 
-            var tag = "$tag With DB ::".trim()
+            var tagMsg = "$tag With DB ::".trim()
 
             try {
 
-                val db = dbHelper.writableDatabase
+                if (!dbAccessSemaphore.tryAcquire(DB_OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
 
-                tag = "$tag db = ${db.hashCode()} ::"
+                    Console.error("$tagMsg Database access timeout - too many concurrent operations")
+                    return@exec
+                }
 
-                if (DEBUG.get()) Console.log("$tag START")
+                try {
 
-                db.let {
+                    val db = dbHelper.writableDatabase
+                    tagMsg = "$tagMsg db = ${db.hashCode()} ::"
+
+                    if (DEBUG.get()) Console.log("$tagMsg START")
 
                     if (db.isOpen) {
 
-                        if (DEBUG.get()) Console.log("$tag EXECUTING")
+                        if (DEBUG.get()) Console.log("$tagMsg EXECUTING")
 
                         executor.execute {
 
-                            doWhat(db)
+                            try {
 
-                            if (DEBUG.get()) Console.log("$tag EXECUTED")
+                                doWhat(db)
+
+                            } finally {
+
+                                dbAccessSemaphore.release()
+                            }
+
+                            if (DEBUG.get()) Console.log("$tagMsg EXECUTED")
                         }
 
                     } else {
 
-                        Console.warning("$tag DB is not open")
+                        Console.warning("$tagMsg DB is not open")
+                        dbAccessSemaphore.release()
                     }
+
+                } catch (e: Throwable) {
+
+                    dbAccessSemaphore.release()
+                    throw e
                 }
+
+            } catch (_: InterruptedException) {
+
+                Thread.currentThread().interrupt()
+                Console.error("$tagMsg Interrupted while waiting for database access")
 
             } catch (e: Throwable) {
 
-                Console.error("$tag ERROR ::", e.message ?: "Unknown error")
-
+                Console.error("$tagMsg ERROR ::", e.message ?: "Unknown error")
                 Console.error(e)
+            }
+        }
+    }
+
+    private fun doSchedule(key: String?, value: String): Boolean {
+
+        if (key == null) return false
+
+        return scheduleAccessLock.write {
+            try {
+
+                if (schedule.size >= MAX_SCHEDULE_SIZE) {
+
+                    Console.error("Schedule queue is full. Rejecting new entries to prevent memory issues.")
+                    return@write false
+                }
+
+                schedule[key] = value
+                doProcess()
+
+                true
+
+            } catch (e: Throwable) {
+
+                recordException(e)
+                false
+            }
+        }
+    }
+
+    private fun doProcess() {
+
+        exec {
+
+            if (processing.get()) {
+
+                return@exec
+            }
+
+            processing.set(true)
+
+            try {
+
+                scheduleAccessLock.read {
+
+                    if (schedule.isEmpty()) {
+
+                        if (DEBUG.get()) {
+
+                            Console.log("Schedule is empty, nothing to process")
+                        }
+
+                        return@exec
+                    }
+                }
+
+                val entriesToProcess = scheduleAccessLock.read {
+
+                    schedule.toMap()
+                }
+
+                val successfulKeys = mutableSetOf<String>()
+
+                entriesToProcess.forEach { (key, value) ->
+
+                    if (doPut(key, value)) {
+
+                        successfulKeys.add(key)
+
+                    } else {
+
+                        if (DEBUG.get()) {
+
+                            Console.warning("Put :: Failed :: Key='$key' :: Will retry later")
+                        }
+                    }
+                }
+
+                if (successfulKeys.isNotEmpty()) {
+
+                    scheduleAccessLock.write {
+
+                        successfulKeys.forEach { key ->
+
+                            schedule.remove(key)
+                        }
+                    }
+                }
+
+                scheduleAccessLock.read {
+
+                    if (schedule.isEmpty()) {
+
+                        if (DEBUG.get()) {
+
+                            Console.log("Schedule is empty, everything is processed")
+                        }
+                    }
+                }
+
+            } finally {
+
+                processing.set(false)
             }
         }
     }
@@ -749,22 +940,15 @@ object DBStorage : Storage<String> {
 
         if (DEBUG.get()) Console.log("$tag START")
 
-        if (isOnMainThread()) {
-
-            val e = IllegalArgumentException("Do put from the main thread")
-            Console.error(e)
-        }
-
         val result = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        val cDown = CountDownLatch(1, "DBStorage.doPut(key='$key')")
 
         withDb { db ->
 
             if (db?.isOpen == false) {
 
                 Console.warning("DB is not open")
-
-                latch.countDown()
+                cDown.countDown()
 
                 return@withDb
             }
@@ -799,21 +983,19 @@ object DBStorage : Storage<String> {
 
                                 if (DEBUG.get()) Console.log(
 
-                                    "$tag END: rowsUpdated = $rowsUpdated, " +
-                                            "length = ${value.length}"
+                                    "$tag END: rowsUpdated = $rowsUpdated, length = ${value.length}"
                                 )
 
                                 return true
                             }
 
-                            val rowsInserted = (db?.insert(table(), null, values) ?: 0)
+                            val rowsInserted = db?.insert(table(), null, values) ?: -1
 
                             if (rowsInserted > 0) {
 
                                 if (DEBUG.get()) Console.log(
 
-                                    "$tag END: rowsInserted = $rowsInserted, " +
-                                            "length = ${value.length}"
+                                    "$tag END: rowsInserted = $rowsInserted, length = ${value.length}"
                                 )
 
                                 return true
@@ -822,14 +1004,12 @@ object DBStorage : Storage<String> {
                         } catch (e: Throwable) {
 
                             Console.error(tag, e.message ?: "Unknown error")
-
                             Console.error(e)
                         }
 
                         Console.error(
 
-                            "$tag END :: Nothing was inserted or updated, " +
-                                    "length = ${value.length}"
+                            "$tag END :: Nothing was inserted or updated, length = ${value.length}"
                         )
 
                         return false
@@ -839,11 +1019,23 @@ object DBStorage : Storage<String> {
             ) ?: false
 
             result.set(res)
-
-            latch.countDown()
+            cDown.countDown()
         }
 
-        latch.await()
+        try {
+
+            if (!cDown.await(DB_OPERATION_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+
+                Console.error("$tag Database operation timed out")
+                return false
+            }
+
+        } catch (e: InterruptedException) {
+
+            Thread.currentThread().interrupt()
+            Console.error("$tag Database operation interrupted", e)
+            return false
+        }
 
         return result.get()
     }
@@ -854,115 +1046,120 @@ object DBStorage : Storage<String> {
 
             val e = IllegalArgumentException("Do get from the main thread")
             recordException(e)
+            throw e
         }
 
-        return sync("DBStorage.doGet.$key") { callback ->
+        return sync("DBStorage.doGet.$key", "") { callback ->
 
             doGetAsync(key, callback)
         }
     }
 
-    private fun doGetAsync(key: String?, callback: OnObtain<String?>) {
+    private fun doGetAsync(key: String?, getterCallback: OnObtain<String?>) {
 
         val tag = "$TAG Do get async :: Key='$key' ::"
 
-        if (DEBUG.get()) {
+        if (isEmpty(key)) {
 
-            Console.log("$tag START")
+            val e = IllegalArgumentException("Empty key")
+            Console.error("$tag FAILED :: Error='$e'")
+            getterCallback.onFailure(e)
+            return
         }
 
-        exec(
+        key?.let {
 
-            onRejected = { e ->
+            if (DEBUG.get()) {
 
-                Console.error("$tag REJECTED")
-                callback.onFailure(e)
+                Console.log("$tag START")
             }
 
-        ) {
+            exec(
 
-            if (isEmpty(key)) {
+                onRejected = { e ->
 
-                val e = IllegalArgumentException("Empty key")
-                Console.error("$tag FAILED :: Error='$e'")
-                callback.onFailure(e)
-                return@exec
-            }
+                    Console.error("$tag REJECTED")
 
-            if (DEBUG.get()) Console.log("$tag STARTED")
-
-            withDb(tag) { db ->
-
-                if (DEBUG.get()) Console.log("$tag Got DB")
-
-                var result = ""
-                val selection = "$columnKey = ?"
-                val selectionArgs = arrayOf(key)
-                val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
-
-                if (db?.isOpen == false) {
-
-                    val e = IOException("DB is not open")
-                    Console.error("$tag FAILED :: Error='${e.message}'")
-                    callback.onFailure(e)
-                    return@withDb
+                    getterCallback.onFailure(e)
                 }
 
-                var cursor: Cursor? = null
+            ) {
 
-                try {
+                if (DEBUG.get()) Console.log("$tag STARTED")
 
-                    cursor = db?.query(
+                withDb(tag) { db ->
 
-                        table,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        null
-                    )
+                    if (DEBUG.get()) Console.log("$tag Got DB")
 
-                    cursor?.let {
+                    var result = ""
+                    val selection = "$columnKey = ?"
+                    val selectionArgs = arrayOf(key)
+                    val projection = arrayOf(BaseColumns._ID, columnKey, columnValue)
 
-                        with(it) {
+                    if (db?.isOpen == false) {
 
-                            while (moveToNext() && isEmpty(result)) {
+                        val e = IOException("DB is not open")
+                        Console.error("$tag FAILED :: Error='${e.message}'")
+                        getterCallback.onFailure(e)
+                        return@withDb
+                    }
 
-                                try {
+                    var cursor: Cursor? = null
 
-                                    val idx = getColumnIndexOrThrow(columnValue)
-                                    result = getString(idx)
+                    try {
 
-                                } catch (e: Throwable) {
+                        cursor = db?.query(
 
-                                    callback.onFailure(e)
-                                    result = e.message ?: "error"
+                            table,
+                            projection,
+                            selection,
+                            selectionArgs,
+                            null,
+                            null,
+                            null
+                        )
+
+                        cursor?.let {
+
+                            with(it) {
+
+                                while (moveToNext() && isEmpty(result)) {
+
+                                    try {
+
+                                        val idx = getColumnIndexOrThrow(columnValue)
+                                        result = getString(idx) ?: ""
+
+                                    } catch (e: Throwable) {
+
+                                        getterCallback.onFailure(e)
+                                        return@withDb
+                                    }
                                 }
                             }
                         }
-                    }
-
-                    cursor?.close()
-
-                } catch (e: Throwable) {
-
-                    callback.onFailure(e)
-                    return@withDb
-
-                } finally {
-
-                    try {
 
                         cursor?.close()
 
                     } catch (e: Throwable) {
 
-                        recordException(e)
-                    }
-                }
+                        getterCallback.onFailure(e)
+                        return@withDb
 
-                callback.onCompleted(result)
+                    } finally {
+
+                        try {
+
+                            cursor?.close()
+
+                        } catch (e: Throwable) {
+
+                            recordException(e)
+                        }
+                    }
+
+                    getterCallback.onCompleted(result)
+                }
             }
         }
     }

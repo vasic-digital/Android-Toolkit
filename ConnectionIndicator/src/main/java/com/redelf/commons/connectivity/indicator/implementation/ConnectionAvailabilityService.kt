@@ -7,6 +7,7 @@ import com.redelf.commons.connectivity.indicator.connection.ConnectivityStateCal
 import com.redelf.commons.connectivity.indicator.stateful.AvailableStatefulService
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.dependency.Chainable
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isOnMainThread
 import com.redelf.commons.extensions.recordException
@@ -18,7 +19,6 @@ import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.stateful.State
 import java.util.concurrent.CopyOnWriteArraySet
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 abstract class ConnectionAvailabilityService(
@@ -65,7 +65,7 @@ abstract class ConnectionAvailabilityService(
                 throw IllegalArgumentException("Cannot get state from main thread")
             }
 
-            val latch = CountDownLatch(1)
+            val latch = CountDownLatch(1, "ConnectionAvailabilityService.getState")
             var state = ConnectionState.Disconnected
 
             withConnectionHandler {

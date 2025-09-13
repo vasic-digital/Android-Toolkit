@@ -76,7 +76,7 @@ class SettingsManager private constructor() :
             recordException(e)
         }
 
-        return sync("settings.get.$key") { callback ->
+        return sync("settings.get.$key", "${getWho()}.getWithDefault") { callback ->
 
             get(key, defaultValue, callback)
 
@@ -152,7 +152,7 @@ class SettingsManager private constructor() :
 
                             it.flags?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 
@@ -208,7 +208,7 @@ class SettingsManager private constructor() :
 
                             it.values?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 
@@ -373,7 +373,7 @@ class SettingsManager private constructor() :
 
                             it.numbers?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 

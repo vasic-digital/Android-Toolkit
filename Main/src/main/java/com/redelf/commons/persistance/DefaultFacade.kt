@@ -313,51 +313,62 @@ object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> 
 
         val tag = "$TAG Get (w.def) :: Key='$key' ::"
 
-        if (DEBUG.get()) {
+        if (isEmpty(key)) {
 
-            Console.log("$tag START")
+            val e = IllegalArgumentException("Empty key")
+            Console.error("$tag FAILED :: Error='$e'")
+            callback.onFailure(e)
+            return
         }
 
-        exec(
-
-            onRejected = { e ->
-
-                Console.error("$tag REJECTED")
-
-                callback.onFailure(e)
-            }
-
-        ) {
+        key?.let {
 
             if (DEBUG.get()) {
 
-                Console.log("$tag STARTED")
+                Console.log("$tag START")
             }
 
-            get<T>(
+            exec(
 
-                key,
+                onRejected = { e ->
 
-                object : OnObtain<T?> {
+                    Console.error("$tag REJECTED")
 
-                    override fun onCompleted(data: T?) {
+                    callback.onFailure(error = e)
+                }
 
-                        if (DEBUG.get()) {
+            ) {
 
-                            Console.log("$tag END :: On completed")
+                if (DEBUG.get()) {
+
+                    Console.log("$tag STARTED")
+                }
+
+                get<T>(
+
+                    key,
+
+                    object : OnObtain<T?> {
+
+                        override fun onCompleted(data: T?) {
+
+                            if (DEBUG.get()) {
+
+                                Console.log("$tag END :: On completed")
+                            }
+
+                            callback.onCompleted(data = data ?: defaultValue)
                         }
 
-                        callback.onCompleted(data ?: defaultValue)
+                        override fun onFailure(error: Throwable) {
+
+                            Console.error("$tag END :: onFailure :: Error='${error.message}'")
+
+                            callback.onFailure(error = error)
+                        }
                     }
-
-                    override fun onFailure(error: Throwable) {
-
-                        Console.error("$tag END :: onFailure :: Error='${error.message}'")
-
-                        callback.onFailure(error)
-                    }
-                }
-            )
+                )
+            }
         }
     }
 

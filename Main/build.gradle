@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id("com.google.devtools.ksp") version "2.2.0-2.0.2"
+    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.20"
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
@@ -132,7 +133,8 @@ android {
 
             main {
 
-                java.srcDirs += "build/generated/ksp"
+                java.srcDirs += "build/generated/ksp/debug"
+                java.srcDirs += "build/generated/ksp/release"
             }
         }
     }
@@ -191,6 +193,14 @@ android {
         doNotStrip '**/libconcealjni.so'
     }
 
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.17"
+    }
+
     lint {
 
         disable "Instantiatable"
@@ -201,7 +211,8 @@ android {
 
         main {
 
-            java.srcDirs += "build/generated/ksp"
+            java.srcDirs += "build/generated/ksp/debug"
+            java.srcDirs += "build/generated/ksp/release"
         }
     }
 }
@@ -220,13 +231,13 @@ dependencies {
     testApi project("$toolkit_obfuscator_project")
     androidTestApi project("$toolkit_obfuscator_project")
 
-    // TODO: Refactor / move:
-    //    api 'androidx.activity:activity-compose:1.10.0'
-    //    api 'androidx.compose.ui:ui'
-    //    api 'androidx.compose.ui:ui-graphics'
-    //    api 'androidx.compose.material3:material3'
-    //    api 'androidx.compose.foundation:foundation'
-    //    api 'androidx.compose.ui:ui-tooling-preview'
+    // Jetpack Compose dependencies for ComposeRecyclerView implementation
+    api 'androidx.activity:activity-compose:1.10.0'
+    api 'androidx.compose.ui:ui'
+    api 'androidx.compose.ui:ui-graphics'
+    api 'androidx.compose.material3:material3'
+    api 'androidx.compose.foundation:foundation'
+    api 'androidx.compose.ui:ui-tooling-preview'
 
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
@@ -315,6 +326,9 @@ dependencies {
 
     api "androidx.recyclerview:recyclerview:1.4.0"
 
+    // Compose BOM for ComposeRecyclerView implementation
+    api platform('androidx.compose:compose-bom:2025.01.01')
+    api "com.facebook.android:facebook-android-sdk:18.0.3"
     // TODO: Refactor / move:
     //    api platform('androidx.compose:compose-bom:2025.01.01')
 
@@ -480,6 +494,19 @@ task obtainAndWriteSalt {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+// Fix KSP task dependencies
+afterEvaluate {
+    tasks.named('kspDebugKotlin') {
+        mustRunAfter tasks.named('kspReleaseKotlin')
+    }
+
+    // Fix other KSP-related task dependencies
+    tasks.matching { it.name.startsWith('extractRelease') }.configureEach {
+        mustRunAfter tasks.named('kspDebugKotlin')
+        mustRunAfter tasks.named('kspReleaseKotlin')
     }
 }
 

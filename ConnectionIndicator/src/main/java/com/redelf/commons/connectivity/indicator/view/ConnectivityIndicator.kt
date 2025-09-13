@@ -346,7 +346,7 @@ class ConnectivityIndicator :
                     }
                 }
 
-                button.setImageResource(icon)
+                button?.setImageResource(icon)
                 button?.setColorFilter(tint)
             }
         }

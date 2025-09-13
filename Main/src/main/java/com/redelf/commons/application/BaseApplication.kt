@@ -622,7 +622,6 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
-        initTerminationListener()
         initFirebaseWithAnalytics()
         initFacebook()
         initializeSQLCipher()

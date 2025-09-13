@@ -31,10 +31,10 @@ class SecretsManager private constructor(storageKeyToSet: String) :
         }
     }
 
-    override val lazySaving = true
-    override val instantiateDataObject = true
-
+    override val lazySaving = false
     override val storageKey = storageKeyToSet
+    override val instantiateDataObject = true
+    override val checkDataVersionOnSaving = false
 
     override fun getLogTag() = "SecretsManager :: ${hashCode()} ::"
 
@@ -80,7 +80,7 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
                                 result.updateValue(newSalt)
 
-                                transaction.end(
+                                transaction?.end(
 
                                     true,
 

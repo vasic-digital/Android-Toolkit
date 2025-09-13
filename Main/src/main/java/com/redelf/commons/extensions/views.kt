@@ -1,6 +1,5 @@
 package com.redelf.commons.extensions
 
-import android.animation.Animator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.text.Html
@@ -8,7 +7,6 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.view.ViewTreeObserver
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.bitmapTransform
@@ -19,6 +17,12 @@ import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.logging.Console
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import java.util.concurrent.ConcurrentHashMap
+
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.widget.TextView
+import android.view.View
+
 
 data class ColoredWord @JsonCreator constructor(
 
@@ -225,7 +229,7 @@ fun RecyclerView.notifyDatasetChangedWithFade(
     duration: Long = 200L,
     hasItemChanged: (position: Int) -> Boolean,
 
-) {
+    ) {
 
     val thisOne = hashCode()
 
@@ -326,4 +330,162 @@ fun RecyclerView.notifyDatasetChangedWithFade(
         refreshingRecyclerViews[thisOne] = false
 
     }, duration)
+}
+
+fun TextView.setTextWithFadeEffect(
+
+    enabled: Boolean,
+    new: String?,
+    duration: Long = 150L,
+    onAnimationComplete: (() -> Unit)? = null
+
+) {
+
+    if (!enabled) {
+
+        text = new ?: ""
+        onAnimationComplete?.invoke()
+        return
+    }
+
+    // Cancel any existing animations to prevent stacking
+    animate().cancel()
+    
+    // Ensure alpha is 1f to prevent invisible text
+    if (alpha == 0f) {
+
+        alpha = 1f
+    }
+
+    if (text.toString() == (new ?: "")) {
+
+        // Text is the same, just ensure visibility and call completion
+        alpha = 1f
+        text = new ?: ""
+        onAnimationComplete?.invoke()
+        return
+    }
+
+    animate()
+        .alpha(0f)
+        .setDuration(duration / 2)
+        .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                text = new ?: ""
+                animate()
+                    .alpha(1f)
+                    .setDuration(duration / 2)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationComplete?.invoke()
+                        }
+                    })
+                    .start()
+            }
+        })
+        .start()
+}
+
+fun TextView.setTextWithFadeEffect(
+
+    enabled: Boolean,
+    new: CharSequence?,
+    duration: Long = 150L,
+    onAnimationComplete: (() -> Unit)? = null
+
+) {
+
+    if (!enabled) {
+
+        text = new ?: ""
+        onAnimationComplete?.invoke()
+        return
+    }
+
+    // Cancel any existing animations to prevent stacking
+    animate().cancel()
+    
+    // Ensure alpha is 1f to prevent invisible text
+    if (alpha == 0f) {
+
+        alpha = 1f
+    }
+
+    if (text.toString() == (new ?: "").toString()) {
+
+        // Text is the same, just ensure visibility and call completion
+        alpha = 1f
+        text = new ?: ""
+        onAnimationComplete?.invoke()
+        return
+    }
+
+    animate()
+        .alpha(0f)
+        .setDuration(duration / 2)
+        .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                text = new ?: ""
+                animate()
+                    .alpha(1f)
+                    .setDuration(duration / 2)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationComplete?.invoke()
+                        }
+                    })
+                    .start()
+            }
+        })
+        .start()
+}
+
+fun View.setViewWithFadeEffect(
+
+    enabled: Boolean,
+    onDataChange: () -> Unit,
+    duration: Long = 150L,
+    zeroAlpha: Float = 0f,
+    onAnimationComplete: (() -> Unit)? = null
+
+) {
+
+    if (!enabled) {
+
+        onDataChange()
+
+        if (onAnimationComplete != null) {
+
+            onAnimationComplete()
+        }
+        return
+    }
+
+    // Cancel any existing animations to prevent stacking
+    animate().cancel()
+    
+    // Ensure alpha is 1f to prevent invisible view
+    if (alpha == zeroAlpha || alpha == 0f) {
+
+        alpha = 1f
+    }
+
+    animate()
+        .alpha(zeroAlpha)
+        .setDuration(duration / 2)
+        .setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                onDataChange()
+                animate()
+                    .alpha(1f)
+                    .setDuration(duration / 2)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            onAnimationComplete?.invoke()
+                        }
+                    })
+                    .start()
+            }
+        })
+        .start()
 }

@@ -1,12 +1,12 @@
 package com.redelf.commons.management.managers
 
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -22,7 +22,7 @@ class ManagersCleaner {
 
     fun cleanupManagers(managers: List<Management>): Boolean {
 
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "ManagersCleaner.cleanupManagers")
         val result = AtomicBoolean(true)
 
         val callback = object : CleanupCallback {
@@ -76,7 +76,7 @@ class ManagersCleaner {
         Console.log("$tag START: $managersListLog$")
 
         val success = AtomicBoolean(true)
-        val latch = CountDownLatch(managers.size)
+        val latch = CountDownLatch(managers.size, "ManagersCleaner.cleanupManagers.2")
 
         exec(
 

@@ -57,7 +57,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.Random
 import java.util.concurrent.Callable
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
@@ -1001,8 +1000,6 @@ fun single(what: Runnable) {
 fun exec(
 
     callable: Callable<Boolean>,
-    timeout: Long = 60L,
-    timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Bool exec ::",
     executor: Execution? = null,
     debug: Boolean = false
@@ -1012,8 +1009,6 @@ fun exec(
     val result = doExec(
 
         callable = callable,
-        timeout = timeout,
-        timeUnit = timeUnit,
         logTag = logTag,
         executor = executor,
         debug = debug
@@ -1030,8 +1025,6 @@ fun exec(
 fun <T> doExec(
 
     callable: Callable<T>,
-    timeout: Long = 60L,
-    timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Do exec ::",
     executor: Execution? = null,
     debug: Boolean = false
@@ -1039,7 +1032,7 @@ fun <T> doExec(
 ): T? {
 
     var success: T? = null
-    var future: Future<T>? = null
+    val future: Future<T>? = null
 
     try {
 
@@ -1183,6 +1176,7 @@ fun yield(context: String, check: Obtain<Boolean>) {
 fun <X> sync(
 
     context: String,
+    from: String = "",
     timeout: Long = 60,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
     mainThreadForbidden: Boolean = true,
@@ -1194,12 +1188,25 @@ fun <X> sync(
 
     // TODO: Coroutines support
 
-    val tag = "SYNC :: $context ::"
+    val tag = if (from.isEmpty()) {
+
+        "SYNC :: $context ::"
+
+    } else {
+
+        "SYNC :: $context :: from '$from' ::"
+    }
+
+    val ctx = if (from.isEmpty()) {
+
+        "SYNC.$context"
+
+    } else {
+
+        "SYNC.$context(from='$from')"
+    }
 
     if (DEBUG_SYNC.get() || debug) Console.debug("$tag START")
-
-    var result: X? = null
-    val latch = CountDownLatch(1)
 
     if (mainThreadForbidden && isOnMainThread()) {
 
@@ -1207,6 +1214,9 @@ fun <X> sync(
         Console.error("$tag ${e.message}")
         recordException(e)
     }
+
+    var result: X? = null
+    val latch = CountDownLatch(1, context = ctx)
 
     exec(
 
@@ -1277,13 +1287,16 @@ fun <X> sync(
 
             waitingFlag?.set(false)
 
-            if (endTime > 1500 && endTime < 3000) {
+            if (DEBUG_SYNC.get()) {
 
-                Console.warning("$tag WAITED for $endTime ms")
+                if (endTime > 1500 && endTime < 3000) {
 
-            } else if (endTime >= 3000) {
+                    Console.warning("$tag WAITED for $endTime ms")
 
-                Console.error("$tag WAITED for $endTime ms")
+                } else if (endTime >= 3000) {
+
+                    Console.warning("$tag WAITED for $endTime ms")
+                }
             }
 
             if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")
@@ -1312,7 +1325,7 @@ fun <X> sync(
 
 private val UI_IN_SYNC = AtomicBoolean()
 
-fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
+fun syncUI(context: String, from: String, what: kotlinx.coroutines.Runnable): Boolean {
 
     fun doExecute(what: kotlinx.coroutines.Runnable, callback: OnObtain<Boolean?>) {
 
@@ -1338,9 +1351,12 @@ fun syncUI(context: String, what: kotlinx.coroutines.Runnable): Boolean {
         }
     }
 
+    val from = "syncUi(from='$from')"
+
     val result = sync(
 
         context,
+        from,
 
         mainThreadForbidden = false,
         waitingFlag = UI_IN_SYNC,

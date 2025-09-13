@@ -9,6 +9,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.application.OnClearFromRecentService
 import com.redelf.commons.data.Empty
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isInForeground
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.Connectivity
@@ -20,9 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class LazyDataManagement<T> :
 
     DataManagement<T>(),
-    Registration<Context> where T : Versionable
-
-{
+    Registration<Context> where T : Versionable {
 
     protected open val lazySaving = false
     protected open val savingOnTermination = false
@@ -241,7 +240,7 @@ abstract class LazyDataManagement<T> :
 
     override fun isRegistered(subscriber: Context) = registered.get() && terminationRegistered.get()
 
-    override fun pushData(
+    override fun apply(
 
         data: T?,
         from: String,
@@ -250,7 +249,7 @@ abstract class LazyDataManagement<T> :
 
     ) {
 
-        val from = "lazy.pushData(from='$from').withData.withCallback"
+        val from = "lazy.apply(from='$from').withData.withCallback"
 
         if (!isEnabled()) {
 
@@ -274,7 +273,7 @@ abstract class LazyDataManagement<T> :
 
         } else {
 
-            super.pushData(data, from, notify, callback)
+            super.apply(data, from, notify, callback)
         }
     }
 
@@ -299,6 +298,18 @@ abstract class LazyDataManagement<T> :
 
         val tag = "Lazy :: Who = '${getWho()}', " +
                 "From='$from' :: Save (${takeContext().getActivityCount()}) ::"
+        if (!lazySaving) {
+
+            return
+        }
+
+        if (BaseApplication.takeContext().isInForeground()) {
+
+            return
+        }
+
+        val tag =
+            "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
 
         if (isLazyReady()) {
 
@@ -341,7 +352,7 @@ abstract class LazyDataManagement<T> :
 
                             overwriteData(it)
 
-                            doPushData(
+                            doApply(
 
                                 it,
                                 "onBackground(from='$from')",

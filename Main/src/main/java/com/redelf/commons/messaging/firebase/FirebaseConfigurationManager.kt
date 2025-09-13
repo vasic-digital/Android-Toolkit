@@ -5,12 +5,12 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -75,7 +75,7 @@ object FirebaseConfigurationManager :
 
         Console.log("$LOG_TAG Config params fetching")
 
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "FirebaseConfigurationManager.load")
 
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
@@ -101,7 +101,7 @@ object FirebaseConfigurationManager :
                     val newMap = FirebaseConfiguration()
                     newMap.putAll(all)
 
-                    pushData(
+                    apply(
 
                         newMap,
 

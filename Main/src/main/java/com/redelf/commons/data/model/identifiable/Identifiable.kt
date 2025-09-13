@@ -11,7 +11,8 @@ abstract class Identifiable<I> {
     @SerializedName("id")
     private var id: I? = null
 
-    @JsonCreator constructor()
+    @JsonCreator
+    constructor()
 
     @Throws(ClassCastException::class)
     constructor(data: LinkedTreeMap<String, Any>) : this()
@@ -19,10 +20,12 @@ abstract class Identifiable<I> {
     @Synchronized
     open fun getId(): I? {
 
-        if (id == null) @Synchronized {
+        id?.let {
 
-            id = initializeId()
+            return it
         }
+
+        id = initializeId()
 
         return id
     }

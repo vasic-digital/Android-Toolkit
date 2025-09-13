@@ -2,6 +2,7 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import com.redelf.commons.data.type.PairDataInfo
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.forClassName
 import com.redelf.commons.extensions.isEmpty
@@ -23,7 +24,6 @@ import java.lang.reflect.ParameterizedType
 import java.util.Queue
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -164,7 +164,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                         val success = AtomicBoolean(true)
                         val parallelized = value.isPartitioningParallelized()
                         val latchCount = if (parallelized) partitionsCount else 0
-                        val partitioningLatch = CountDownLatch(latchCount)
+                        val partitioningLatch = CountDownLatch(latchCount, "DataDelegate.put(key='$key')")
 
                         for (i in 0..<partitionsCount) {
 
@@ -851,13 +851,16 @@ class DataDelegate private constructor(private val facade: Facade) :
         val obtained = obtain.obtain()
         val endTime = System.currentTimeMillis() - startTime
 
-        if (endTime > 1500 && endTime < 3000) {
+        if (DEBUG.get()) {
 
-            Console.warning("$tag WAITED for $endTime ms")
+            if (endTime > 1500 && endTime < 3000) {
 
-        } else if (endTime >= 3000) {
+                Console.warning("$tag WAITED for $endTime ms")
 
-            Console.error("$tag WAITED for $endTime ms")
+            } else if (endTime >= 3000) {
+
+                Console.warning("$tag WAITED for $endTime ms")
+            }
         }
 
         putActions.remove(key)
@@ -904,7 +907,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             return get<T?>(key = key, defaultValue = null)
         }
 
-        return sync("DataDelegate.get.$key") { callback ->
+        return sync("DataDelegate.get.$key", "DataDelegate") { callback ->
 
             facade.get(key, callback)
         }
@@ -977,7 +980,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                             val keyRowType = keyRowType(key, i, j)
 
                                             val rowType =
-                                                sync("DataDelegate.get.$key.rowType") { callback ->
+                                                sync("DataDelegate.get.$key.rowType", "DataDelegate") { callback ->
 
                                                     facade.get(keyRowType, "", callback)
 
@@ -1059,7 +1062,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                             rowClazz?.let { clz ->
 
                                                 val obtained =
-                                                    sync("DataDelegate.get.$key.getByClass") { callback ->
+                                                    sync("DataDelegate.get.$key.getByClass", "DataDelegate") { callback ->
 
                                                         facade.getByClass(keyRow, clz, callback)
                                                     }
@@ -1204,7 +1207,7 @@ class DataDelegate private constructor(private val facade: Facade) :
                                 } else {
 
                                     val partition =
-                                        sync("DataDelegate.get.$key.getByType") { callback ->
+                                        sync("DataDelegate.get.$key.getByType", "DataDelegate") { callback ->
 
                                             facade.getByType(keyPartition(key, i), t, callback)
                                         }
@@ -1264,7 +1267,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             }
         }
 
-        return sync("DataDelegate.get.$key.noPartitions") { callback ->
+        return sync("DataDelegate.get.$key.noPartitions", "DataDelegate") { callback ->
 
             facade.get(key, defaultValue, callback)
 
@@ -1390,7 +1393,7 @@ class DataDelegate private constructor(private val facade: Facade) :
             return true
         }
 
-        return sync("DataDelegate.contains.$key") { callback ->
+        return sync("DataDelegate.contains.$key", "DataDelegate") { callback ->
 
             facade.contains(key, callback)
 
@@ -1405,7 +1408,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     private fun getPartitionsCount(key: String): Int {
 
-        return sync("DataDelegate.getPartitionsCount.$key") { callback ->
+        return sync("DataDelegate.getPartitionsCount.$key", "DataDelegate") { callback ->
 
             facade.get(keyPartitions(key), 0, callback)
 
@@ -1417,7 +1420,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
         val rowsKey = keyRows(key, partition)
 
-        return sync("DataDelegate.getRowsCount.$key.$partition") { callback ->
+        return sync("DataDelegate.getRowsCount.$key.$partition", "DataDelegate") { callback ->
 
             facade.get(rowsKey, 0, callback)
 
@@ -1442,7 +1445,7 @@ class DataDelegate private constructor(private val facade: Facade) :
 
     private fun getType(key: String): Class<*>? {
 
-        val value = sync("DataDelegate.getType.$key") { callback ->
+        val value = sync("DataDelegate.getType.$key", "DataDelegate") { callback ->
 
             facade.get(keyType(key), "", callback)
 
