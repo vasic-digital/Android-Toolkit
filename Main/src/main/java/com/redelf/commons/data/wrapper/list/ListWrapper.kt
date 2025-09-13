@@ -53,6 +53,7 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
     private val list: LinkedBlockingQueue<T> = LinkedBlockingQueue()
     private val initialized = AtomicBoolean(dataAccess == null)
     private val executor: ExecutorService = Executors.newFixedThreadPool(1)
+    private var lastDataPushTime = 0L
 
     private val dataPushListener: OnObtain<DataPushResult?>? = if (dataAccess != null) {
 
@@ -692,8 +693,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                         if (modifiable.elementAt(where) == what) {
 
+                            // Atomic replacement to prevent temporary empty state
+                            val tempList = LinkedList(modifiable)
                             list.clear()
-                            list.addAll(modifiable)
+                            list.addAll(tempList)
 
                             if (!skipNotifying) {
 
@@ -1123,8 +1126,11 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
 
                     list.apply {
 
+                        // Atomic replacement to prevent temporary empty state
+                        val tempList = LinkedBlockingQueue<T>()
+                        tempList.addAll(filteredList)
                         list.clear()
-                        list.addAll(filteredList)
+                        list.addAll(tempList)
                     }
                 }
             }
@@ -1405,6 +1411,10 @@ open class ListWrapper<T, I, M : DataManagement<*>>(
         if (DEBUG.get()) {
 
             Console.log("On data pushed :: $pushContext :: Push from = '${data.pushFrom}'")
+        }
+
+        if (DEBUG.get()) {
+            Console.log("Processing data push: ${data.pushFrom}")
         }
 
         val dataPushResult = data
