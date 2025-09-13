@@ -1,12 +1,16 @@
 package com.redelf.commons.extensions
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.text.Html
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.bitmapTransform
@@ -17,11 +21,6 @@ import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.logging.Console
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import java.util.concurrent.ConcurrentHashMap
-
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.widget.TextView
-import android.view.View
 
 
 data class ColoredWord @JsonCreator constructor(

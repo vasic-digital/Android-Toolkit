@@ -2,8 +2,8 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import android.text.TextUtils
-import com.google.gson.GsonBuilder
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.gson.GsonBuilder
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain

@@ -7,7 +7,6 @@ import android.app.Activity
 import android.app.AlarmManager
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
-import android.app.BackgroundServiceStartNotAllowedException
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
