@@ -171,15 +171,15 @@ class SecureSharedPreferencesStorage private constructor(
                     throw IllegalArgumentException("Value size exceeds maximum: $valueSize > $MAX_VALUE_SIZE_BYTES bytes")
                 }
 
-                // Check total entries limit
+                // Check total entries limit (accounting for potential chunking)
                 val currentSize = preferences.all.size
                 if (currentSize >= MAX_TOTAL_ENTRIES && !preferences.contains(key)) {
                     throw IllegalArgumentException("Total entries exceed maximum: $currentSize >= $MAX_TOTAL_ENTRIES")
                 }
 
-                val editor = getEditor() ?: return@write false
-                val result = editor.putString(key, value).commit()
-                
+                // Use chunked storage for large values
+                val result = ChunkedStorageHelper.putChunkedString(preferences, key, value)
+
                 // Update cache on successful write
                 if (result) {
                     if (readCache.size < 1000) { // Prevent cache overflow
@@ -188,7 +188,7 @@ class SecureSharedPreferencesStorage private constructor(
                 } else {
                     Console.error("$tag SharedPreferences commit failed for key: $key")
                 }
-                
+
                 result
             } catch (e: Throwable) {
                 Console.error("$tag Safe put error for key '$key': ${e.message}")
@@ -234,13 +234,14 @@ class SecureSharedPreferencesStorage private constructor(
                     return@read cached
                 }
 
-                val result = preferences.getString(key, null)
-                
+                // Use chunked storage helper to retrieve potentially chunked data
+                val result = ChunkedStorageHelper.getChunkedString(preferences, key)
+
                 // Update cache on successful read (with size limit)
-                if (readCache.size < 1000) {
+                if (result != null && readCache.size < 1000) {
                     readCache[key] = result
                 }
-                
+
                 result
             } catch (e: Throwable) {
                 Console.error("$tag Safe get error for key '$key': ${e.message}")
@@ -285,16 +286,16 @@ class SecureSharedPreferencesStorage private constructor(
     private fun performSafeDelete(key: String): Boolean {
         return operationLock.write {
             try {
-                val editor = getEditor() ?: return@write false
-                val result = editor.remove(key).commit()
-                
+                // Use chunked storage helper to remove potentially chunked data
+                val result = ChunkedStorageHelper.removeChunkedString(preferences, key)
+
                 // Remove from cache on successful delete
                 if (result) {
                     readCache.remove(key)
                 } else {
                     Console.error("$tag SharedPreferences remove commit failed for key: $key")
                 }
-                
+
                 result
             } catch (e: Throwable) {
                 Console.error("$tag Safe delete error for key '$key': ${e.message}")
