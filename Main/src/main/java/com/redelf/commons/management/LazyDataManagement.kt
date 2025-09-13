@@ -21,7 +21,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class LazyDataManagement<T> :
 
     DataManagement<T>(),
-    Registration<Context> where T : Versionable {
+    Registration<Context> where T : Versionable
+
+{
 
     protected open val lazySaving = false
     protected open val savingOnTermination = false
@@ -296,8 +298,6 @@ abstract class LazyDataManagement<T> :
             return
         }
 
-        val tag = "Lazy :: Who = '${getWho()}', " +
-                "From='$from' :: Save (${takeContext().getActivityCount()}) ::"
         if (!lazySaving) {
 
             return
@@ -309,7 +309,8 @@ abstract class LazyDataManagement<T> :
         }
 
         val tag =
-            "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
+            "Lazy :: Who = '${getWho()}', " +
+                    "From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
 
         if (isLazyReady()) {
 
