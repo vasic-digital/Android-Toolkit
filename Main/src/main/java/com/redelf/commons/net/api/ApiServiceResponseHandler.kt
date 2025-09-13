@@ -9,7 +9,7 @@ abstract class ApiServiceResponseHandler<T> {
 
     abstract fun onResponse(
 
-        response: Response<T>?,
+        response: Response<T?>?,
         callback: OnObtain<T?>,
         useExpectedCodes: Boolean = false,
         additionalExpectedCodes: List<Int> = emptyList()

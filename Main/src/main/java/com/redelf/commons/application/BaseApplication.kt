@@ -4,9 +4,11 @@ package com.redelf.commons.application
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import android.app.BackgroundServiceStartNotAllowedException
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,6 +18,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.os.StrictMode
 import android.provider.Settings
 import android.telecom.TelecomManager
@@ -46,7 +49,9 @@ import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isInForeground
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toast
 import com.redelf.commons.intention.Intentional
@@ -76,6 +81,7 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import kotlin.reflect.KClass
+import kotlin.system.exitProcess
 
 abstract class BaseApplication :
 
@@ -129,12 +135,22 @@ abstract class BaseApplication :
 
         fun restart(context: Context) {
 
-            val packageManager = context.packageManager
-            val intent = packageManager.getLaunchIntentForPackage(context.packageName)
-            val componentName = intent?.component
-            val mainIntent = Intent.makeRestartActivityTask(componentName)
-            context.startActivity(mainIntent)
-            Runtime.getRuntime().exit(0)
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            val pendingIntentId = randomInteger(666, 111)
+
+            val pendingIntent = PendingIntent.getActivity(
+
+                context,
+                pendingIntentId,
+                intent,
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+            alarmManager?.set(AlarmManager.RTC, System.currentTimeMillis() + 500, pendingIntent)
+
+            android.os.Process.killProcess(android.os.Process.myPid())
+            exitProcess(0)
         }
 
         override fun getName(): String {
@@ -284,6 +300,35 @@ abstract class BaseApplication :
     open fun canRecordApplicationLogs() = false
 
     open fun getTopActivity(): Class<*>? = null
+
+    open fun canWakeLock() = false
+
+    open fun canWorkManager() = true
+
+    open fun isLegacyDevice() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU
+
+    open fun isVeryOldDevice() = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+
+    fun isNotLegacyDevice() = !isLegacyDevice()
+
+    fun isNotVeryOldDevice() = !isVeryOldDevice()
+
+    open fun isInteractive(): Boolean {
+
+        try {
+
+            val powerManager = getSystemService(POWER_SERVICE) as PowerManager?
+            return powerManager?.isInteractive == true
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return false
+    }
+
+    fun isNotInteractive() = !isInteractive()
 
     abstract fun isProduction(): Boolean
 
@@ -650,6 +695,10 @@ abstract class BaseApplication :
 
             DataManagement.initialize(applicationContext)
 
+            ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
+            registerActivityLifecycleCallbacks(this)
+
             managers.addAll(populateManagers())
 
             val contextDependableManagers = mutableListOf<DataManagement<*>>()
@@ -678,45 +727,29 @@ abstract class BaseApplication :
 
         Console.log("$tag START")
 
-        if (OnClearFromRecentService.isRunning()) {
+        try {
 
-            Console.log("$tag ALREADY RUNNING")
-            return
-        }
+            if (OnClearFromRecentService.isRunning()) {
 
-        Console.log("$tag STARTING")
+                Console.log("$tag ALREADY RUNNING")
+                return
+            }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (isInForeground()) {
 
-            try {
+                Console.log("$tag STARTING")
 
                 val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
                 startService(intent)
 
                 Console.log("$tag END")
-
-            } catch (e: BackgroundServiceStartNotAllowedException) {
-
-                Console.error("$tag ERROR: ${e.message}")
-
-            } catch (e: Throwable) {
-
-                recordException(e)
             }
 
-        } else {
+        } catch (e: Throwable) {
 
-            try {
+            Console.error("$tag ERROR: ${e.message}")
 
-                val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
-                startService(intent)
-
-                Console.log("$tag END")
-
-            } catch (e: Throwable) {
-
-                recordException(e)
-            }
+            recordException(e)
         }
     }
 
@@ -1020,6 +1053,8 @@ abstract class BaseApplication :
         }
 
         foregroundActivityCounter().incrementAndGet()
+
+        onActivity(activity)
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -1305,6 +1340,8 @@ abstract class BaseApplication :
         }
     }
 
+    protected  open fun onActivity(activity: Activity) = Unit
+
     protected open fun getUpdatesCodes() = setOf<Long>()
 
     override fun isUpdating(): Boolean {
@@ -1428,7 +1465,15 @@ abstract class BaseApplication :
                 "identifier = $identifier"
 
         val error = IllegalStateException(msg)
-        recordException(error)
+
+        if (isProduction()) {
+
+            Console.error(error)
+
+        } else {
+
+            Console.warning(msg)
+        }
     }
 
     override fun onUpdated(identifier: Long) {

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if ./adbdozeon && sleep 3 && ./adblockscreen && sleep 3 && ./adbgoidle; then
+
+  echo "Doze ON"
+
+else
+
+  echo "ERROR: Failed doze ON"
+fi

@@ -55,6 +55,11 @@ open class BasicConnectivityHandler(
         return Connectivity().requireNetworkAvailable(ctx)
     }
 
+    override fun requireNetworkAvailable(ctx: Context): Boolean {
+
+        return Connectivity().requireNetworkAvailable(ctx)
+    }
+
     override fun toggleConnection() {
 
         blockConnection.set(blockConnection.get())

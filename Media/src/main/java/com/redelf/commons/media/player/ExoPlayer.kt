@@ -1,6 +1,7 @@
 package com.redelf.commons.media.player
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
@@ -13,9 +14,9 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.DefaultLoadControl
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.redelf.commons.application.BaseApplication
@@ -27,18 +28,20 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.media.Media
 import com.redelf.commons.media.player.base.PlayerAbstraction
+import com.redelf.commons.media.player.base.PlayerConnectivityMonitor
 import com.redelf.commons.obtain.Obtain
 import java.util.UUID
 
-typealias EPlayer = androidx.media3.exoplayer.ExoPlayer
+typealias EPlayer = ExoPlayer
 
-abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
+abstract class ExoPlayer(private val ctx: Context) : PlayerAbstraction<EPlayer>() {
 
     val playerTag = "Player :: Exo ::"
 
     companion object {
 
         private var exo: EPlayer? = null
+        private var monitor: PlayerConnectivityMonitor? = null
     }
 
     private var currentDuration: Long = 0
@@ -177,7 +180,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
     private fun execute(what: Media, startFrom: Int): Boolean {
 
-        val logTag = "Player :: Play :: Execution :: ${what.getIdentifier()} ::"
+        val logTag = "Play :: Execution :: ${what.getIdentifier()} ::"
 
         Console.log("$playerTag $logTag Start :: From = $startFrom")
 
@@ -280,6 +283,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                             what.onError(e)
                             Console.error("$playerTag $logTag Error: ${error.errorCode}")
                         }
+
+                        override fun onIsLoadingChanged(isLoading: Boolean) {
+
+                            if (!isLoading) {
+
+                                Console.warning("$playerTag $logTag Not loading")
+                            }
+                        }
                     }
 
                     ep.addListener(stateListener)
@@ -300,45 +311,65 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                         Console.log("$playerTag $logTag START :: Duration = $duration")
 
-                        val currentProgress: Float = if (startFrom < 0) {
+                        fun onCurrProgress(currentProgress: Float) {
 
-                            obtainCurrentProgress(what)
+                            onUiThread {
 
-                        } else {
+                                currentProgress.let { progress ->
 
-                            startFrom.toFloat()
+                                    Console.log("$playerTag $logTag Progress obtained: $currentProgress")
+
+                                    if (currentProgress >= duration * 0.95) {
+
+                                        seekTo(0)
+
+                                    } else {
+
+                                        seekTo(progress.toInt())
+                                    }
+
+                                    Console.log("$playerTag $logTag Seek")
+                                }
+
+                                Console.log(
+
+                                    "$playerTag $logTag Preparing :: Player hash = ${ep.hashCode()}"
+                                )
+
+                                ep.prepare()
+                                ep.playWhenReady = true
+
+                                startPublishingProgress()
+
+                                Console.log("$playerTag $logTag On started")
+                            }
                         }
 
-                        currentProgress.let { progress ->
+                        exec(
 
-                            Console.log("$playerTag $logTag Progress obtained: $currentProgress")
+                            onRejected = { e ->
 
-                            if (currentProgress >= duration * 0.95) {
+                                recordException(e)
 
-                                seekTo(0)
+                                onCurrProgress(0f)
+                            }
+
+                        ) {
+
+                            val currentProgress: Float = if (startFrom < 0) {
+
+                                obtainCurrentProgress(what)
 
                             } else {
 
-                                seekTo(progress.toInt())
+                                startFrom.toFloat()
                             }
 
-                            Console.log("$playerTag $logTag Seek")
+                            onCurrProgress(currentProgress)
                         }
-
-                        Console.log(
-
-                            "$playerTag $logTag Preparing :: Player hash = ${ep.hashCode()}"
-                        )
-
-                        ep.prepare()
-                        ep.playWhenReady = true
-
-                        startPublishingProgress()
-
-                        Console.log("$playerTag $logTag On started")
                     }
 
-                } catch (e: Throwable) {
+                } catch (e: Exception) {
 
                     Console.error("$playerTag $logTag ${e::class.simpleName} :: ${e.message}")
                     recordException(e)
@@ -446,7 +477,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 true
 
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
 
                 Console.log("$playerTag ERROR: ${e.message}")
 
@@ -780,8 +811,6 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             destroyMediaPlayer(it)
         }
 
-        val context = BaseApplication.takeContext()
-
         val audioAttributes = AudioAttributes.Builder()
             .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
             .setUsage(C.USAGE_MEDIA)
@@ -797,17 +826,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             )
             .build()
 
-        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
-            .setConnectTimeoutMs(15000)
-            .setReadTimeoutMs(30000)
-            .setAllowCrossProtocolRedirects(true)
-            .setDefaultRequestProperties(mapOf("User-Agent" to "ExoPlayer"))
+        val httpDataSourceFactory = ExoPlayerDataSourceFactory()
 
-        val exoPlayer = androidx.media3.exoplayer.ExoPlayer.Builder(context)
+        val exoPlayer = ExoPlayer.Builder(ctx)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
             .setLoadControl(loadControl)
             .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
+            .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
 
         exoPlayer.addAnalyticsListener(object : AnalyticsListener {
@@ -846,7 +872,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                 setCurrentDuration(0)
                 player.stop()
 
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
 
                 success = false
                 recordException(e)
@@ -860,7 +886,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             clearMediaPlayer()
             setPlaying(false)
 
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
 
             success = false
             recordException(e)
@@ -957,7 +983,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 handler.removeCallbacks(it)
 
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
 
                 recordException(e)
             }
@@ -1028,7 +1054,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
             return true
 
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
 
             Console.error("$playerTag $tag NOT APPLIED")
             Console.error(e)
@@ -1057,7 +1083,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                     true
 
-                } catch (e: Throwable) {
+                } catch (e: Exception) {
 
                     Console.error("$playerTag $tag NOT APPLIED")
                     Console.error(e)
@@ -1121,11 +1147,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         return exo
     }
 
+    override fun getMonitor() = monitor
+
     override fun setMediaPlayer(value: EPlayer) {
 
         Console.log("$playerTag Set player :: ${value.hashCode()}")
 
         exo = value
+        monitor = ExoPlayerConnectivityMonitor(value)
     }
 
     override fun unsetMediaPlayer() {
@@ -1133,6 +1162,7 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
         Console.log("$playerTag UnSet player")
 
         exo = null
+        monitor = null
     }
 
     private fun doStop(ep: EPlayer): Boolean {

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+
+  echo "Usage: $0 <package>"
+  exit 1
+
+else
+
+  PACKAGE="$1"
+fi
+
+if adb shell "input keyevent KEYCODE_SLEEP && am make-uid-idle $PACKAGE"; then
+
+  echo "App idle: '$PACKAGE'"
+
+else
+
+  echo "ERROR: app not idle: '$PACKAGE'"
+fi
