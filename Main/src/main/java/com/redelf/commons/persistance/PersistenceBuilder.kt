@@ -14,7 +14,6 @@ import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.base.Serializer
 import com.redelf.commons.persistance.base.Storage
 import com.redelf.commons.persistance.database.DBStorage
-import com.redelf.commons.persistance.encryption.ConcealEncryption
 import com.redelf.commons.persistance.encryption.NoEncryption
 
 class PersistenceBuilder(
@@ -129,11 +128,6 @@ class PersistenceBuilder(
         if (encryption == null) {
 
             encryption = instantiateDefaultEncryption(context, salter)
-
-            if (encryption is ConcealEncryption && (!(encryption as ConcealEncryption).init())) {
-
-                throw IllegalStateException("Could not initialized Conceal encryption")
-            }
         }
 
         return DataDelegate.instantiate(this)
