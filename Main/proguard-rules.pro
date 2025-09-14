@@ -202,15 +202,29 @@
   public static final android.os.Parcelable$Creator *;
 }
 
-# Facebook JNI and SoLoader - Fix for production crashes
--keep class com.facebook.jni.** { *; }
--keep class com.facebook.soloader.** { *; }
+# Facebook JNI and SoLoader - Targeted fix for production crashes
+-keep,allowobfuscation class com.facebook.jni.** { *; }
+-keep,allowobfuscation class com.facebook.soloader.** { *; }
+
+# Critical: Preserve specific JNI mappings - these CANNOT be obfuscated
+-keepnames class com.facebook.jni.Countable
 -keepclassmembers class com.facebook.jni.Countable {
+    native <methods>;
     long mInstance;
+    <fields>;
 }
 
-# Additional native library support
--keep class com.facebook.crypto.** { *; }
+# Keep Facebook native method signatures intact
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
+
+# Facebook SDK core classes (allow obfuscation but keep structure)
+-keep,allowobfuscation class com.facebook.crypto.** { *; }
+-keep,allowobfuscation class com.facebook.android.** { *; }
+
+# Warnings suppression
 -dontwarn com.facebook.soloader.**
+-dontwarn com.facebook.jni.**
 
 -keep class * implements androidx.lifecycle.DefaultLifecycleObserver

@@ -161,7 +161,9 @@ android {
         release {
 
             minifyEnabled false
+            shrinkResources false
 
+            // Force disable R8 full mode to prevent native library issues
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'missing_rules.txt'
         }
 
