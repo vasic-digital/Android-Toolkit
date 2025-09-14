@@ -202,4 +202,15 @@
   public static final android.os.Parcelable$Creator *;
 }
 
+# Facebook JNI and SoLoader - Fix for production crashes
+-keep class com.facebook.jni.** { *; }
+-keep class com.facebook.soloader.** { *; }
+-keepclassmembers class com.facebook.jni.Countable {
+    long mInstance;
+}
+
+# Additional native library support
+-keep class com.facebook.crypto.** { *; }
+-dontwarn com.facebook.soloader.**
+
 -keep class * implements androidx.lifecycle.DefaultLifecycleObserver
