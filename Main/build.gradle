@@ -361,6 +361,8 @@ dependencies {
     testApi "com.google.code.gson:gson:$gsonVersion"
     androidTestApi "com.google.code.gson:gson:$gsonVersion"
 
+    api "androidx.security:security-crypto:1.1.0"
+
     //noinspection Aligned16KB
     api "com.facebook.conceal:conceal:2.0.2"
     //noinspection Aligned16KB
