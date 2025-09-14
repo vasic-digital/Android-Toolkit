@@ -403,11 +403,48 @@ class CollectionView @JvmOverloads constructor(
 
     fun safeNotifyDataSetChanged() {
         if (isDestroyed.get()) return
-        
+
         try {
-            adapter?.notifyDataSetChanged()
+            // ENHANCED: Additional protection during rapid updates (e.g., during text composition)
+            if (isProcessingUpdates.get()) {
+                Console.log("SafeRecyclerView :: Delaying notify due to ongoing updates")
+                mainHandler.postDelayed({
+                    if (!isDestroyed.get()) {
+                        adapter?.notifyDataSetChanged()
+                    }
+                }, 50) // Small delay to batch rapid updates
+            } else {
+                adapter?.notifyDataSetChanged()
+            }
         } catch (e: Exception) {
             Console.error("SafeRecyclerView :: Notify data set changed error: ${e.message}")
+        }
+    }
+
+    /**
+     * Enhanced method that prevents rapid successive updates that can cause item loss
+     * This is particularly useful during text composition scenarios
+     */
+    fun safeNotifyDataSetChangedWithCompositionProtection() {
+        if (isDestroyed.get()) return
+
+        try {
+            // Prevent rapid-fire updates during composition by using atomic flag
+            if (pendingNotifyDataSetChanged.compareAndSet(false, true)) {
+                mainHandler.postDelayed({
+                    try {
+                        if (!isDestroyed.get()) {
+                            adapter?.notifyDataSetChanged()
+                        }
+                    } finally {
+                        pendingNotifyDataSetChanged.set(false)
+                    }
+                }, 25) // Minimal delay to batch composition-triggered updates
+            } else {
+                Console.log("SafeRecyclerView :: Skipping duplicate notify during composition")
+            }
+        } catch (e: Exception) {
+            Console.error("SafeRecyclerView :: Composition-protected notify error: ${e.message}")
         }
     }
 
