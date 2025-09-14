@@ -401,22 +401,17 @@ class CollectionView @JvmOverloads constructor(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun safeNotifyDataSetChanged() {
+
         if (isDestroyed.get()) return
 
         try {
-            // ENHANCED: Additional protection during rapid updates (e.g., during text composition)
-            if (isProcessingUpdates.get()) {
-                Console.log("SafeRecyclerView :: Delaying notify due to ongoing updates")
-                mainHandler.postDelayed({
-                    if (!isDestroyed.get()) {
-                        adapter?.notifyDataSetChanged()
-                    }
-                }, 50) // Small delay to batch rapid updates
-            } else {
-                adapter?.notifyDataSetChanged()
-            }
-        } catch (e: Exception) {
+
+            adapter?.notifyDataSetChanged()
+
+        } catch (e: Throwable) {
+
             Console.error("SafeRecyclerView :: Notify data set changed error: ${e.message}")
         }
     }
@@ -425,7 +420,9 @@ class CollectionView @JvmOverloads constructor(
      * Enhanced method that prevents rapid successive updates that can cause item loss
      * This is particularly useful during text composition scenarios
      */
+    @SuppressLint("NotifyDataSetChanged")
     fun safeNotifyDataSetChangedWithCompositionProtection() {
+
         if (isDestroyed.get()) return
 
         try {

@@ -1,9 +1,7 @@
 package com.redelf.commons.persistance
 
-import android.content.Context
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.GsonBuilder
-import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.creation.instantiation.Instantiable
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console

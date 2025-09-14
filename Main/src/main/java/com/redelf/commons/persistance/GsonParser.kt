@@ -20,9 +20,9 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Parser
-import com.redelf.commons.persistance.serialization.SecureBinarySerializer
 import com.redelf.commons.persistance.serialization.CustomSerializable
 import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
+import com.redelf.commons.persistance.serialization.SecureBinarySerializer
 import com.redelf.commons.persistance.serialization.Serializer
 import java.io.IOException
 import java.lang.reflect.Type
