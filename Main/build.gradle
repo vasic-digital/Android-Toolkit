@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id("com.google.devtools.ksp") version "2.2.0-2.0.2"
-    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.20"
+    id 'org.jetbrains.kotlin.plugin.compose' version "2.2.20"
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
@@ -256,7 +256,7 @@ dependencies {
     api "io.reactivex.rxjava2:rxandroid:2.1.1"
     api "io.reactivex.rxjava2:rxjava:2.2.21"
 
-    api "org.apache.commons:commons-compress:1.27.1"
+    api "org.apache.commons:commons-compress:1.28.0"
 
     api "androidx.core:core-ktx:1.17.0"
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -299,10 +299,8 @@ dependencies {
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.11.0"
 
-    api "com.github.bumptech.glide:glide:5.0.4"
-    api "com.github.bumptech.glide:annotations:5.0.4"
     api "com.github.bumptech.glide:glide:5.0.5"
-    api "com.github.bumptech.glide:annotations:5.0.5"
+    api "com.github.bumptech.glide:annotations:5.0.4"
 
     api "jp.wasabeef:glide-transformations:4.3.0"
 
@@ -368,14 +366,7 @@ dependencies {
     testApi "com.google.code.gson:gson:$gsonVersion"
     androidTestApi "com.google.code.gson:gson:$gsonVersion"
 
-    // TODO:
-    // api "androidx.security:security-crypto:1.1.0"
-    //noinspection Aligned16KB
-    api "com.facebook.conceal:conceal:2.0.2"
-    //noinspection Aligned16KB
-    testApi "com.facebook.conceal:conceal:2.0.2"
-    //noinspection Aligned16KB
-    androidTestApi "com.facebook.conceal:conceal:2.0.2"
+    api "androidx.security:security-crypto:1.1.0"
 
     api "org.apache.commons:commons-compress:1.28.0"
     testApi "org.apache.commons:commons-compress:1.28.0"
