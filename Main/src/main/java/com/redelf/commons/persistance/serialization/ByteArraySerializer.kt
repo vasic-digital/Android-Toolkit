@@ -7,7 +7,6 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.encryption.CompressedEncryption
-import com.redelf.commons.persistance.encryption.ConcealEncryption
 import com.redelf.commons.persistance.encryption.NoEncryption
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -41,11 +40,6 @@ class ByteArraySerializer(
         if (encryption == null) {
 
             encryption = instantiateDefaultEncryption(ctx, salter)
-        }
-
-        if (encryption is ConcealEncryption) {
-
-            encryption?.init()
         }
     }
 

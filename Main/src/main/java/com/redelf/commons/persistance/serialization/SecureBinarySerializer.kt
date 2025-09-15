@@ -8,7 +8,6 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.encryption.CompressedEncryption
-import com.redelf.commons.persistance.encryption.ConcealEncryption
 import com.redelf.commons.persistance.encryption.NoEncryption
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -129,17 +128,10 @@ class SecureBinarySerializer(
     }
 
     init {
-        if (encryption == null) {
-            encryption = instantiateDefaultEncryption(context, salter)
-        }
 
-        if (encryption is ConcealEncryption) {
-            try {
-                encryption?.init()
-            } catch (e: Throwable) {
-                Console.error("$tag Failed to initialize Conceal encryption: ${e.message}")
-                recordException(e)
-            }
+        if (encryption == null) {
+
+            encryption = instantiateDefaultEncryption(context, salter)
         }
     }
 

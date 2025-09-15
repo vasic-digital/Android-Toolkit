@@ -160,16 +160,18 @@ android {
 
         release {
 
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources false
 
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'missing_rules.txt'
+            // Enable R8 to match Application module configuration
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         debug {
 
             minifyEnabled false
 
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'missing_rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -189,8 +191,6 @@ android {
 
             excludes += ['META-INF/*']
         }
-
-        doNotStrip '**/libconcealjni.so'
     }
 
     buildFeatures {
@@ -223,7 +223,7 @@ dependencies {
 
     final String roomVersion = "2.8.0"
     final String okioVersion = "3.9.0"
-    final String gsonVersion = "2.13.1"
+    final String gsonVersion = "2.13.2"
     final String okHttpVersion = "5.1.0"
     final String jacksonVersion = "2.20.0"
     final String lifecycleVersion = "2.9.3"
@@ -233,12 +233,13 @@ dependencies {
     testApi project("$toolkit_obfuscator_project")
     androidTestApi project("$toolkit_obfuscator_project")
 
+    // Jetpack Compose dependencies for ComposeRecyclerView implementation
+    api 'androidx.activity:activity-compose:1.11.0'
     api 'androidx.compose.ui:ui'
     api 'androidx.compose.ui:ui-graphics'
     api 'androidx.compose.material3:material3'
     api 'androidx.compose.foundation:foundation'
     api 'androidx.compose.ui:ui-tooling-preview'
-    api 'androidx.activity:activity-compose:1.11.0'
 
     api "com.squareup.okio:okio:$okioVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
@@ -255,6 +256,9 @@ dependencies {
     api "io.reactivex.rxjava2:rxandroid:2.1.1"
     api "io.reactivex.rxjava2:rxjava:2.2.21"
 
+    api "org.apache.commons:commons-compress:1.27.1"
+
+    api "androidx.core:core-ktx:1.17.0"
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
@@ -269,6 +273,11 @@ dependencies {
     api "com.google.firebase:firebase-auth:24.0.1"
     api "com.google.firebase:firebase-config:23.0.0"
     api "com.google.android.gms:play-services-auth:21.4.0"
+    api "com.google.firebase:firebase-messaging:25.0.0"
+    api "com.google.firebase:firebase-crashlytics:20.0.1"
+    api "com.google.android.gms:play-services-auth:21.4.0"
+    api "com.google.firebase:firebase-auth:24.0.1"
+    api "com.google.firebase:firebase-config:23.0.0"
 
     api "com.google.android.play:app-update:2.1.0"
     api "com.google.android.play:app-update-ktx:2.1.0"
@@ -284,12 +293,16 @@ dependencies {
     api "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+    api "androidx.profileinstaller:profileinstaller:1.4.1"
+    api "androidx.activity:activity-ktx:1.11.0"
 
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.11.0"
 
     api "com.github.bumptech.glide:glide:5.0.4"
     api "com.github.bumptech.glide:annotations:5.0.4"
+    api "com.github.bumptech.glide:glide:5.0.5"
+    api "com.github.bumptech.glide:annotations:5.0.5"
 
     api "jp.wasabeef:glide-transformations:4.3.0"
 
@@ -304,10 +317,16 @@ dependencies {
     api "io.github.nefilim.kjwt:kjwt-jwks:1.0.0"
 
     api "com.airbnb.android:lottie:6.6.7"
+    api "androidx.work:work-runtime-ktx:2.10.4"
+    api "com.airbnb.android:lottie:6.6.7"
     api "androidx.preference:preference-ktx:1.2.1"
     api "com.google.android.material:material:1.13.0"
     api "androidx.navigation:navigation-ui-ktx:2.9.4"
     api "androidx.navigation:navigation-fragment-ktx:2.9.4"
+    api "com.google.android.material:material:1.13.0"
+    api "androidx.navigation:navigation-ui-ktx:2.9.4"
+    api "androidx.navigation:navigation-fragment-ktx:2.9.4"
+    api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     api "com.google.net.cronet:cronet-okhttp:0.1.0"
     api "com.google.android.gms:play-services-cronet:18.1.0"
@@ -330,6 +349,8 @@ dependencies {
     // Compose BOM for ComposeRecyclerView implementation
     api platform('androidx.compose:compose-bom:2025.09.00')
     api "com.facebook.android:facebook-android-sdk:18.1.3"
+    api platform('androidx.compose:compose-bom:2025.09.00')
+    api "com.facebook.android:facebook-android-sdk:18.1.3"
 
     api "androidx.work:work-runtime-ktx:2.10.4"
 
@@ -343,6 +364,12 @@ dependencies {
     testImplementation "com.jakewharton.timber:timber:5.0.1"
     androidTestImplementation "com.jakewharton.timber:timber:5.0.1"
 
+    api "com.google.code.gson:gson:$gsonVersion"
+    testApi "com.google.code.gson:gson:$gsonVersion"
+    androidTestApi "com.google.code.gson:gson:$gsonVersion"
+
+    // TODO:
+    // api "androidx.security:security-crypto:1.1.0"
     //noinspection Aligned16KB
     api "com.facebook.conceal:conceal:2.0.2"
     //noinspection Aligned16KB
@@ -365,6 +392,8 @@ dependencies {
     testApi "com.google.code.gson:gson:$gsonVersion"
     androidTestApi "com.google.code.gson:gson:$gsonVersion"
 
+    androidTestApi 'androidx.test:runner:1.7.0'
+    androidTestApi 'androidx.test.espresso:espresso-core:3.7.0'
     androidTestApi 'androidx.test:runner:1.7.0'
     androidTestApi 'androidx.test.espresso:espresso-core:3.7.0'
 }
