@@ -1025,6 +1025,8 @@ abstract class BaseApplication :
 
     override fun onActivityPreResumed(activity: Activity) {
 
+        onActivityOn(activity)
+
         val clazz = activity::class.java
 
         Executor.UI.execute {
@@ -1065,8 +1067,6 @@ abstract class BaseApplication :
         }
 
         foregroundActivityCounter().incrementAndGet()
-
-        onActivity(activity)
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -1169,6 +1169,8 @@ abstract class BaseApplication :
     }
 
     override fun onActivityPreDestroyed(activity: Activity) {
+
+        onActivityOff(activity)
 
         val iterator = TOP_ACTIVITY.iterator()
 
@@ -1397,7 +1399,9 @@ abstract class BaseApplication :
         }
     }
 
-    protected  open fun onActivity(activity: Activity) = Unit
+    protected  open fun onActivityOn(activity: Activity) = Unit
+
+    protected  open fun onActivityOff(activity: Activity) = Unit
 
     protected open fun getUpdatesCodes() = setOf<Long>()
 
