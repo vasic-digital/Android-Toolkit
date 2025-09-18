@@ -222,6 +222,11 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                         override fun onPlaybackStateChanged(state: Int) {
 
+                            val suppr = try { ep.playbackSuppressionReason } catch (_: Exception) { Player.PLAYBACK_SUPPRESSION_REASON_NONE }
+                            val pwr = try { ep.playWhenReady } catch (_: Exception) { false }
+                            val isPlay = try { ep.isPlaying } catch (_: Exception) { false }
+                            Console.debug("$tag State=$state, isPlaying=$isPlay, playWhenReady=$pwr, suppression=$suppr")
+
                             when (state) {
 
                                 Player.STATE_READY -> {
@@ -231,6 +236,9 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                                     Console.debug("$tag Prepared")
 
                                     setPlaying(true)
+
+                                    // Ensure volume is applied when playback becomes ready/active
+                                    applyVolume()
 
                                     what.onStarted()
                                 }
@@ -281,6 +289,14 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                             what.onError(e)
                             Console.error("$playerTag $logTag Error: ${error.errorCode}")
                         }
+
+                        override fun onIsPlayingChanged(isPlaying: Boolean) {
+                            Console.debug("$playerTag $logTag isPlaying=$isPlaying")
+                        }
+
+                        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                            Console.debug("$playerTag $logTag playWhenReady=$playWhenReady, reason=$reason")
+                        }
                     }
 
                     ep.addListener(stateListener)
@@ -290,7 +306,9 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                         Console.log("$playerTag $logTag Stream url: $streamUrl")
 
                         applySpeed(ep)
+                        // Set desired volume now and also re-apply after READY
                         setVolume(1.0f)
+                        try { ep.volume = getVolume() } catch (_: Exception) {}
 
                         val mediaItem = MediaItem.fromUri(streamUrl)
                         ep.setMediaItem(mediaItem)
@@ -331,8 +349,10 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
                             "$playerTag $logTag Preparing :: Player hash = ${ep.hashCode()}"
                         )
 
+                        // Prepare and explicitly start playback. Using play() ensures
+                        // playback actually starts across Media3 versions/configs.
                         ep.prepare()
-                        ep.playWhenReady = true
+                        ep.play()
 
                         startPublishingProgress()
 
@@ -410,8 +430,9 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
 
                 try {
 
-                    it.prepare()
-                    it.playWhenReady = true
+                    // Ensure playback starts explicitly rather than relying on playWhenReady
+                    // which may not trigger playback in all cases.
+                    it.play()
 
                     setPlaying(true)
                     getMedia()?.onResumed()
@@ -805,7 +826,8 @@ abstract class ExoPlayer : PlayerAbstraction<EPlayer>() {
             .setDefaultRequestProperties(mapOf("User-Agent" to "ExoPlayer"))
 
         val exoPlayer = ExoPlayer.Builder(context)
-            .setAudioAttributes(audioAttributes, true)
+            // Let our PlayerService manage audio focus; avoid double focus management
+            .setAudioAttributes(audioAttributes, false)
             .setHandleAudioBecomingNoisy(true)
             .setLoadControl(loadControl)
             .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
