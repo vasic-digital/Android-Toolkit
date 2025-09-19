@@ -1053,7 +1053,7 @@ abstract class BaseApplication :
 
         foregroundActivityCounter().incrementAndGet()
 
-        onActivity(activity)
+        onActivityOn(activity)
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -1128,18 +1128,6 @@ abstract class BaseApplication :
     override fun onActivityPreDestroyed(activity: Activity) {
 
         onActivityOff(activity)
-
-        val iterator = TOP_ACTIVITY.iterator()
-
-        while (iterator.hasNext()) {
-
-            val item = iterator.next()
-
-            if (item == activity::class.java) {
-
-                iterator.remove()
-            }
-        }
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
 
