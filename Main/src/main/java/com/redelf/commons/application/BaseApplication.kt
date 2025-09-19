@@ -1127,6 +1127,20 @@ abstract class BaseApplication :
 
     override fun onActivityPreDestroyed(activity: Activity) {
 
+        onActivityOff(activity)
+
+        val iterator = TOP_ACTIVITY.iterator()
+
+        while (iterator.hasNext()) {
+
+            val item = iterator.next()
+
+            if (item == activity::class.java) {
+
+                iterator.remove()
+            }
+        }
+
         Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
 
         super.onActivityPreDestroyed(activity)
@@ -1339,7 +1353,9 @@ abstract class BaseApplication :
         }
     }
 
-    protected  open fun onActivity(activity: Activity) = Unit
+    protected  open fun onActivityOn(activity: Activity) = Unit
+
+    protected  open fun onActivityOff(activity: Activity) = Unit
 
     protected open fun getUpdatesCodes() = setOf<Long>()
 
