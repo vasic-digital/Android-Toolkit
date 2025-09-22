@@ -137,6 +137,8 @@ fun yieldWhile(timeoutInMilliseconds: Long, condition: () -> Boolean) {
     }
 }
 
+// TODO: Add yeld while version with callback after condition expires or when it timeouts
+
 fun recordException(e: Throwable) {
 
     Console.error(e)
