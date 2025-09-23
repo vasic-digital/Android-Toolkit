@@ -325,6 +325,8 @@ dependencies {
 
     api "androidx.sqlite:sqlite-ktx:2.6.0"
 
+    // SQLCipher for Android - Version 4.6.1+ supports 16KB page sizes
+    // Required for Android 15+ devices (API 35+) - Google Play requirement from November 2025
     implementation "net.zetetic:sqlcipher-android:4.10.0@aar"
 
     api "androidx.room:room-runtime:$roomVersion"
