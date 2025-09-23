@@ -694,10 +694,6 @@ abstract class BaseApplication :
 
             DataManagement.initialize(applicationContext)
 
-            ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-
-            registerActivityLifecycleCallbacks(this)
-
             managers.addAll(populateManagers())
 
             val contextDependableManagers = mutableListOf<DataManagement<*>>()
