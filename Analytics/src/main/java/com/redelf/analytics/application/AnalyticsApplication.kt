@@ -9,7 +9,7 @@ abstract class AnalyticsApplication : BaseApplication() {
 
     protected open val facebookAnalyticsEnabled = true
 
-    override val firebaseAnalyticsEnabled = true
+    override fun firebaseAnalyticsEnabled() = true
 
     override fun initFirebaseWithAnalytics() {
 

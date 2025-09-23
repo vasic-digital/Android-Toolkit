@@ -13,7 +13,7 @@ open class TestApplication : BaseApplication() {
         override fun takeContext() = instance
     }
 
-    override val firebaseEnabled = false
+    override fun firebaseEnabled() = false
     override val managers = mutableListOf<List<DataManagement<*>>>()
 
     override fun takeSalt() = "test"

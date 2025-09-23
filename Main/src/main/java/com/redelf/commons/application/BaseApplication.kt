@@ -241,10 +241,10 @@ abstract class BaseApplication :
 
     val activityTracker = ActivityTracker()
 
-    protected open val firebaseEnabled = true
-    protected open val facebookEnabled = false
-    protected open val firebaseAnalyticsEnabled = false
-    protected open val deepLinkingEnabled = false
+    protected open fun firebaseEnabled() = false
+    protected open fun facebookEnabled() = false
+    protected open fun deepLinkingEnabled() = false
+    protected open fun firebaseAnalyticsEnabled() = false
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
@@ -525,7 +525,7 @@ abstract class BaseApplication :
         }
     }
 
-    fun isDeepLinkingEnabled() = deepLinkingEnabled
+    fun isDeepLinkingEnabled() = deepLinkingEnabled()
 
     fun isDeepLinkingDisabled() = !isDeepLinkingEnabled()
 
@@ -801,7 +801,7 @@ abstract class BaseApplication :
 
     protected open fun initFirebaseWithAnalytics() {
 
-        if (firebaseEnabled) {
+        if (firebaseEnabled()) {
 
             val app = FirebaseApp.initializeApp(applicationContext)
 
@@ -810,7 +810,7 @@ abstract class BaseApplication :
                 Console.error("No Firebase app initialized")
             }
 
-            if (firebaseAnalyticsEnabled) {
+            if (firebaseAnalyticsEnabled()) {
 
                 firebaseAnalytics = Firebase.analytics
             }
@@ -819,7 +819,7 @@ abstract class BaseApplication :
 
     protected open fun initFacebook() {
 
-        if (facebookEnabled) {
+        if (facebookEnabled()) {
 
             try {
 
@@ -984,7 +984,7 @@ abstract class BaseApplication :
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun initializeFcm() {
 
-        if (!firebaseEnabled) {
+        if (!firebaseEnabled()) {
 
             return
         }
