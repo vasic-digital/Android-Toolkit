@@ -21,4 +21,6 @@ else
   MESSAGE="$1"
 fi
 
-echo "$MESSAGE" && commit "$MESSAGE" && git log -n 1
+echo "Pushing: '$MESSAGE'" && commit "$MESSAGE" && \
+  echo "Push with message '$MESSAGE' completed" && \
+  git log -n 1
