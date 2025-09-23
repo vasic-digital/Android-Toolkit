@@ -1,12 +1,24 @@
 #!/bin/sh
 
-MESSAGE="Auto-commit."
+if test -e ".env"; then
 
-if [ -n "$1" ]; then
+  . .env
+fi
+
+if [ -z "$1" ]; then
+
+  if [ -z "$DEFAULT_COMMIT_MESSAGE" ]; then
+
+    MESSAGE="Auto-commit."
+
+  else
+
+    MESSAGE="$DEFAULT_COMMIT_MESSAGE"
+  fi
+
+else
 
   MESSAGE="$1"
 fi
 
-git add . && git commit -m "$MESSAGE"
-git push github && git push gitflic && git push gitee && git push gitverse && git push && \
-git log -n 1
+echo "$MESSAGE" && commit "$MESSAGE" && git log -n 1
