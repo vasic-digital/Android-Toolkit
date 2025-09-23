@@ -1,3 +1,14 @@
 #!/bin/bash
 
+if test -e ".env"; then
+
+  . .env
+fi
+
+if [ -z "$FIREBASE_TOKEN" ]; then
+
+  echo "ERROR: FIREBASE_TOKEN is not set"
+  exit 1
+fi
+
 pwd && ./assemble && ./gradlew appDistributionUploadRelease
