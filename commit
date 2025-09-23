@@ -18,7 +18,14 @@ if [ -z "$1" ]; then
 
 else
 
-  MESSAGE="$1"
+  if [ -z "$PROJECT_NAME" ]; then
+
+    MESSAGE="$1"
+
+  else
+
+    MESSAGE="$PROJECT_NAME - $1"
+  fi
 fi
 
 echo "Pushing: '$MESSAGE'" && commit "$MESSAGE" && \
