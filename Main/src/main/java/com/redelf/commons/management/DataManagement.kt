@@ -14,6 +14,7 @@ import com.redelf.commons.enable.Enabling
 import com.redelf.commons.enable.EnablingCallback
 import com.redelf.commons.environment.Environment
 import com.redelf.commons.execution.ExecuteWithResult
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isNotEmpty
 import com.redelf.commons.extensions.isOnMainThread
@@ -37,6 +38,7 @@ import com.redelf.commons.transaction.TransactionOperation
 import com.redelf.commons.versioning.Versionable
 import java.util.UUID
 import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -553,21 +555,67 @@ abstract class DataManagement<T> :
 
         if (isOnMainThread()) {
 
-            val msg = "Push data is not recommended to perform on the main thread"
-            val e = IllegalStateException(msg)
-            recordException(e)
+            Console.warning("${getLogTag()} Apply operation called on main thread - moving to background thread for safety")
+
+            // CRITICAL FIX: Move to background thread to prevent ANR and IllegalStateException
+            var result = false
+            val latch = CountDownLatch(1, "DataManagement.apply.mainThreadSafety")
+
+            exec(
+                onRejected = { e ->
+                    Console.error("${getLogTag()} Failed to execute apply on background thread: ${e.message}")
+                    recordException(e)
+                    latch.countDown()
+                }
+            ) {
+                try {
+                    // Call async version to avoid blocking main thread
+                    apply(data, from, notify, object : OnObtain<DataPushResult?> {
+                        override fun onCompleted(data: DataPushResult?) {
+                            result = data?.success == true
+                            latch.countDown()
+                        }
+
+                        override fun onFailure(error: Throwable) {
+                            Console.error("${getLogTag()} Apply operation failed: ${error.message}")
+                            recordException(error)
+                            result = false
+                            latch.countDown()
+                        }
+                    })
+                } catch (e: Exception) {
+                    Console.error("${getLogTag()} Error in background apply: ${e.message}")
+                    recordException(e)
+                    result = false
+                    latch.countDown()
+                }
+            }
+
+            // Wait for completion with reasonable timeout to prevent ANR
+            try {
+                latch.await(5, TimeUnit.SECONDS)
+            } catch (e: Exception) {
+                Console.error("${getLogTag()} Apply operation timed out on main thread")
+                recordException(e)
+                return false
+            }
+
+            return result
+
+        } else {
+            // Not on main thread - proceed with sync operation
+            return sync(
+
+                "${getWho()}.apply",
+                from,
+                mainThreadForbidden = false // Allow since we already checked
+
+            ) { callback ->
+
+                apply(data, from, notify, callback)
+
+            }?.success == true
         }
-
-        return sync(
-
-            "${getWho()}.apply",
-            from
-
-        ) { callback ->
-
-            apply(data, from, notify, callback)
-
-        }?.success == true
     }
 
     override fun apply(
