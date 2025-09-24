@@ -189,6 +189,9 @@ android {
 
         jniLibs {
 
+            // Enable 16KB page size support for native libraries
+            useLegacyPackaging true
+
             excludes += ['META-INF/*']
         }
     }
