@@ -59,6 +59,7 @@
 
         android:largeHeap="true"
         tools:targetApi="tiramisu"
+        android:pageSizeCompat="enabled"
         android:enableOnBackInvokedCallback="true"
         tools:ignore="UnusedAttribute,RemoveWorkManagerInitializer"
     >

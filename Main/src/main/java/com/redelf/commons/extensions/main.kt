@@ -137,6 +137,8 @@ fun yieldWhile(timeoutInMilliseconds: Long, condition: () -> Boolean) {
     }
 }
 
+// TODO: Add yeld while version with callback after condition expires or when it timeouts
+
 fun recordException(e: Throwable) {
 
     Console.error(e)
@@ -1295,9 +1297,15 @@ fun <X> sync(
 
             Console.warning("$tag Already waiting")
 
-            yieldWhile {
+            // Use timed yield to prevent infinite waits
+            yieldWhile(timeoutInMilliseconds = 5000L) {
 
                 waitingFlag.get()
+            }
+
+            // If still waiting after yield timeout, proceed anyway to prevent deadlocks
+            if (waitingFlag.get()) {
+                Console.warning("$tag Proceeding despite ongoing wait to prevent deadlock")
             }
         }
 

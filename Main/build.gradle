@@ -184,10 +184,13 @@ android {
                          'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0',
                          'META-INF/*.kotlin_module', 'META-INF/*', 'LICENSE-2.0.txt',
                          'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt',
-                         'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/USE_EXACT_ALARM']
+                         'META-INF/NOTICE', 'META-INF/NOTICE.txt']
         }
 
         jniLibs {
+
+            // Enable 16KB page size support for native libraries
+            useLegacyPackaging true
 
             excludes += ['META-INF/*']
         }
