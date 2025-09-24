@@ -1275,9 +1275,15 @@ fun <X> sync(
 
             Console.warning("$tag Already waiting")
 
-            yieldWhile {
+            // Use timed yield to prevent infinite waits
+            yieldWhile(timeoutInMilliseconds = 5000L) {
 
                 waitingFlag.get()
+            }
+
+            // If still waiting after yield timeout, proceed anyway to prevent deadlocks
+            if (waitingFlag.get()) {
+                Console.warning("$tag Proceeding despite ongoing wait to prevent deadlock")
             }
         }
 

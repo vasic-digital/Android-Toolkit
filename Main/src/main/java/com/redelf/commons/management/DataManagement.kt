@@ -281,19 +281,25 @@ abstract class DataManagement<T> :
     fun getData(): T? = obtain()
 
     fun obtain(): T? {
+        // Return cached data immediately if available
+        data?.let { return it }
 
-        return data ?: sync(
+        // If data is being obtained by another thread, use a shorter timeout
+        val timeoutSeconds = if (obtaining.getSubscribersCount() > 0) 10L else 30L
 
-            "${getWho()}.obtain",
-            "",
-            timeout = 3
-
+        return try {
+            sync(
+                "${getWho()}.obtain",
+                "",
+                timeout = timeoutSeconds,
+                mainThreadForbidden = false // Allow main thread to prevent ANRs in UI flows
             ) { callback ->
-
-            obtain(
-
-                callback
-            )
+                obtain(callback)
+            }
+        } catch (e: Exception) {
+            // Log but don't crash - return null to allow graceful degradation
+            Console.warning("${getLogTag()} Synchronous obtain failed after ${timeoutSeconds}s: ${e.message}")
+            null
         }
     }
 
