@@ -39,6 +39,7 @@ import com.redelf.commons.versioning.Versionable
 import java.util.UUID
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -286,8 +287,17 @@ abstract class DataManagement<T> :
         // Return cached data immediately if available
         data?.let { return it }
 
-        // If data is being obtained by another thread, use a shorter timeout
-        val timeoutSeconds = if (obtaining.getSubscribersCount() > 0) 10L else 30L
+        // Smart timeout based on manager type and current load
+        val timeoutSeconds = when {
+            // Message managers need more time due to database complexity
+            javaClass.simpleName.contains("Messages") -> {
+                if (obtaining.getSubscribersCount() > 0) 15L else 45L
+            }
+            // Other managers with concurrent access
+            obtaining.getSubscribersCount() > 0 -> 10L
+            // Standard timeout for other managers
+            else -> 30L
+        }
 
         return try {
             sync(
@@ -298,6 +308,10 @@ abstract class DataManagement<T> :
             ) { callback ->
                 obtain(callback)
             }
+        } catch (e: TimeoutException) {
+            // Specific handling for timeout to provide better diagnostic info
+            Console.warning("${getLogTag()} Synchronous obtain timed out after ${timeoutSeconds}s (${javaClass.simpleName}, subscribers: ${obtaining.getSubscribersCount()}): ${e.message}")
+            null
         } catch (e: Exception) {
             // Log but don't crash - return null to allow graceful degradation
             Console.warning("${getLogTag()} Synchronous obtain failed after ${timeoutSeconds}s: ${e.message}")
@@ -603,18 +617,33 @@ abstract class DataManagement<T> :
             return result
 
         } else {
-            // Not on main thread - proceed with sync operation
-            return sync(
+            // Not on main thread - proceed with sync operation using extended timeout for complex operations
+            val timeoutSeconds = if (from.contains("Messages") || from.contains("delete") || from.contains("message")) {
+                // Message operations may take longer due to database operations and notifications
+                45L
+            } else {
+                // Standard operations
+                30L
+            }
 
-                "${getWho()}.apply",
-                from,
-                mainThreadForbidden = false // Allow since we already checked
-
-            ) { callback ->
-
-                apply(data, from, notify, callback)
-
-            }?.success == true
+            return try {
+                sync(
+                    "${getWho()}.apply",
+                    from,
+                    timeout = timeoutSeconds,
+                    mainThreadForbidden = false // Allow since we already checked
+                ) { callback ->
+                    apply(data, from, notify, callback)
+                }?.success == true
+            } catch (e: TimeoutException) {
+                Console.error("${getLogTag()} Apply operation timed out after ${timeoutSeconds}s: ${e.message}")
+                recordException(e)
+                false
+            } catch (e: Exception) {
+                Console.error("${getLogTag()} Apply operation failed: ${e.message}")
+                recordException(e)
+                false
+            }
         }
     }
 
