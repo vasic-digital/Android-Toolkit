@@ -17,6 +17,29 @@ def facebookApplicationId = System.getenv("FACEBOOK_APP_ID") ?: ""
 def facebookClientToken = System.getenv("FACEBOOK_CLIENT_TOKEN") ?: ""
 def facebookProtocolScheme = System.getenv("FB_LOGIN_PROTOCOL_SCHEME") ?: ""
 
+Properties localProperties = new Properties()
+File localPropertiesFile = rootProject.file('local.properties')
+
+if (localPropertiesFile.exists()) {
+
+    localProperties.load(localPropertiesFile.newDataInputStream())
+}
+
+if (facebookApplicationId == "") {
+
+    facebookApplicationId = localProperties.getProperty('FACEBOOK_APP_ID', '')
+}
+
+if (facebookClientToken == "") {
+
+    facebookClientToken = localProperties.getProperty('FACEBOOK_CLIENT_TOKEN', '')
+}
+
+if (facebookProtocolScheme == "") {
+
+    facebookProtocolScheme = localProperties.getProperty('FB_LOGIN_PROTOCOL_SCHEME', '')
+}
+
 if (facebookApplicationId != "") {
 
     println(

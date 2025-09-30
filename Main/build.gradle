@@ -49,9 +49,28 @@ import java.nio.file.Paths
      export OBFUSCATION_TEST="test"
 */
 
+Properties localProperties = new Properties()
+File localPropertiesFile = rootProject.file('local.properties')
+
+if (localPropertiesFile.exists()) {
+
+    localProperties.load(localPropertiesFile.newDataInputStream())
+}
+
 def test = System.getenv("OBFUSCATION_TEST") ?: ""
 
+if (test == "") {
+
+    test = localProperties.getProperty('OBFUSCATION_TEST', '')
+}
+
 def salt = System.getenv("OBFUSCATION_SALT") ?: ""
+
+if (salt == "") {
+
+    salt = localProperties.getProperty('OBFUSCATION_SALT', '')
+}
+
 def obfuscator = new JObfuscator(salt)
 
 def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "").contains("$toolkit_project_name;")
