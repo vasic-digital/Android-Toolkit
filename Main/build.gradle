@@ -509,6 +509,21 @@ afterEvaluate {
         mustRunAfter tasks.named('kspDebugKotlin')
         mustRunAfter tasks.named('kspReleaseKotlin')
     }
+    
+    // Fix dependency between kspDebugKotlin and generateReleaseLintModel tasks
+    tasks.named('generateReleaseLintModel') {
+        dependsOn tasks.named('kspDebugKotlin')
+    }
+    
+    // Fix dependency between kspDebugKotlin and lintVitalAnalyzeRelease tasks
+    tasks.named('lintVitalAnalyzeRelease') {
+        dependsOn tasks.named('kspDebugKotlin')
+    }
+    
+    // Fix dependency between kspDebugKotlin and generateReleaseLintVitalModel tasks
+    tasks.named('generateReleaseLintVitalModel') {
+        dependsOn tasks.named('kspDebugKotlin')
+    }
 }
 
 preBuild.dependsOn obtainAndWriteSalt
