@@ -1,9 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
-if test -e env.properties; then
+PROP_FILE="env.properties"  # Explicitly use relative path
 
-  # shellcheck disable=SC3046
-  source env.properties
+if [[ -f "$PROP_FILE" && -r "$PROP_FILE" ]]; then  # Check if file is readable
+
+    # shellcheck disable=SC1090
+    . "$PROP_FILE"  # Source the file
 fi
 
 if [ -z "$1" ]; then
