@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if test -e ".env"; then
+if test -e env.properties; then
 
-  . .env
+  . env.properties
 fi
 
 if [ -z "$FIREBASE_TOKEN" ]; then

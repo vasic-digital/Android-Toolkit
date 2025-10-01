@@ -1,8 +1,8 @@
 #!/bin/sh
 
-if test -e ".env"; then
+if test -e env.properties; then
 
-  . .env
+  . env.properties
 fi
 
 if [ -z "$1" ]; then

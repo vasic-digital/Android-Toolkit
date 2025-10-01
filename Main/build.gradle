@@ -511,18 +511,21 @@ afterEvaluate {
     }
     
     // Fix dependency between kspDebugKotlin and generateReleaseLintModel tasks
-    tasks.named('generateReleaseLintModel') {
-        dependsOn tasks.named('kspDebugKotlin')
+    def generateReleaseLintModelTask = tasks.findByName('generateReleaseLintModel')
+    if (generateReleaseLintModelTask != null) {
+        generateReleaseLintModelTask.dependsOn tasks.named('kspDebugKotlin')
     }
     
     // Fix dependency between kspDebugKotlin and lintVitalAnalyzeRelease tasks
-    tasks.named('lintVitalAnalyzeRelease') {
-        dependsOn tasks.named('kspDebugKotlin')
+    def lintVitalAnalyzeReleaseTask = tasks.findByName('lintVitalAnalyzeRelease')
+    if (lintVitalAnalyzeReleaseTask != null) {
+        lintVitalAnalyzeReleaseTask.dependsOn tasks.named('kspDebugKotlin')
     }
-    
+
     // Fix dependency between kspDebugKotlin and generateReleaseLintVitalModel tasks
-    tasks.named('generateReleaseLintVitalModel') {
-        dependsOn tasks.named('kspDebugKotlin')
+    def generateReleaseLintVitalModelTask = tasks.findByName('generateReleaseLintVitalModel')
+    if (generateReleaseLintVitalModelTask != null) {
+        generateReleaseLintVitalModelTask.dependsOn tasks.named('kspDebugKotlin')
     }
 }
 
