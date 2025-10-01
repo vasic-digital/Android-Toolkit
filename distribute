@@ -11,4 +11,4 @@ if [ -z "$FIREBASE_TOKEN" ]; then
   exit 1
 fi
 
-pwd && ./assemble && ./gradlew appDistributionUploadRelease
+pwd && ./gradlew clean && ./gradlew assembleRelease && ./gradlew appDistributionUploadRelease

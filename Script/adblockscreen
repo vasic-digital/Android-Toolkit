@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if adb shell input keyevent KEYCODE_SLEEP; then
 
