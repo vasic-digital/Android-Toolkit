@@ -2,7 +2,8 @@
 
 if test -e env.properties; then
 
-  . env.properties
+  # shellcheck disable=SC3046
+  source env.properties
 fi
 
 if [ -z "$1" ]; then
