@@ -18,6 +18,10 @@ abstract class Popup : PopupFragment() {
 
     private val instanceStateSaved = AtomicBoolean()
 
+    // Flag to prevent duplicate onDismissed callback invocations
+    // This can happen when dismiss() is called, then onDetach() is called later
+    protected val dismissCallbackInvoked = AtomicBoolean(false)
+
     fun readyToDismiss() = !isDetached &&
             activity?.supportFragmentManager?.isDestroyed == false &&
             isVisible &&
@@ -45,9 +49,13 @@ abstract class Popup : PopupFragment() {
 
         onDismissed?.let {
 
-            Console.log("$logTag Triggering the callback")
-
-            it.onCompleted(getDismissResult())
+            // Only invoke callback once to prevent duplicate presentNextPopup() calls
+            if (dismissCallbackInvoked.compareAndSet(false, true)) {
+                Console.log("$logTag Triggering the callback")
+                it.onCompleted(getDismissResult())
+            } else {
+                Console.log("$logTag Callback already invoked, skipping")
+            }
         }
 
         val readyTo = readyToDismiss()
@@ -83,9 +91,13 @@ abstract class Popup : PopupFragment() {
 
         onDismissed?.let {
 
-            Console.log("$logTag Triggering the callback")
-
-            it.onCompleted(getDismissResult())
+            // Only invoke callback once to prevent duplicate presentNextPopup() calls
+            if (dismissCallbackInvoked.compareAndSet(false, true)) {
+                Console.log("$logTag Triggering the callback")
+                it.onCompleted(getDismissResult())
+            } else {
+                Console.log("$logTag Callback already invoked, skipping")
+            }
         }
 
         val ctx = getPopupActivity()
