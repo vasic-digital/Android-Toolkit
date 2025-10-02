@@ -3,7 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'com.android.library'
     id("com.google.devtools.ksp") version "2.2.20-2.0.2"
-    id 'org.jetbrains.kotlin.plugin.compose' version "2.2.20"
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
