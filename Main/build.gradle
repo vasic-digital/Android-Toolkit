@@ -1,9 +1,7 @@
 plugins {
-
-    id 'kotlin-android'
     id 'com.android.library'
-    id("com.google.devtools.ksp") version "2.2.20-2.0.2"
-    id 'org.jetbrains.kotlin.plugin.compose'
+    id 'org.jetbrains.kotlin.android'
+    id("com.google.devtools.ksp") version "1.7.22-1.0.8"
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
@@ -19,41 +17,6 @@ if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$
     println("The 'toolkit_project_name' is: '$toolkit_project_name'")
 }
 
-
-import com.redelf.jcommons.JObfuscator
-
-import java.nio.file.Files
-import java.nio.file.Paths
-
-/*
-     The .zshrc / .bashrc example:
-
-     export OBFUSCATION_SALT="your_secret_salt"
-
-     export PROXY_LOCAL_ENABLED="BOBA;"
-     export PROXY_LOCAL_PROD_ENABLED="BOBA;"
-     export PROXY_REMOTE_PROD_ENABLED="BOBA;"
-
-     export PROXY_LOCAL_TEST="$(hostname | tr '[:upper:]' '[:lower:]')"
-     export PROXY_LOCAL_PROD="milosvasic.local"
-
-     export PROXY_LOCAL_TEST_PORT="8080"
-     export PROXY_LOCAL_PROD_PORT="8080"
-
-     export PROXY_LOCAL_TEST_USERNAME="test"
-     export PROXY_LOCAL_PROD_USERNAME="admin"
-
-     export PROXY_LOCAL_TEST_PASSWORD="test"
-     export PROXY_LOCAL_PROD_PASSWORD="admin"
-
-     export OBFUSCATION_TEST="test"
-*/
-
-def test = System.getenv("OBFUSCATION_TEST") ?: ""
-
-def salt = System.getenv("OBFUSCATION_SALT") ?: ""
-def obfuscator = new JObfuscator(salt)
-
 def proxyEnabled = (System.getenv("PROXY_LOCAL_ENABLED") ?: "").contains("$toolkit_project_name;")
 def proxyProdEnabled = (System.getenv("PROXY_LOCAL_PROD_ENABLED") ?: "").contains("$toolkit_project_name;")
 def proxyRemoteProdEnabled = (System.getenv("PROXY_REMOTE_PROD_ENABLED") ?: "").contains("$toolkit_project_name;")
@@ -63,157 +26,56 @@ def pLocalTestPort = System.getenv("PROXY_LOCAL_TEST_PORT") ?: "8080"
 def pLocalTestUsername = System.getenv("PROXY_LOCAL_TEST_USERNAME") ?: "test"
 def pLocalTestPassword = System.getenv("PROXY_LOCAL_TEST_PASSWORD") ?: "test"
 
-def proxyLocalTest = obfuscator.obfuscate(pLocalTest)
-def proxyLocalTestPort = obfuscator.obfuscate(pLocalTestPort)
-def proxyLocalTestUsername = obfuscator.obfuscate(pLocalTestUsername)
-def proxyLocalTestPassword = obfuscator.obfuscate(pLocalTestPassword)
+def proxyLocalTest = pLocalTest
+def proxyLocalTestPort = pLocalTestPort
+def proxyLocalTestUsername = pLocalTestUsername
+def proxyLocalTestPassword = pLocalTestPassword
 
 def pLocalProd = System.getenv("PROXY_LOCAL_PROD") ?: "127.0.0.1"
 def pLocalProdPort = System.getenv("PROXY_LOCAL_PROD_PORT") ?: "8080"
 def pLocalProdUsername = System.getenv("PROXY_LOCAL_PROD_USERNAME") ?: "admin"
 def pLocalProdPassword = System.getenv("PROXY_LOCAL_PROD_PASSWORD") ?: "admin"
 
-def proxyLocalProd = obfuscator.obfuscate(pLocalProd)
-def proxyLocalProdPort = obfuscator.obfuscate(pLocalProdPort)
-def proxyLocalProdUsername = obfuscator.obfuscate(pLocalProdUsername)
-def proxyLocalProdPassword = obfuscator.obfuscate(pLocalProdPassword)
+def proxyLocalProd = pLocalProd
+def proxyLocalProdPort = pLocalProdPort
+def proxyLocalProdUsername = pLocalProdUsername
+def proxyLocalProdPassword = pLocalProdPassword
 
 def pRemoteProd = System.getenv("PROXY_REMOTE_PROD") ?: "127.0.0.1"
 def pRemoteProdPort = System.getenv("PROXY_REMOTE_PROD_PORT") ?: "8080"
 def pRemoteProdUsername = System.getenv("PROXY_REMOTE_PROD_USERNAME") ?: "admin"
 def pRemoteProdPassword = System.getenv("PROXY_REMOTE_PROD_PASSWORD") ?: "admin"
 
-def proxyRemoteProd = obfuscator.obfuscate(pRemoteProd)
-def proxyRemoteProdPort = obfuscator.obfuscate(pRemoteProdPort)
-def proxyRemoteProdUsername = obfuscator.obfuscate(pRemoteProdUsername)
-def proxyRemoteProdPassword = obfuscator.obfuscate(pRemoteProdPassword)
+def proxyRemoteProd = pRemoteProd
+def proxyRemoteProdPort = pRemoteProdPort
+def proxyRemoteProdUsername = pRemoteProdUsername
+def proxyRemoteProdPassword = pRemoteProdPassword
 
 android {
-
     compileSdk 36
     namespace 'com.redelf.commons'
 
     defaultConfig {
-
         minSdk 28
         targetSdk 36
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        if (proxyEnabled) {
-
-            resValue "string", "ob_proxy_local_test", proxyLocalTest
-            resValue "string", "ob_proxy_local_test_port", proxyLocalTestPort
-            resValue "string", "ob_proxy_local_test_username", proxyLocalTestUsername
-            resValue "string", "ob_proxy_local_test_password", proxyLocalTestPassword
-        }
-
-        if (proxyProdEnabled) {
-
-            resValue "string", "ob_proxy_local_prod", proxyLocalProd
-            resValue "string", "ob_proxy_local_prod_port", proxyLocalProdPort
-            resValue "string", "ob_proxy_local_prod_username", proxyLocalProdUsername
-            resValue "string", "ob_proxy_local_prod_password", proxyLocalProdPassword
-        }
-
-        if (proxyRemoteProdEnabled) {
-
-            resValue "string", "ob_proxy_remote_prod", proxyRemoteProd
-            resValue "string", "ob_proxy_remote_prod_port", proxyRemoteProdPort
-            resValue "string", "ob_proxy_remote_prod_username", proxyRemoteProdUsername
-            resValue "string", "ob_proxy_remote_prod_password", proxyRemoteProdPassword
-        }
-
-        resValue "string", "ob_test", obfuscator.obfuscate(test)
-
-        multiDexEnabled true
-
-        sourceSets {
-
-            main {
-
-                java.srcDirs += "build/generated/ksp/debug"
-                java.srcDirs += "build/generated/ksp/release"
-            }
-        }
     }
 
-    /*
-        TODO: Migration to Java > 8
-    */
     compileOptions {
-
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 
     buildTypes {
-
         release {
-
-            minifyEnabled true
-            shrinkResources false
-
-            // Enable R8 to match Application module configuration
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-
-        debug {
-
             minifyEnabled false
-
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-
-    packagingOptions {
-
-        resources {
-
-            excludes += ['META-INF/*, LICENSE-2.0.txt, META-INF/DEPENDENCIES', 'META-INF/LICENSE',
-                         'META-INF/LICENSE.txt', 'META-INF/license.txt', 'META-INF/NOTICE',
-                         'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0',
-                         'META-INF/*.kotlin_module', 'META-INF/*', 'LICENSE-2.0.txt',
-                         'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt',
-                         'META-INF/NOTICE', 'META-INF/NOTICE.txt']
-        }
-
-        jniLibs {
-
-            // Enable 16KB page size support for native libraries
-            useLegacyPackaging true
-
-            excludes += ['META-INF/*']
-        }
-    }
-
-    buildFeatures {
-
-        compose true
-    }
-
-    composeOptions {
-
-        kotlinCompilerExtensionVersion = "1.5.17"
-    }
-
-    lint {
-
-        disable "Instantiatable"
-        disable 'ContentDescription'
-    }
-
-    sourceSets {
-
-        main {
-
-            java.srcDirs += "build/generated/ksp/debug"
-            java.srcDirs += "build/generated/ksp/release"
+        debug {
+            minifyEnabled false
         }
     }
 }
@@ -228,9 +90,9 @@ dependencies {
     final String lifecycleVersion = "2.9.4"
     final String retrofitHttpVersion = "3.0.0"
 
-    api project("$toolkit_obfuscator_project")
-    testApi project("$toolkit_obfuscator_project")
-    androidTestApi project("$toolkit_obfuscator_project")
+    // api project("$toolkit_obfuscator_project")
+    // testApi project("$toolkit_obfuscator_project")
+    // androidTestApi project("$toolkit_obfuscator_project")
 
     // Jetpack Compose dependencies for ComposeRecyclerView implementation
     api 'androidx.activity:activity-compose:1.11.0'
@@ -525,7 +387,7 @@ afterEvaluate {
     }
 }
 
-preBuild.dependsOn obtainAndWriteSalt
+// preBuild.dependsOn obtainAndWriteSalt
 
 if (proxyEnabled) {
 
