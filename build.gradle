@@ -1,7 +1,7 @@
 buildscript {
 
     def default_toolkit_context = ""
-    def default_kotlin_version = "1.7.22"
+    def default_kotlin_version = "2.0.0"
     def default_toolkit_version = "2.0.3"
     def default_toolkit_obfuscator_jar_home = 'JCommons/jar'
 
@@ -20,22 +20,18 @@ buildscript {
     ext.toolkit_obfuscator_project = project.hasProperty('toolkit_obfuscator_project') ? "$toolkit_obfuscator_project" : default_toolkit_obfuscator_project
 
     repositories {
-
         mavenLocal()
-
         maven { url 'https://repo.huaweicloud.com/repository/maven/' }
         maven { url 'https://maven.aliyun.com/repository/central' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/jetbrains' }
         maven { url 'https://mirrors.ustc.edu.cn/jetbrains/' }
         maven { url 'https://mirrors.tuna.tsinghua.edu.cn/jetbrains/' }
         maven { url "https://jitpack.io" }
+        maven { url 'https://dl.google.com/dl/android/maven2/' }
         mavenCentral()
         google()
         maven { url 'https://maven.pkg.jetbrains.space/public/p/compose/dev' }
-
         flatDir {
-
             dirs "$toolkit_obfuscator_jar_home"
         }
     }
@@ -49,24 +45,7 @@ buildscript {
     }
 }
 
-allprojects {
-
-    repositories {
-
-        mavenLocal()
-
-        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
-        maven { url 'https://maven.aliyun.com/repository/central' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/jetbrains' }
-        maven { url 'https://mirrors.ustc.edu.cn/jetbrains/' }
-        maven { url 'https://mirrors.tuna.tsinghua.edu.cn/jetbrains/' }
-        maven { url "https://jitpack.io" }
-        mavenCentral()
-        google()
-        maven { url 'https://maven.pkg.jetbrains.space/public/p/compose/dev' }
-    }
-}
+// repositories are now managed centrally in settings.gradle
 
 buildscript {
 

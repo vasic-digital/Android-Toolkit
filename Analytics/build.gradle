@@ -2,7 +2,7 @@ plugins {
 
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
-    id("com.google.devtools.ksp") version "1.7.22-1.0.8"
+    id("com.google.devtools.ksp")
 }
 
 /*
@@ -134,5 +134,5 @@ dependencies {
     androidTestImplementation project("${toolkit_context}:Main")
     androidTestImplementation project("${toolkit_context}:Test")
 
-    implementation 'com.facebook.android:facebook-android-sdk:18.0.3'
+    implementation 'com.facebook.android:facebook-android-sdk:18.1.3'
 }
