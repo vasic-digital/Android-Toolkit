@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Read(//Volumes/T7/Projects/milos85vasic/ShareConnect/**)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
