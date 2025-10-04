@@ -80,12 +80,12 @@ android {
 dependencies {
 
     implementation project("${toolkit_context}:Main")
-    implementation project("${toolkit_context}:Test")
+    implementation project(":Tests")
     implementation project("${toolkit_context}:Interprocess")
 
     testImplementation project("${toolkit_context}:Main")
-    testImplementation project("${toolkit_context}:Test")
+    testImplementation project(":Tests")
 
     androidTestImplementation project("${toolkit_context}:Main")
-    androidTestImplementation project("${toolkit_context}:Test")
+    androidTestImplementation project(":Tests")
 }
