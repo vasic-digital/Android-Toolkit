@@ -5,7 +5,7 @@ import com.redelf.commons.interprocess.InterprocessProcessor
 
 class EchoApplication : InterprocessApplication() {
 
-    override val firebaseEnabled = false
+    override fun firebaseEnabled() = false
     override val interprocessPermission = R.string.interprocess_permission
 
     override fun isProduction() = false

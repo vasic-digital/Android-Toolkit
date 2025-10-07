@@ -2,7 +2,7 @@ package com.redelf.commons.interprocess.echo
 
 import android.os.Bundle
 import android.view.View
-import com.redelf.commons.activity.BaseActivity
+import com.redelf.commons.activity.base.BaseActivity
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.interprocess.Interprocessor
 import com.redelf.commons.logging.Console
