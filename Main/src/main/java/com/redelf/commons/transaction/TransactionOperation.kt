@@ -6,5 +6,5 @@ interface TransactionOperation : SessionOperation {
 
     override fun start() = true
 
-    override fun end() = true
+    override fun end(notify: Boolean) = true
 }

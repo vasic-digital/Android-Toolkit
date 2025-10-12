@@ -1,9 +1,9 @@
 plugins {
 
-    id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-parcelize'
+    id 'com.android.library'
     id("com.google.devtools.ksp") version "2.2.20-2.0.2"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
@@ -132,7 +132,8 @@ android {
 
             main {
 
-                java.srcDirs += "build/generated/ksp"
+                java.srcDirs += "build/generated/ksp/debug"
+                java.srcDirs += "build/generated/ksp/release"
             }
         }
     }
@@ -158,16 +159,18 @@ android {
 
         release {
 
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources false
 
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'missing_rules.txt'
+            // Enable R8 to match Application module configuration
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         debug {
 
             minifyEnabled false
 
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro', 'missing_rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -180,15 +183,26 @@ android {
                          'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0',
                          'META-INF/*.kotlin_module', 'META-INF/*', 'LICENSE-2.0.txt',
                          'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt',
-                         'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/USE_EXACT_ALARM']
+                         'META-INF/NOTICE', 'META-INF/NOTICE.txt']
         }
 
         jniLibs {
 
+            // Enable 16KB page size support for native libraries
+            useLegacyPackaging true
+
             excludes += ['META-INF/*']
         }
+    }
 
-        doNotStrip '**/libconcealjni.so'
+    buildFeatures {
+
+        compose true
+    }
+
+    composeOptions {
+
+        kotlinCompilerExtensionVersion = "1.5.17"
     }
 
     lint {
@@ -201,36 +215,35 @@ android {
 
         main {
 
-            java.srcDirs += "build/generated/ksp"
+            java.srcDirs += "build/generated/ksp/debug"
+            java.srcDirs += "build/generated/ksp/release"
         }
     }
 }
 
 dependencies {
 
-    final String roomVersion = "2.7.2"
+    final String roomVersion = "2.8.0"
     final String okioVersion = "3.9.0"
-    final String gsonVersion = "2.13.1"
+    final String gsonVersion = "2.13.2"
     final String okHttpVersion = "5.1.0"
-    final String jacksonVersion = "2.19.1"
-    final String lifecycleVersion = "2.9.1"
+    final String jacksonVersion = "2.20.0"
+    final String lifecycleVersion = "2.9.4"
     final String retrofitHttpVersion = "3.0.0"
 
     api project("$toolkit_obfuscator_project")
     testApi project("$toolkit_obfuscator_project")
     androidTestApi project("$toolkit_obfuscator_project")
 
-    // TODO: Refactor / move:
-    //    api 'androidx.activity:activity-compose:1.10.0'
-    //    api 'androidx.compose.ui:ui'
-    //    api 'androidx.compose.ui:ui-graphics'
-    //    api 'androidx.compose.material3:material3'
-    //    api 'androidx.compose.foundation:foundation'
-    //    api 'androidx.compose.ui:ui-tooling-preview'
+    // Jetpack Compose dependencies for ComposeRecyclerView implementation
+    api 'androidx.activity:activity-compose:1.11.0'
+    api 'androidx.compose.ui:ui'
+    api 'androidx.compose.ui:ui-graphics'
+    api 'androidx.compose.material3:material3'
+    api 'androidx.compose.foundation:foundation'
+    api 'androidx.compose.ui:ui-tooling-preview'
 
     api "com.squareup.okio:okio:$okioVersion"
-    api "com.squareup.okhttp3:okhttp:$okHttpVersion"
-    api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
     api "com.squareup.okhttp3:okhttp:$okHttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
     api "com.squareup.retrofit2:retrofit:$retrofitHttpVersion"
@@ -238,29 +251,26 @@ dependencies {
     api "com.squareup.retrofit2:converter-gson:$retrofitHttpVersion"
     api "com.squareup.retrofit2:converter-jackson:$retrofitHttpVersion"
 
-    api "androidx.core:core-ktx:1.16.0"
+    api "androidx.core:core-ktx:1.17.0"
     api "com.squareup.retrofit2:adapter-rxjava2:$retrofitHttpVersion"
     api "io.reactivex.rxjava2:rxandroid:2.1.1"
     api "io.reactivex.rxjava2:rxjava:2.2.21"
 
-    api "org.apache.commons:commons-compress:1.27.1"
-
-    api "androidx.core:core-ktx:1.16.0"
+    api "org.apache.commons:commons-compress:1.28.0"
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+
     api "com.google.firebase:firebase-core:21.1.1"
-    api "com.google.firebase:firebase-analytics:22.5.0"
+    api "com.google.firebase:firebase-analytics:23.0.0"
     api "com.google.firebase:firebase-analytics-ktx:22.5.0"
-    api "com.google.firebase:firebase-messaging:24.1.2"
-    api "com.google.firebase:firebase-crashlytics:19.4.4"
-    api "com.google.android.gms:play-services-auth:21.3.0"
-    api "com.google.firebase:firebase-auth:23.2.1"
-    api "com.google.firebase:firebase-config:22.1.2"
+    api "com.google.firebase:firebase-messaging:25.0.1"
+    api "com.google.firebase:firebase-crashlytics:20.0.2"
+    api "com.google.firebase:firebase-auth:24.0.1"
+    api "com.google.firebase:firebase-config:23.0.1"
+    api "com.google.android.gms:play-services-auth:21.4.0"
 
     api "com.google.android.play:app-update:2.1.0"
     api "com.google.android.play:app-update-ktx:2.1.0"
@@ -277,13 +287,10 @@ dependencies {
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
     api "androidx.profileinstaller:profileinstaller:1.4.1"
-    api "androidx.activity:activity-ktx:1.10.1"
+    api "androidx.activity:activity-ktx:1.11.0"
 
-    api "androidx.profileinstaller:profileinstaller:1.4.1"
-    api "androidx.activity:activity-ktx:1.10.1"
-
-    api "com.github.bumptech.glide:glide:4.16.0"
-    api "com.github.bumptech.glide:annotations:4.16.0"
+    api "com.github.bumptech.glide:glide:5.0.5"
+    api "com.github.bumptech.glide:annotations:5.0.5"
 
     api "jp.wasabeef:glide-transformations:4.3.0"
 
@@ -292,53 +299,55 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
 
-    api platform("com.google.firebase:firebase-bom:33.16.0")
+    api platform("com.google.firebase:firebase-bom:34.3.0")
+
+    // Google API Client dependencies for Tink
+    api "com.google.api-client:google-api-client:2.8.1"
+    api "com.google.http-client:google-http-client:2.0.0"
+    api "com.google.http-client:google-http-client-gson:2.0.0"
+
+    // Joda Time dependency for Tink
+    api "joda-time:joda-time:2.14.0"
 
     api "io.github.nefilim.kjwt:kjwt-core:1.0.0"
     api "io.github.nefilim.kjwt:kjwt-jwks:1.0.0"
 
     api "com.airbnb.android:lottie:6.6.7"
-    api "androidx.work:work-runtime-ktx:2.10.2"
-    api "androidx.work:work-runtime-ktx:2.10.2"
-    api "com.airbnb.android:lottie:6.6.7"
-    api "androidx.work:work-runtime-ktx:2.10.2"
+    api "androidx.work:work-runtime-ktx:2.10.4"
     api "androidx.preference:preference-ktx:1.2.1"
-    api "com.google.android.material:material:1.12.0"
-    api "androidx.navigation:navigation-ui-ktx:2.9.1"
-    api "androidx.navigation:navigation-fragment-ktx:2.9.1"
-    api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    api "com.google.android.material:material:1.13.0"
+    api "androidx.navigation:navigation-ui-ktx:2.9.4"
+    api "androidx.navigation:navigation-fragment-ktx:2.9.4"
 
     api "com.google.net.cronet:cronet-okhttp:0.1.0"
     api "com.google.android.gms:play-services-cronet:18.1.0"
 
     api "com.android.installreferrer:installreferrer:2.2"
-    api "com.facebook.android:facebook-android-sdk:18.0.3"
+    api "com.facebook.android:facebook-android-sdk:18.1.3"
 
-    api platform("com.google.firebase:firebase-bom:33.16.0")
+    api "androidx.sqlite:sqlite-ktx:2.6.0"
 
-    api "androidx.sqlite:sqlite-ktx:2.5.2"
-
-    implementation "net.zetetic:sqlcipher-android:4.9.0@aar"
+    // SQLCipher for Android - Version 4.6.1+ supports 16KB page sizes
+    // Required for Android 15+ devices (API 35+) - Google Play requirement from November 2025
+    implementation "net.zetetic:sqlcipher-android:4.10.0@aar"
 
     api "androidx.room:room-runtime:$roomVersion"
     api "androidx.room:room-ktx:$roomVersion"
-
     ksp "androidx.room:room-compiler:$roomVersion"
-
     api "androidx.room:room-paging:$roomVersion"
     api "androidx.paging:paging-runtime-ktx:3.3.6"
 
     api "androidx.recyclerview:recyclerview:1.4.0"
 
-    // TODO: Refactor / move:
-    //    api platform('androidx.compose:compose-bom:2025.01.01')
-    api "com.facebook.android:facebook-android-sdk:18.0.3"
+    // Compose BOM for ComposeRecyclerView implementation
+    api platform('androidx.compose:compose-bom:2025.09.00')
+    api "com.facebook.android:facebook-android-sdk:18.1.3"
 
     testImplementation project("${toolkit_context}:Test")
 
     androidTestImplementation project("${toolkit_context}:Test")
-    androidTestImplementation "androidx.test:rules:1.6.1"
-    androidTestImplementation "androidx.test.ext:junit:1.2.1"
+    androidTestImplementation "androidx.test:rules:1.7.0"
+    androidTestImplementation "androidx.test.ext:junit:1.3.0"
 
     implementation "com.jakewharton.timber:timber:5.0.1"
     testImplementation "com.jakewharton.timber:timber:5.0.1"
@@ -348,26 +357,17 @@ dependencies {
     testApi "com.google.code.gson:gson:$gsonVersion"
     androidTestApi "com.google.code.gson:gson:$gsonVersion"
 
-    //noinspection Aligned16KB
-    api "com.facebook.conceal:conceal:2.0.2"
-    //noinspection Aligned16KB
-    testApi "com.facebook.conceal:conceal:2.0.2"
-    //noinspection Aligned16KB
-    androidTestApi "com.facebook.conceal:conceal:2.0.2"
+    api "androidx.security:security-crypto:1.1.0"
 
-    api "org.apache.commons:commons-compress:1.27.1"
-    testApi "org.apache.commons:commons-compress:1.27.1"
-    androidTestApi "org.apache.commons:commons-compress:1.27.1"
-
-    api "commons-codec:commons-codec:1.18.0"
-    testApi "commons-codec:commons-codec:1.18.0"
-    androidTestApi "commons-codec:commons-codec:1.18.0"
+    api "commons-codec:commons-codec:1.19.0"
+    testApi "commons-codec:commons-codec:1.19.0"
+    androidTestApi "commons-codec:commons-codec:1.19.0"
 
     testApi "junit:junit:4.13.2"
     androidTestApi "junit:junit:4.13.2"
 
-    androidTestApi 'androidx.test:runner:1.6.2'
-    androidTestApi 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestApi 'androidx.test:runner:1.7.0'
+    androidTestApi 'androidx.test.espresso:espresso-core:3.7.0'
 }
 
 task downloadProxies(type: Exec) {
@@ -494,6 +494,37 @@ task obtainAndWriteSalt {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+// Fix KSP task dependencies
+afterEvaluate {
+    tasks.named('kspDebugKotlin') {
+        mustRunAfter tasks.named('kspReleaseKotlin')
+    }
+
+    // Fix other KSP-related task dependencies
+    tasks.matching { it.name.startsWith('extractRelease') }.configureEach {
+        mustRunAfter tasks.named('kspDebugKotlin')
+        mustRunAfter tasks.named('kspReleaseKotlin')
+    }
+
+    // Fix dependency between kspDebugKotlin and generateReleaseLintModel tasks
+    def generateReleaseLintModelTask = tasks.findByName('generateReleaseLintModel')
+    if (generateReleaseLintModelTask != null) {
+        generateReleaseLintModelTask.dependsOn tasks.named('kspDebugKotlin')
+    }
+
+    // Fix dependency between kspDebugKotlin and lintVitalAnalyzeRelease tasks
+    def lintVitalAnalyzeReleaseTask = tasks.findByName('lintVitalAnalyzeRelease')
+    if (lintVitalAnalyzeReleaseTask != null) {
+        lintVitalAnalyzeReleaseTask.dependsOn tasks.named('kspDebugKotlin')
+    }
+
+    // Fix dependency between kspDebugKotlin and generateReleaseLintVitalModel tasks
+    def generateReleaseLintVitalModelTask = tasks.findByName('generateReleaseLintVitalModel')
+    if (generateReleaseLintVitalModelTask != null) {
+        generateReleaseLintVitalModelTask.dependsOn tasks.named('kspDebugKotlin')
     }
 }
 

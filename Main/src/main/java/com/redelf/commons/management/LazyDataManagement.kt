@@ -9,6 +9,7 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.application.OnClearFromRecentService
 import com.redelf.commons.data.Empty
 import com.redelf.commons.extensions.exec
+import com.redelf.commons.extensions.isInForeground
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.Connectivity
@@ -21,6 +22,7 @@ abstract class LazyDataManagement<T> :
 
     DataManagement<T>(),
     Registration<Context> where T : Versionable
+
 {
 
     protected open val lazySaving = false
@@ -240,11 +242,21 @@ abstract class LazyDataManagement<T> :
 
     override fun isRegistered(subscriber: Context) = registered.get() && terminationRegistered.get()
 
-    override fun pushData(data: T?, callback: OnObtain<Boolean?>?) {
+    override fun apply(
+
+        data: T?,
+        from: String,
+        notify: Boolean,
+        callback: OnObtain<DataPushResult?>?
+
+    ) {
+
+        val from = "lazy.apply(from='$from').withData.withCallback"
 
         if (!isEnabled()) {
 
-            callback?.onCompleted(false)
+            callback?.onCompleted(data = DataPushResult(from, false))
+
             return
         }
 
@@ -252,11 +264,18 @@ abstract class LazyDataManagement<T> :
 
             saved.set(false)
 
-            callback?.onCompleted(true)
+            val result = DataPushResult(from, true)
+
+            callback?.onCompleted(data = result)
+
+            if (notify) {
+
+                notifyOnPushCompleted(data = result)
+            }
 
         } else {
 
-            super.pushData(data, callback)
+            super.apply(data, from, notify, callback)
         }
     }
 
@@ -272,19 +291,7 @@ abstract class LazyDataManagement<T> :
         }
     }
 
-    protected open fun isLazyReady() = isEnabled()
-
-    private fun onForeground() {
-
-        if (!isEnabled()) {
-
-            return
-        }
-
-        if (DEBUG.get()) Console.log("Application is in foreground")
-    }
-
-    private fun onBackground(from: String) {
+    fun save(from: String) {
 
         if (!isEnabled()) {
 
@@ -296,8 +303,14 @@ abstract class LazyDataManagement<T> :
             return
         }
 
+        if (BaseApplication.takeContext().isInForeground()) {
+
+            return
+        }
+
         val tag =
-            "Lazy :: Who = '${getWho()}', From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
+            "Lazy :: Who = '${getWho()}', " +
+                    "From = '$from' :: BACKGROUND (${takeContext().getActivityCount()}) ::"
 
         if (isLazyReady()) {
 
@@ -340,7 +353,12 @@ abstract class LazyDataManagement<T> :
 
                             overwriteData(it)
 
-                            doPushData(it)
+                            doApply(
+
+                                it,
+                                "onBackground(from='$from')",
+                                false
+                            )
                         }
 
                         empty?.let {
@@ -367,5 +385,27 @@ abstract class LazyDataManagement<T> :
         }
 
         if (DEBUG.get()) Console.log("$tag END")
+    }
+
+    protected open fun isLazyReady() = isEnabled()
+
+    private fun onForeground() {
+
+        if (!isEnabled()) {
+
+            return
+        }
+
+        if (DEBUG.get()) Console.log("Application is in foreground")
+    }
+
+    private fun onBackground(from: String) {
+
+        if (!lazySaving) {
+
+            return
+        }
+
+        save("onBackground(from='$from')")
     }
 }

@@ -5,7 +5,6 @@ import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.creation.instantiation.SingleInstantiated
-import com.redelf.commons.data.type.Typed
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
 import com.redelf.commons.extensions.isNotEmpty
@@ -32,15 +31,10 @@ class SecretsManager private constructor(storageKeyToSet: String) :
         }
     }
 
-    override val lazySaving = true
-    override val instantiateDataObject = true
-
-    override val typed = object : Typed<Secrets> {
-
-        override fun getClazz(): Class<Secrets> = Secrets::class.java
-    }
-
+    override val lazySaving = false
     override val storageKey = storageKeyToSet
+    override val instantiateDataObject = true
+    override val checkDataVersionOnSaving = false
 
     override fun getLogTag() = "SecretsManager :: ${hashCode()} ::"
 
@@ -86,7 +80,9 @@ class SecretsManager private constructor(storageKeyToSet: String) :
 
                                 result.updateValue(newSalt)
 
-                                transaction.end(
+                                transaction?.end(
+
+                                    true,
 
                                     object : OnObtain<Boolean?> {
 

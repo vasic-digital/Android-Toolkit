@@ -18,7 +18,7 @@ class ByteArrayTypeAdapter(
     * TODO:
     *  - Encrypt all strings used here (name for example ...)
     */
-    private val serializer = ByteArraySerializer(context, "type_adapter_cache.$name", encryption)
+    private val serializer = SecureBinarySerializer(context, "type_adapter_cache.$name", encryption)
 
     @Throws(IOException::class)
     override fun write(out: JsonWriter, value: ByteArray?) {
@@ -36,13 +36,18 @@ class ByteArrayTypeAdapter(
     @Throws(IOException::class)
     override fun read(`in`: JsonReader): ByteArray? {
 
-        val encoded = `in`.nextBoolean() == true
-
-        if (encoded) {
-
-            return serializer.deserialize(name)
+        if (`in`.peek() == com.google.gson.stream.JsonToken.NULL) {
+            `in`.nextNull()
+            return null
         }
 
-        return null
+        val encoded = `in`.nextString()
+        
+        return if (encoded != null) {
+            // The serializer stores the data and returns the ByteArray
+            serializer.deserialize(name) as? ByteArray
+        } else {
+            null
+        }
     }
 }

@@ -46,6 +46,8 @@ abstract class PlayerAbstraction<MP> : Player, ExecuteWithResult<Media> {
 
     override fun getVolume() = volume
 
+    abstract fun getMonitor(): PlayerConnectivityMonitor?
+
     protected open fun setSpeedValue(value: Float) {
 
         speed = value

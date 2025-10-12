@@ -93,7 +93,7 @@ class RetryInterceptor(
 
         Console.error("$TAG $msg")
 
-        val intent = Intent(BROADCAST_ACTION_COMMUNICATION_FAILURE)
+        val intent = Intent(BROADCAST_ACTION_COMMUNICATION_FAILURE) // TODO: Pass callback to trigger in constructor so for certain API calls we can perform custom actions
         val applicationContext = BaseApplication.Companion.takeContext()
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }

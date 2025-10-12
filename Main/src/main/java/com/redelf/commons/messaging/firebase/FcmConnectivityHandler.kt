@@ -1,6 +1,8 @@
 package com.redelf.commons.messaging.firebase
 
+import android.content.Context
 import com.redelf.commons.net.connectivity.ConnectionBlockingBehavior
+import com.redelf.commons.net.connectivity.Connectivity
 import com.redelf.commons.net.connectivity.ConnectivityStateChanges
 import com.redelf.commons.net.connectivity.StatefulBasicConnectionHandler
 import com.redelf.commons.obtain.Obtain
@@ -55,5 +57,10 @@ class FcmConnectivityHandler private constructor(
     override fun unregister(subscriber: ConnectivityStateChanges) {
 
         FcmService.unregister(subscriber)
+    }
+
+    override fun requireNetworkAvailable(ctx: Context): Boolean {
+
+        return Connectivity().requireNetworkAvailable(ctx)
     }
 }

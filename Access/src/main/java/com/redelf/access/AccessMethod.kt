@@ -17,11 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class AccessMethod(private val priority: Int, protected val ctx: AppCompatActivity) :
 
-        Comparable<AccessMethod>,
-    CapabilityCheck,
     Installation,
     Cancellation,
-    CommonExecution {
+    CommonExecution,
+    CapabilityCheck,
+    Comparable<AccessMethod>
+
+{
 
     private val executing = AtomicBoolean()
 
@@ -63,6 +65,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
         override fun onExecution(success: Boolean, calledFrom: String) {
 
             executing.set(false)
+
             executionCallbacks.doOnAll(object : CallbackOperation<CommonExecutionCallback> {
 
                 override fun perform(callback: CommonExecutionCallback) {
@@ -70,6 +73,7 @@ abstract class AccessMethod(private val priority: Int, protected val ctx: AppCom
                     callback.onExecution(success, "executionCallback :: $calledFrom")
                     executionCallbacks.unregister(callback)
                 }
+
             }, operationName = "Execution operation")
         }
     }

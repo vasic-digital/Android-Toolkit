@@ -6,5 +6,5 @@ interface SessionOperation {
 
     fun perform(): Boolean
 
-    fun end(): Boolean
+    fun end(notify: Boolean): Boolean
 }

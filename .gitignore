@@ -27,3 +27,5 @@ render.experimental.xml
 
 .kotlin
 .kotlin/*
+
+env.properties

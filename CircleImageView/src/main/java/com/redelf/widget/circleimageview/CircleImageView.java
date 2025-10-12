@@ -399,7 +399,6 @@ public class CircleImageView extends ImageView {
             drawable.draw(canvas);
             return bitmap;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }

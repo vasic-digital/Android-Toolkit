@@ -7,9 +7,9 @@ import com.redelf.commons.destruction.erasing.Erasing
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.extensions.yield
-import com.redelf.commons.lifecycle.InitializationWithContext
-import com.redelf.commons.lifecycle.ShutdownSynchronized
-import com.redelf.commons.lifecycle.TerminationSynchronized
+import com.redelf.commons.lifecycle.initialization.InitializationWithContext
+import com.redelf.commons.lifecycle.shutdown.ShutdownSynchronized
+import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
@@ -22,6 +22,7 @@ import com.redelf.commons.security.encryption.EncryptionListener
 import java.util.concurrent.atomic.AtomicBoolean
 
 class EncryptedPersistence
+
 @Throws(IllegalArgumentException::class, IllegalStateException::class)
 constructor(
 
@@ -110,9 +111,9 @@ constructor(
         return dataDelegate?.shutdown() == true
     }
 
-    override fun terminate(vararg args: Any): Boolean {
+    override fun terminate(): Boolean {
 
-        return dataDelegate?.terminate(*args) == true
+        return dataDelegate?.terminate() == true
     }
 
     override fun initialize(ctx: Context) {

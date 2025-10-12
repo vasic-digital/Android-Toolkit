@@ -6,6 +6,7 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Base64
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.OnObtain
@@ -569,4 +570,9 @@ fun String.hashCodeString(): String {
     }
 
     return b.toString()
+}
+
+fun String.hostname(): String {
+
+    return this.toUri().host ?: ""
 }

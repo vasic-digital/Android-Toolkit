@@ -3,7 +3,7 @@ package com.redelf.commons.callback
 import com.redelf.commons.Debuggable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.registration.Registration
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 class Callbacks<T>(private val identifier: String) : Registration<T>, Debuggable {
@@ -14,7 +14,7 @@ class Callbacks<T>(private val identifier: String) : Registration<T>, Debuggable
     }
 
     private val debug = AtomicBoolean(DEBUG.get())
-    private var callbacks = ConcurrentLinkedQueue<T>()
+    private var callbacks = LinkedBlockingQueue<T>()
     private val tag = "Callbacks '${getTagName()}' ::"
 
     private fun getTagName() = "$identifier ${hashCode()}"

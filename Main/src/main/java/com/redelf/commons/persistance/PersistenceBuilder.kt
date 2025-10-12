@@ -2,6 +2,7 @@ package com.redelf.commons.persistance
 
 import android.content.Context
 import android.text.TextUtils
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.GsonBuilder
 import com.redelf.commons.extensions.hashCodeString
 import com.redelf.commons.logging.Console
@@ -13,7 +14,6 @@ import com.redelf.commons.persistance.base.Salter
 import com.redelf.commons.persistance.base.Serializer
 import com.redelf.commons.persistance.base.Storage
 import com.redelf.commons.persistance.database.DBStorage
-import com.redelf.commons.persistance.encryption.ConcealEncryption
 import com.redelf.commons.persistance.encryption.NoEncryption
 
 class PersistenceBuilder(
@@ -61,32 +61,36 @@ class PersistenceBuilder(
     }
 
     private val pCallback = object : Obtain<GsonBuilder> {
-
         override fun obtain(): GsonBuilder {
-
-            /*
-                TODO: Bring the Jackson support
-            */
             return GsonBuilder()
+        }
+    }
+    
+    private val streamingCallback = object : Obtain<ObjectMapper> {
+        override fun obtain(): ObjectMapper {
+            // High-performance Jackson configuration
+            return ObjectMapper().apply {
+                configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+                configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
+            }
         }
     }
 
     private var parser: Obtain<Parser> = object : Obtain<Parser> {
-
-        override fun obtain() = GsonParser.instantiate(
-
+        override fun obtain() = StreamingJsonParser.instantiate(
             storageTag,
             encryption,
             true,
-            pCallback
+            streamingCallback
         )
     }
 
     var doLog: Boolean = false
-    var storage: Storage<String> = DBStorage
+    var storage: Storage<String> = DBStorage.getInstance(context)
     var encryption: Encryption<String>? = null
-    var converter: Converter? = DataConverter(parser)
-    var serializer: Serializer? = DataSerializer(parser)
+    var converter: Converter? = SecureDataConverter(parser)
+    var serializer: Serializer? = SecureDataSerializer(parser)
 
     fun setDoLog(doLog: Boolean): PersistenceBuilder {
 
@@ -124,11 +128,6 @@ class PersistenceBuilder(
         if (encryption == null) {
 
             encryption = instantiateDefaultEncryption(context, salter)
-
-            if (encryption is ConcealEncryption && (!(encryption as ConcealEncryption).init())) {
-
-                throw IllegalStateException("Could not initialized Conceal encryption")
-            }
         }
 
         return DataDelegate.instantiate(this)

@@ -9,6 +9,7 @@ import com.redelf.access.R
 import com.redelf.access.implementation.AccessActivity
 import com.redelf.access.installation.InstallationCheckCallback
 import com.redelf.commons.capability.CapabilityCheckCallback
+import com.redelf.commons.extensions.exec
 import com.redelf.commons.logging.Console
 import kotlin.random.Random
 
@@ -32,10 +33,13 @@ class PinAccess(priority: Int, ctx: AccessActivity) : AccessMethod(priority, ctx
         }
     }
 
-    override fun install() = executor.execute {
+    override fun install() {
 
-        val intent = Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD)
-        ctx.startActivity(intent)
+        exec {
+
+            val intent = Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD)
+            ctx.startActivity(intent)
+        }
     }
 
     

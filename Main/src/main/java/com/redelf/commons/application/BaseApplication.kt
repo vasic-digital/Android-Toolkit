@@ -4,9 +4,10 @@ package com.redelf.commons.application
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
-import android.app.BackgroundServiceStartNotAllowedException
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,6 +17,7 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.os.StrictMode
 import android.provider.Settings
 import android.telecom.TelecomManager
@@ -25,6 +27,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.profileinstaller.ProfileInstaller
+import androidx.work.Configuration
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsConstants
 import com.facebook.appevents.AppEventsLogger
@@ -39,12 +42,15 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.redelf.commons.R
 import com.redelf.commons.activity.ActivityCount
+import com.redelf.commons.activity.tracking.ActivityTracker
 import com.redelf.commons.atomic.AtomicIntWrapper
 import com.redelf.commons.context.ContextAvailability
 import com.redelf.commons.execution.Executor
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.extensions.isEmpty
+import com.redelf.commons.extensions.isInForeground
 import com.redelf.commons.extensions.isNotEmpty
+import com.redelf.commons.extensions.randomInteger
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.extensions.toast
 import com.redelf.commons.intention.Intentional
@@ -74,6 +80,7 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import kotlin.reflect.KClass
+import kotlin.system.exitProcess
 
 abstract class BaseApplication :
 
@@ -82,6 +89,7 @@ abstract class BaseApplication :
     ActivityCount,
     Updatable<Long>,
     LifecycleObserver,
+    Configuration.Provider,
     ActivityLifecycleCallbacks,
     ContextAvailability<BaseApplication>
 
@@ -91,9 +99,7 @@ abstract class BaseApplication :
 
         Intentional,
         ApplicationInfo,
-        ContextAvailability<BaseApplication>
-
-    {
+        ContextAvailability<BaseApplication> {
 
         val DEBUG = AtomicBoolean()
         val STRICT_MODE_DISABLED = AtomicBoolean()
@@ -128,12 +134,22 @@ abstract class BaseApplication :
 
         fun restart(context: Context) {
 
-            val packageManager = context.packageManager
-            val intent = packageManager.getLaunchIntentForPackage(context.packageName)
-            val componentName = intent?.component
-            val mainIntent = Intent.makeRestartActivityTask(componentName)
-            context.startActivity(mainIntent)
-            Runtime.getRuntime().exit(0)
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            val pendingIntentId = randomInteger(666, 111)
+
+            val pendingIntent = PendingIntent.getActivity(
+
+                context,
+                pendingIntentId,
+                intent,
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+            alarmManager?.set(AlarmManager.RTC, System.currentTimeMillis() + 500, pendingIntent)
+
+            android.os.Process.killProcess(android.os.Process.myPid())
+            exitProcess(0)
         }
 
         override fun getName(): String {
@@ -223,10 +239,12 @@ abstract class BaseApplication :
     open val secretsKey = "com.redelf.commons.security.secrets"
     open val defaultManagerResources = mutableMapOf<Class<*>, Int>()
 
-    protected open val firebaseEnabled = true
-    protected open val facebookEnabled = false
-    protected open val firebaseAnalyticsEnabled = false
-    protected open val deepLinkingEnabled = false
+    val activityTracker = ActivityTracker()
+
+    protected open fun firebaseEnabled() = false
+    protected open fun facebookEnabled() = false
+    protected open fun deepLinkingEnabled() = false
+    protected open fun firebaseAnalyticsEnabled() = false
 
     protected open val managers = mutableListOf<List<DataManagement<*>>>(
 
@@ -250,9 +268,9 @@ abstract class BaseApplication :
     protected val managersReady = AtomicBoolean()
     protected val audioFocusTag = "Audio focus ::"
 
-    private val updatingTag = "Updating ::"
     private var secretKey: SecretKey? = null
     private val updating = AtomicBoolean()
+    private val updatingTag = "Updating ::"
     private val isAppInBackground = AtomicBoolean()
     private val prefsKeyUpdate = "Preferences.Update"
     private var telecomManager: TelecomManager? = null
@@ -282,6 +300,35 @@ abstract class BaseApplication :
 
     open fun getTopActivity(): Class<*>? = null
 
+    open fun canWakeLock() = false
+
+    open fun canWorkManager() = true
+
+    open fun isLegacyDevice() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU
+
+    open fun isVeryOldDevice() = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+
+    fun isNotLegacyDevice() = !isLegacyDevice()
+
+    fun isNotVeryOldDevice() = !isVeryOldDevice()
+
+    open fun isInteractive(): Boolean {
+
+        try {
+
+            val powerManager = getSystemService(POWER_SERVICE) as PowerManager?
+            return powerManager?.isInteractive == true
+
+        } catch (e: Throwable) {
+
+            recordException(e)
+        }
+
+        return false
+    }
+
+    fun isNotInteractive() = !isInteractive()
+
     abstract fun isProduction(): Boolean
 
     protected abstract fun takeSalt(): String
@@ -298,6 +345,8 @@ abstract class BaseApplication :
 
         Console.info("$ACTIVITY_LIFECYCLE_TAG Main state :: Foreground")
     }
+
+    fun isAppInBackground() = isAppInBackground.get()
 
     protected open fun onApplicationWentToBackground() {
 
@@ -476,7 +525,7 @@ abstract class BaseApplication :
         }
     }
 
-    fun isDeepLinkingEnabled() = deepLinkingEnabled
+    fun isDeepLinkingEnabled() = deepLinkingEnabled()
 
     fun isDeepLinkingDisabled() = !isDeepLinkingEnabled()
 
@@ -617,10 +666,11 @@ abstract class BaseApplication :
     override fun onCreate() {
         super.onCreate()
 
-        initTerminationListener()
         initFirebaseWithAnalytics()
         initFacebook()
         initializeSQLCipher()
+
+        registerActivityLifecycleCallbacks(activityTracker)
 
         prefs = SharedPreferencesStorage(applicationContext)
 
@@ -661,51 +711,40 @@ abstract class BaseApplication :
         }
     }
 
+    override val workManagerConfiguration = Configuration.Builder()
+        .setMinimumLoggingLevel(android.util.Log.DEBUG)
+        // .setWorkerFactory(MyWorkerFactory()) // TODO: We can support this
+        .build()
+
     fun initTerminationListener() {
 
         val tag = "${OnClearFromRecentService.TAG} INIT ::"
 
         Console.log("$tag START")
 
-        if (OnClearFromRecentService.isRunning()) {
+        try {
 
-            Console.log("$tag ALREADY RUNNING")
-            return
-        }
+            if (OnClearFromRecentService.isRunning()) {
 
-        Console.log("$tag STARTING")
+                Console.log("$tag ALREADY RUNNING")
+                return
+            }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (isInForeground()) {
 
-            try {
+                Console.log("$tag STARTING")
 
                 val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
                 startService(intent)
 
                 Console.log("$tag END")
-
-            } catch (e: BackgroundServiceStartNotAllowedException) {
-
-                Console.error("$tag ERROR: ${e.message}")
-
-            } catch (e: Throwable) {
-
-                recordException(e)
             }
 
-        } else {
+        } catch (e: Throwable) {
 
-            try {
+            Console.error("$tag ERROR: ${e.message}")
 
-                val intent = Intent(applicationContext, OnClearFromRecentService::class.java)
-                startService(intent)
-
-                Console.log("$tag END")
-
-            } catch (e: Throwable) {
-
-                recordException(e)
-            }
+            recordException(e)
         }
     }
 
@@ -762,7 +801,7 @@ abstract class BaseApplication :
 
     protected open fun initFirebaseWithAnalytics() {
 
-        if (firebaseEnabled) {
+        if (firebaseEnabled()) {
 
             val app = FirebaseApp.initializeApp(applicationContext)
 
@@ -771,7 +810,7 @@ abstract class BaseApplication :
                 Console.error("No Firebase app initialized")
             }
 
-            if (firebaseAnalyticsEnabled) {
+            if (firebaseAnalyticsEnabled()) {
 
                 firebaseAnalytics = Firebase.analytics
             }
@@ -780,7 +819,7 @@ abstract class BaseApplication :
 
     protected open fun initFacebook() {
 
-        if (facebookEnabled) {
+        if (facebookEnabled()) {
 
             try {
 
@@ -945,7 +984,7 @@ abstract class BaseApplication :
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun initializeFcm() {
 
-        if (!firebaseEnabled) {
+        if (!firebaseEnabled()) {
 
             return
         }
@@ -1009,6 +1048,8 @@ abstract class BaseApplication :
         }
 
         foregroundActivityCounter().incrementAndGet()
+
+        onActivityOn(activity)
     }
 
     override fun onActivityPostResumed(activity: Activity) {
@@ -1081,6 +1122,8 @@ abstract class BaseApplication :
     }
 
     override fun onActivityPreDestroyed(activity: Activity) {
+
+        onActivityOff(activity)
 
         Console.log("$ACTIVITY_LIFECYCLE_TAG PRE-DESTROYED :: ${activity.javaClass.simpleName}")
 
@@ -1294,6 +1337,10 @@ abstract class BaseApplication :
         }
     }
 
+    protected  open fun onActivityOn(activity: Activity) = Unit
+
+    protected  open fun onActivityOff(activity: Activity) = Unit
+
     protected open fun getUpdatesCodes() = setOf<Long>()
 
     override fun isUpdating(): Boolean {
@@ -1417,7 +1464,15 @@ abstract class BaseApplication :
                 "identifier = $identifier"
 
         val error = IllegalStateException(msg)
-        recordException(error)
+
+        if (isProduction()) {
+
+            Console.error(error)
+
+        } else {
+
+            Console.warning(msg)
+        }
     }
 
     override fun onUpdated(identifier: Long) {

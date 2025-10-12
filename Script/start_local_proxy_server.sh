@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # TODO: Create user
 # sudo htpasswd -c /etc/squid/passwords username

@@ -32,6 +32,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.execution.Execution
 import com.redelf.commons.execution.Executor
+import com.redelf.commons.execution.Executor.UI
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.obtain.OnObtain
@@ -56,7 +57,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.Random
 import java.util.concurrent.Callable
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.RejectedExecutionException
@@ -65,6 +65,7 @@ import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
 val DEBUG_SYNC = AtomicBoolean()
+val DEBUG_UI_SYNC = AtomicBoolean()
 val DEFAULT_ACTIVITY_REQUEST = randomInteger()
 var GLOBAL_RECORD_EXCEPTIONS = AtomicBoolean(true)
 var GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK = AtomicBoolean()
@@ -113,6 +114,7 @@ fun randomString(length: Int, sqliteFriendly: Boolean = true): String {
 
 fun yieldWhile(condition: () -> Boolean) {
 
+    // TODO: Support for the coroutines
     while (condition() && !Thread.currentThread().isInterrupted) {
 
         Thread.yield()
@@ -134,6 +136,8 @@ fun yieldWhile(timeoutInMilliseconds: Long, condition: () -> Boolean) {
         Thread.yield()
     }
 }
+
+// TODO: Add yeld while version with callback after condition expires or when it timeouts
 
 fun recordException(e: Throwable) {
 
@@ -197,7 +201,7 @@ fun Context.getFileName(uri: Uri): String? {
 
         if (cut != -1 && cut != null) {
 
-            result = result?.substring(cut + 1)
+            result = result.substring(cut + 1)
         }
     }
 
@@ -210,6 +214,15 @@ fun Context.closeKeyboard(v: View) {
         getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
 
     inputMethodManager?.hideSoftInputFromWindow(v.applicationWindowToken, 0)
+}
+
+fun Context.showKeyboard(view: View) {
+
+    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+    view.requestFocus()
+
+    inputMethodManager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
 }
 
 fun Context.clearAllSharedPreferences(): Boolean {
@@ -376,7 +389,7 @@ fun onUiThread(doWhat: () -> Unit) {
 
     try {
 
-        Executor.UI.execute { doWhat() }
+        UI.execute { doWhat() }
 
     } catch (e: RejectedExecutionException) {
 
@@ -656,7 +669,7 @@ fun Context.toast(msg: String, short: Boolean = false) {
 
 /** @noinspection deprecation
  */
-fun Context.wakeUpScreen() {
+fun Context.wakeUpScreen(after: (() -> Unit)? = null) {
 
     val tag = "Wake up screen ::"
 
@@ -674,25 +687,47 @@ fun Context.wakeUpScreen() {
 
                 Console.log("$tag END :: Screen is on")
 
+                after?.let { a ->
+
+                    a()
+                }
+
             } else {
 
-                val tag = "Sekur:WakeLock:1"
+                try {
 
-                val wl = it.newWakeLock(
+                    val tag = "Screen:WakeLock"
 
-                    PowerManager.FULL_WAKE_LOCK or
-                            PowerManager.ACQUIRE_CAUSES_WAKEUP or
-                            PowerManager.ON_AFTER_RELEASE,
-                    tag
-                )
+                    val wl = it.newWakeLock(
 
-                wl.acquire(2000)
+                        PowerManager.FULL_WAKE_LOCK or
+                                PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                                PowerManager.ON_AFTER_RELEASE,
+                        tag
+                    )
 
-                val wlCpu = it.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)
+                    wl.acquire(2000)
 
-                wlCpu.acquire(2000)
+                    val wlCpu = it.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)
 
-                Console.log("$tag END")
+                    wlCpu.acquire(2000)
+
+                    after?.let { a ->
+
+                        a()
+                    }
+
+                    Console.log("$tag END")
+
+                } catch (e: Throwable) {
+
+                    recordException(e)
+
+                    after?.let { a ->
+
+                        a()
+                    }
+                }
             }
         }
 
@@ -956,7 +991,10 @@ fun exec(what: Runnable) {
 
     try {
 
-        Executor.MAIN.execute(what)
+        if (!Executor.MAIN.execute(what)) {
+
+            throw IllegalStateException("Not executed")
+        }
 
     } catch (e: Throwable) {
 
@@ -986,8 +1024,6 @@ fun single(what: Runnable) {
 fun exec(
 
     callable: Callable<Boolean>,
-    timeout: Long = 60L,
-    timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Bool exec ::",
     executor: Execution? = null,
     debug: Boolean = false
@@ -997,8 +1033,6 @@ fun exec(
     val result = doExec(
 
         callable = callable,
-        timeout = timeout,
-        timeUnit = timeUnit,
         logTag = logTag,
         executor = executor,
         debug = debug
@@ -1015,8 +1049,6 @@ fun exec(
 fun <T> doExec(
 
     callable: Callable<T>,
-    timeout: Long = 60L,
-    timeUnit: TimeUnit = TimeUnit.SECONDS,
     logTag: String = "Do exec ::",
     executor: Execution? = null,
     debug: Boolean = false
@@ -1024,7 +1056,7 @@ fun <T> doExec(
 ): T? {
 
     var success: T? = null
-    var future: Future<T>? = null
+    val future: Future<T>? = null
 
     try {
 
@@ -1168,27 +1200,47 @@ fun yield(context: String, check: Obtain<Boolean>) {
 fun <X> sync(
 
     context: String,
+    from: String = "",
     timeout: Long = 60,
     timeUnit: TimeUnit = TimeUnit.SECONDS,
+    mainThreadForbidden: Boolean = true,
+    waitingFlag: AtomicBoolean? = null,
+    debug: Boolean = false,
     what: (callback: OnObtain<X?>) -> Unit
 
 ): X? {
 
     // TODO: Coroutines support
 
-    val tag = "SYNC :: $context ::"
+    val tag = if (from.isEmpty()) {
 
-    if (DEBUG_SYNC.get()) Console.debug("$tag START")
+        "SYNC :: $context ::"
 
-    var result: X? = null
-    val latch = CountDownLatch(1)
+    } else {
 
-    if (isOnMainThread()) {
+        "SYNC :: $context :: from '$from' ::"
+    }
+
+    val ctx = if (from.isEmpty()) {
+
+        "SYNC.$context"
+
+    } else {
+
+        "SYNC.$context(from='$from')"
+    }
+
+    if (DEBUG_SYNC.get() || debug) Console.debug("$tag START")
+
+    if (mainThreadForbidden && isOnMainThread()) {
 
         val e = IllegalStateException("$context executed sync on main thread")
         Console.error("$tag ${e.message}")
         recordException(e)
     }
+
+    var result: X? = null
+    val latch = CountDownLatch(1, context = ctx)
 
     exec(
 
@@ -1201,11 +1253,11 @@ fun <X> sync(
 
     ) {
 
-        if (DEBUG_SYNC.get()) Console.log("$tag EXECUTING")
+        if (DEBUG_SYNC.get() || debug) Console.log("$tag EXECUTING")
 
         try {
 
-            if (DEBUG_SYNC.get()) Console.log("$tag CALLING")
+            if (DEBUG_SYNC.get() || debug) Console.log("$tag CALLING")
 
             what(
 
@@ -1214,7 +1266,7 @@ fun <X> sync(
                     override fun onCompleted(data: X?) {
 
                         result = data
-                        if (DEBUG_SYNC.get()) Console.log("$tag FINISHED")
+                        if (DEBUG_SYNC.get() || debug) Console.log("$tag FINISHED")
                         latch.countDown()
                     }
 
@@ -1227,7 +1279,7 @@ fun <X> sync(
                 }
             )
 
-            if (DEBUG_SYNC.get()) Console.log("$tag WAITING")
+            if (DEBUG_SYNC.get() || debug) Console.log("$tag WAITING")
 
         } catch (e: Throwable) {
 
@@ -1241,22 +1293,47 @@ fun <X> sync(
 
     try {
 
+        if (waitingFlag?.get() == true) {
+
+            Console.warning("$tag Already waiting")
+
+            // Use timed yield to prevent infinite waits
+            yieldWhile(timeoutInMilliseconds = 5000L) {
+
+                waitingFlag.get()
+            }
+
+            // If still waiting after yield timeout, proceed anyway to prevent deadlocks
+            if (waitingFlag.get()) {
+                Console.warning("$tag Proceeding despite ongoing wait to prevent deadlock")
+            }
+        }
+
+        waitingFlag?.set(true)
+
         if (latch.await(timeout, timeUnit)) {
 
             val endTime = System.currentTimeMillis() - startTime
 
-            if (endTime > 1500 && endTime < 3000) {
+            waitingFlag?.set(false)
 
-                Console.warning("$tag WAITED for $endTime ms")
+            if (DEBUG_SYNC.get()) {
 
-            } else if (endTime >= 3000) {
+                if (endTime > 1500 && endTime < 3000) {
 
-                Console.error("$tag WAITED for $endTime ms")
+                    Console.warning("$tag WAITED for $endTime ms")
+
+                } else if (endTime >= 3000) {
+
+                    Console.warning("$tag WAITED for $endTime ms")
+                }
             }
 
-            if (DEBUG_SYNC.get()) Console.debug("$tag END")
+            if (DEBUG_SYNC.get() || debug) Console.debug("$tag END")
 
         } else {
+
+            waitingFlag?.set(false)
 
             val endTime = System.currentTimeMillis() - startTime
             val e = TimeoutException("$context latch expired")
@@ -1266,10 +1343,60 @@ fun <X> sync(
 
     } catch (e: Throwable) {
 
+        waitingFlag?.set(false)
+
         val endTime = System.currentTimeMillis() - startTime
         Console.error("$tag FAILED :: Error='${e.message}' after $endTime ms")
         recordException(e)
     }
+
+    return result
+}
+
+private val UI_IN_SYNC = AtomicBoolean()
+
+fun syncUI(context: String, from: String, what: kotlinx.coroutines.Runnable): Boolean {
+
+    fun doExecute(what: kotlinx.coroutines.Runnable, callback: OnObtain<Boolean?>) {
+
+        if (isOnMainThread()) {
+
+            what.run()
+
+            callback.onCompleted(true)
+
+        } else {
+
+            val submitted = UI.execute {
+
+                what.run()
+
+                callback.onCompleted(true)
+            }
+
+            if (!submitted) {
+
+                callback.onCompleted(false)
+            }
+        }
+    }
+
+    val from = "syncUi(from='$from')"
+
+    val result = sync(
+
+        context,
+        from,
+
+        mainThreadForbidden = false,
+        waitingFlag = UI_IN_SYNC,
+        debug = DEBUG_UI_SYNC.get()
+
+    ) { callback ->
+
+        doExecute(what, callback)
+
+    } == true
 
     return result
 }
@@ -1472,6 +1599,20 @@ fun <F, S> getPair(map: LinkedTreeMap<String, Any>): Pair<F, S> {
 fun <T> Any.wrapToList(): List<T> {
 
     return mutableListOf(this as T)
+}
+
+fun <IN, OUT> List<IN>.prepack(converter: (what: IN) -> OUT): List<OUT> {
+
+    val items = mutableListOf<OUT>()
+
+    forEach { item ->
+
+        val converted = converter(item)
+
+        items.add(converted)
+    }
+
+    return items
 }
 
 fun Context.dpToPx(dp: Float): Float {

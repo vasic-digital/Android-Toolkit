@@ -3,7 +3,11 @@ package com.redelf.commons.settings
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.creation.instantiation.SingleInstantiated
+import com.redelf.commons.extensions.isOnMainThread
+import com.redelf.commons.extensions.recordException
+import com.redelf.commons.extensions.sync
 import com.redelf.commons.loading.Loadable
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.obtain.OnObtain
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -31,11 +35,11 @@ class SettingsManager private constructor() :
 
     override fun createDataObject() = Settings()
 
-    override fun reset(callback: OnObtain<Boolean?>) {
+    override fun reset(arg: String, callback: OnObtain<Boolean?>) {
 
         loaded.set(false)
 
-        super.reset(callback)
+        super.reset("${getWho()}.reset(from='$arg')", callback)
     }
 
     override fun isLazyReady() = loaded.get()
@@ -62,6 +66,21 @@ class SettingsManager private constructor() :
         }
 
         callback.onCompleted(false)
+    }
+
+    fun <T> get(key: String, defaultValue: T): T {
+
+        if (isOnMainThread()) {
+
+            val e = IllegalStateException("Obtain settings value from the main thread")
+            recordException(e)
+        }
+
+        return sync("settings.get.$key", "${getWho()}.getWithDefault") { callback ->
+
+            get(key, defaultValue, callback)
+
+        } ?: defaultValue
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -133,15 +152,19 @@ class SettingsManager private constructor() :
 
                             it.flags?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 
-                                object : OnObtain<Boolean?> {
+                                "putBoolean.$key",
 
-                                    override fun onCompleted(data: Boolean?) {
+                                true,
 
-                                        callback.onCompleted(data == true)
+                                object : OnObtain<DataPushResult?> {
+
+                                    override fun onCompleted(data: DataPushResult?) {
+
+                                        callback.onCompleted(data?.success == true)
                                     }
 
                                     override fun onFailure(error: Throwable) {
@@ -185,15 +208,19 @@ class SettingsManager private constructor() :
 
                             it.values?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 
-                                object : OnObtain<Boolean?> {
+                                "putString.$key",
 
-                                    override fun onCompleted(data: Boolean?) {
+                                true,
 
-                                        callback.onCompleted(data == true)
+                                object : OnObtain<DataPushResult?> {
+
+                                    override fun onCompleted(data: DataPushResult?) {
+
+                                        callback.onCompleted(data?.success == true)
                                     }
 
                                     override fun onFailure(error: Throwable) {
@@ -346,15 +373,19 @@ class SettingsManager private constructor() :
 
                             it.numbers?.set(key, value)
 
-                            pushData(
+                            apply(
 
                                 it,
 
-                                object : OnObtain<Boolean?> {
+                                "putLong.$key",
 
-                                    override fun onCompleted(data: Boolean?) {
+                                true,
 
-                                        callback.onCompleted(data == true)
+                                object : OnObtain<DataPushResult?> {
+
+                                    override fun onCompleted(data: DataPushResult?) {
+
+                                        callback.onCompleted(data?.success == true)
                                     }
 
                                     override fun onFailure(error: Throwable) {

@@ -1,12 +1,36 @@
-#!/bin/sh
+#!/bin/bash
 
-MESSAGE="Auto-commit."
+PROP_FILE="env.properties"  # Explicitly use relative path
 
-if [ -n "$1" ]; then
+if [[ -f "$PROP_FILE" && -r "$PROP_FILE" ]]; then  # Check if file is readable
 
-  MESSAGE="$1"
+    # shellcheck disable=SC1090
+    . "$PROP_FILE"  # Source the file
 fi
 
-git add . && git commit -m "$MESSAGE"
-git push github && git push gitflic && git push gitee && git push gitverse && git push && \
-git log -n 1
+if [ -z "$1" ]; then
+
+  if [ -z "$DEFAULT_COMMIT_MESSAGE" ]; then
+
+    MESSAGE="Auto-commit."
+
+  else
+
+    MESSAGE="$DEFAULT_COMMIT_MESSAGE"
+  fi
+
+else
+
+  if [ -z "$PROJECT_NAME" ]; then
+
+    MESSAGE="$1"
+
+  else
+
+    MESSAGE="$PROJECT_NAME - $1"
+  fi
+fi
+
+echo "Pushing: '$MESSAGE'" && commit "$MESSAGE" && \
+  echo "Push with message '$MESSAGE' completed" && \
+  git log -n 1

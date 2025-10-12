@@ -5,11 +5,12 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.redelf.commons.context.ContextualManager
 import com.redelf.commons.defaults.ResourceDefaults
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.recordException
 import com.redelf.commons.loading.Loadable
 import com.redelf.commons.logging.Console
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -19,9 +20,7 @@ object FirebaseConfigurationManager :
 
     Loadable,
     ResourceDefaults,
-    ContextualManager<FirebaseConfiguration>()
-
-{
+    ContextualManager<FirebaseConfiguration>() {
 
     override val persist = false
     override val storageKey = "remote_configuration"
@@ -38,9 +37,11 @@ object FirebaseConfigurationManager :
 
     override fun isLoaded() = isLazyReady()
 
-    override fun reset(callback: OnObtain<Boolean?>) {
+    override fun reset(arg: String, callback: OnObtain<Boolean?>) {
 
         super.reset(
+
+            "${getWho()}.reset(from='$arg')",
 
             object : OnObtain<Boolean?> {
 
@@ -74,7 +75,7 @@ object FirebaseConfigurationManager :
 
         Console.log("$LOG_TAG Config params fetching")
 
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "FirebaseConfigurationManager.load")
 
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener { task ->
@@ -100,14 +101,17 @@ object FirebaseConfigurationManager :
                     val newMap = FirebaseConfiguration()
                     newMap.putAll(all)
 
-                    pushData(
+                    apply(
 
                         newMap,
 
+                        "remoteConfig.fetchAndActivate.success",
 
-                        object : OnObtain<Boolean?> {
+                        false,
 
-                            override fun onCompleted(data: Boolean?) {
+                        object : OnObtain<DataPushResult?> {
+
+                            override fun onCompleted(data: DataPushResult?) {
 
                                 loaded.set(true)
 
@@ -151,7 +155,8 @@ object FirebaseConfigurationManager :
 
             } else {
 
-                val e = TimeoutException("Timeout-ed while waiting for firebase manager to load data")
+                val e =
+                    TimeoutException("Timeout-ed while waiting for firebase manager to load data")
 
                 recordException(e)
 

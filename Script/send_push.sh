@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 token="$2"
 server_token="$1"

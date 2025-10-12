@@ -8,6 +8,7 @@ abstract class ContextualManager<T> :
 
     LazyDataManagement<T>(),
     Contextual<BaseApplication> where T : Versionable
+
 {
 
     private lateinit var ctx: BaseApplication

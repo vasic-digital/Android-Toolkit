@@ -20,9 +20,9 @@ import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import com.redelf.commons.persistance.base.Encryption
 import com.redelf.commons.persistance.base.Parser
-import com.redelf.commons.persistance.serialization.ByteArraySerializer
 import com.redelf.commons.persistance.serialization.CustomSerializable
 import com.redelf.commons.persistance.serialization.DefaultCustomSerializer
+import com.redelf.commons.persistance.serialization.SecureBinarySerializer
 import com.redelf.commons.persistance.serialization.Serializer
 import java.io.IOException
 import java.lang.reflect.Type
@@ -112,7 +112,7 @@ class GsonParser private constructor(
     private val ctx: Context = BaseApplication.takeContext()
     private val tag = "Parser :: GSON :: Key = '$parserKey', Hash = '${hashCode()}' ::"
 
-    private val byteArraySerializer = ByteArraySerializer(
+    private val byteArraySerializer = SecureBinarySerializer(
 
         ctx,
         "Parser.GSON.$parserKey",
@@ -233,8 +233,8 @@ class GsonParser private constructor(
                 "int" -> return content?.toInt() as T?
                 "java.lang.Integer" -> return content?.toInt() as T?
                 Long::class.java.canonicalName?.forClassName() -> return content?.toLong() as T?
-                "long" -> return content?.toLong() as T?
-                "java.lang.Long" -> return content?.toLong() as T?
+                "long" -> return content?.replace("\"", "")?.toLong() as T?
+                "java.lang.Long" -> return content?.replace("\"", "")?.toLong() as T?
                 String::class.java.canonicalName?.forClassName() -> return content as T?
                 "string" -> return content as T?
                 "java.lang.String" -> return content as T?
@@ -285,13 +285,13 @@ class GsonParser private constructor(
 
                     } catch (e: Throwable) {
 
-                        Console.error(
-
-                            "$tag ERROR / 1 :: Content length = ${content?.length}, " +
-                                    "Class = '${clazz.simpleName}', Error = '${e.message}'"
-                        )
-
                         if (DEBUG.get()) {
+
+                            Console.error(
+
+                                "$tag ERROR / 1 :: Content length = ${content?.length}, " +
+                                        "Class = '${clazz.simpleName}', Error = '${e.message}'"
+                            )
 
                             Console.error(
 
@@ -300,18 +300,24 @@ class GsonParser private constructor(
                             )
                         }
 
-                        recordException(e)
+                        /*
+                        * FIXME: Raw persisted JSONs have to be base64 encoded / decoded
+                        *  Removed line to stop spamming Crashlytics: recordException(e)
+                        */
                     }
                 }
             }
 
         } catch (e: Throwable) {
 
-            Console.error(
+            if (DEBUG.get()) {
 
-                "$tag ERROR / 2 :: Class = ${clazz.canonicalName?.forClassName()}, " +
-                        "Content = $content, Error = '${e.message}'"
-            )
+                Console.error(
+
+                    "$tag ERROR / 2 :: Class = ${clazz.canonicalName?.forClassName()}, " +
+                            "Content = $content, Error = '${e.message}'"
+                )
+            }
 
             recordException(e)
         }

@@ -6,15 +6,19 @@ import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
 import com.redelf.access.BiometricAccessMethod
+import com.redelf.commons.extensions.exec
 
 class IrisAccess(priority: Int, ctx: AppCompatActivity) : BiometricAccessMethod(priority, ctx) {
 
     override val authenticators = listOf(BiometricManager.Authenticators.BIOMETRIC_STRONG)
 
-    override fun install() = executor.execute {
+    override fun install() {
 
-        val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
-        ctx.startActivity(intent)
+        exec {
+
+            val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
+            ctx.startActivity(intent)
+        }
     }
 
     override fun isAvailable(): Boolean {

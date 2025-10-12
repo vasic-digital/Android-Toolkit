@@ -58,7 +58,7 @@ class Session(
 
                 Console.log("$name :: Execute :: ENDING :: Session: $transactionId")
 
-                val ended = what.end()
+                val ended = what.end(true)
 
                 if (ended) {
 

@@ -10,7 +10,7 @@ abstract class IdentifiableLong : Identifiable<Long> {
     @Throws(ClassCastException::class)
     constructor(data: LinkedTreeMap<String, Any>) : super(data) {
 
-        val toSet = (data["id"] as Double).toLong()
+        val toSet = (data["id"] as? Double)?.toLong() ?: 0L
 
         setId(toSet)
     }

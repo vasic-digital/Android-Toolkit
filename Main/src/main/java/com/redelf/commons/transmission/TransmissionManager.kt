@@ -19,6 +19,7 @@ import com.redelf.commons.extensions.recordException
 import com.redelf.commons.iteration.Iterable
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
+import com.redelf.commons.management.DataPushResult
 import com.redelf.commons.management.Management
 import com.redelf.commons.measure.Size
 import com.redelf.commons.modification.Add
@@ -411,7 +412,8 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
         if (dataEmpty()) {
 
-            Console.warning("$logTag No data to be sent yet")
+            Console.log("$logTag No data to be sent yet")
+
             setSending(false)
 
             return
@@ -539,15 +541,20 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
 
             managedData?.let { data ->
 
-                dataManager.obtain().pushData(
+                dataManager.obtain().apply(
+
 
                     data,
 
-                    object : OnObtain<Boolean?> {
+                    "${getWho()}.persist",
 
-                        override fun onCompleted(data: Boolean?) {
+                    true,
 
-                            val success = data == true
+                    object : OnObtain<DataPushResult?> {
+
+                        override fun onCompleted(data: DataPushResult?) {
+
+                            val success = data?.success == true
 
                             if (success) {
 

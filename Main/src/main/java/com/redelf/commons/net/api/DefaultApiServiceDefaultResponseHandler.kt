@@ -15,7 +15,7 @@ class DefaultApiServiceDefaultResponseHandler<T> : ApiServiceResponseHandler<T>(
 
     override fun onResponse(
 
-        response: Response<T>?,
+        response: Response<T?>?,
         callback: OnObtain<T?>,
         useExpectedCodes: Boolean,
         additionalExpectedCodes: List<Int>

@@ -3,7 +3,7 @@ package com.redelf.commons.net.cronet
 import android.content.Context
 import com.google.android.gms.net.CronetProviderInstaller
 import com.redelf.commons.extensions.recordException
-import com.redelf.commons.lifecycle.InitializationParametrizedSync
+import com.redelf.commons.lifecycle.initialization.InitializationParametrizedSync
 import com.redelf.commons.logging.Console
 import com.redelf.commons.obtain.Obtain
 import org.chromium.net.CronetEngine

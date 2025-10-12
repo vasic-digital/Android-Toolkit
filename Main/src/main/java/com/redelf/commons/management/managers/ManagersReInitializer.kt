@@ -3,12 +3,12 @@ package com.redelf.commons.management.managers
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.creation.instantiation.SingleInstance
 import com.redelf.commons.defaults.ResourceDefaults
+import com.redelf.commons.extensions.CountDownLatch
 import com.redelf.commons.extensions.exec
 import com.redelf.commons.logging.Console
 import com.redelf.commons.management.DataManagement
 import com.redelf.commons.management.Management
 import com.redelf.commons.obtain.OnObtain
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -36,7 +36,7 @@ class ManagersReInitializer {
         }
 
         val success = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "ManagersReInitializer.reInitializeManagerInstances")
 
         val callback = object : OnObtain<Boolean> {
 
@@ -79,7 +79,7 @@ class ManagersReInitializer {
     ) : Boolean {
 
         val success = AtomicBoolean()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "ManagersReInitializer.reInitializeManagers.2")
 
         val callback = object : OnObtain<Boolean> {
 
@@ -268,7 +268,7 @@ class ManagersReInitializer {
     private fun resetManagers(managers: MutableList<SingleInstance<*>>): Boolean {
 
         val result = AtomicBoolean(true)
-        val latch = CountDownLatch(managers.size)
+        val latch = CountDownLatch(managers.size, "ManagersReInitializer.resetManagers")
 
         managers.forEach { m ->
 
@@ -292,7 +292,7 @@ class ManagersReInitializer {
 
         val result = AtomicBoolean()
         val cleaner = ManagersCleaner()
-        val latch = CountDownLatch(1)
+        val latch = CountDownLatch(1, "ManagersReInitializer.resetManagerInstances")
 
         val callback = object : ManagersCleaner.CleanupCallback {
 

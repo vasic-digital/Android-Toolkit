@@ -94,24 +94,6 @@
 # removes such information by default, so configure it to keep all of it.
 -keepattributes Signature
 
-# Facebook Conceal
-
-# Keep our interfaces so they can be used by other ProGuard rules.
-# See http://sourceforge.net/p/proguard/bugs/466/
--keep,allowobfuscation @interface com.facebook.crypto.proguard.annotations.DoNotStrip
--keep,allowobfuscation @interface com.facebook.crypto.proguard.annotations.KeepGettersAndSetters
-
-# Do not strip any method/class that is annotated with @DoNotStrip
--keep @com.facebook.crypto.proguard.annotations.DoNotStrip class *
--keepclassmembers class * {
-    @com.facebook.crypto.proguard.annotations.DoNotStrip *;
-}
-
--keepclassmembers @com.facebook.crypto.proguard.annotations.KeepGettersAndSetters class * {
-  void set*(***);
-  *** get*();
-}
-
 -assumenosideeffects class android.util.Log {
     public static *** d(...);
     public static *** v(...);
@@ -147,11 +129,6 @@
 -keep @com.facebook.crypto.proguard.annotations.DoNotStrip class *
 -keepclassmembers class * {
     @com.facebook.crypto.proguard.annotations.DoNotStrip *;
-}
-
--keepclassmembers @com.facebook.crypto.proguard.annotations.KeepGettersAndSetters class * {
-  void set*(***);
-  *** get*();
 }
 
 # Jackson annotations
@@ -201,5 +178,40 @@
 -keep class * implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;
 }
+
+# Facebook JNI and SoLoader - Targeted fix for production crashes
+-keep,allowobfuscation class com.facebook.jni.** { *; }
+-keep,allowobfuscation class com.facebook.soloader.** { *; }
+
+# Critical: Preserve specific JNI mappings - these CANNOT be obfuscated
+-keepnames class com.facebook.jni.Countable
+-keepclassmembers class com.facebook.jni.Countable {
+    native <methods>;
+    long mInstance;
+    <fields>;
+}
+
+# Keep Facebook native method signatures intact
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
+
+# Facebook SDK core classes (allow obfuscation but keep structure)
+-keep,allowobfuscation class com.facebook.crypto.** { *; }
+-keep,allowobfuscation class com.facebook.android.** { *; }
+
+# Warnings suppression
+-dontwarn com.facebook.soloader.**
+-dontwarn com.facebook.jni.**
+
+# CRITICAL: Keep ALL classes for internal library modules - NO obfuscation
+-keep class com.redelf.** { *; }
+-keep interface com.redelf.** { *; }
+-keep enum com.redelf.** { *; }
+
+# Keep ALL ch.globexdata classes (your main package) - NO obfuscation
+-keep class ch.globexdata.** { *; }
+-keep interface ch.globexdata.** { *; }
+-keep enum ch.globexdata.** { *; }
 
 -keep class * implements androidx.lifecycle.DefaultLifecycleObserver

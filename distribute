@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if test -e env.properties; then
+
+  . env.properties
+fi
+
+if [ -z "$FIREBASE_TOKEN" ]; then
+
+  echo "ERROR: FIREBASE_TOKEN is not set"
+  exit 1
+fi
+
+pwd && ./gradlew clean && ./gradlew assembleRelease && ./gradlew appDistributionUploadRelease
