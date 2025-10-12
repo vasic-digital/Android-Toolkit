@@ -209,9 +209,9 @@
 -keep interface com.redelf.** { *; }
 -keep enum com.redelf.** { *; }
 
-# Keep ALL ch.globexdata classes (your main package) - NO obfuscation
--keep class ch.globexdata.** { *; }
--keep interface ch.globexdata.** { *; }
--keep enum ch.globexdata.** { *; }
+# Keep ALL russian classes (your main package) - NO obfuscation
+-keep class russian.** { *; }
+-keep interface russian.** { *; }
+-keep enum russian.** { *; }
 
 -keep class * implements androidx.lifecycle.DefaultLifecycleObserver
