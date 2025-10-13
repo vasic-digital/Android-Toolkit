@@ -12,17 +12,21 @@ import com.redelf.commons.net.retrofit.gson.SerializationBenchmarkLoggingInterce
 import com.redelf.commons.net.retrofit.interceptor.JsonValidityInterceptor
 import com.redelf.commons.net.retrofit.interceptor.RetryInterceptor
 import com.redelf.commons.obtain.ObtainParametrized
+import com.google.net.cronet.okhttptransport.CronetInterceptor
+import com.redelf.commons.net.cronet.Cronet
 import okhttp3.Call
 import okhttp3.CertificatePinner
 import okhttp3.ConnectionPool
+import okhttp3.Dns
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Converter
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
-import useCronet
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -34,6 +38,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
     //  https://github.com/proxifly/free-proxy-list/blob/main/proxies/protocols/http/data.txt
     //  Proxy to be picked dynamically!
 
+    @JvmField
     val DEBUG: AtomicBoolean = AtomicBoolean()
     val PINNED_CERTIFICATES = mutableMapOf<String, String>()
 
@@ -67,6 +72,7 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         val rTime = param.readTimeoutInSeconds
         val wTime = param.writeTimeoutInSeconds
         val cTime = param.connectTimeoutInSeconds
+        val callTime = param.callTimeoutInSeconds
 
         val baseUrl = ctx.getString(param.endpoint)
 
@@ -77,9 +83,13 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
             readTime = rTime ?: 0,
             connTime = cTime ?: 0,
             writeTime = wTime ?: 0,
+            callTime = callTime ?: 0,
 
             useCronet = param.useCronet?: true,
-            verbose = param.bodyLog == true || param.verbose == true
+            verbose = param.bodyLog == true || param.verbose == true,
+            additionalInterceptors = param.additionalInterceptors,
+            dns = param.dns,
+            retryOnConnectionFailure = param.retryOnConnectionFailure ?: true
         )
 
         val converter: Converter.Factory = if (param.scalar == true) {
@@ -139,9 +149,13 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
         readTime: Long,
         connTime: Long,
         writeTime: Long,
+        callTime: Long = 0,
         verbose: Boolean = false,
         useCronet: Boolean = true,
-        validateJson: Boolean = false
+        validateJson: Boolean = false,
+        additionalInterceptors: List<Interceptor>? = null,
+        dns: Dns? = null,
+        retryOnConnectionFailure: Boolean = true
 
     ): OkHttpClient {
 
@@ -156,15 +170,27 @@ object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
         if (useCronet) {
 
-            builder.useCronet()
+            Cronet.obtain()?.let {
+
+                val cronetInterceptor = CronetInterceptor.newBuilder(it).build()
+                builder.addInterceptor(cronetInterceptor)
+            }
         }
 
         builder
             .readTimeout(readTime, TimeUnit.SECONDS)
             .connectTimeout(connTime, TimeUnit.SECONDS)
             .writeTimeout(writeTime, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
+            .retryOnConnectionFailure(retryOnConnectionFailure)
             .connectionPool(pool)
+
+        if (callTime > 0) {
+            builder.callTimeout(callTime, TimeUnit.SECONDS)
+        }
+
+        dns?.let { builder.dns(it) }
+
+        additionalInterceptors?.forEach { builder.addInterceptor(it) }
 
         if (validateJson) {
 

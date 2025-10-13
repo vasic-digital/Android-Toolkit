@@ -625,6 +625,7 @@ abstract class TransmissionManager<T, D>(protected val dataManager: Obtain<DataM
         intent.putExtra(BROADCAST_EXTRA_RESULT, success)
 
         val ctx = takeContext()
+        intent.setPackage(ctx.packageName)
         ctx.sendBroadcast(intent)
     }
 

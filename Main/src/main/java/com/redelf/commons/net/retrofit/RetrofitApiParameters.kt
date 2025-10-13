@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import okhttp3.Call
+import okhttp3.Dns
+import okhttp3.Interceptor
 import java.util.concurrent.ConcurrentHashMap
 
 data class RetrofitApiParameters @JsonCreator constructor(
@@ -58,5 +60,21 @@ data class RetrofitApiParameters @JsonCreator constructor(
 
     @JsonProperty("callsWrapper")
     @SerializedName("callsWrapper")
-    val callsWrapper: ConcurrentHashMap<String, Call>? = GlobalCallsWrapper.CALLS
+    val callsWrapper: ConcurrentHashMap<String, Call>? = GlobalCallsWrapper.CALLS,
+
+    @JsonIgnore
+    @Transient
+    val additionalInterceptors: List<Interceptor>? = null,
+
+    @JsonIgnore
+    @Transient
+    val dns: Dns? = null,
+
+    @JsonProperty("retryOnConnectionFailure")
+    @SerializedName("retryOnConnectionFailure")
+    val retryOnConnectionFailure: Boolean? = true,
+
+    @JsonProperty("callTimeoutInSeconds")
+    @SerializedName("callTimeoutInSeconds")
+    val callTimeoutInSeconds: Long? = null
 )
