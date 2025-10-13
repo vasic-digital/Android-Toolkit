@@ -312,7 +312,7 @@ dependencies {
     api "androidx.work:work-runtime-ktx:2.10.4"
     api "com.airbnb.android:lottie:6.6.7"
     api "androidx.preference:preference-ktx:1.2.1"
-    api "com.google.android.material:material:1.13.0"
+    api "com.google.android.material:material:1.13.0-alpha01"
     api "androidx.navigation:navigation-ui-ktx:2.9.4"
     api "androidx.navigation:navigation-fragment-ktx:2.9.4"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
