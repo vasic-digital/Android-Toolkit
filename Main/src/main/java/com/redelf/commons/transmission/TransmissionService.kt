@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Binder
+import androidx.core.content.ContextCompat
 import com.redelf.commons.application.BaseApplication
 import com.redelf.commons.logging.Console
 import com.redelf.commons.net.connectivity.Connectivity
@@ -88,7 +89,7 @@ class TransmissionService : BaseService() {
         registerReceiver(connectivityListener, connectivityIntentFilter)
 
         val resultsIntentFilter = IntentFilter(TransmissionManager.BROADCAST_ACTION_RESULT)
-        registerReceiver(resultsReceiver, resultsIntentFilter)
+        ContextCompat.registerReceiver(this, resultsReceiver, resultsIntentFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
 
         send(this, "onStartCommand")
 
