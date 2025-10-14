@@ -688,7 +688,7 @@ fun Context.wakeUpScreen() {
 
             } else {
 
-                val tag = "Sekur:WakeLock:1"
+                val tag = "Bear:WakeLock:1"
 
                 val wl = it.newWakeLock(
 
