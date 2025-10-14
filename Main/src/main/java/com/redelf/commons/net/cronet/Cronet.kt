@@ -36,7 +36,9 @@ object Cronet : InitializationParametrizedSync<Boolean, Context>, Obtain<CronetE
 
                     Console.log("$tag Provider has been installed")
 
-                    engine = CronetEngine.Builder(param).build()
+                    engine = CronetEngine.Builder(param)
+                        .enableQuic(true)
+                        .build()
 
                 } else {
 
