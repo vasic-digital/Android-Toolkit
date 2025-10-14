@@ -1,5 +1,5 @@
 #!/bin/sh
 
 ./gradlew test && \
-./gradlew connectedAndroidTest && \
+timeout 600 ./gradlew connectedAndroidTest && \
 echo "Tests executed with success"
