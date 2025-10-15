@@ -293,10 +293,7 @@ dependencies {
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.11.0"
 
-    api "com.github.bumptech.glide:glide:5.0.5"
-    api "com.github.bumptech.glide:annotations:5.0.5"
-
-    api "jp.wasabeef:glide-transformations:4.3.0"
+    api "io.coil-kt:coil:2.6.0"
 
     api "net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3"
 

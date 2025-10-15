@@ -12,14 +12,13 @@ import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions.bitmapTransform
+import coil.load
+import coil.transform.RoundedCornersTransformation
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import com.google.gson.internal.LinkedTreeMap
 import com.redelf.commons.logging.Console
-import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -143,9 +142,7 @@ fun ImageView.rectImage(imgRes: Int) {
 
         try {
 
-            Glide.with(this)
-                .load(imgRes)
-                .into(this)
+            this.load(imgRes)
 
         } catch (e: Throwable) {
 
@@ -170,9 +167,7 @@ fun ImageView.rectImage(imgUrl: String) {
 
         try {
 
-            Glide.with(this)
-                .load(imgUrl)
-                .into(this)
+            this.load(imgUrl)
 
         } catch (e: Throwable) {
 
@@ -197,20 +192,9 @@ fun ImageView.circularImage(imgUrl: String, cornerRadius: Int) {
                 }
             }
 
-            Glide.with(this)
-                .load(imgUrl)
-                .apply(
-
-                    bitmapTransform(
-
-                        RoundedCornersTransformation(
-
-                            cornerRadius, 0,
-                            RoundedCornersTransformation.CornerType.ALL
-                        )
-                    )
-                )
-                .into(this)
+            this.load(imgUrl) {
+                transformations(RoundedCornersTransformation(cornerRadius.toFloat()))
+            }
 
         } catch (e: Throwable) {
 
