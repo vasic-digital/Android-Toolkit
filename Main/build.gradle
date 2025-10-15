@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id("com.google.devtools.ksp") version "2.2.20-2.0.4"
-    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.20"
+    id 'org.jetbrains.kotlin.plugin.compose' version "2.2.20"
 }
 
 if ("$toolkit_project_name" == "null" || "$toolkit_project_name".isEmpty() || "$toolkit_project_name".isBlank()) {
@@ -201,7 +201,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.17"
+        kotlinCompilerExtensionVersion = "1.6.10"
     }
 
     lint {
@@ -225,7 +225,7 @@ dependencies {
     final String roomVersion = "2.8.0"
     final String okioVersion = "3.9.0"
     final String gsonVersion = "2.13.2"
-    final String okHttpVersion = "5.1.0"
+    final String okHttpVersion = "5.0.0"
     final String jacksonVersion = "2.20.0"
     final String lifecycleVersion = "2.9.3"
     final String retrofitHttpVersion = "3.0.0"
