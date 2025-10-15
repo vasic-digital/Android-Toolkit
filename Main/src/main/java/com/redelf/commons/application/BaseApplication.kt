@@ -768,7 +768,11 @@ abstract class BaseApplication :
             if (app == null) {
 
                 Console.error("No Firebase app initialized")
+
+                return
             }
+
+            initializeFcm()
 
             if (firebaseAnalyticsEnabled) {
 
@@ -1104,7 +1108,6 @@ abstract class BaseApplication :
 
     private fun onManagers() {
 
-        initializeFcm()
         load()
         onManagersReady()
         update()
