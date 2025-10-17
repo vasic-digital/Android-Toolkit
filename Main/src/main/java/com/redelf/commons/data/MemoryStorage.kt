@@ -2,7 +2,7 @@
 
 package com.redelf.commons.data
 
-import androidx.room.concurrent.AtomicBoolean
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.ConcurrentHashMap
 
 object MemoryStorage {

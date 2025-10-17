@@ -81,12 +81,23 @@ android {
     }
 }
 
+// Force Kotlin version to avoid conflicts
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:2.0.0'
+        force 'org.jetbrains.kotlin:kotlin-reflect:2.0.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.0.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-common:2.0.0'
+    }
+}
+
 dependencies {
 
-    final String roomVersion = "2.8.1"
+    final String roomVersion = "2.6.1"
     final String okioVersion = "3.9.1"
     final String gsonVersion = "2.13.2"
-    final String okHttpVersion = "5.1.0"
+    final String okHttpVersion = "4.12.0"
     final String jacksonVersion = "2.20.0"
     final String lifecycleVersion = "2.9.4"
     final String retrofitHttpVersion = "3.0.0"
