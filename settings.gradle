@@ -10,6 +10,7 @@ include ':Interprocess'
 include ':CircleImageView'
 include ':ConnectionIndicator'
 include ':FastscrollerAlphabet'
+include ':SecurityAccess'
 
 include ':Application:Echo'
 include ':Application:DataManagerDemo'

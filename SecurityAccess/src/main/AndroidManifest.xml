@@ -7,47 +7,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application>
-        <!-- Security Access Activities -->
-        <activity
-            android:name=".ui.SecurityAccessSetupActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
-
-        <activity
-            android:name=".ui.SecurityAccessActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
-
-        <activity
-            android:name=".ui.PinSetupActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
-
-        <activity
-            android:name=".ui.PasswordSetupActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
-
-        <!-- Biometric Activities -->
-        <activity
-            android:name=".ui.BiometricSetupActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
-
-        <activity
-            android:name=".ui.FingerprintAccessActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
-
-        <activity
-            android:name=".ui.IrisAccessActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
-
-        <activity
-            android:name=".ui.FaceAccessActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <!-- Security Access Module - Core functionality only, UI implemented by consuming apps -->
     </application>
 
 </manifest>

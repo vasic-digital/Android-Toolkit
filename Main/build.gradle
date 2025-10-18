@@ -57,7 +57,7 @@ android {
     namespace 'com.redelf.commons'
 
     defaultConfig {
-        minSdk 28
+        minSdk 21  // Compatible with all Connector apps
         targetSdk 36
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -153,7 +154,7 @@ class SecurityAccessManager private constructor(
 
             // Check session validity
             _currentSessionId.value?.let { sessionId ->
-                val session = repository.getActiveSession(sessionId).value
+                val session = repository.getActiveSession(sessionId).firstOrNull()
                 if (session != null && session.isActive && session.expiresAt.isAfter(LocalDateTime.now())) {
                     return@withContext false // Valid session exists
                 }
@@ -199,24 +200,18 @@ class SecurityAccessManager private constructor(
                         }
                     }
                     AccessMethod.PASSWORD -> {
-                        val passwordAccessMethod = PasswordAccessMethod(0, context as androidx.appcompat.app.AppCompatActivity)
-                        when (val result = passwordAccessMethod.verifyPassword(credential)) {
-                            is PasswordAccessMethod.VerificationResult.Success -> {
-                                handleSuccessfulAuthentication(method, startTime)
-                                AuthenticationResult.Success
-                            }
-                            is PasswordAccessMethod.VerificationResult.Failed -> {
-                                handleFailedAuthentication()
-                                AuthenticationResult.Failed(result.message)
-                            }
-                            is PasswordAccessMethod.VerificationResult.Error -> {
-                                AuthenticationResult.Error(result.message)
-                            }
-                        }
+                        // Password authentication not implemented yet
+                        AuthenticationResult.Error("Password authentication not implemented")
                     }
-                    AccessMethod.FINGERPRINT -> {
+                    AccessMethod.FINGERPRINT, AccessMethod.FACE_RECOGNITION, AccessMethod.IRIS -> {
                         // For biometric methods, we need to use the activity-based authentication
                         AuthenticationResult.BiometricRequired
+                    }
+                    AccessMethod.NONE -> {
+                        AuthenticationResult.Error("No access method specified")
+                    }
+                    AccessMethod.VOICE, AccessMethod.PATTERN -> {
+                        AuthenticationResult.Error("Authentication method not implemented")
                     }
                     AccessMethod.FACE_RECOGNITION -> {
                         AuthenticationResult.BiometricRequired

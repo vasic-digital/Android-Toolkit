@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
+    id 'com.google.devtools.ksp' version '2.0.0-1.0.21'
     id 'org.jetbrains.kotlin.plugin.compose'
 }
 
@@ -11,7 +12,7 @@ android {
     namespace 'digital.vasic.security.access'
 
     defaultConfig {
-        minSdk 29  // Android 10
+        minSdk 21  // Android 5.0 - compatible with all Connector apps
         targetSdk 36
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -91,13 +92,12 @@ dependencies {
     implementation project("${toolkit_context}:JCommons")
 
     // Room with SQLCipher
-    final String roomVersion = "2.6.1"
+    final String roomVersion = "2.7.0-alpha07"
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
+    ksp "androidx.room:room-compiler:$roomVersion"
 
-    // SQLCipher for encrypted database
-    implementation "net.zetetic:sqlcipher-android:4.10.0@aar"
+    // TODO: Add SQLCipher for encrypted database in future
 
     // Biometric authentication
     implementation "androidx.biometric:biometric:1.2.0-alpha05"

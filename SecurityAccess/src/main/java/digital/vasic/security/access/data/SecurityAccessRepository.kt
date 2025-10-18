@@ -86,7 +86,9 @@ class SecurityAccessRepository private constructor(
     // Session operations
     suspend fun createSession(deviceId: String, accessMethod: AccessMethod): AccessSession {
         val sessionId = SecurityUtils.generateSessionId()
-        val expiresAt = LocalDateTime.now().plusMinutes(30) // 30 minute session
+        val settings = getSecuritySettingsSync()
+        val sessionTimeoutMinutes = settings?.sessionTimeoutMinutes ?: 5L // Default to 5 minutes
+        val expiresAt = LocalDateTime.now().plusMinutes(sessionTimeoutMinutes)
 
         val session = AccessSession(
             sessionId = sessionId,

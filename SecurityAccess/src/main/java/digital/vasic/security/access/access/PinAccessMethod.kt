@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import digital.vasic.security.access.data.AccessMethod
 import digital.vasic.security.access.data.AccessStatus
 import digital.vasic.security.access.data.SecurityAccessRepository
-import digital.vasic.security.access.ui.PinAccessActivity
+// Removed UI activity import for simplified implementation
 import digital.vasic.security.access.utils.SecurityUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 
 class PinAccessMethod(
     private val priority: Int,
-    private val context: AppCompatActivity,
+    context: AppCompatActivity,
     private val repository: SecurityAccessRepository = SecurityAccessRepository.getInstance(context)
 ) : BaseAccessMethod(priority, context) {
 
@@ -42,8 +42,8 @@ class PinAccessMethod(
     }
 
     override fun execute() {
-        val intent = android.content.Intent(context, PinAccessActivity::class.java)
-        context.startActivityForResult(intent, PIN_ACCESS_REQUEST_CODE)
+        // PIN authentication is handled directly by the consuming app
+        // This method is not used in the simplified implementation
     }
 
     override fun install() {

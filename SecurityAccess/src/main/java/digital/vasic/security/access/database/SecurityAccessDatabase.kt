@@ -10,8 +10,6 @@ import digital.vasic.security.access.data.SecuritySettings
 import digital.vasic.security.access.data.AccessAttempt
 import digital.vasic.security.access.data.AccessCredential
 import digital.vasic.security.access.data.AccessSession
-import net.sqlcipher.database.SQLiteDatabase
-import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [
@@ -42,15 +40,11 @@ abstract class SecurityAccessDatabase : RoomDatabase() {
         }
 
         private fun buildDatabase(context: Context): SecurityAccessDatabase {
-            val passphrase = SQLiteDatabase.getBytes(BuildConfig.DATABASE_PASSWORD.toCharArray())
-            val factory = SupportFactory(passphrase)
-
             return Room.databaseBuilder(
                 context.applicationContext,
                 SecurityAccessDatabase::class.java,
                 BuildConfig.DATABASE_NAME
             )
-                .openHelperFactory(factory)
                 .fallbackToDestructiveMigration()
                 .build()
         }
