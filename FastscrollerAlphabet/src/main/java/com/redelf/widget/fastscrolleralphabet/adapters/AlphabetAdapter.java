@@ -64,15 +64,15 @@ public class AlphabetAdapter extends RecyclerView.Adapter<AlphabetAdapter.ViewHo
         }
 
         public void bind(final AlphabetItem alphabetItem, final int position) {
-            if (alphabetItem == null || alphabetItem.word == null)
+            if (alphabetItem == null || alphabetItem.getWord() == null)
                 return;
 
             // Text
-            tvWord.setText(alphabetItem.word);
+            tvWord.setText(alphabetItem.getWord());
             // Style
-            tvWord.setTypeface(null, alphabetItem.isActive ? Typeface.BOLD : Typeface.NORMAL);
+            tvWord.setTypeface(null, alphabetItem.isActive() ? Typeface.BOLD : Typeface.NORMAL);
             // Text color
-            tvWord.setTextColor(alphabetItem.isActive
+            tvWord.setTextColor(alphabetItem.isActive()
                     ? mContext.getResources().getColor(R.color.alphabet_text_selected_color)
                     : mContext.getResources().getColor(R.color.alphabet_text_color));
             // Click event
@@ -83,7 +83,7 @@ public class AlphabetAdapter extends RecyclerView.Adapter<AlphabetAdapter.ViewHo
                         return;
                     }
 
-                    listener.OnItemClicked(alphabetItem.position, position);
+                    listener.OnItemClicked(alphabetItem.getPosition(), position);
                 }
             });
         }

@@ -27,7 +27,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
         private val debug = AtomicBoolean()
         private val tag = "Executor :: MAIN ::"
-        private val cores = CPUs().numberOfCores
+        private val cores = CPUs().getNumberOfCores()
         private val threadPooled = AtomicBoolean(true)
 
         private val capacity = if (cores * 3 <= 10) {
@@ -191,7 +191,7 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
             if (debug.get()) {
 
-                val msg = "${CPUs.tag} Available = $available, Total = $maximumPoolSize"
+                val msg = "${CPUs.TAG} Available = $available, Total = $maximumPoolSize"
 
                 if (isAvailable) {
 

@@ -33,12 +33,12 @@ class FacebookAnalytics : Analytics {
 
             exec {
 
-                value?.let {
+                if (value != null) {
 
-                    if (it.first is String && it.second is String) {
+                    if (value!!.first is String && value!!.second is String) {
 
-                        val first = it.first as String
-                        val second = it.second as String
+                        val first = value!!.first as String
+                        val second = value!!.second as String
 
                         val bundle = Bundle()
 

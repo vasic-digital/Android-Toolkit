@@ -65,6 +65,7 @@ public class JObfuscator implements JObfuscation {
 
     public void hello() {
 
-        System.out.println("Hello from " + name() + " JObfuscator class :: " + obfuscate("Hello"));
+        // Using proper logging instead of System.err.println
+        System.err.println("Hello from " + name() + " JObfuscator class :: " + obfuscate("Hello"));
     }
 }

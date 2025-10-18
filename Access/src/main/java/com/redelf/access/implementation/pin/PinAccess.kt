@@ -65,8 +65,12 @@ class PinAccess(priority: Int, ctx: AccessActivity) : AccessMethod(priority, ctx
     }
 
     override fun cancel() {
-
-        // TODO: Implement cancellation.
+        // Cancel any ongoing authentication process
+        val context = getContext()
+        context.finishActivity(context.activityRequestCode)
+        
+        // We can't reassign executionCallback (it's a val in parent class),
+        // but we can finish the activity which effectively cancels the operation
     }
 
     private fun getContext() = ctx as PinAccessActivity

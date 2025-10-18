@@ -248,7 +248,7 @@ public class CircleImageView extends ImageView {
     /**
      * @deprecated Use {@link #setCircleBackgroundColor(int)} instead
      */
-    @Deprecated
+    @Deprecated(since = "1.0", forRemoval = true)
     public void setCircleBackgroundColorResource(@ColorRes int circleBackgroundRes) {
         setCircleBackgroundColor(getContext().getResources().getColor(circleBackgroundRes));
     }

@@ -32,13 +32,11 @@ class FirebaseAnalytics : Analytics {
 
             val analyticEvent = FirebaseAnalyticsEvent(param = Pair(key, value ?: ""))
 
-            val paramLog = "Bundle :: Key: = '${analyticEvent.param?.first}', " +
-                    "Value = '${analyticEvent.param?.second}'"
+            val param = analyticEvent.param!!
+            val paramLog = "Bundle :: Key: = '${param.first}', " +
+                    "Value = '${param.second}'"
 
-            analyticEvent.param?.let {
-
-                bundle.putString(analyticEvent.param.first, analyticEvent.param.second)
-            }
+            bundle.putString(param.first, param.second)
 
             exec(
 

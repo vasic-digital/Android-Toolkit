@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class CPUs {
 
-    public static String tag = "Execution ::";
+    public static final String TAG = "Execution ::";
 
     public int getNumberOfCores() {
 
@@ -16,7 +16,7 @@ public class CPUs {
 
         cores = Runtime.getRuntime().availableProcessors();
 
-        Console.log("%s Cores: %d", tag, cores);
+        Console.log("%s Cores: %d", TAG, cores);
 
         return cores;
     }

@@ -21,7 +21,12 @@ class CollectionChangesTracker<T, I>(
 
 ) : Runnable {
 
+    companion object {
+        private const val COPY_SKIP_LOG_TIME_MILLIS = 0
+    }
+
     private val copying = AtomicBoolean()
+
 
     override fun run() {
 
@@ -41,7 +46,7 @@ class CollectionChangesTracker<T, I>(
 
         if (copying.get()) {
 
-            Console.log("Set copy skip for 0 millis :: Context='$context', From='$from'")
+            Console.log("Set copy skip for $COPY_SKIP_LOG_TIME_MILLIS millis :: Context='$context', From='$from'")
 
             return
         }

@@ -78,11 +78,10 @@ public class RecyclerViewFastScroller extends LinearLayout implements
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
         final int action = event.getAction();
-        switch (action) {
-            case MotionEvent.ACTION_MOVE:
-                final float y = event.getY();
-                setRecyclerViewPosition(y);
-                return true;
+        if (action == MotionEvent.ACTION_MOVE) {
+            final float y = event.getY();
+            setRecyclerViewPosition(y);
+            return true;
         }
         return super.onTouchEvent(event);
     }
@@ -91,7 +90,7 @@ public class RecyclerViewFastScroller extends LinearLayout implements
         if (recyclerView != null) {
             final int itemCount = recyclerView.getAdapter().getItemCount();
             final float proportion = y / (float) height;
-            final int targetPos = getValueInRange(0, itemCount - 1, (int) (proportion * (float) itemCount));
+            final int targetPos = getValueInRange(0, itemCount - 1, (int) (proportion * itemCount));
             ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(targetPos, 0);
 
             final String bubbleText = ((BubbleTextGetter) recyclerView.getAdapter()).getTextToShowInBubble(targetPos);
@@ -111,34 +110,32 @@ public class RecyclerViewFastScroller extends LinearLayout implements
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        switch (motionEvent.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE: {
+        final int action = motionEvent.getActionMasked();
+        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
 
-                Rect rect = new Rect();
-                int childCount = alphabetRecyclerView.getChildCount();
-                int[] listViewCoords = new int[2];
-                alphabetRecyclerView.getLocationOnScreen(listViewCoords);
-                int x = (int) motionEvent.getRawX() - listViewCoords[0];
-                int y = (int) motionEvent.getRawY() - listViewCoords[1];
+            Rect rect = new Rect();
+            int childCount = alphabetRecyclerView.getChildCount();
+            int[] listViewCoords = new int[2];
+            alphabetRecyclerView.getLocationOnScreen(listViewCoords);
+            int x = (int) motionEvent.getRawX() - listViewCoords[0];
+            int y = (int) motionEvent.getRawY() - listViewCoords[1];
 
-                View child;
-                for (int i = 0; i < childCount; i++) {
-                    child = alphabetRecyclerView.getChildAt(i);
-                    child.getHitRect(rect);
+            View child;
+            for (int i = 0; i < childCount; i++) {
+                child = alphabetRecyclerView.getChildAt(i);
+                child.getHitRect(rect);
 
-                    // This is your pressed view
-                    if (rect.contains(x, y)) {
-                        LinearLayoutManager layoutManager = ((LinearLayoutManager)alphabetRecyclerView.getLayoutManager());
-                        int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
-                        int position = i + firstVisiblePosition;
-                        performSelectedAlphabetWord(position);
-                        alphabetTouchEventOnItem(position);
-                        break;
-                    }
+                // This is your pressed view
+                if (rect.contains(x, y)) {
+                    LinearLayoutManager layoutManager = ((LinearLayoutManager)alphabetRecyclerView.getLayoutManager());
+                    int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
+                    int position = i + firstVisiblePosition;
+                    performSelectedAlphabetWord(position);
+                    alphabetTouchEventOnItem(position);
+                    break;
                 }
-                view.onTouchEvent(motionEvent);
             }
+            view.onTouchEvent(motionEvent);
         }
         return true;
     }
@@ -157,7 +154,7 @@ public class RecyclerViewFastScroller extends LinearLayout implements
                 }
                 final int verticalScrollOffset = recyclerView.computeVerticalScrollOffset();
                 final int verticalScrollRange = recyclerView.computeVerticalScrollRange();
-                final float proportion = (float) verticalScrollOffset / ((float) verticalScrollRange - height);
+                final float proportion = (float) verticalScrollOffset / (verticalScrollRange - height);
                 setRecyclerViewPositionWithoutScrolling(height * proportion);
             }
 
@@ -173,7 +170,7 @@ public class RecyclerViewFastScroller extends LinearLayout implements
     }
 
     public void setUpAlphabet(List<AlphabetItem> alphabetItems) {
-        if (alphabetItems == null || alphabetItems.size() <= 0)
+        if (alphabetItems == null || alphabetItems.isEmpty())
             return;
 
         alphabets = alphabetItems;
@@ -186,7 +183,7 @@ public class RecyclerViewFastScroller extends LinearLayout implements
         if (recyclerView != null) {
             final int itemCount = recyclerView.getAdapter().getItemCount();
             final float proportion = y / (float) height;
-            final int targetPos = getValueInRange(0, itemCount - 1, (int) (proportion * (float) itemCount));
+            final int targetPos = getValueInRange(0, itemCount - 1, (int) (proportion * itemCount));
             final String bubbleText = ((BubbleTextGetter) recyclerView.getAdapter()).getTextToShowInBubble(targetPos);
             setAlphabetWordSelected(bubbleText);
         }
@@ -203,10 +200,10 @@ public class RecyclerViewFastScroller extends LinearLayout implements
         }
 
         for (AlphabetItem alphabetItem : alphabets) {
-            alphabetItem.isActive = false;
+            alphabetItem.setActive(false);
         }
 
-        alphabets.get(position).isActive = true;
+        alphabets.get(position).setActive(true);
         alphabetAdapter.refreshDataChange(alphabets);
     }
 
@@ -215,7 +212,7 @@ public class RecyclerViewFastScroller extends LinearLayout implements
             return;
         }
 
-        takeRecyclerViewScrollToAlphabetPosition(alphabets.get(position).position);
+        takeRecyclerViewScrollToAlphabetPosition(alphabets.get(position).getPosition());
     }
 
     private void takeRecyclerViewScrollToAlphabetPosition(int position) {

@@ -18,6 +18,10 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
 {
 
+    companion object {
+        private const val ERROR_MESSAGE_CLASS_MUST_HAVE_SIMPLE_NAME = "The class must have a simple name"
+    }
+
     private val recipes = ConcurrentHashMap<String, AvailableStatefulServiceFactoryRecipe>()
 
     init {
@@ -51,7 +55,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
         if (isEmpty(sName)) {
 
-            throw IllegalArgumentException("The class must have a simple name")
+            throw IllegalArgumentException(ERROR_MESSAGE_CLASS_MUST_HAVE_SIMPLE_NAME)
         }
 
         recipes[sName] = subscriber
@@ -64,7 +68,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
         if (isEmpty(sName)) {
 
-            throw IllegalArgumentException("The class must have a simple name")
+            throw IllegalArgumentException(ERROR_MESSAGE_CLASS_MUST_HAVE_SIMPLE_NAME)
         }
 
         recipes.remove(sName)
@@ -77,7 +81,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
         if (isEmpty(sName)) {
 
-            throw IllegalArgumentException("The class must have a simple name")
+            throw IllegalArgumentException(ERROR_MESSAGE_CLASS_MUST_HAVE_SIMPLE_NAME)
         }
 
         return recipes.containsKey(sName)
@@ -91,7 +95,7 @@ class AvailableStatefulServiceFactory @Throws(IllegalArgumentException::class) c
 
         if (isEmpty(identifier)) {
 
-            throw IllegalArgumentException("The class must have a simple name")
+            throw IllegalArgumentException(ERROR_MESSAGE_CLASS_MUST_HAVE_SIMPLE_NAME)
         }
 
         recipes[identifier]?.let {

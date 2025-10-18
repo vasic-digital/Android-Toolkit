@@ -1,6 +1,6 @@
 package com.redelf.commons.capability
 
-interface CapabilityCheck {
+fun interface CapabilityCheck {
 
     fun checkCapability(callback: CapabilityCheckCallback)
 }
