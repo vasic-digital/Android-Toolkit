@@ -1,0 +1,49 @@
+# Build outputs
+/build/
+/outputs/
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Local configuration
+local.properties
+
+# Proguard
+proguard-rules.pro
+
+# Keystore files
+*.jks
+*.keystore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database files (for testing)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Test outputs
+test-results/
+test-output/
+
+# Coverage reports
+coverage/
+
+# Lint reports
+lint-report.html

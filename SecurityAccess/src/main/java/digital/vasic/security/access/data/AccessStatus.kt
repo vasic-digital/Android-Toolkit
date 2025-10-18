@@ -1,0 +1,16 @@
+package digital.vasic.security.access.data
+
+enum class AccessStatus {
+    SUCCESS,
+    FAILED,
+    CANCELLED,
+    TIMEOUT,
+    LOCKED_OUT,
+    BIOMETRIC_NOT_AVAILABLE,
+    BIOMETRIC_NOT_ENROLLED,
+    BIOMETRIC_LOCKED_OUT,
+    HARDWARE_UNAVAILABLE,
+    SECURITY_UPDATE_REQUIRED,
+    USER_CANCELLED,
+    SYSTEM_CANCELLED
+}
