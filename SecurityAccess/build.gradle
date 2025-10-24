@@ -11,7 +11,7 @@ android {
     namespace 'digital.vasic.security.access'
 
     defaultConfig {
-        minSdk 21  // Android 5.0 - compatible with all Connector apps
+        minSdk 28  // Required for Tests library compatibility
         targetSdk 36
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -55,6 +55,12 @@ android {
     buildFeatures {
         buildConfig true
         compose true
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
     }
 
     composeOptions {

@@ -32,8 +32,8 @@ class SecurityAccessRepositoryTest {
     fun tearDown() {
         runBlocking {
             // Clean up test data
-            database.securitySettingsDao().deleteSettings()
-            database.accessCredentialDao().deleteCredential()
+            database.securitySettingsDao().deleteSettings("default")
+            database.accessCredentialDao().deleteCredential("default")
             database.accessAttemptDao().cleanupOldAttempts(LocalDateTime.now().minusDays(1))
             database.accessSessionDao().cleanupExpiredSessions(LocalDateTime.now().minusDays(1))
         }
@@ -338,6 +338,7 @@ class SecurityAccessRepositoryTest {
             accessMethod = AccessMethod.PIN,
             status = AccessStatus.FAILED,
             deviceId = deviceId,
+            attemptDurationMs = 100,
             timestamp = LocalDateTime.now().minusDays(35)
         )
 
@@ -348,6 +349,7 @@ class SecurityAccessRepositoryTest {
             accessMethod = AccessMethod.PASSWORD,
             status = AccessStatus.SUCCESS,
             deviceId = deviceId,
+            attemptDurationMs = 200,
             timestamp = LocalDateTime.now()
         )
 

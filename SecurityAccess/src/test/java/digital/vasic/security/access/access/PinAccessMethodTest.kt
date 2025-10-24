@@ -39,8 +39,8 @@ class PinAccessMethodTest {
     fun tearDown() {
         runBlocking {
             // Clean up test data
-            database.securitySettingsDao().deleteSettings()
-            database.accessCredentialDao().deleteCredential()
+            database.securitySettingsDao().deleteSettings("default")
+            database.accessCredentialDao().deleteCredential("default")
             database.accessAttemptDao().cleanupOldAttempts(LocalDateTime.now().minusDays(1))
         }
         SecurityAccessDatabase.destroyInstance()
@@ -211,9 +211,11 @@ class PinAccessMethodTest {
         pinAccessMethod.setupPin("1234", "1234")
 
         var capabilityResult = false
-        pinAccessMethod.checkCapability { capable ->
-            capabilityResult = capable
-        }
+        pinAccessMethod.checkCapability(object : digital.vasic.security.access.utils.CapabilityCheckCallback {
+            override fun onCapabilityChecked(capable: Boolean) {
+                capabilityResult = capable
+            }
+        })
 
         // Wait for async operation
         Thread.sleep(100)
@@ -226,9 +228,11 @@ class PinAccessMethodTest {
         val pinAccessMethod = PinAccessMethod(0, context as androidx.appcompat.app.AppCompatActivity)
 
         var capabilityResult = true
-        pinAccessMethod.checkCapability { capable ->
-            capabilityResult = capable
-        }
+        pinAccessMethod.checkCapability(object : digital.vasic.security.access.utils.CapabilityCheckCallback {
+            override fun onCapabilityChecked(capable: Boolean) {
+                capabilityResult = capable
+            }
+        })
 
         // Wait for async operation
         Thread.sleep(100)
@@ -244,9 +248,11 @@ class PinAccessMethodTest {
         pinAccessMethod.setupPin("1234", "1234")
 
         var installedResult = false
-        pinAccessMethod.checkInstalled { installed ->
-            installedResult = installed
-        }
+        pinAccessMethod.checkInstalled(object : digital.vasic.security.access.installation.InstallationCheckCallback {
+            override fun onInstallationChecked(installed: Boolean) {
+                installedResult = installed
+            }
+        })
 
         // Wait for async operation
         Thread.sleep(100)
@@ -259,9 +265,11 @@ class PinAccessMethodTest {
         val pinAccessMethod = PinAccessMethod(0, context as androidx.appcompat.app.AppCompatActivity)
 
         var installedResult = true
-        pinAccessMethod.checkInstalled { installed ->
-            installedResult = installed
-        }
+        pinAccessMethod.checkInstalled(object : digital.vasic.security.access.installation.InstallationCheckCallback {
+            override fun onInstallationChecked(installed: Boolean) {
+                installedResult = installed
+            }
+        })
 
         // Wait for async operation
         Thread.sleep(100)
