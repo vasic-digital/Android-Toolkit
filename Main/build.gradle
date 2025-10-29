@@ -94,13 +94,8 @@ configurations.all {
 
 dependencies {
 
-    final String roomVersion = "2.6.1"
-    final String okioVersion = "3.9.1"
-    final String gsonVersion = "2.13.2"
-    final String okHttpVersion = "4.12.0"
-    final String jacksonVersion = "2.20.0"
-    final String lifecycleVersion = "2.9.4"
-    final String retrofitHttpVersion = "3.0.0"
+    // Centralized dependencies
+    api(project(":Dependencies"))
 
     api project("${toolkit_context}:JCommons")
     testApi project("${toolkit_context}:JCommons")
@@ -114,26 +109,19 @@ dependencies {
     api 'androidx.compose.foundation:foundation'
     api 'androidx.compose.ui:ui-tooling-preview'
 
-    api "com.squareup.okio:okio:$okioVersion"
-    api "com.squareup.okhttp3:okhttp:$okHttpVersion"
-    api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
-    api "com.squareup.retrofit2:retrofit:$retrofitHttpVersion"
-    api "com.squareup.retrofit2:converter-scalars:$retrofitHttpVersion"
-    api "com.squareup.retrofit2:converter-gson:$retrofitHttpVersion"
-    api "com.squareup.retrofit2:converter-jackson:$retrofitHttpVersion"
-
-    api "androidx.core:core-ktx:1.17.0"
-    api "com.squareup.retrofit2:adapter-rxjava2:$retrofitHttpVersion"
+    // Retrofit and RxJava (not included in Dependencies module)
+    api "com.squareup.retrofit2:retrofit:3.0.0"
+    api "com.squareup.retrofit2:converter-scalars:3.0.0"
+    api "com.squareup.retrofit2:converter-gson:3.0.0"
+    api "com.squareup.retrofit2:converter-jackson:3.0.0"
+    api "com.squareup.retrofit2:adapter-rxjava2:3.0.0"
     api "io.reactivex.rxjava2:rxandroid:2.1.1"
     api "io.reactivex.rxjava2:rxjava:2.2.21"
 
+    // Apache Commons (not included in Dependencies module)
     api "org.apache.commons:commons-compress:1.28.0"
-    api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    api "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
-
+    // Firebase (not included in Dependencies module)
     api "com.google.firebase:firebase-core:21.1.1"
     api "com.google.firebase:firebase-analytics:23.0.0"
     api "com.google.firebase:firebase-analytics-ktx:22.5.0"
@@ -146,17 +134,18 @@ dependencies {
     api "com.google.android.play:app-update:2.1.0"
     api "com.google.android.play:app-update-ktx:2.1.0"
 
+    // AndroidX UI components (not included in Dependencies module)
     api "androidx.appcompat:appcompat:1.7.1"
     api "androidx.constraintlayout:constraintlayout:2.2.1"
     api "androidx.coordinatorlayout:coordinatorlayout:1.3.0"
     api "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     api "androidx.lifecycle:lifecycle-extensions:2.2.0"
-    api "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion"
-    api "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
-    api "androidx.lifecycle:lifecycle-process:$lifecycleVersion"
-    api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
-    api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+    api "androidx.lifecycle:lifecycle-runtime-ktx:2.9.4"
+    api "androidx.lifecycle:lifecycle-common-java8:2.9.4"
+    api "androidx.lifecycle:lifecycle-process:2.9.4"
+    api "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4"
+    api "androidx.lifecycle:lifecycle-livedata-ktx:2.9.4"
     api "androidx.profileinstaller:profileinstaller:1.4.1"
     api "androidx.activity:activity-ktx:1.11.0"
 
@@ -167,8 +156,8 @@ dependencies {
 
     api "net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3"
 
-    api "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-    api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+    api "com.fasterxml.jackson.core:jackson-databind:2.20.0"
+    api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.0"
 
     api platform("com.google.firebase:firebase-bom:34.3.0")
 
@@ -202,10 +191,10 @@ dependencies {
     // Required for Android 15+ devices (API 35+) - Google Play requirement from November 2025
     implementation "net.zetetic:sqlcipher-android:4.10.0@aar"
 
-    api "androidx.room:room-runtime:$roomVersion"
-    api "androidx.room:room-ktx:$roomVersion"
-    ksp "androidx.room:room-compiler:$roomVersion"
-    api "androidx.room:room-paging:$roomVersion"
+    api "androidx.room:room-runtime:2.6.1"
+    api "androidx.room:room-ktx:2.6.1"
+    ksp "androidx.room:room-compiler:2.6.1"
+    api "androidx.room:room-paging:2.6.1"
     api "androidx.paging:paging-runtime-ktx:3.3.6"
 
     api "androidx.recyclerview:recyclerview:1.4.0"
@@ -223,9 +212,9 @@ dependencies {
     testImplementation "com.jakewharton.timber:timber:5.0.1"
     androidTestImplementation "com.jakewharton.timber:timber:5.0.1"
 
-    api "com.google.code.gson:gson:$gsonVersion"
-    testApi "com.google.code.gson:gson:$gsonVersion"
-    androidTestApi "com.google.code.gson:gson:$gsonVersion"
+    api "com.google.code.gson:gson:2.13.2"
+    testApi "com.google.code.gson:gson:2.13.2"
+    androidTestApi "com.google.code.gson:gson:2.13.2"
 
     api "androidx.security:security-crypto:1.1.0"
 

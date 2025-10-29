@@ -64,7 +64,7 @@ android {
 
         resources {
 
-            excludes += ['META-INF/*', 'LICENSE-2.0.txt', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt']
+            excludes += ['META-INF/*', 'LICENSE-2.0.txt', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/versions/9/OSGI-INF/MANIFEST.MF']
         }
     }
 
