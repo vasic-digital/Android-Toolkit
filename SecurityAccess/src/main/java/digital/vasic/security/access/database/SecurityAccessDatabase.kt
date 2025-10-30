@@ -33,6 +33,7 @@ import digital.vasic.security.access.data.SecuritySettings
 import digital.vasic.security.access.data.AccessAttempt
 import digital.vasic.security.access.data.AccessCredential
 import digital.vasic.security.access.data.AccessSession
+// import net.zetetic.database.sqlcipher.SupportFactory // Temporarily disabled for compilation
 
 @Database(
     entities = [
@@ -63,11 +64,16 @@ abstract class SecurityAccessDatabase : RoomDatabase() {
         }
 
         private fun buildDatabase(context: Context): SecurityAccessDatabase {
+            // TODO: Re-enable SQLCipher encryption
+            // val passphrase = BuildConfig.DATABASE_PASSWORD.toByteArray()
+            // val factory = SupportFactory(passphrase)
+
             return Room.databaseBuilder(
                 context.applicationContext,
                 SecurityAccessDatabase::class.java,
                 BuildConfig.DATABASE_NAME
             )
+                // .openHelperFactory(factory)
                 .fallbackToDestructiveMigration()
                 .build()
         }

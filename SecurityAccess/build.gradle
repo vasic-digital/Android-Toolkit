@@ -94,7 +94,8 @@ dependencies {
     implementation "androidx.room:room-ktx:$roomVersion"
     ksp "androidx.room:room-compiler:$roomVersion"
 
-    // TODO: Add SQLCipher for encrypted database in future
+    // SQLCipher for encrypted database (same version as Main toolkit)
+    implementation "net.zetetic:sqlcipher-android:4.10.0"
 
     // Biometric authentication
     implementation "androidx.biometric:biometric:1.2.0-alpha05"
