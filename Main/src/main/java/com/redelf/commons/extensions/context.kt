@@ -20,13 +20,18 @@ fun Context.startActivityOnExtendedDisplay(what: Class<*>, from: String? = this:
 
     Console.debug("$tag Looking for the display")
 
-    while (displayId > 0 && targetDisplay == null) {
-
-        targetDisplay = displays.firstOrNull { it.displayId == displayId }
-
-        if (targetDisplay == null) {
-
-            displayId--
+    // First try to find Display 4 (HDMI) specifically
+    targetDisplay = displays.firstOrNull { it.displayId == 4 }
+    if (targetDisplay != null) {
+        displayId = 4
+        Console.info("$tag Found HDMI display (Display 4)")
+    } else {
+        // Fallback to original logic
+        while (displayId > 0 && targetDisplay == null) {
+            targetDisplay = displays.firstOrNull { it.displayId == displayId }
+            if (targetDisplay == null) {
+                displayId--
+            }
         }
     }
 
