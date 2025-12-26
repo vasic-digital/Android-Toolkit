@@ -1,9 +1,11 @@
 package com.redelf.commons.extensions
 
 import android.content.Context
+import android.graphics.Point
 import android.hardware.display.DisplayManager
 import android.util.Log
 import android.view.Display
+import android.view.Display.Mode
 
 /**
  * Display utilities for ATMOSphere Presenter application
@@ -24,27 +26,37 @@ object DisplayUtils {
         
         Log.i(TAG, "Available displays: ${displays.size}")
         displays.forEach { display ->
-            Log.i(TAG, "Display ${display.displayId}: ${display.width}x${display.height}")
+            val size = Point()
+            display.getRealSize(size)
+            Log.i(TAG, "Display ${display.displayId}: ${size.x}x${size.y}")
         }
         
         // Step 1: Look for 4K displays (3840x2160 or 4096x2160)
         val fourKDisplay = find4KDisplay(displays)
         if (fourKDisplay != null) {
-            Log.i(TAG, "Found 4K display: ${fourKDisplay.displayId} (${fourKDisplay.width}x${fourKDisplay.height})")
+            val size = Point()
+            fourKDisplay.getRealSize(size)
+            Log.i(TAG, "Found 4K display: ${fourKDisplay.displayId} (${size.x}x${size.y})")
             return fourKDisplay.displayId
         }
         
         // Step 2: Look for HDMI displays specifically
         val hdmiDisplay = findHDMIDisplay(displays)
         if (hdmiDisplay != null) {
-            Log.i(TAG, "Found HDMI display: ${hdmiDisplay.displayId} (${hdmiDisplay.width}x${hdmiDisplay.height})")
+            val size = Point()
+            hdmiDisplay.getRealSize(size)
+            Log.i(TAG, "Found HDMI display: ${hdmiDisplay.displayId} (${size.x}x${size.y})")
             return hdmiDisplay.displayId
         }
         
         // Step 3: Any external display with highest resolution
         val externalDisplays = displays.filter { it.displayId != Display.DEFAULT_DISPLAY }
         if (externalDisplays.isNotEmpty()) {
-            val bestExternal = externalDisplays.maxByOrNull { it.width * it.height }
+            val bestExternal = externalDisplays.maxByOrNull { display ->
+                val size = Point()
+                display.getRealSize(size)
+                size.x * size.y
+            }
             if (bestExternal != null) {
                 Log.i(TAG, "Using best external display: ${bestExternal.displayId}")
                 return bestExternal.displayId
@@ -56,13 +68,15 @@ object DisplayUtils {
         return Display.DEFAULT_DISPLAY
     }
     
-    /**
-     * Find 4K display (3840x2160 or 4096x2160)
+/**
+     * Find 4K displays (3840x2160 or 4096x2160)
      */
     private fun find4KDisplay(displays: Array<Display>): Display? {
         return displays.firstOrNull { display ->
-            (display.width == 3840 && display.height == 2160) ||
-            (display.width == 4096 && display.height == 2160)
+            val size = Point()
+            display.getRealSize(size)
+            (size.x == 3840 && size.y == 2160) ||
+            (size.x == 4096 && size.y == 2160)
         }
     }
     
@@ -81,6 +95,8 @@ object DisplayUtils {
      * Get display info for logging
      */
     fun getDisplayInfo(display: Display): String {
-        return "Display ${display.displayId}: ${display.width}x${display.height}"
+        val size = Point()
+        display.getRealSize(size)
+        return "Display ${display.displayId}: ${size.x}x${size.y}"
     }
 }
