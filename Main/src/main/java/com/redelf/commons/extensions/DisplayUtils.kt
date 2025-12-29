@@ -18,45 +18,21 @@ object DisplayUtils {
     
     /**
      * Find the optimal display for Presenter application
-     * Prioritizes HDMI2 (Display ID 2) for 4K monitor
-     * Simplified version that works in Toolkit context
+     * Fully dynamic detection - finds highest resolution external display
+     * Handles display ID changes when HDMI is unplugged/plugged back in
      */
     fun findOptimalDisplay(context: Context): Int {
         val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         val displays = displayManager.displays
-        
+
         Log.i(TAG, "Available displays: ${displays.size}")
         displays.forEach { display ->
             val size = Point()
             display.getRealSize(size)
             Log.i(TAG, "Display ${display.displayId}: ${size.x}x${size.y}")
         }
-        
-        // Step 1: Check for ATMOSphere system property indicating target display
-        val atmosphereTargetDisplay = System.getProperty("atmosphere.presenter.target_display")
-        if (atmosphereTargetDisplay != null) {
-            try {
-                val displayId = atmosphereTargetDisplay.toInt()
-                val targetDisplay = displays.firstOrNull { it.displayId == displayId }
-                if (targetDisplay != null) {
-                    Log.i(TAG, "Using ATMOSphere target display: $displayId")
-                    return displayId
-                }
-            } catch (e: NumberFormatException) {
-                Log.w(TAG, "Invalid atmosphere.presenter.target_display value: $atmosphereTargetDisplay")
-            }
-        }
-        
-        // Step 2: Prioritize Display ID 2 (HDMI2) as it should be the 4K monitor
-        val hdmi2Display = displays.firstOrNull { it.displayId == 2 }
-        if (hdmi2Display != null) {
-            val size = Point()
-            hdmi2Display.getRealSize(size)
-            Log.i(TAG, "Using HDMI2 display (ID 2): ${size.x}x${size.y}")
-            return hdmi2Display.displayId
-        }
-        
-        // Step 3: Look for 4K displays (3840x2160 or 4096x2160)
+
+        // Priority 1: Look for 4K displays (3840x2160 or 4096x2160)
         val fourKDisplay = find4KDisplay(displays)
         if (fourKDisplay != null) {
             val size = Point()
@@ -64,8 +40,8 @@ object DisplayUtils {
             Log.i(TAG, "Found 4K display: ${fourKDisplay.displayId} (${size.x}x${size.y})")
             return fourKDisplay.displayId
         }
-        
-        // Step 4: Look for HDMI displays specifically
+
+        // Priority 2: Look for any external HDMI display
         val hdmiDisplay = findHDMIDisplay(displays)
         if (hdmiDisplay != null) {
             val size = Point()
@@ -73,8 +49,8 @@ object DisplayUtils {
             Log.i(TAG, "Found HDMI display: ${hdmiDisplay.displayId} (${size.x}x${size.y})")
             return hdmiDisplay.displayId
         }
-        
-        // Step 5: Any external display with highest resolution
+
+        // Priority 3: Any external display with highest resolution
         val externalDisplays = displays.filter { it.displayId != Display.DEFAULT_DISPLAY }
         if (externalDisplays.isNotEmpty()) {
             val bestExternal = externalDisplays.maxByOrNull { display ->
@@ -110,15 +86,12 @@ object DisplayUtils {
     }
     
     /**
-     * Find HDMI display by checking uniqueId and properties
+     * Find any external HDMI display (non-default display)
      */
     private fun findHDMIDisplay(displays: Array<Display>): Display? {
-        // For Toolkit compatibility, we'll use display properties instead of uniqueId
+        // Find any external display - ID can vary when unplugged/plugged
         return displays.firstOrNull { display ->
-            // Check if it's an external display (non-default)
-            display.displayId != Display.DEFAULT_DISPLAY &&
-            // Prefer displays with higher IDs (typically HDMI2 which should be 4K monitor)
-            display.displayId >= 2
+            display.displayId != Display.DEFAULT_DISPLAY
         }
     }
     
