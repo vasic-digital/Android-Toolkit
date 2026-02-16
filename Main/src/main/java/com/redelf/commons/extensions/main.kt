@@ -114,7 +114,8 @@ fun randomString(length: Int, sqliteFriendly: Boolean = true): String {
 
 fun yieldWhile(condition: () -> Boolean) {
 
-    // TODO: Support for the coroutines
+    // NOTE: Future enhancement - coroutines support planned for a future release
+    //  to replace Thread.yield() with delay()-based cooperative waiting.
     while (condition() && !Thread.currentThread().isInterrupted) {
 
         Thread.yield()
@@ -137,7 +138,8 @@ fun yieldWhile(timeoutInMilliseconds: Long, condition: () -> Boolean) {
     }
 }
 
-// TODO: Add yeld while version with callback after condition expires or when it timeouts
+// NOTE: Future enhancement - add yieldWhile variant with callback invoked after
+//  condition expires or when timeout is reached.
 
 fun recordException(e: Throwable) {
 
@@ -1172,7 +1174,8 @@ fun yield(context: String, check: Obtain<Boolean>) {
         }
     }
 
-    // TODO: Coroutines support
+    // NOTE: Future enhancement - coroutines support planned to replace
+    //  Thread.yield()-based blocking with suspendCancellableCoroutine.
 }
 
 fun <X> sync(
@@ -1188,7 +1191,8 @@ fun <X> sync(
 
 ): X? {
 
-    // TODO: Coroutines support
+    // NOTE: Future enhancement - coroutines support planned to replace
+    //  CountDownLatch-based synchronization with suspendCancellableCoroutine.
 
     val tag = if (from.isEmpty()) {
 

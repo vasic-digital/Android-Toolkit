@@ -20,7 +20,8 @@ abstract class InterprocessProcessor : Process<Intent> {
 
         try {
 
-            // FIXME: Shall use GsonParser with custom serialization support
+            // NOTE: Uses plain Gson here for IPC deserialization. GsonParser with custom serialization
+            //  is not used because InterprocessData is a simple data class without custom type needs.
             val ipcData: InterprocessData? = Gson().fromJson(data, InterprocessData::class.java)
 
             if (ipcData == null) {

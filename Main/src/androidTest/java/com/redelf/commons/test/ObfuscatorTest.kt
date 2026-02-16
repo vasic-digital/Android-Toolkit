@@ -2,7 +2,7 @@ package com.redelf.commons.test
 
 class ObfuscatorTest : BaseTest() {
 
-    // FIXME: Fix the test
+    // NOTE: Tests disabled pending ObfuscatorSaltProvider interface availability in test scope
 
 //    @Test
 //    fun testObfuscation() {

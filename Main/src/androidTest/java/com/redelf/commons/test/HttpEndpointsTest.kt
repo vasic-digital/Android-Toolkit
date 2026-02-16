@@ -95,7 +95,7 @@ class HttpEndpointsTest : EndpointsTest() {
     @Test
     fun testHttpSourceProxies() {
 
-        // FIXME:
+        // NOTE: HTTP source proxy test disabled - requires external proxy list endpoint
 //        try {
 //
 //            val urlObtain = object : Obtain<String> {

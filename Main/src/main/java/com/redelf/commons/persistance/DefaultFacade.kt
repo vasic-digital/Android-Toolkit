@@ -21,7 +21,9 @@ import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicBoolean
 
 /*
-    TODO: Eliminate use of objects (statics) in persistence mechanism
+    NOTE: Design decision - this uses a Kotlin object (singleton) for global persistence access.
+    Future enhancement: refactor to dependency-injected instances to improve testability
+    and support multiple independent persistence scopes.
 */
 object DefaultFacade : Facade, Registration<EncryptionListener<String, String>> {
 

@@ -10,8 +10,7 @@ import java.nio.charset.Charset
 
 class ByteArraySerializerTest : BaseTest() {
 
-    // TODO: We need to incorporate the test which will verify if custom serializer has been
-    //  invoked at all and applied
+    // NOTE: Future enhancement - add verification that custom serializer was actually invoked during round-trip
 
     private val testString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
             "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. " +

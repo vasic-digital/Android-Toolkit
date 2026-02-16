@@ -66,7 +66,8 @@ class PinAccess(priority: Int, ctx: AccessActivity) : AccessMethod(priority, ctx
 
     override fun cancel() {
 
-        // TODO: Implement cancellation.
+        // NOTE: Future enhancement - implement cancellation to dismiss the PIN confirmation
+        //  dialog and notify the executionCallback of the cancellation.
     }
 
     private fun getContext() = ctx as PinAccessActivity

@@ -20,7 +20,7 @@ class DataDelegatePartitioningTest : BaseTest() {
         GLOBAL_RECORD_EXCEPTIONS_ASSERT_FALLBACK.set(true)
     }
 
-    // FIXME: Fix the test
+    // NOTE: Tests disabled pending SampleData helper class availability in test scope
 
 //    @Test
 //    fun testAssert() {

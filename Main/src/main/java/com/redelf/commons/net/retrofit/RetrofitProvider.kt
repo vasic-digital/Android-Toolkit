@@ -31,11 +31,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 object RetrofitProvider : ObtainParametrized<Retrofit, RetrofitApiParameters> {
 
-    // TODO: Incorporate the support for Proxy:
-    //  https://stackoverflow.com/questions/32053413/using-retrofit-behind-a-proxy
-    //  https://github.com/proxifly/free-proxy-list/tree/main
-    //  https://github.com/proxifly/free-proxy-list/blob/main/proxies/protocols/http/data.txt
-    //  Proxy to be picked dynamically!
+    // NOTE: Future enhancement - incorporate proxy support for Retrofit.
+    //  The proxy should be picked dynamically from a configurable proxy list.
+    //  References:
+    //  - https://stackoverflow.com/questions/32053413/using-retrofit-behind-a-proxy
+    //  - https://github.com/proxifly/free-proxy-list
 
     @JvmField
     val DEBUG: AtomicBoolean = AtomicBoolean()

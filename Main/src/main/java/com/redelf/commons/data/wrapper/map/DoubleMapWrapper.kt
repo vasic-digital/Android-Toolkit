@@ -9,8 +9,8 @@ class DoubleMapWrapper<T>(
     from: Any,
     environment: String,
 
-    // TODO: Make sure that Long is generic type as T as well
-    // TODO: Add all power features that ListWrapper has
+    // NOTE: Future enhancement - make the Long key type generic (e.g., DoubleMapWrapper<K, T>)
+    // NOTE: Future enhancement - add all power features that ListWrapper has (filtering, sorting, etc.)
     private val map: ConcurrentHashMap<Long, ConcurrentHashMap<Long, T?>?>
 
 ) {

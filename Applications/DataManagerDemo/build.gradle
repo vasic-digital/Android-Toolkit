@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android'
     id("com.google.devtools.ksp") version "2.2.20-2.0.4"
 
-    // FIXME:
+    // NOTE: Compose compiler plugin disabled pending Compose dependency configuration
     //    id 'org.jetbrains.kotlin.plugin.compose' version "2.0.0"
 }
 
@@ -48,7 +48,7 @@ android {
 
     buildFeatures {
 
-        // FIXME:
+        // NOTE: Compose build feature disabled pending Compose dependency configuration
         //        compose true
     }
 
@@ -61,7 +61,7 @@ android {
     }
 }
 
-// FIXME:
+// NOTE: Compose compiler configuration disabled pending Compose dependency configuration
 //composeCompiler {
 //
 //    reportsDestination = layout.buildDirectory.dir("compose_compiler")

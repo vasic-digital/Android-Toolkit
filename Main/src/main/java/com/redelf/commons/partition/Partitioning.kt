@@ -4,9 +4,9 @@ import com.redelf.commons.data.type.Typed
 import java.lang.reflect.Type
 
 /*
-* TODO: Make sure that is possible to write out only the differences (changes)
-*   - Hint: CopyOnWriteArrayList
-*   - Hint: How Docker images work
+* NOTE: Future enhancement - support differential writes (only persist changes, not full data).
+*   Possible approaches: CopyOnWriteArrayList for change tracking, or a layered model
+*   similar to Docker image layers where only deltas are written.
 */
 interface Partitioning<T> : Typed<T> {
 
@@ -21,14 +21,16 @@ interface Partitioning<T> : Typed<T> {
     fun isPartitionCollection(number: Int): Boolean? = null
 
     /*
-        TODO: To be fully-automatic, with possibility of override and automatic data conversion
+        NOTE: Future enhancement - make partition data setting fully automatic with the possibility
+        of override and automatic data conversion between partition format and domain types.
     */
     fun setPartitionData(number: Int, data: Any?): Boolean
 
     fun failPartitionData(number: Int, error: Throwable)
 
     /*
-        TODO: To be fully-automatic, with possibility of override
+        NOTE: Future enhancement - make partition type resolution fully automatic
+        with the possibility of override for custom type mappings.
     */
     fun getPartitionType(number: Int): Type?
 }

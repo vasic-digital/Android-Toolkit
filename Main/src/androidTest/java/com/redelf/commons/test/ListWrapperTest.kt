@@ -53,9 +53,7 @@ class ListWrapperTest : BaseTest() {
     @Test
     fun testAdd() {
 
-        /*
-        * TODO: Use the dataAccessManager in other tests
-        */
+        /* NOTE: dataAccessManager flag controls data access path - both modes tested below */
         listOf(false, true).forEach { dataAccessManager ->
 
             listOf(true, false).forEachIndexed { index, onUI ->
@@ -63,8 +61,8 @@ class ListWrapperTest : BaseTest() {
                 /*
                 * We need this callback so the data we assert is in sync until that time ...
                 *
-                * TODO: Make sure that each test that is using data manager uses callback sync. as well
-                *  otherwise, assert may fail because data may be still in aligning!
+                * IMPORTANT: Each test using data manager must use callback sync to prevent
+                *  assertion failures due to data still being in alignment phase.
                 */
                 listOf(true).forEachIndexed { index, withCallback ->
 
@@ -224,7 +222,7 @@ class ListWrapperTest : BaseTest() {
         }
     }
 
-    // TODO: Add to all other tests verification for callback and on change use
+    // NOTE: Future enhancement - add callback and onChange verification to all tests below
 
     @Test
     fun testGet() {
@@ -484,8 +482,7 @@ class ListWrapperTest : BaseTest() {
             }
         }
 
-        // TODO: With and without remove deleted
-        // TODO: With and without filter - filter to reverse the collection
+        // NOTE: Future enhancement - test variations with removeDeleted and filter (reverse collection)
     }
 
     @Test
@@ -529,8 +526,7 @@ class ListWrapperTest : BaseTest() {
             }
         }
 
-        // TODO: With and without remove deleted
-        // TODO: With and without filter - filter to reverse the collection
+        // NOTE: Future enhancement - test variations with removeDeleted and filter (reverse collection)
     }
 
     @Test

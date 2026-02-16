@@ -111,7 +111,7 @@ class SwipeTouchListener(private val swipeView: View) : View.OnTouchListener {
         return false
     }
 
-    private fun animateSwipeView() { // TODO: Add animation for/if UP direction
+    private fun animateSwipeView() { // NOTE: Future enhancement - add swipe animation for UP direction
 
         val parentHeight = swipeView.height
         val tag = "$tag Animate swipe view ::"

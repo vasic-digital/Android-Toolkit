@@ -8,7 +8,8 @@ abstract class DataAccess<T, M : DataManagement<*>>(
     val managerAccess: Obtain<M>,
 
     /*
-        TODO: Introduce some nice method such as: link(manager: DataManagement<*>)
+        NOTE: Future enhancement - introduce a link(manager: DataManagement<*>) method
+        to simplify manager linking with a fluent API instead of Obtain wrappers.
     */
     val linkedManagers: Obtain<List<Obtain<DataManagement<*>>>>? = null,
 

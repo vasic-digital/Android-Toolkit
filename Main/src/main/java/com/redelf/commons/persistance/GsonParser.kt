@@ -301,8 +301,10 @@ class GsonParser private constructor(
                         }
 
                         /*
-                        * FIXME: Raw persisted JSONs have to be base64 encoded / decoded
-                        *  Removed line to stop spamming Crashlytics: recordException(e)
+                        * KNOWN LIMITATION: Raw persisted JSONs should be base64 encoded/decoded
+                        *  to handle special characters properly. Exception recording was
+                        *  intentionally removed here to prevent Crashlytics spam from legacy
+                        *  data that was stored without base64 encoding.
                         */
                     }
                 }

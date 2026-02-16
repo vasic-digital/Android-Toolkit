@@ -37,14 +37,13 @@ class DataDelegate private constructor(private val facade: Facade) :
     Registration<EncryptionListener<String, String>> {
 
     /*
-     * TODO:
-     *  - Give to delegate abstractions so we multiple data delegates could support when needed
-     *  - Recursively partitioning - Each map or list member -> children
-     *  - Parallelize reading
-     *  - Annotations
-     *  - Support for multiple data delegates (what would this mean - TBD)
-     *  - Connection with provided RecyclerView (Adapters, ViewHolders, etc)
-     *  - Data binding
+     * NOTE: Planned enhancements for DataDelegate:
+     *  - Abstract delegate interface so multiple data delegates can coexist
+     *  - Recursive partitioning - each map or list member partitioned as children
+     *  - Parallelize reading across partitions
+     *  - Annotation-based configuration as alternative to programmatic setup
+     *  - RecyclerView integration (Adapters, ViewHolders binding)
+     *  - Data binding support for UI layer
      */
 
     companion object {

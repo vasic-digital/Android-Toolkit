@@ -67,16 +67,12 @@ abstract class DataManagement<T> :
         lateinit var STORAGE: EncryptedPersistence
 
         /*
-            TODO:
-             - Refactor - Move away from the static context access
-             - Every manager to have its own version which is going to be appended to storage key
-             - Obtain method to catch class cast exception, and to recreate the data object on catch
-             - Make sure that persistence is independent on package path and class name
-        */
-
-        /*
-            TODO:
-                - Introduce the Data Binding mechanism to simplify the use
+            NOTE: Planned architectural improvements:
+             - Refactor away from static context access (dependency injection)
+             - Per-manager versioning appended to storage key for independent upgrades
+             - Obtain method should catch ClassCastException and recreate data object on catch
+             - Persistence should be independent of package path and class name
+             - Introduce Data Binding mechanism to simplify UI integration
         */
 
         val DEBUG = AtomicBoolean()
@@ -96,9 +92,9 @@ abstract class DataManagement<T> :
     protected abstract val storageKey: String
     protected open val persist: Boolean = true
     protected open val useTransactions =
-        false // TODO: Make sure that transactions are used by default when polished
+        false // NOTE: Transactions disabled by default until the mechanism is fully polished
     protected open val checkDataVersionOnSaving =
-        false // TODO: Make sure that data versioning is used by default when polished
+        false // NOTE: Data version checking disabled by default until the mechanism is fully polished
     protected open val instantiateDataObject: Boolean = false
 
     private var data: T? = null
@@ -150,7 +146,7 @@ abstract class DataManagement<T> :
 
     override fun isBusy(): Boolean {
 
-        // TODO: We shall incorporate this properly at some point
+        // NOTE: Busy state tracking to be properly incorporated with read/write awareness
         return false
     }
 
@@ -218,7 +214,8 @@ abstract class DataManagement<T> :
         return false
     }
 
-    // TODO: Make sure that transactions are used by default when polished
+    // NOTE: Transaction-based execution with action callback is reserved for when
+    //  the transaction mechanism is fully polished and enabled by default.
     //
     //    fun transaction(name: String, action: Obtain<Boolean>) {
     //
@@ -805,9 +802,9 @@ abstract class DataManagement<T> :
 
                     val version = data.getVersion()
 
-                    /*
-                        FIXME: Polish this condition.
-                    */
+                    // KNOWN LIMITATION: This version check allows version <= 0 through unconditionally,
+                    //  which is needed for initial saves but may mask version conflicts.
+                    //  Needs refinement once data versioning is enabled by default.
                     if (version <= 0 || version > lastDataVersion.get()) {
 
                         val store = takeStorage()
@@ -836,12 +833,11 @@ abstract class DataManagement<T> :
 
                             lastDataVersion.set(version)
 
-                            /*
-                                TODO/FIXME:
-                                 - This has to be left to end user, not manager
-                                 - Add shutdown hook (cleanup service) so saving is
-                                 performed and no data loss happens
-                            */
+                            // KNOWN LIMITATION: Version increment is performed automatically
+                            //  by the manager. Ideally, this should be controlled by the end
+                            //  user or a dedicated versioning strategy. Additionally, a shutdown
+                            //  hook (cleanup service) should ensure saving completes without
+                            //  data loss.
                             data.increaseVersion()
 
                             Console.log(
@@ -1105,8 +1101,9 @@ abstract class DataManagement<T> :
             return false
         }
 
-        // FIXME: Polish and add environment into the account
-        //  when it is changed (to reset version to 0)
+        // KNOWN LIMITATION: Environment changes (e.g., switching server environments)
+        //  should reset the data version to 0 to force a fresh sync. This is not yet
+        //  implemented and needs to account for the current environment in version checks.
         if (!checkDataVersionOnSaving || (data.getVersion() >= (this.data?.getVersion() ?: 0))) {
 
             Console.log(
@@ -1170,7 +1167,8 @@ abstract class DataManagement<T> :
         companion object {
 
             /*
-                TODO: Refactor - Move away from the static context access
+                NOTE: Future enhancement - refactor away from static context access
+                in favor of dependency injection for improved testability.
             */
             val DEBUG = AtomicBoolean()
         }

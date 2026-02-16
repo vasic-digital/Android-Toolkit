@@ -5,8 +5,9 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
 /*
-* TODO: Connect with dependency flags, such as: if (DEBUG_RESOURCES_OVERRIDES.get())
-*  so we do not have many, many if elses in our code but everything wrapped under the Console.
+* NOTE: Future enhancement - connect Console with dependency flags (e.g., DEBUG_RESOURCES_OVERRIDES)
+*  so that conditional logging is handled centrally within Console rather than requiring
+*  many if-else checks scattered throughout the codebase.
 */
 object Console : LogParametrized {
 

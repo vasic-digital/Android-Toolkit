@@ -12,7 +12,9 @@ import com.redelf.commons.persistance.base.Serializer
 internal class DataSerializer(private val parser: Obtain<Parser>) : Serializer {
 
     /*
-        TODO: Create a flavor that uses Jackson lib for stream-like serialization / deserialization
+        NOTE: Future enhancement - create a Jackson-based flavor for stream-like serialization
+        and deserialization to improve performance with large data payloads.
+        See StreamingJsonParser for the Jackson-based parser implementation.
     */
 
     override fun <T> serialize(cipherText: String?, value: T): String? {

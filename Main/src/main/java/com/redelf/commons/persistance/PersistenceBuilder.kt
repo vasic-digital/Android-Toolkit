@@ -135,11 +135,12 @@ class PersistenceBuilder(
 
     private fun instantiateDefaultEncryption(context: Context, salter: Salter): Encryption<String> {
 
-        // FIXME:
-        //  Pulling persisted data from the device tries to decrypt the partition data like
-        //  partition count, which may not encrypted (we guess)
-        //  see:
-        //  return CompressedEncryption()
+        // KNOWN LIMITATION: CompressedEncryption cannot be used as the default here because
+        //  pulling persisted data from the device attempts to decrypt partition metadata
+        //  (e.g., partition count) which may have been stored unencrypted. Enabling
+        //  CompressedEncryption by default would break reads of existing unencrypted data.
+        //  A migration strategy is needed before this can be changed.
+        //  See: CompressedEncryption()
 
         return NoEncryption()
     }

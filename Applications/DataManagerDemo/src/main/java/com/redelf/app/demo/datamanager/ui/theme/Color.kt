@@ -1,6 +1,6 @@
 package com.redelf.app.demo.datamanager.ui.theme
 
-// FIXME:
+// NOTE: Compose Color definitions disabled pending Compose dependency configuration
 //import androidx.compose.ui.graphics.Color
 //
 //val Purple80 = Color(0xFFD0BCFF)

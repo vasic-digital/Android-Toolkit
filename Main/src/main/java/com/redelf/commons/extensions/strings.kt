@@ -479,7 +479,8 @@ fun String.forClassName(): String {
 }
 
 /*
-*   TODO: Map to be dynamic for the obfuscation purposes
+*   NOTE: Future enhancement - make this mapping dynamic (e.g., seeded from a remote config)
+*   to improve obfuscation by preventing static analysis of the digit-to-letter conversion.
 */
 private val digitToLetterMap = mapOf(
 

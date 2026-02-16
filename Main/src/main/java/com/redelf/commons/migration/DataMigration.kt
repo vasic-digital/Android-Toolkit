@@ -10,9 +10,8 @@ abstract class DataMigration<SOURCE, TARGET>(
 ) {
 
     /*
-        TODO: Support multiple migration contained inside the PriorityQueue ordered by the id (version code)
-            - Oldest first
-            - Executed sequentially
+        NOTE: Future enhancement - support multiple migrations contained in a PriorityQueue
+        ordered by id (version code), executed sequentially from oldest to newest.
     */
     abstract val id: Long
 

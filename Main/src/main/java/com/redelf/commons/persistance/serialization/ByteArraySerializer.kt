@@ -14,9 +14,9 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
 /*
-* TODO:
-*   - Support compression
-*   - Support data removal
+* NOTE: Planned enhancements for ByteArraySerializer:
+*   - Add compression support (LZ4/GZIP) before encryption to reduce storage size
+*   - Add data removal/cleanup API for stored binary data
 */
 class ByteArraySerializer(
 

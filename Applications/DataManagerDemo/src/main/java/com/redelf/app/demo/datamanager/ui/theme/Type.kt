@@ -1,6 +1,6 @@
 package com.redelf.app.demo.datamanager.ui.theme
 
-// FIXME:
+// NOTE: Compose Material3 Typography disabled pending Compose dependency configuration
 //import androidx.compose.material3.Typography
 //import androidx.compose.ui.text.TextStyle
 //import androidx.compose.ui.text.font.FontFamily
@@ -8,7 +8,7 @@ package com.redelf.app.demo.datamanager.ui.theme
 //import androidx.compose.ui.unit.sp
 
 // Set of Material typography styles to start with
-// FIXME:
+// NOTE: Compose Material3 Typography disabled pending Compose dependency configuration
 //val Typography = Typography(
 //    bodyLarge = TextStyle(
 //        fontFamily = FontFamily.Default,

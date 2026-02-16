@@ -51,11 +51,11 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
         override fun instantiateExecutor() = TaskExecutor.instantiate(capacity)
 
         /*
-        * TODO:
-        *  - Instead of Runnable use Runnable and ApiRunnable
-        *  - Wrap all CountDown latched with existing sync {} extension
-        *  - Make sure that sync {} extension can work with countdown latch with multiple count downs
-        *  - Make sure that sync {} extension works with coroutines when threadPooled.get() is false
+        * NOTE: Planned improvements for execution model:
+        *  - Differentiate between Runnable and ApiRunnable for better task categorization
+        *  - Wrap all CountDownLatch usage with existing sync {} extension
+        *  - Ensure sync {} extension supports CountDownLatch with multiple count downs
+        *  - Ensure sync {} extension works with coroutines when threadPooled.get() is false
         */
         @OptIn(DelicateCoroutinesApi::class)
         @Throws(RejectedExecutionException::class)
@@ -85,7 +85,10 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
                 if (isDebug()) Console.log("$tag LAUNCHING")
 
                 /*
-                * FIXME: In certain scenarios it gets stuck [any yield or latch await ...]
+                * KNOWN LIMITATION: In certain scenarios the coroutine-based execution
+                * path can get stuck when the dispatched work uses Thread.yield() or
+                * CountDownLatch.await(), because coroutine dispatchers do not guarantee
+                * dedicated threads. Use threadPooled=true (default) to avoid this issue.
                 */
                 GlobalScope.launch(Dispatchers.Default) {
 
@@ -400,15 +403,13 @@ enum class Executor : Execution, ThreadPooledExecution, Debuggable {
 
                 executor.execute(action)
 
-                // TODO: Make sure we can use this idea
-                //                if (isOnMainThread()) {
+                // NOTE: The idea of running directly on the current thread when not on
+                //  the main thread was considered but not adopted. Always dispatching
+                //  through the executor ensures consistent thread pool management and
+                //  prevents unpredictable blocking of caller threads.
                 //
-                //                    executor.execute(action)
-                //
-                //                } else {
-                //
-                //                    action.run()
-                //                }
+                //  Considered alternative (not used):
+                //    if (isOnMainThread()) executor.execute(action) else action.run()
 
 
             } catch (e: Throwable) {

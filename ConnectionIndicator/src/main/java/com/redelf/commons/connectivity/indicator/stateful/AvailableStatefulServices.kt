@@ -182,8 +182,9 @@ constructor(
         services.forEach { service ->
 
             /*
-             * TODO: This snippet is repeated three times at least!
-             *  We should move it into one single implementation and reuse!
+             * NOTE: Future enhancement - this termination dispatch pattern is repeated in
+             *  multiple places. It should be extracted into a shared utility function
+             *  (e.g., terminateService(service, from)) to reduce code duplication.
              */
             if (service is TerminationAsync) {
 

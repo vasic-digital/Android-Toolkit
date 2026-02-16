@@ -30,9 +30,8 @@ class RemoteHttpContentFetcher(
     @Throws(IOException::class, IllegalStateException::class)
     private fun fetchContentFromRemote(url: String, token: String): String? {
 
-        /*
-        * TODO: Retrofit
-        */
+        // NOTE: Future enhancement - replace raw OkHttpClient usage with RetrofitProvider
+        //  for consistent HTTP configuration (Cronet, interceptors, timeouts).
         val client = OkHttpClient()
 
         val builder = Request.Builder().url(url)

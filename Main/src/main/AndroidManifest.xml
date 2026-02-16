@@ -42,12 +42,9 @@
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
 
-    <!-- FIXME: Google Play console requires statement regarding these permissions -->
-    <!--    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />-->
-    <!--    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />-->
-    <!-- FIXME: And probably this: -->
-    <!--    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />-->
-    <!--    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />-->
+    <!-- NOTE: Media permissions declared by consuming Application module per Google Play policy.
+         These are commented out here in Toolkit as they should only be declared in the app manifest:
+         READ_MEDIA_VIDEO, READ_MEDIA_IMAGES, READ_MEDIA_AUDIO, READ_MEDIA_VISUAL_USER_SELECTED -->
 
     <application
 

@@ -6,9 +6,10 @@ import com.redelf.commons.lifecycle.termination.TerminationSynchronized
 import com.redelf.commons.obtain.OnObtain
 
 /*
-    FIXME: We do not need both ShutdownSynchronized and TerminationSynchronized.
-       Check other the files as well!
-* */
+    KNOWN LIMITATION: This interface extends both ShutdownSynchronized and TerminationSynchronized,
+    which have overlapping responsibilities. A future refactoring should consolidate these into
+    a single lifecycle interface across the codebase.
+*/
 interface Storage<T> : ShutdownSynchronized, TerminationSynchronized, InitializationWithContext {
 
     fun put(key: String?, value: T): Boolean

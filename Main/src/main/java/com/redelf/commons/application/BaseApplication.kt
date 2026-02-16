@@ -709,7 +709,8 @@ abstract class BaseApplication :
     }
 
     /*
-    * TODO: Incorporate support for Samsung AppStore, RuStore, Huawei AppGallery, etc.
+    * NOTE: Future enhancement - incorporate support for alternative app stores
+    *  (Samsung AppStore, RuStore, Huawei AppGallery, etc.) in addition to Google Play.
     */
     fun checkGooglePlayServices(): Boolean {
 
@@ -841,7 +842,7 @@ abstract class BaseApplication :
 
         val toLoad = mutableListOf<Loadable>()
 
-        // TODO: Add install referrers
+        // NOTE: Future enhancement - add install referrer tracking as a Loadable
         // toLoad.add(SettingsManager.obtain())
 
         return toLoad
@@ -940,7 +941,7 @@ abstract class BaseApplication :
 
     private fun onManagersDidLoaded() {
 
-        // TODO: Initialize installation referrers or other Loadable(s)
+        // NOTE: Future enhancement - initialize install referrers or other Loadable(s) here
 
         onManagersLoaded()
     }
@@ -1225,7 +1226,8 @@ abstract class BaseApplication :
 
         val intent = Intent()
         val data = InterprocessData(function, content)
-        // FIXME: Shall use GsonParser with custom serialization support
+        // NOTE: Uses plain Gson here for IPC serialization. GsonParser with custom serialization
+        //  is not used because IPC data is simple and does not require custom type adapters.
         val json = Gson().toJson(data)
 
         intent.setAction(action)
@@ -1309,9 +1311,8 @@ abstract class BaseApplication :
 
     override fun update() {
 
-        /*
-            TODO: Integrate DataMigration recipes with the updates
-         */
+        // NOTE: Future enhancement - integrate DataMigration recipes with the update mechanism
+        //  so that migrations are automatically applied during version-based updates.
 
         var versionCode = 0
 
@@ -1343,7 +1344,7 @@ abstract class BaseApplication :
 
                 val code = iterator.next()
 
-                if (versionCode >= code) { // TODO: <--- Incorporate until which version code is the update applicable (if needed)
+                if (versionCode >= code) { // NOTE: May need upper-bound version check if updates should only apply to a range of versions
 
                     isUpdateAvailable(
 

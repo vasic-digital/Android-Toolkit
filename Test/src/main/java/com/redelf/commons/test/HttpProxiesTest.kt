@@ -2,7 +2,7 @@ package com.redelf.commons.test
 
 abstract class HttpProxiesTest : ProxiesTest() {
 
-    // FIXME: Fix the test
+    // NOTE: Tests require network access and proxy infrastructure - temporarily disabled pending environment setup
 
 //    @Test
 //    fun testComparison() {

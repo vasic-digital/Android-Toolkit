@@ -2,7 +2,7 @@ package com.redelf.app.demo.datamanager
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-// FIXME:
+// NOTE: Compose UI disabled pending Compose dependency configuration
 //import androidx.activity.compose.setContent
 //import androidx.activity.enableEdgeToEdge
 //import androidx.compose.foundation.layout.fillMaxSize
@@ -16,7 +16,7 @@ import androidx.activity.ComponentActivity
 
 class MainActivity : ComponentActivity() {
 
-    // FIXME:
+    // NOTE: Compose UI disabled pending Compose dependency configuration
 
 //    override fun onCreate(savedInstanceState: Bundle?) {
 //        super.onCreate(savedInstanceState)

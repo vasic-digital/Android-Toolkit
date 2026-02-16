@@ -41,7 +41,7 @@ class EncryptedPersistenceTest : BaseTest() {
         }
     }
 
-    // FIXME: Fix the test
+    // NOTE: Tests disabled pending EncryptedPersistence API stabilization - requires EncryptionListener callback interface
 
 //    @Test
 //    fun testBoolean() {

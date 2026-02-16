@@ -2,7 +2,7 @@ package com.redelf.app.demo.datamanager.ui.theme
 
 import android.os.Build
 
-// FIXME:
+// NOTE: Compose Material3 Theme disabled pending Compose dependency configuration
 
 //import androidx.compose.foundation.isSystemInDarkTheme
 //import androidx.compose.material3.MaterialTheme

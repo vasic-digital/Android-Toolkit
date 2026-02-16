@@ -15,8 +15,8 @@ class ByteArrayTypeAdapter(
 ) : TypeAdapter<ByteArray>() {
 
     /*
-    * TODO:
-    *  - Encrypt all strings used here (name for example ...)
+    * NOTE: Future enhancement - encrypt all string identifiers used here (e.g., name field)
+    *  to prevent leaking metadata through SharedPreferences keys.
     */
     private val serializer = SecureBinarySerializer(context, "type_adapter_cache.$name", encryption)
 
