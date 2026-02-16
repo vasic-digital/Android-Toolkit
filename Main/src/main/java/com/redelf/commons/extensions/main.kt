@@ -1212,9 +1212,13 @@ fun <X> sync(
 
     if (mainThreadForbidden && isOnMainThread()) {
 
-        val e = IllegalStateException("$context executed sync on main thread")
+        val e = IllegalStateException(
+            "$context executed sync on main thread. " +
+                    "Use syncSafe{} to auto-offload to background thread, " +
+                    "or pass mainThreadForbidden=false if intentional."
+        )
         Console.error("$tag ${e.message}")
-        recordException(e)
+        throw e
     }
 
     var result: X? = null
@@ -1329,6 +1333,75 @@ fun <X> sync(
     }
 
     return result
+}
+
+fun <X> syncSafe(
+
+    context: String,
+    from: String = "",
+    timeout: Long = 60,
+    timeUnit: TimeUnit = TimeUnit.SECONDS,
+    waitingFlag: AtomicBoolean? = null,
+    debug: Boolean = false,
+    what: (callback: OnObtain<X?>) -> Unit
+
+): X? {
+
+    if (isOnMainThread()) {
+
+        val tag = "SYNC_SAFE :: $context ::"
+
+        if (DEBUG_SYNC.get() || debug) Console.log("$tag Offloading to background")
+
+        var result: X? = null
+        val latch = java.util.concurrent.CountDownLatch(1)
+
+        Thread {
+
+            Thread.currentThread().name = "SyncSafe.$context"
+
+            result = sync(
+                context = context,
+                from = from,
+                timeout = timeout,
+                timeUnit = timeUnit,
+                mainThreadForbidden = false,
+                waitingFlag = waitingFlag,
+                debug = debug,
+                what = what
+            )
+
+            latch.countDown()
+        }.start()
+
+        try {
+
+            if (!latch.await(timeout, timeUnit)) {
+
+                Console.error("$tag Timed out waiting for background sync")
+            }
+
+        } catch (e: InterruptedException) {
+
+            Console.error("$tag Interrupted: ${e.message}")
+            recordException(e)
+        }
+
+        return result
+
+    } else {
+
+        return sync(
+            context = context,
+            from = from,
+            timeout = timeout,
+            timeUnit = timeUnit,
+            mainThreadForbidden = true,
+            waitingFlag = waitingFlag,
+            debug = debug,
+            what = what
+        )
+    }
 }
 
 private val UI_IN_SYNC = AtomicBoolean()
