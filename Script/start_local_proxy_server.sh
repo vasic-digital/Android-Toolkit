@@ -1,7 +1,6 @@
 #!/bin/sh
 
-# TODO: Create user
-# sudo htpasswd -c /etc/squid/passwords username
+# Create proxy user: sudo htpasswd -c /etc/squid/passwords username
 
 if [ -z "$1" ]; then
 

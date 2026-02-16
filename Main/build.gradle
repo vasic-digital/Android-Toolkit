@@ -139,9 +139,6 @@ android {
         }
     }
 
-    /*
-        TODO: Migration to Java > 8
-    */
     compileOptions {
 
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -150,9 +147,6 @@ android {
 
     kotlinOptions {
 
-        /*
-            TODO: Migration to Java > 8
-        */
         jvmTarget = '1.8'
     }
 
@@ -349,7 +343,7 @@ dependencies {
     testApi "com.google.code.gson:gson:$gsonVersion"
     androidTestApi "com.google.code.gson:gson:$gsonVersion"
 
-    // TODO:
+    // Security crypto (disabled - not currently needed):
     // api "androidx.security:security-crypto:1.1.0"
 
     api "org.apache.commons:commons-compress:1.28.0"
