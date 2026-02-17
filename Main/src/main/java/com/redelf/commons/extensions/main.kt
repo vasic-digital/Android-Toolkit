@@ -1360,7 +1360,7 @@ fun <X> syncSafe(
         var result: X? = null
         val latch = java.util.concurrent.CountDownLatch(1)
 
-        Thread {
+        val bgThread = Thread {
 
             Thread.currentThread().name = "SyncSafe.$context"
 
@@ -1376,7 +1376,10 @@ fun <X> syncSafe(
             )
 
             latch.countDown()
-        }.start()
+        }
+
+        bgThread.isDaemon = true
+        bgThread.start()
 
         try {
 
