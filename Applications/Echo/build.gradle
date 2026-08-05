@@ -19,7 +19,10 @@ android {
 
         minSdk 28
         targetSdk 35
-        versionCode 1
+        // ATM-975 §11.4.111 — monotonic per-release versionCode (env
+        // ATMOSPHERE_VERSION_CODE / gradle property atmosphereVersionCode
+        // from scripts/build.sh), safe fallback to 1 when unset.
+        versionCode ((System.getenv("ATMOSPHERE_VERSION_CODE") ?: project.findProperty("atmosphereVersionCode") ?: "1").toString().toInteger())
         versionName "1.0"
         applicationId "com.redelf.commons.interprocess.echo"
 
